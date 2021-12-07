@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nid_some_fragments_nav_graph"
+    app:startDestination="@id/fragment_one">
+
+    <fragment android:id="@+id/fragment_one"
+        android:name="com.sample.neuroid.us.fragments.NIDFirstFragment"
+        tools:layout="@layout/nid_fragment_one">
+        <action
+            android:id="@+id/action_to_fragment_two"
+            app:destination="@id/fragment_two" />
+    </fragment>
+
+    <fragment android:id="@+id/fragment_two"
+        android:name="com.sample.neuroid.us.fragments.NIDSecondFragment"
+        tools:layout="@layout/nid_fragment_two">
+        <action
+            android:id="@+id/action_to_fragment_three"
+            app:destination="@id/fragment_three" />
+    </fragment>
+
+    <fragment android:id="@+id/fragment_three"
+        android:name="com.sample.neuroid.us.fragments.NIDThirdFragment"
+        tools:layout="@layout/nid_fragment_three"/>
+
+</navigation>

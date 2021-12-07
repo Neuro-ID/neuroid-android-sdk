@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nid_only_one_frag_nav_graph"
+    app:startDestination="@id/fragment_only_one">
+
+    <fragment android:id="@+id/fragment_only_one"
+        android:name="com.sample.neuroid.us.fragments.NIDOnlyOneFragment"
+        tools:layout="@layout/nid_fragment_only_one"/>
+
+</navigation>
