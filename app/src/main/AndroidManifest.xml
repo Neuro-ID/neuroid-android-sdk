@@ -16,6 +16,7 @@
         android:theme="@style/Theme.NeuroIdAndroidExample">
         <activity
             android:name=".activities.MainActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

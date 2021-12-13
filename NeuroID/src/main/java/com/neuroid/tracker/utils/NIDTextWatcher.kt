@@ -3,9 +3,7 @@ package com.neuroid.tracker.utils
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
-import com.neuroid.tracker.events.INPUT
-import com.neuroid.tracker.events.KEY_DOWN
-import com.neuroid.tracker.events.KEY_UP
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
@@ -27,6 +25,16 @@ class NIDTextWatcher(
                         "tgs" to idName,
                         "etn" to INPUT,
                         "et" to "text"
+                    )
+                ).getOwnJson()
+            )
+        getDataStoreInstance(context)
+            .saveEvent(
+                NIDEventModel(
+                    type = TEXT_CHANGE,
+                    ts = System.currentTimeMillis(),
+                    tgs = hashMapOf(
+                        "tgs" to idName
                     )
                 ).getOwnJson()
             )
