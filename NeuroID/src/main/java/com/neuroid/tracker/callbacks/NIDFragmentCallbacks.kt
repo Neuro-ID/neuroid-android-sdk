@@ -12,11 +12,23 @@ import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
-class NeuroIdFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
+class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
+    private val nameListExclude = listOf(
+        "androidx.navigation.fragment.NavHostFragment",
+        "com.google.android.gms.maps.SupportMapFragment"
+    )
+
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        getDataStoreInstance(context)
-            .saveEvent(NIDEventModel(type = WINDOW_LOAD, ts = System.currentTimeMillis()).getOwnJson())
-        Log.d("NeuroId", "Fragment:${f::class.java.name} is onActivityCreated")
+        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
+
+        if (!isExcludeName) {
+            getDataStoreInstance(context)
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_LOAD,
+                    et = "FRAGMENT",
+                    ts = System.currentTimeMillis()).getOwnJson())
+            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentAttached")
+        }
     }
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
@@ -46,7 +58,11 @@ class NeuroIdFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
         getDataStoreInstance(f.requireContext())
-            .saveEvent(NIDEventModel(type = USER_INACTIVE, ts = System.currentTimeMillis()).getOwnJson())
+            .saveEvent(NIDEventModel(
+                type = USER_INACTIVE,
+                et = "FRAGMENT",
+                ts = System.currentTimeMillis()
+            ).getOwnJson())
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -58,8 +74,16 @@ class NeuroIdFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance(f.requireContext())
-            .saveEvent(NIDEventModel(type = WINDOW_UNLOAD, ts = System.currentTimeMillis()).getOwnJson())
-        Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
+        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
+
+        if (!isExcludeName) {
+            getDataStoreInstance(f.requireContext())
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_UNLOAD,
+                    et = "FRAGMENT",
+                    ts = System.currentTimeMillis()
+                ).getOwnJson())
+            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
+        }
     }
 }

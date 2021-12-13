@@ -15,6 +15,8 @@ data class NIDEventModel(
     val ts: Long,
     val x: Float? = null,
     val y: Float? = null,
+    val w: Int? = null,
+    val h: Int? = null,
     val f: String? = null,
     val lsid: String? = null,
     val sid: String? = null,
@@ -56,6 +58,8 @@ data class NIDEventModel(
             jsonObject.put("ts", ts)
             x?.let { jsonObject.put("x", it) }
             y?.let { jsonObject.put("y", it) }
+            w?.let { jsonObject.put("w", it) }
+            h?.let { jsonObject.put("h", it) }
             f?.let { jsonObject.put("f", it) }
             lsid?.let { jsonObject.put("lsid", it) }
             sid?.let { jsonObject.put("sid", it) }

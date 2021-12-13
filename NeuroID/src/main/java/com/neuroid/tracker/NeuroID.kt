@@ -2,10 +2,13 @@ package com.neuroid.tracker
 
 import android.app.Application
 import android.util.Log
-import com.neuroid.tracker.callbacks.NeuroIdActivityCallbacks
-import com.neuroid.tracker.extensions.encodeToBase64
+import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.NIDServiceTracker.NID_ERROR_SERVICE
+import com.neuroid.tracker.service.NIDServiceTracker.NID_ERROR_SYSTEM
+import com.neuroid.tracker.service.NIDServiceTracker.NID_NO_EVENTS_ALLOWED
+import com.neuroid.tracker.service.NIDServiceTracker.NID_OK_SERVICE
 import com.neuroid.tracker.storage.getDataStoreInstance
 import kotlinx.coroutines.*
 
@@ -15,7 +18,7 @@ class NeuroID private constructor(
     private val timeInSeconds: Int
 ) {
     init {
-        application?.registerActivityLifecycleCallbacks(NeuroIdActivityCallbacks())
+        application?.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
     }
 
     private var jobCaptureEvents: Job? = null
@@ -60,8 +63,15 @@ class NeuroID private constructor(
             while (true) {
                 delay(timeMills)
 
-                application?.applicationContext?.let {
-                    NIDServiceTracker.sendEventToServer(clientKey, it)
+                application?.applicationContext?.let { context ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        when(NIDServiceTracker.sendEventToServer(clientKey, context)) {
+                            NID_ERROR_SERVICE -> Log.d("NeuroId", "Error service")
+                            NID_ERROR_SYSTEM -> Log.d("NeuroId", "Error system")
+                            NID_NO_EVENTS_ALLOWED -> Log.d("NeuroId", "No events allowed")
+                            NID_OK_SERVICE -> Log.d("NeuroId", "OK service")
+                        }
+                    }
                 }
             }
         }

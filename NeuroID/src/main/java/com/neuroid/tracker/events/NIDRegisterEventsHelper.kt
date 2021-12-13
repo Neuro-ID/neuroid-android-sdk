@@ -2,55 +2,29 @@ package com.neuroid.tracker.events
 
 import android.app.Activity
 import android.view.View
-import android.widget.EditText
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.NIDTextWatcher
+import android.view.ViewGroup
+import com.neuroid.tracker.callbacks.NIDWindowCallback
+import com.neuroid.tracker.callbacks.NIDFocusChangeListener
+import com.neuroid.tracker.callbacks.NIDLayoutChangeListener
 
 fun registerViewsEventsForActivity(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     )
 
-    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener { _, newView ->
-        if (newView != null) {
-            val idName = if (newView.id == View.NO_ID) {
-                "no_id"
-            } else {
-                newView.resources.getResourceEntryName(newView.id)
-            }
+    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
+    viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
 
-            if (newView is EditText) {
-                getDataStoreInstance(activity.applicationContext)
-                    .saveEvent(
-                        NIDEventModel(
-                            type = FOCUS,
-                            ts = System.currentTimeMillis(),
-                            tgs = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to INPUT,
-                                "et" to "text"
-                            )
-                        ).getOwnJson()
-                    )
+    val callBack = activity.window.callback
+    val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
+    activity.window.callback = NIDWindowCallback(callBack, touchManager)
+}
 
-                getDataStoreInstance(activity.applicationContext)
-                    .saveEvent(
-                        NIDEventModel(
-                            type = WINDOW_RESIZE,
-                            ts = System.currentTimeMillis(),
-                            tgs = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to INPUT,
-                                "et" to "text"
-                            )
-                        ).getOwnJson()
-                    )
+fun unRegisterListenerFromActivity(activity: Activity) {
+    val viewMainContainer = activity.window.decorView.findViewById<View>(
+        android.R.id.content
+    )
 
-                val textWatcher = NIDTextWatcher(activity.applicationContext, idName)
-                newView.removeTextChangedListener(textWatcher)
-                newView.addTextChangedListener(textWatcher)
-            }
-        }
-    }
+    viewMainContainer.viewTreeObserver.removeOnGlobalFocusChangeListener(NIDFocusChangeListener())
+    viewMainContainer.viewTreeObserver.removeOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
 }
