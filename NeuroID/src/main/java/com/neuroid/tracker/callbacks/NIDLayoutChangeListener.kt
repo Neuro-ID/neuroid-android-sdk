@@ -2,8 +2,6 @@ package com.neuroid.tracker.callbacks
 
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import com.neuroid.tracker.events.FOCUS
-import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -23,7 +21,7 @@ class NIDLayoutChangeListener(
         if (currentWidth != viewMainContainer.width || currentHeight != viewMainContainer.height) {
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
-            getDataStoreInstance(viewMainContainer.context)
+            getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_RESIZE,

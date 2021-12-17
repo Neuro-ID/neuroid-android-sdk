@@ -16,7 +16,7 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
             val idName = newView.getIdOrTag()
 
             if (newView is EditText) {
-                getDataStoreInstance(newView.context)
+                getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
                             type = FOCUS,
@@ -29,7 +29,7 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                         ).getOwnJson()
                     )
 
-                val textWatcher = NIDTextWatcher(newView.context, idName)
+                val textWatcher = NIDTextWatcher(idName)
                 newView.removeTextChangedListener(textWatcher)
                 newView.addTextChangedListener(textWatcher)
 

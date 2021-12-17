@@ -45,7 +45,7 @@
                     android:layout_marginStart="20dp"
                     android:text="@string/nid_fragment_one_spinner" />
 
-                <androidx.appcompat.widget.AppCompatSpinner
+                <Spinner
                     android:id="@+id/spinner_example"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

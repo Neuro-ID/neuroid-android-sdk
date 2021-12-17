@@ -1,6 +1,5 @@
 package com.neuroid.tracker.utils
 
-import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import com.neuroid.tracker.events.*
@@ -8,7 +7,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDTextWatcher(
-    private val context: Context,
     private val idName: String
 ): TextWatcher {
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -16,7 +14,7 @@ class NIDTextWatcher(
     }
 
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        getDataStoreInstance(context)
+        getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = KEY_UP,
@@ -28,7 +26,7 @@ class NIDTextWatcher(
                     )
                 ).getOwnJson()
             )
-        getDataStoreInstance(context)
+        getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = TEXT_CHANGE,

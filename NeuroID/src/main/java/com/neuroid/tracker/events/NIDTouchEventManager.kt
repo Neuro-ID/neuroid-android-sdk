@@ -20,7 +20,7 @@ class NIDTouchEventManager(
         motionEvent?.let {
             when(it.action) {
                 ACTION_DOWN -> {
-                    getDataStoreInstance(viewParent.context)
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_START,
@@ -31,7 +31,7 @@ class NIDTouchEventManager(
                         )
                 }
                 ACTION_MOVE -> {
-                    getDataStoreInstance(viewParent.context)
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
@@ -42,7 +42,7 @@ class NIDTouchEventManager(
                         )
                 }
                 ACTION_UP -> {
-                    getDataStoreInstance(viewParent.context)
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_END,
@@ -55,11 +55,10 @@ class NIDTouchEventManager(
             }
 
             if (it.action == ACTION_UP) {
-                val childView = getView(viewParent, it.x, it.y)
 
-                when(childView) {
+                when(val childView = getView(viewParent, it.x, it.y)) {
                     is CheckBox -> {
-                        getDataStoreInstance(viewParent.context)
+                        getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = CHECKBOX_CHANGE,
@@ -73,7 +72,7 @@ class NIDTouchEventManager(
                             )
                     }
                     is RadioButton -> {
-                        getDataStoreInstance(viewParent.context)
+                        getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = RADIO_CHANGE,

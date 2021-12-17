@@ -22,14 +22,26 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         if (actualOrientation == 0) {
             actualOrientation = orientation
         } else if (actualOrientation != orientation) {
-            getDataStoreInstance(activity.applicationContext)
-                .saveEvent(NIDEventModel(type = WINDOW_ORIENTATION_CHANGE, ts = System.currentTimeMillis()).getOwnJson())
+            val strOrientation = if (actualOrientation == 1) {
+                "Landscape"
+            } else {
+                "Portrait"
+            }
+
+            getDataStoreInstance()
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_ORIENTATION_CHANGE,
+                    ts = System.currentTimeMillis(),
+                    tgs = hashMapOf(
+                        "orientation" to strOrientation
+                    )
+                ).getOwnJson())
             actualOrientation = orientation
         }
     }
 
     override fun onActivityStarted(activity: Activity) {
-        getDataStoreInstance(activity.applicationContext)
+        getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
                 et = "ACTIVITY",
@@ -39,7 +51,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityResumed(activity: Activity) {
-        getDataStoreInstance(activity.applicationContext)
+        getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
                 et = "ACTIVITY",
@@ -48,14 +60,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityPaused(activity: Activity) {
-        getDataStoreInstance(activity.applicationContext)
-            .saveEvent(NIDEventModel(
-                type = USER_INACTIVE,
-                et = "ACTIVITY",
-                ts = System.currentTimeMillis()
-            ).getOwnJson())
-
-        getDataStoreInstance(activity.applicationContext)
+        getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
                 et = "ACTIVITY",
@@ -73,7 +78,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        getDataStoreInstance(activity.applicationContext)
+        getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
                 et = "ACTIVITY",
