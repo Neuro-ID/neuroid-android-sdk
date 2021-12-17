@@ -1,6 +1,7 @@
 package com.neuroid.tracker.callbacks
 
 import android.os.Build
+import android.util.Log
 import android.view.Window
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -22,6 +23,7 @@ class NIDWindowCallback(
     private val wrapper = windowCall
 
     override fun dispatchKeyEvent(keyEvent: KeyEvent?): Boolean {
+        Log.d("Neuro ID", "Hardware Keyboard event: $keyEvent")
         return wrapper.dispatchKeyEvent(keyEvent)
     }
 

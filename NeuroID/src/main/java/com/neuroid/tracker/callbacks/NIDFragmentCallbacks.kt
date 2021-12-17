@@ -7,6 +7,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.events.USER_INACTIVE
+import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.models.NIDEventModel
@@ -22,7 +23,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
 
         if (!isExcludeName) {
-            getDataStoreInstance(context)
+            getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_LOAD,
                     et = "FRAGMENT",
@@ -57,12 +58,16 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance(f.requireContext())
-            .saveEvent(NIDEventModel(
-                type = USER_INACTIVE,
-                et = "FRAGMENT",
-                ts = System.currentTimeMillis()
-            ).getOwnJson())
+        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
+        if (!isExcludeName) {
+            getDataStoreInstance()
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_BLUR,
+                    et = "FRAGMENT",
+                    ts = System.currentTimeMillis()
+                ).getOwnJson())
+            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
+        }
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -77,7 +82,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
 
         if (!isExcludeName) {
-            getDataStoreInstance(f.requireContext())
+            getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_UNLOAD,
                     et = "FRAGMENT",

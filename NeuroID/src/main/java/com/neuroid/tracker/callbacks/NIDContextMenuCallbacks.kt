@@ -44,7 +44,7 @@ class NIDContextMenuCallbacks(
         }
 
         if (type.isNotEmpty()) {
-            getDataStoreInstance(context)
+            getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = type,

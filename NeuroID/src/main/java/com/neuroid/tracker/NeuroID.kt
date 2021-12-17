@@ -10,6 +10,8 @@ import com.neuroid.tracker.service.NIDServiceTracker.NID_ERROR_SYSTEM
 import com.neuroid.tracker.service.NIDServiceTracker.NID_NO_EVENTS_ALLOWED
 import com.neuroid.tracker.service.NIDServiceTracker.NID_OK_SERVICE
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDTimerActive
 import kotlinx.coroutines.*
 
 class NeuroID private constructor(
@@ -17,8 +19,18 @@ class NeuroID private constructor(
     private var clientKey: String,
     private val timeInSeconds: Int
 ) {
-    init {
-        application?.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+    private var firstTime = true
+
+    @Synchronized
+    private fun setupCallbacks() {
+        if (firstTime) {
+            firstTime = false
+            application?.let {
+                initDataStoreCtx(it.applicationContext)
+                it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+                NIDTimerActive.initTimer()
+            }
+        }
     }
 
     private var jobCaptureEvents: Job? = null
@@ -37,6 +49,7 @@ class NeuroID private constructor(
         private lateinit var singleton: NeuroID
         fun setNeuroIdInstance(neuroId: NeuroID) {
             singleton = neuroId
+            singleton.setupCallbacks()
         }
 
         fun getInstance() = singleton
@@ -44,7 +57,7 @@ class NeuroID private constructor(
 
     fun captureEvent(event: NIDEventModel) {
         application?.applicationContext?.let {
-            getDataStoreInstance(it).saveEvent(event.getOwnJson())
+            getDataStoreInstance().saveEvent(event.getOwnJson())
         }
     }
 
@@ -54,6 +67,7 @@ class NeuroID private constructor(
 
     fun stopSendAllEvents() {
         jobCaptureEvents?.cancel()
+        jobCaptureEvents = null
     }
 
     private fun startLoopCaptureEvent(): Job {

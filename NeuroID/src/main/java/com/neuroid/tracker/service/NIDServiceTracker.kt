@@ -15,7 +15,7 @@ import java.net.URLEncoder
 object NIDServiceTracker {
 
     fun sendEventToServer(key: String, context: Context): Int {
-        val listEvents = getDataStoreInstance(context).getAllEvents()
+        val listEvents = getDataStoreInstance().getAllEvents()
 
         if (listEvents.isEmpty().not()) {
             val strUrl = if (BuildConfig.DEBUG) {
