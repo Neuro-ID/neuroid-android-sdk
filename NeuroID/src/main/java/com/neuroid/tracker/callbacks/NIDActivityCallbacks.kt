@@ -2,15 +2,22 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.Application.SENSOR_SERVICE
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 
 class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var actualOrientation = 0
+    private var sensorManager: SensorManager? = null
+    private var mAccelerometer: Sensor? = null
+    private val sensorListener = NIDSensorListener()
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val orientation = activity.resources.configuration.orientation
@@ -32,12 +39,15 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 .saveEvent(NIDEventModel(
                     type = WINDOW_ORIENTATION_CHANGE,
                     ts = System.currentTimeMillis(),
-                    tgs = hashMapOf(
+                    tg = hashMapOf(
                         "orientation" to strOrientation
                     )
                 ).getOwnJson())
             actualOrientation = orientation
         }
+
+        sensorManager = activity.getSystemService(SENSOR_SERVICE) as SensorManager
+        mAccelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -47,16 +57,18 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 et = "ACTIVITY",
                 ts = System.currentTimeMillis()
             ).getOwnJson())
-        Log.d("NeuroId", "Activity:${activity::class.java.name} is onActivityStarted")
+        NIDLog.d("NeuroId", "Activity:${activity::class.java.name} is onActivityStarted")
     }
 
     override fun onActivityResumed(activity: Activity) {
+        NIDServiceTracker.screenName = activity::class.java.name
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
                 et = "ACTIVITY",
                 ts = System.currentTimeMillis()
             ).getOwnJson())
+        sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     override fun onActivityPaused(activity: Activity) {
@@ -66,7 +78,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 et = "ACTIVITY",
                 ts = System.currentTimeMillis()
             ).getOwnJson())
-        Log.d("NeuroId", "Activity:${activity::class.java.name} is onActivityPaused")
+        NIDLog.d("NeuroId", "Activity:${activity::class.java.name} is onActivityPaused")
+        sensorManager?.unregisterListener(sensorListener)
     }
 
     override fun onActivityStopped(activity: Activity) {
@@ -85,6 +98,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 ts = System.currentTimeMillis()
             ).getOwnJson())
         unRegisterListenerFromActivity(activity)
-        Log.d("NeuroId", "Activity:${activity::class.java.name} is onActivityDestroyed")
+        NIDLog.d("NeuroId", "Activity:${activity::class.java.name} is onActivityDestroyed")
     }
 }

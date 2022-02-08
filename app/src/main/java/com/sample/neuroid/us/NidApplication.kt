@@ -8,9 +8,9 @@ class NidApplication: MultiDexApplication() {
         super.onCreate()
 
         val neuroId = NeuroID.Builder(this, "key_live_vtotrandom_form_mobilesandbox")
-            .setTimeInSeconds(8)
+            .setTimeInSeconds(6)
             .build()
         NeuroID.setNeuroIdInstance(neuroId)
-        NeuroID.getInstance().startToSendAllEvents()
+        NeuroID.getInstance().start()
     }
 }

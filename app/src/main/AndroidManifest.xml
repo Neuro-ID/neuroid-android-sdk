@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.sample.neuroid.us">
 
-    <uses-sdk tools:overrideLibrary="androidx.security"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -31,6 +29,9 @@
             android:exported="false"
             android:theme="@style/Theme.NeuroIdAndroidExample"
             android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name=".activities.NIDCustomEventsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NeuroIdAndroidExample"/>
     </application>
 
 </manifest>

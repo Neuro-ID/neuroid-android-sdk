@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.RadioButton
+import android.widget.SeekBar
 import androidx.core.view.children
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -16,8 +17,12 @@ import com.neuroid.tracker.utils.getIdOrTag
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
 ) {
+    private var lastView: View? = null
+
     fun detectView(motionEvent: MotionEvent?, timeMills: Long) {
         motionEvent?.let {
+            detectChangesOnView(it,timeMills)
+
             when(it.action) {
                 ACTION_DOWN -> {
                     getDataStoreInstance()
@@ -53,43 +58,6 @@ class NIDTouchEventManager(
                         )
                 }
             }
-
-            if (it.action == ACTION_UP) {
-
-                when(val childView = getView(viewParent, it.x, it.y)) {
-                    is CheckBox -> {
-                        getDataStoreInstance()
-                            .saveEvent(
-                                NIDEventModel(
-                                    type = CHECKBOX_CHANGE,
-                                    x = it.x,
-                                    y = it.y,
-                                    tgs = hashMapOf(
-                                        "tgs" to childView.getIdOrTag()
-                                    ),
-                                    ts = timeMills
-                                ).getOwnJson()
-                            )
-                    }
-                    is RadioButton -> {
-                        getDataStoreInstance()
-                            .saveEvent(
-                                NIDEventModel(
-                                    type = RADIO_CHANGE,
-                                    x = it.x,
-                                    y = it.y,
-                                    tgs = hashMapOf(
-                                        "tgs" to childView.getIdOrTag()
-                                    ),
-                                    ts = timeMills
-                                ).getOwnJson()
-                            )
-                    }
-                    else -> {
-                        // Null
-                    }
-                }
-            }
         }
     }
 
@@ -104,6 +72,64 @@ class NIDTouchEventManager(
             getView(view, x, y)
         } else {
             view
+        }
+    }
+
+    private fun detectChangesOnView(motion: MotionEvent, timeMills: Long) {
+        val currentView = getView(viewParent, motion.x, motion.y)
+        var type = ""
+        val nameView = currentView?.getIdOrTag().orEmpty()
+
+        if (motion.action == ACTION_UP) {
+            if (lastView == currentView) {
+                when(currentView) {
+                    is CheckBox -> {
+                        type = CHECKBOX_CHANGE
+                    }
+                    is RadioButton -> {
+                        type = RADIO_CHANGE
+                    }
+                    is SeekBar -> {
+                        type = SLIDER_CHANGE
+                    }
+                    else -> {
+                        // Null
+                    }
+                }
+
+                if (type.isNotEmpty()) {
+                    getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = type,
+                                x = motion.x,
+                                y = motion.y,
+                                tg = hashMapOf(
+                                    "tgs" to nameView,
+                                    "etn" to INPUT
+                                ),
+                                ts = timeMills
+                            ).getOwnJson()
+                        )
+                }
+            } else {
+                if (lastView is SeekBar) {
+                    getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = SLIDER_CHANGE,
+                                tg = hashMapOf(
+                                    "tgs" to nameView,
+                                    "etn" to INPUT
+                                ),
+                                v = ((lastView as SeekBar).progress).toString(),
+                                ts = System.currentTimeMillis()
+                            ).getOwnJson())
+                }
+            }
+            lastView = null
+        } else if (motion.action == ACTION_DOWN) {
+            lastView = currentView
         }
     }
 }

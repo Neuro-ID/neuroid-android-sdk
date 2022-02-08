@@ -2,9 +2,10 @@ package com.neuroid.tracker.service
 
 import android.content.Context
 import android.os.Build
+import java.util.*
 import kotlin.random.Random
 
-class NIDSharedPrefsDefaults(context: Context) {
+class NIDSharedPrefsDefaults(val context: Context) {
     private var sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
     private var sequenceId = 1
 
@@ -129,9 +130,15 @@ class NIDSharedPrefsDefaults(context: Context) {
         return String.format("%02x", rawId)
     }
 
-    fun getSDKVersion(): String {
-        return "${Build.VERSION.RELEASE}-android-${Build.VERSION.SDK_INT}"
-    }
+    fun getSDKVersion() = "${Build.VERSION.RELEASE}-android-${Build.VERSION.SDK_INT}"
+
+    fun getLocale(): String = Locale.getDefault().toLanguageTag()
+
+    fun getUserAgent() = System.getProperty("http.agent").orEmpty()
+
+    fun getTimeZone() = 300
+
+    fun getPlatform() = "Android"
 
     private fun getID(): String {
         val timeNow = System.currentTimeMillis()

@@ -6,17 +6,19 @@ Neuro-ID's Mobile SDK makes it simple to embed behavioral analytics inside your 
 1. Add .aar file in the libs folder
 
 2. In the application gradle add the dependencies:
+* QA Environment:
 ```gradle
-implementation files('libs/neuro-id-android-v0.1.2.aar')
-implementation "androidx.security:security-crypto:1.0.0"
+implementation files('libs/neuro-id-android-v1.0-debug.aar')
+implementation "androidx.security:security-crypto:1.1.0-alpha03"
 ```
 
-3. If minSdk of your project is less than 23, you need put this line in AndroidManifest.xml:
-```xml
-<uses-sdk tools:overrideLibrary="androidx.security"/>
+* Production Environment:
+```gradle
+implementation files('libs/neuro-id-android-v1.0-release.aar')
+implementation "androidx.security:security-crypto:1.1.0-alpha03"
 ```
 
-4. In your application:
+3. In your application:
 ```kotlin
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
@@ -28,7 +30,7 @@ class MyApplication: MultiDexApplication() {
             .setTimeInSeconds(5)
             .build()
         NeuroID.setNeuroIdInstance(neuroId) // Automatically save the events
-        NeuroID.getInstance().startToSendAllEvents() // Start to send all events saved to server
+        NeuroID.getInstance().start() // Start to send all events saved to server
     }
 }
 ```
