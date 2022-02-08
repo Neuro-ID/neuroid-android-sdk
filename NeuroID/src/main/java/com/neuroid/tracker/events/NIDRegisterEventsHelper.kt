@@ -21,7 +21,7 @@ fun registerViewsEventsForActivity(activity: Activity) {
     activity.window.callback = NIDWindowCallback(callBack, touchManager)
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer) }, 400)
+        identifyAllViews(viewMainContainer) }, 300)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {

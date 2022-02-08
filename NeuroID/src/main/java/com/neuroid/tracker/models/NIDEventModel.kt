@@ -4,8 +4,8 @@ import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
-    val tg: String? = null,
-    val tgs: HashMap<String,String>? = null,
+    val tg: HashMap<String,String>? = null,
+    val tgs: String? = null,
     val key: String? = null,
     val v: String? = null,
     val en: String? = null,
@@ -28,6 +28,9 @@ data class NIDEventModel(
     val ua: String? = null,
     val tzo: Int? = null,
     val lng: String? = null,
+    val ce: Boolean? = null,
+    val je: Boolean? = null,
+    val ol: Boolean? = null,
     val p: String? = null,
     val dnt: Boolean? = null,
     val tch: Boolean? = null,
@@ -41,14 +44,14 @@ data class NIDEventModel(
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
         this.apply {
-            tg?.let { jsonObject.put("tg", it) }
-            tgs?.let {
+            tg?.let {
                 val childJson = JSONObject()
                 it.forEach { (key, value) ->
                     childJson.put(key, value)
                 }
                 jsonObject.put("tgs", childJson)
             }
+            tgs?.let { jsonObject.put("tg", it) }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             en?.let { jsonObject.put("en", it) }
@@ -61,7 +64,13 @@ data class NIDEventModel(
             w?.let { jsonObject.put("w", it) }
             h?.let { jsonObject.put("h", it) }
             f?.let { jsonObject.put("f", it) }
-            lsid?.let { jsonObject.put("lsid", it) }
+            lsid?.let {
+                if (it == "null") {
+                    jsonObject.put("lsid", null)
+                } else {
+                    jsonObject.put("lsid", it)
+                }
+            }
             sid?.let { jsonObject.put("sid", it) }
             siteId?.let { jsonObject.put("siteId", it) }
             cid?.let { jsonObject.put("cid", it) }
@@ -71,13 +80,22 @@ data class NIDEventModel(
             ua?.let { jsonObject.put("ua", it) }
             tzo?.let { jsonObject.put("tzo", it) }
             lng?.let { jsonObject.put("lng", it) }
+            ce?.let { jsonObject.put("ce", it) }
+            je?.let { jsonObject.put("je", it) }
+            ol?.let { jsonObject.put("ol", it) }
             p?.let { jsonObject.put("p", it) }
             dnt?.let { jsonObject.put("dnt", it) }
             tch?.let { jsonObject.put("tch", it) }
             url?.let { jsonObject.put("url", it) }
             ns?.let { jsonObject.put("ns", it) }
             jsl?.let { jsonObject.put("jsl", it) }
-            jsv?.let { jsonObject.put("jsv", it) }
+            jsv?.let {
+                if (it == "null") {
+                    jsonObject.put("jsv", null)
+                } else {
+                    jsonObject.put("jsv", it)
+                }
+            }
             uid?.let { jsonObject.put("uid", it) }
         }
 

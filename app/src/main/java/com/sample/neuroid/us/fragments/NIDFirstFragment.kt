@@ -6,8 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.models.NIDEventModel
 import com.sample.neuroid.us.constants.NID_GO_TO_SECOND_FRAG
 import com.sample.neuroid.us.databinding.NidFragmentOneBinding
 import com.sample.neuroid.us.interfaces.NIDNavigateFragsListener
@@ -31,10 +29,6 @@ class NIDFirstFragment: Fragment() {
         binding.apply {
             buttonContinueFragOne.setOnClickListener {
                 listener?.goToNextScreen(NID_GO_TO_SECOND_FRAG)
-            }
-            buttonCustomEvent.setOnClickListener {
-                val event = NIDEventModel("CUSTOM_EVENT", "button", ts = System.currentTimeMillis())
-                //NeuroID.getInstance().captureEvent(event.getOwnJson())
             }
         }
     }

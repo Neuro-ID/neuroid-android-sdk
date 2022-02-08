@@ -2,9 +2,8 @@ package com.neuroid.tracker.storage
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -34,21 +33,18 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     )
 
     fun init(context: Context) {
-        sharedPref = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            EncryptedSharedPreferences.create(
-                NID_SHARED_PREF_FILE,
-                getKeyAlias(),
-                context,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-        } else {
-            // TODO (Diego Maldonado): Create method for versions less than api 23
-            context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
-        }
+        sharedPref = EncryptedSharedPreferences.create(
+            context,
+            NID_SHARED_PREF_FILE,
+            getKeyAlias(context),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
-    private fun getKeyAlias() = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    private fun getKeyAlias(context: Context) = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
 
     @Synchronized
     override fun saveEvent(event: String) {

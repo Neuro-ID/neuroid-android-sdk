@@ -1,10 +1,14 @@
 package com.sample.neuroid.us
 
 import android.util.Log
-import androidx.test.core.app.launchActivity
+import android.view.View
+import android.widget.SeekBar
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.UiController
+import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,8 +18,6 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.sample.neuroid.us.activities.MainActivity
-import com.sample.neuroid.us.activities.NIDOnlyOneFragActivity
-import com.sample.neuroid.us.activities.NIDSomeFragmentsActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,9 +34,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * Neuro ID: 11 UI Test
  */
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
@@ -54,14 +54,114 @@ class NeuroIdUITest {
     @Before
     fun stopSendEventsToServer() {
         Dispatchers.setMain(testDispatcher)
-        NeuroID.getInstance().stopSendAllEvents()
+        NeuroID.getInstance().stop()
     }
 
     @ExperimentalCoroutinesApi
     @After
-    fun tearDown() {
+    fun resetDispatchers() {
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
+    }
+
+    /**
+     * Validate CREATE_SESSION on start method
+     */
+    @Test
+    fun validateCreateSession() {
+        NeuroID.getInstance().start()
+        Thread.sleep(500)
+        NeuroID.getInstance().stop()
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateCreateSession - Events: [$events]")
+
+        assertThat(events.contains("\"CREATE_SESSION\"")).isTrue()
+    }
+
+    /**
+     * Validate REGISTER_TARGET on MainActivity class
+     */
+    @Test
+    fun validateRegisterTargets() {
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateRegisterTargets - Events: [$events]")
+
+        val numberOfInputs = events.splitToSequence("\"REGISTER_TARGET\"").count() - 1
+        Log.d("----> UITest", "----> numberOfInputs: $numberOfInputs")
+
+        assertThat(numberOfInputs == 5).isTrue()
+    }
+
+    /**
+     * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
+     */
+    @Test
+    fun validateSliderChange() {
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        onView(withId(R.id.button_show_activity_one_fragment))
+            .perform(click())
+        Thread.sleep(500)
+
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
+
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
+
+        Thread.sleep(500)
+
+        onView(withId(R.id.seekBar_one)).perform(
+            setValue(50)
+        )
+
+        Thread.sleep(500)
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateSliderChange - Events: [$events]")
+
+
+        assertThat(events.contains("\"SLIDER_CHANGE\"")).isTrue()
+    }
+
+    /**
+     * Validate FORM_SUBMIT, FORM_SUBMIT_SUCCESS and FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
+     */
+    @Test
+    fun validateNonAutomaticEvents() {
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        onView(withId(R.id.button_show_activity_no_automatic_events))
+            .perform(click())
+        Thread.sleep(400)
+
+        onView(withId(R.id.button_send_form_submit))
+            .perform(click())
+        Thread.sleep(600)
+
+        onView(withId(R.id.button_send_form_success))
+            .perform(click())
+        Thread.sleep(600)
+
+        onView(withId(R.id.button_send_form_failure))
+            .perform(click())
+        Thread.sleep(600)
+
+        onView(withId(R.id.button_send_custom_event))
+            .perform(click())
+        Thread.sleep(600)
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateNonAutomaticEvents - Events: [$events]")
+
+        assertThat(
+                    events.contains("\"FORM_SUBMIT\"") &&
+                    events.contains("\"FORM_SUBMIT_SUCCESS\"") &&
+                    events.contains("\"FORM_SUBMIT_FAILURE\"") &&
+                    events.contains("\"CUSTOM_EVENT\"")
+        ).isTrue()
     }
 
     /**
@@ -70,12 +170,12 @@ class NeuroIdUITest {
     @Test
     fun validateLifecycleStartAndResume() {
         val statusList = listOf(
-            "WINDOW_LOAD",
-            "WINDOW_FOCUS"
+            "\"WINDOW_LOAD\"",
+            "\"WINDOW_FOCUS\""
         )
         Thread.sleep(500) //Wait a half second for create the MainActivity View
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateLifecycleStartAndResume - Events: [$events]")
+        Log.d("----> UITest", "----> validateLifecycleStartAndResume - Events: [$events]")
 
         assertThat(statusList.all { events.contains(it) }).isTrue()
     }
@@ -86,12 +186,12 @@ class NeuroIdUITest {
     @Test
     fun validateLifecyclePauseAndStop() {
         val statusList = listOf(
-            "WINDOW_BLUR",
-            "WINDOW_UNLOAD"
+            "\"WINDOW_BLUR\"",
+            "\"WINDOW_UNLOAD\""
         )
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateLifecyclePauseAndStop - Events: [$events]")
+        Log.d("----> UITest", "----> validateLifecyclePauseAndStop - Events: [$events]")
 
         assertThat(statusList.all { events.contains(it) }).isTrue()
     }
@@ -102,15 +202,16 @@ class NeuroIdUITest {
     @Test
     fun validateClickOnScreen() {
         val eventsList = listOf(
-            "TOUCH_START",
-            "TOUCH_END"
+            "\"TOUCH_START\"",
+            "\"TOUCH_END\""
         )
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.textView_label_one))
             .perform(click())
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateClickOnScreen - Events: [$events]")
+        Log.d("----> UITest", "----> validateClickOnScreen - Events: [$events]")
         assertThat(eventsList.all { events.contains(it) }).isTrue()
     }
 
@@ -119,13 +220,14 @@ class NeuroIdUITest {
      */
     @Test
     fun validateSwipeScreen() {
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.layout_main))
             .perform(swipeDown())
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateSwipeScreen - Events: [$events]")
-        assertThat(events.contains("TOUCH_MOVE")).isTrue()
+        Log.d("----> UITest", "----> validateSwipeScreen - Events: [$events]")
+        assertThat(events.contains("\"TOUCH_MOVE\"")).isTrue()
     }
 
     /**
@@ -133,13 +235,14 @@ class NeuroIdUITest {
      */
     @Test
     fun validateWindowsResize() {
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateWindowsResize - Events: [$events]")
-        assertThat(events.contains("WINDOW_RESIZE")).isTrue()
+        Log.d("----> UITest", "----> validateWindowsResize - Events: [$events]")
+        assertThat(events.contains("\"WINDOW_RESIZE\"")).isTrue()
     }
 
     /**
@@ -147,13 +250,34 @@ class NeuroIdUITest {
      */
     @Test
     fun validateFocusOnEditText() {
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateFocusOnEditText - Events: [$events]")
-        assertThat(events.contains("FOCUS")).isTrue()
+        Log.d("----> UITest", "----> validateFocusOnEditText - Events: [$events]")
+        assertThat(events.contains("\"FOCUS\"")).isTrue()
+    }
+
+    /**
+     * Validate BLUR when the user change the focus
+     */
+    @Test
+    fun validateBlurOnEditText() {
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+
+        onView(withId(R.id.editText_normal_field))
+            .perform(click())
+        Thread.sleep(600)
+
+        onView(withId(R.id.editText_password_field))
+            .perform(click())
+        Thread.sleep(600)
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateBlurOnEditText - Events: [$events]")
+        assertThat(events.contains("\"BLUR\"")).isTrue()
     }
 
     /**
@@ -161,13 +285,19 @@ class NeuroIdUITest {
      */
     @Test
     fun validateTypeTextOnEditText() {
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+
         onView(withId(R.id.editText_normal_field))
             .perform(typeText("Some text"))
         Thread.sleep(500)
 
+        onView(withId(R.id.editText_password_field))
+            .perform(click())
+        Thread.sleep(500)
+
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateTypeTextOnEditText - Events: [$events]")
-        assertThat(events.contains("TEXT_CHANGE")).isTrue()
+        Log.d("----> UITest", "----> validateTypeTextOnEditText - Events: [$events]")
+        assertThat(events.contains("\"TEXT_CHANGE\"")).isTrue()
     }
 
     /**
@@ -176,11 +306,14 @@ class NeuroIdUITest {
     @Test
     fun validateClickControlViews() {
         val eventsList = listOf(
-            "RADIO_CHANGE",
-            "CHECKBOX_CHANGE"
+            "\"RADIO_CHANGE\"",
+            "\"CHECKBOX_CHANGE\""
         )
 
-        launchActivity<NIDOnlyOneFragActivity>()
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+
+        onView(withId(R.id.button_show_activity_one_fragment))
+            .perform(click())
         Thread.sleep(500)
 
         onView(withId(R.id.radioButton_one))
@@ -192,7 +325,7 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateClickControlViews - Events: [$events]")
+        Log.d("----> UITest", "----> validateClickControlViews - Events: [$events]")
         assertThat(eventsList.all { events.contains(it) }).isTrue()
     }
 
@@ -202,7 +335,9 @@ class NeuroIdUITest {
     @Test
     fun validateComboBoxSelectItem() {
 
-        launchActivity<NIDSomeFragmentsActivity>()
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_show_activity_fragments))
+            .perform(click())
         Thread.sleep(500)
 
         onView(withId(R.id.spinner_example))
@@ -212,22 +347,22 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateComboBoxSelectItem - Events: [$events]")
-        assertThat(events.contains("SELECT_CHANGE")).isTrue()
+        Log.d("----> UITest", "----> validateComboBoxSelectItem - Events: [$events]")
+        assertThat(events.contains("\"SELECT_CHANGE\"")).isTrue()
     }
 
     /**
      * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
      */
-    @Test
+    /*@Test
     fun validateUserIsInactive() {
 
         Thread.sleep(31000) // +1 second to wait write data
 
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
-        Log.d("----> UITest", "validateUserIsInactive - Events: [$events]")
+        Log.d("----> UITest", "----> validateUserIsInactive - Events: [$events]")
         assertThat(events.contains("USER_INACTIVE")).isTrue()
-    }
+    }*/
 
     /**
      * Validate the sending of data to the server correctly, if the return code of the server is
@@ -236,6 +371,7 @@ class NeuroIdUITest {
     @ExperimentalCoroutinesApi
     @Test
     fun validateSendDataToService() = runBlockingTest {
+        NeuroID.getInstance().start()
         //Add some events:
         onView(withId(R.id.editText_normal_field))
             .perform(typeText("Some text"))
@@ -246,6 +382,23 @@ class NeuroIdUITest {
         CoroutineScope(Dispatchers.IO).launch {
             val typeResponse = NIDServiceTracker.sendEventToServer("key_live_vtotrandom_form_mobilesandbox", context)
             assertThat(typeResponse == NIDServiceTracker.NID_OK_SERVICE).isTrue()
+        }
+    }
+
+    fun setValue(value: Int): ViewAction {
+        return object : ViewAction {
+            override fun getConstraints(): org.hamcrest.Matcher<View> {
+                return ViewMatchers.isAssignableFrom(SeekBar::class.java)
+            }
+
+            override fun getDescription(): String {
+                return "Set SeekBar value to $value"
+            }
+
+            override fun perform(uiController: UiController?, view: View) {
+                val seekBar = view as SeekBar
+                seekBar.progress = value
+            }
         }
     }
 }

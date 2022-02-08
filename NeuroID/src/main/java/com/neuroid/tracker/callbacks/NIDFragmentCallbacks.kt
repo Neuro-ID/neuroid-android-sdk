@@ -2,16 +2,14 @@ package com.neuroid.tracker.callbacks
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.neuroid.tracker.events.USER_INACTIVE
-import com.neuroid.tracker.events.WINDOW_BLUR
-import com.neuroid.tracker.events.WINDOW_LOAD
-import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     private val nameListExclude = listOf(
@@ -23,12 +21,14 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
 
         if (!isExcludeName) {
+            NIDServiceTracker.screenName = f::class.java.name
+
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_LOAD,
                     et = "FRAGMENT",
                     ts = System.currentTimeMillis()).getOwnJson())
-            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentAttached")
+            NIDLog.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentAttached")
         }
     }
 
@@ -50,7 +50,16 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        // No operation
+        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
+
+        if (!isExcludeName) {
+            getDataStoreInstance()
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_FOCUS,
+                    et = "FRAGMENT",
+                    ts = System.currentTimeMillis()).getOwnJson())
+            NIDLog.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentAttached")
+        }
     }
 
     override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
@@ -66,7 +75,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     et = "FRAGMENT",
                     ts = System.currentTimeMillis()
                 ).getOwnJson())
-            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
+            NIDLog.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
         }
     }
 
@@ -88,7 +97,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     et = "FRAGMENT",
                     ts = System.currentTimeMillis()
                 ).getOwnJson())
-            Log.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
+            NIDLog.d("NeuroId", "Fragment:${f::class.java.name} is onFragmentDetached")
         }
     }
 }

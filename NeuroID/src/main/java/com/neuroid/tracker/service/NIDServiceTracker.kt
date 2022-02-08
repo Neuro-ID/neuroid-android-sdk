@@ -1,10 +1,10 @@
 package com.neuroid.tracker.service
 
 import android.content.Context
-import android.util.Log
 import com.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -14,6 +14,9 @@ import java.net.URLEncoder
 
 object NIDServiceTracker {
 
+    @get:Synchronized @set:Synchronized
+    var screenName = ""
+
     fun sendEventToServer(key: String, context: Context): Int {
         val listEvents = getDataStoreInstance().getAllEvents()
 
@@ -21,9 +24,10 @@ object NIDServiceTracker {
             val strUrl = if (BuildConfig.DEBUG) {
                 "https://api.usw2-dev1.nidops.net/v3/c"
             } else {
-                "https://api.usw2-dev1.nidops.net/v3/c"
+                "https://api.neuro-id.com/v3/c"
             }
 
+            NIDLog.d("NeuroID", "Url: $strUrl")
             val url = URL(strUrl)
             val conn:HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
@@ -35,6 +39,8 @@ object NIDServiceTracker {
             conn.setRequestProperty("Authorization", "Basic $key")
 
             val listJson = "[${listEvents.joinToString(",")}]"
+                .replace("\"url\":\"\"","\"url\":\"$screenName\"")
+
             val data = getContentForm(context, listJson.encodeToBase64(), key)
 
             try {
@@ -45,18 +51,19 @@ object NIDServiceTracker {
                 writer.close()
                 os.close()
 
-                Log.d("NeuroId", "Events: $listJson")
+                NIDLog.d("NeuroID", "Events: $listJson")
                 val code = conn.responseCode
                 val message = conn.responseMessage
 
                 return if (code in 200..299) {
+                    NIDLog.d("NeuroID", "Http response code: $code")
                     NID_OK_SERVICE
                 } else {
-                    Log.d("NeuroId", "Error service: $message")
+                    NIDLog.e("NeuroID", "Error service: $message")
                     NID_ERROR_SERVICE
                 }
             } catch (ex: Exception) {
-                Log.d("NeuroId", "An error has occurred: ${ex.message}")
+                NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
                 return NID_ERROR_SYSTEM
             } finally {
                 conn.disconnect()
@@ -79,14 +86,14 @@ object NIDServiceTracker {
             "uid" to sharedDefaults.getUserId(),
             "pid" to sharedDefaults.getPageId(),
             "iid" to sharedDefaults.getIntermediateId(),
-            "url" to "null",
+            "url" to screenName,
             "jsv" to sharedDefaults.getSDKVersion(),
             "events" to events
         )
 
-        Log.d("NeuroId", "---- Params Form ----")
+        NIDLog.d("NeuroId", "---- Params Form ----")
         val dataForm = hashMapParams.map {
-            Log.d("NeuroId", "${it.key}: ${it.value}")
+            NIDLog.d("NeuroId", "${it.key}: ${it.value}")
             "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
         }.joinToString("&")
 

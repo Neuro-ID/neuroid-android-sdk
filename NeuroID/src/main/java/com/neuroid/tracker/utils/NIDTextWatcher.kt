@@ -14,25 +14,29 @@ class NIDTextWatcher(
     }
 
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        val ts = System.currentTimeMillis()
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = KEY_UP,
-                    ts = System.currentTimeMillis(),
-                    tgs = hashMapOf(
+                    ts = ts,
+                    tg = hashMapOf(
                         "tgs" to idName,
                         "etn" to INPUT,
                         "et" to "text"
                     )
                 ).getOwnJson()
             )
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
-                    type = TEXT_CHANGE,
+                    type = INPUT,
                     ts = System.currentTimeMillis(),
-                    tgs = hashMapOf(
-                        "tgs" to idName
+                    tg = hashMapOf(
+                        "tgs" to idName,
+                        "etn" to INPUT,
+                        "et" to "text"
                     )
                 ).getOwnJson()
             )

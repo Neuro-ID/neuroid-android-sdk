@@ -4,6 +4,7 @@
 
     <string name="nid_app_name">Neuro ID Example</string>
     <string name="nid_main_activity_title">Main Activity</string>
+    <string name="nid_main_button_show_activity_non_automatic_events">Show Non-automatic events</string>
     <string name="nid_main_button_show_activity_one_fragment">Show Activity with one fragment</string>
     <string name="nid_main_button_show_activity_fragments">Show Activity with fragments</string>
     <string name="nid_editText_normal_hint">Normal Input</string>
@@ -40,4 +41,10 @@
         <item>Item five</item>
     </string-array>
 
+    <string name="nid_custom_events_title_activity">Non-automatic events</string>
+    <string name="nid_form_submit_custom_events_activity">Event form submit</string>
+    <string name="nid_form_submit_success_custom_events_activity">Event form submit success</string>
+    <string name="nid_form_submit_failure_custom_events_activity">Event form submit failure</string>
+    <string name="nid_form_custom_tag_events_activity">Event custom</string>
+    <string name="nid_custom_events_saved_event_activity">Event saved</string>
 </resources>
