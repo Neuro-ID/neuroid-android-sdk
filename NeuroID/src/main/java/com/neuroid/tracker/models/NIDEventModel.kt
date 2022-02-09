@@ -49,9 +49,9 @@ data class NIDEventModel(
                 it.forEach { (key, value) ->
                     childJson.put(key, value)
                 }
-                jsonObject.put("tgs", childJson)
+                jsonObject.put("tg", childJson)
             }
-            tgs?.let { jsonObject.put("tg", it) }
+            tgs?.let { jsonObject.put("tgs", it) }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             en?.let { jsonObject.put("en", it) }
