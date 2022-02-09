@@ -36,7 +36,7 @@ class MyApplication: MultiDexApplication() {
 ```
 
 ## Sample application
-If you want to see the demo of this proyect deployed, just launch the applicaion "NeuroIdAndroidExample"
+If you want to see the demo of this proyect deployed, just launch the application "NeuroIdAndroidExample"
 
 ## License
 The Neuro-ID Mobile SDK is provided under an [MIT License](LICENSE).
