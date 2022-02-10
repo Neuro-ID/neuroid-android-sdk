@@ -3,7 +3,7 @@ package com.sample.neuroid.us
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
 
-class NidApplication: MultiDexApplication() {
+class MyApplicationDemo: MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
 

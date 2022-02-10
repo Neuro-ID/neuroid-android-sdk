@@ -8,17 +8,17 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
-fun identifyAllViews(viewParent: ViewGroup) {
+fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
     viewParent.forEach {
-        registerComponent(it)
+        registerComponent(it, nameScreen)
         registerListeners(it)
         if (it is ViewGroup) {
-            identifyAllViews(it)
+            identifyAllViews(it, nameScreen)
         }
     }
 }
 
-private fun registerComponent(view: View) {
+private fun registerComponent(view: View, nameScreen: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
@@ -54,13 +54,13 @@ private fun registerComponent(view: View) {
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
-                    tg = hashMapOf(
-                        "tgs" to idName,
-                        "etn" to INPUT,
-                        "et" to et
-                    ),
+                    et = view.javaClass.simpleName,
+                    eid = idName,
+                    tgs = idName,
+                    en = idName,
                     v = "S~C~~0",
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    url = nameScreen
                 ).getOwnJson())
     }
 }
