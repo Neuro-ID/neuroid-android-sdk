@@ -12,7 +12,9 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 
-class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
+class NIDFocusChangeListener(
+    private val screenName: String
+): ViewTreeObserver.OnGlobalFocusChangeListener {
     private var lastEditText: EditText? = null
 
     override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
@@ -30,7 +32,8 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                                 "tgs" to idName,
                                 "etn" to INPUT,
                                 "et" to "text"
-                            )
+                            ),
+                            url = screenName
                         ).getOwnJson()
                     )
 
@@ -56,7 +59,8 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                                     "et" to "text"
                                 ),
                                 v = "S~C~~${lastEditText?.text.toString().length}",
-                                ts = ts
+                                ts = ts,
+                                url = screenName
                             ).getOwnJson()
                         )
 
@@ -64,8 +68,11 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                         .saveEvent(
                             NIDEventModel(
                                 type = BLUR,
-                                tgs = lastEditText?.getIdOrTag(),
-                                ts = ts
+                                tg = hashMapOf(
+                                    "tgs" to lastEditText?.getIdOrTag().orEmpty()
+                                ),
+                                ts = ts,
+                                url = screenName
                             ).getOwnJson()
                         )
                     null

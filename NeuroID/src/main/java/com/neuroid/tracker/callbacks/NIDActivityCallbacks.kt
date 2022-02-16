@@ -54,7 +54,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
-                et = "ACTIVITY",
+                url = activity::class.java.simpleName,
                 ts = System.currentTimeMillis()
             ).getOwnJson())
         NIDLog.d("NeuroId", "Activity:${activity::class.java.name} is onActivityStarted")
@@ -65,7 +65,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                et = "ACTIVITY",
+                url = activity::class.java.simpleName,
                 ts = System.currentTimeMillis()
             ).getOwnJson())
         sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
@@ -75,7 +75,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
-                et = "ACTIVITY",
+                url = activity::class.java.simpleName,
                 ts = System.currentTimeMillis()
             ).getOwnJson())
         NIDLog.d("NeuroId", "Activity:${activity::class.java.name} is onActivityPaused")
@@ -94,7 +94,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
-                et = "ACTIVITY",
+                url = activity::class.java.simpleName,
                 ts = System.currentTimeMillis()
             ).getOwnJson())
         unRegisterListenerFromActivity(activity)
