@@ -45,6 +45,7 @@
                     android:text="@string/nid_fragment_one_spinner" />
 
                 <Spinner
+                    style="@style/Widget.AppCompat.Spinner.Underlined"
                     android:id="@+id/spinner_example"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
@@ -52,6 +53,38 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
                     android:entries="@array/nid_array_spinner" />
+
+                <TextView
+                    style="@style/NidTextViewSubTitleBlue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginStart="20dp"
+                    android:text="@string/nid_fragment_one_autocomplete_box" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:id="@+id/textInputLayout_color"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteText_color"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="0dp"
+                        android:paddingTop="22dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
+                        android:hint="@string/nid_fragment_one_autocomplete_hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:ignore="LabelFor" />
+
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>

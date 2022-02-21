@@ -2,10 +2,19 @@
 Neuro-ID's Mobile SDK makes it simple to embed behavioral analytics inside your mobile app. With a few lines of code, you can connect your app with the Neuro-ID platform and make informed decisions about your users.
 
 ## Getting Started
-### Local Settings
-1. Add .aar file in the libs folder
 
-2. In the application gradle add the dependencies:
+### Requirements
+* minSDK 21 Supported
+
+### Mobile SDK and App Demo
+In this project you will find the source code of the library, and there is also a demo application in which the NeuroID library is already integrated.
+
+### Install the library
+1. Copy the .aar file found in the libs folder of the demo application to the libs folder of your project. There are two files:
+* libs/neuro-id-android-v1.0-debug.aar: Debug and QA Environment
+* libs/neuro-id-android-v1.0-release.aar: Release and Production Environment
+
+2. In your application gradle add the dependencies:
 * QA Environment:
 ```gradle
 implementation files('libs/neuro-id-android-v1.0-debug.aar')
@@ -26,17 +35,56 @@ class MyApplication: MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
 
-        val neuroId = NeuroID.Builder(this, "key_live_vtotrandom_form_mobilesandbox")
-            .setTimeInSeconds(5)
+        val neuroId = NeuroID.Builder(
+            this, 
+            "key_license"
+        )
             .build()
         NeuroID.setNeuroIdInstance(neuroId) // Automatically save the events
         NeuroID.getInstance().start() // Start to send all events saved to server
     }
 }
 ```
+Note: If it doesn't exist, you must create it and add it in the AndroidManifest.xml
+
+## Stopping the SDK
+When Neuro-ID will no longer be needed for tracking call the stop() method below. This will completely prevent any subsequent tracking within the application by Neuro-ID.
+```kotlin
+NeuroID.getInstance().stop()
+```
+
+## Form Submit
+Whenever a user completes a form, the following methods need to be called in order to capture the conclusion of the session.
+
+### formSubmit
+This should be called whenever a form is submitted.
+```kotlin
+NeuroID.getInstance().formSubmit()
+```
+
+### formSubmitFailure
+This should be called whenever a form is rejected for any reason.
+```kotlin
+NeuroID.getInstance().formSubmitFailure()
+```
+
+### formSubmitSuccess
+If the form submit is successful, make sure to call the following in addition to formSubmit()
+```kotlin
+NeuroID.getInstance().formSubmitSuccess()
+```
+
+## Custom logging
+In the event there is any interaction that needs to be logged manually, the following functions can be used
+```kotlin
+NeuroID.getInstance().captureEvent(
+    eventName = "CUSTOM_EVENT_EXAMPLE_NAME",
+    tgs = "buttonSendCustomEvent"
+)
+```
 
 ## Sample application
-If you want to see the demo of this proyect deployed, just launch the application "NeuroIdAndroidExample"
+If you want to see the demo of this project deployed, just launch the application "NeuroIdAndroidExample"
 
 ## License
 The Neuro-ID Mobile SDK is provided under an [MIT License](LICENSE).

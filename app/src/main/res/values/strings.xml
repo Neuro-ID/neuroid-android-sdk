@@ -30,8 +30,6 @@
 
     <string name="nid_fragment_one_title">Fragment one</string>
     <string name="nid_fragment_one_custom_event">Send custom event</string>
-    <string name="nid_fragment_two_title">Fragment two</string>
-    <string name="nid_fragment_three_title">Fragment three</string>
     <string name="nid_fragment_one_spinner">\u2022 Spinner</string>
     <string-array name="nid_array_spinner">
         <item>Item one</item>
@@ -40,6 +38,22 @@
         <item>Item four</item>
         <item>Item five</item>
     </string-array>
+    <string name="nid_fragment_one_autocomplete_box">\u2022 Autocomplete Text</string>
+    <string name="nid_fragment_one_autocomplete_hint">Color</string>
+    <string-array name="nid_array_colors">
+        <item>Yellow</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Red</item>
+        <item>Orange</item>
+        <item>Brown</item>
+    </string-array>
+    <string name="nid_fragment_one_edit_date">Date</string>
+    <string name="nid_fragment_one_button_date">Pick Date</string>
+    <string name="nid_fragment_one_edit_time">Time</string>
+    <string name="nid_fragment_one_button_time">Pick Time</string>
+    <string name="nid_fragment_two_title">Fragment two</string>
+    <string name="nid_fragment_three_title">Fragment three</string>
 
     <string name="nid_custom_events_title_activity">Non-automatic events</string>
     <string name="nid_form_submit_custom_events_activity">Event form submit</string>

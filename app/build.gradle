@@ -58,8 +58,8 @@ dependencies {
         exclude group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-debug"
     }
     androidTestImplementation 'androidx.arch.core:core-testing:2.1.0'
-    implementation "androidx.navigation:navigation-fragment-ktx:2.4.0"
-    implementation "androidx.navigation:navigation-ui-ktx:2.4.0"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.4.1"
+    implementation "androidx.navigation:navigation-ui-ktx:2.4.1"
     implementation "androidx.fragment:fragment-ktx:1.4.1"
 
     implementation files('libs/neuro-id-android-v1.0-debug.aar') // QA
