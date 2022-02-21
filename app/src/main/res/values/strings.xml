@@ -38,6 +38,16 @@
         <item>Item four</item>
         <item>Item five</item>
     </string-array>
+    <string name="nid_fragment_one_autocomplete_box">\u2022 Autocomplete Text</string>
+    <string name="nid_fragment_one_autocomplete_hint">Color</string>
+    <string-array name="nid_array_colors">
+        <item>Yellow</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Red</item>
+        <item>Orange</item>
+        <item>Brown</item>
+    </string-array>
     <string name="nid_fragment_one_edit_date">Date</string>
     <string name="nid_fragment_one_button_date">Pick Date</string>
     <string name="nid_fragment_one_edit_time">Time</string>

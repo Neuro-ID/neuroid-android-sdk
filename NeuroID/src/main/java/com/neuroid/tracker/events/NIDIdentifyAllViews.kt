@@ -66,21 +66,49 @@ private fun registerComponent(view: View, nameScreen: String) {
 }
 
 private fun registerListeners(view: View) {
+    val idName = view.getIdOrTag()
+
     when (view) {
         is Spinner -> {
+            val lastListener = view.onItemSelectedListener
+            view.onItemSelectedListener = null
             view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapter: AdapterView<*>?, view: View?, position: Int, p3: Long) {
+                override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
+                    lastListener?.onItemSelected(adapter, viewList, position, p3)
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
+                                tg = hashMapOf(
+                                    "tgs" to idName,
+                                    "etn" to "INPUT",
+                                    "et" to "text"
+                                ),
                                 ts = System.currentTimeMillis()
                             ).getOwnJson())
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
-                    //No Op
+                    lastListener?.onNothingSelected(p0)
                 }
+            }
+        }
+        is AutoCompleteTextView -> {
+            val lastListener = view.onItemClickListener
+            view.onItemClickListener = null
+            view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+                lastListener.onItemClick(adapter, viewList, position, p3)
+                getDataStoreInstance()
+                    .saveEvent(
+                        NIDEventModel(
+                            type = SELECT_CHANGE,
+                            tg = hashMapOf(
+                                "tgs" to idName,
+                                "etn" to "INPUT",
+                                "et" to "text"
+                            ),
+                            ts = System.currentTimeMillis()
+                        ).getOwnJson())
             }
         }
     }

@@ -5,7 +5,9 @@ import android.os.Build
 import java.util.*
 import kotlin.random.Random
 
-class NIDSharedPrefsDefaults(val context: Context) {
+class NIDSharedPrefsDefaults(
+    context: Context
+) {
     private var sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
     private var sequenceId = 1
 
@@ -38,6 +40,22 @@ class NIDSharedPrefsDefaults(val context: Context) {
 
             return sid
         }
+    }
+
+    fun getNewSessionID(): String {
+        var sid = ""
+
+        repeat((1..16).count()) {
+            sid += "${(0..9).random()}"
+        }
+
+        sharedPref?.let {
+            with(it.edit()) {
+                putString(NID_SID, sid)
+            }
+        }
+
+        return sid
     }
 
     private fun isSessionExpired(): Boolean {

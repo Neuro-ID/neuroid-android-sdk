@@ -21,8 +21,7 @@ import kotlinx.coroutines.*
 
 class NeuroID private constructor(
     private var application: Application?,
-    private var clientKey: String,
-    private val timeInSeconds: Int
+    private var clientKey: String
 ) {
     private var firstTime = true
 
@@ -42,12 +41,10 @@ class NeuroID private constructor(
 
     data class Builder(
         var application: Application? = null,
-        var clientKey: String = "",
-        var timeInSeconds: Int = 1 //Define default
+        var clientKey: String = ""
     ) {
-        fun setTimeInSeconds(timeInSeconds: Int) = apply { this.timeInSeconds = timeInSeconds }
         fun build() =
-            NeuroID(application, clientKey, timeInSeconds)
+            NeuroID(application, clientKey)
     }
 
     companion object {
@@ -118,7 +115,7 @@ class NeuroID private constructor(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
-                    sid = sharedDefaults.getSessionID(),
+                    sid = sharedDefaults.getNewSessionID(),
                     lsid = "null",
                     cid = sharedDefaults.getClientId(),
                     did = sharedDefaults.getDeviceId(),
@@ -143,7 +140,7 @@ class NeuroID private constructor(
     }
 
     private fun startLoopCaptureEvent(): Job {
-        val timeMills: Long = if(timeInSeconds < 1) { 1000 } else { timeInSeconds.toLong() * 1000 }
+        val timeMills = 5000L
 
         return CoroutineScope(Dispatchers.Default).launch {
             while (true) {

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.SeekBar
+import android.widget.Spinner
 import androidx.core.view.children
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -68,10 +69,10 @@ class NIDTouchEventManager(
             (x >= location[0] && x <= location[0] + it.width &&  y >= location[1] && y <= location[1] + it.height)
         }
 
-        return if (view is ViewGroup) {
-            getView(view, x, y)
-        } else {
-            view
+        return when(view) {
+            is Spinner -> view
+            is ViewGroup -> getView(view, x, y)
+            else -> view
         }
     }
 
@@ -91,6 +92,9 @@ class NIDTouchEventManager(
                     }
                     is SeekBar -> {
                         type = SLIDER_CHANGE
+                    }
+                    is Spinner -> {
+                        println("------------------------------> Es un spinner")
                     }
                     else -> {
                         // Null
