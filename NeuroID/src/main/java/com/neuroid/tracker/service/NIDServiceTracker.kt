@@ -1,8 +1,10 @@
 package com.neuroid.tracker.service
 
-import android.content.Context
+import android.app.Application
 import com.neuroid.tracker.BuildConfig
+import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.extensions.encodeToBase64
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import java.io.BufferedWriter
@@ -17,7 +19,7 @@ object NIDServiceTracker {
     @get:Synchronized @set:Synchronized
     var screenName = ""
 
-    fun sendEventToServer(key: String, context: Context): Int {
+    fun sendEventToServer(key: String, context: Application): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents()
 
         if (listEvents.isEmpty().not()) {
@@ -42,6 +44,7 @@ object NIDServiceTracker {
                 .replace("\"url\":\"\"","\"url\":\"$screenName\"")
 
             val data = getContentForm(context, listJson.encodeToBase64(), key)
+            val stopLoopService = listEvents.last().contains(USER_INACTIVE)
 
             try {
                 val os: OutputStream = conn.outputStream
@@ -57,23 +60,23 @@ object NIDServiceTracker {
 
                 return if (code in 200..299) {
                     NIDLog.d("NeuroID", "Http response code: $code")
-                    NID_OK_SERVICE
+                    Pair(NID_OK_SERVICE, stopLoopService)
                 } else {
                     NIDLog.e("NeuroID", "Error service: $message")
-                    NID_ERROR_SERVICE
+                    Pair(NID_ERROR_SERVICE, stopLoopService)
                 }
             } catch (ex: Exception) {
                 NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
-                return NID_ERROR_SYSTEM
+                return Pair(NID_ERROR_SERVICE, stopLoopService)
             } finally {
                 conn.disconnect()
             }
         } else {
-            return NID_NO_EVENTS_ALLOWED
+            return Pair(NID_ERROR_SERVICE, false)
         }
     }
 
-    private fun getContentForm(context: Context, events: String, key: String): String {
+    private fun getContentForm(context: Application, events: String, key: String): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
         val hashMapParams = hashMapOf(
             "key" to key,
@@ -100,8 +103,6 @@ object NIDServiceTracker {
         return dataForm
     }
 
-    const val NID_ERROR_SERVICE = 0x01
-    const val NID_ERROR_SYSTEM = 0x02
-    const val NID_NO_EVENTS_ALLOWED = 0x03
-    const val NID_OK_SERVICE = 0x04
+    const val NID_OK_SERVICE = 0x01
+    const val NID_ERROR_SERVICE = 0x02
 }

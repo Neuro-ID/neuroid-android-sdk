@@ -1,6 +1,5 @@
 package com.neuroid.tracker.callbacks
 
-import android.content.Context
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
@@ -9,7 +8,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDContextMenuCallbacks(
-    val context: Context,
     actionCallBack: ActionMode.Callback?
 ): ActionMode.Callback {
     private val wrapper = actionCallBack
@@ -49,7 +47,7 @@ class NIDContextMenuCallbacks(
                     NIDEventModel(
                         type = type,
                         ts = System.currentTimeMillis(),
-                    ).getOwnJson()
+                    )
                 )
         }
     }

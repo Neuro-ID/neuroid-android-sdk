@@ -61,7 +61,7 @@ private fun registerComponent(view: View, nameScreen: String) {
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
                     url = nameScreen
-                ).getOwnJson())
+                ))
     }
 }
 
@@ -85,7 +85,7 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis()
-                            ).getOwnJson())
+                            ))
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -108,7 +108,7 @@ private fun registerListeners(view: View) {
                                 "et" to "text"
                             ),
                             ts = System.currentTimeMillis()
-                        ).getOwnJson())
+                        ))
             }
         }
     }

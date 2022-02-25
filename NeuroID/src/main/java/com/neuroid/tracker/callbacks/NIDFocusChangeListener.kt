@@ -34,7 +34,7 @@ class NIDFocusChangeListener(
                                 "et" to "text"
                             ),
                             url = screenName
-                        ).getOwnJson()
+                        )
                     )
 
                 val textWatcher = NIDTextWatcher(idName)
@@ -43,7 +43,7 @@ class NIDFocusChangeListener(
 
                 val actionCallback = newView.customSelectionActionModeCallback
                 if (actionCallback !is NIDContextMenuCallbacks) {
-                    newView.customSelectionActionModeCallback = NIDContextMenuCallbacks(newView.context, actionCallback)
+                    newView.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
                 }
 
                 lastEditText = if (lastEditText == null) {
@@ -61,7 +61,7 @@ class NIDFocusChangeListener(
                                 v = "S~C~~${lastEditText?.text.toString().length}",
                                 ts = ts,
                                 url = screenName
-                            ).getOwnJson()
+                            )
                         )
 
                     getDataStoreInstance()
@@ -73,7 +73,7 @@ class NIDFocusChangeListener(
                                 ),
                                 ts = ts,
                                 url = screenName
-                            ).getOwnJson()
+                            )
                         )
                     null
                 }

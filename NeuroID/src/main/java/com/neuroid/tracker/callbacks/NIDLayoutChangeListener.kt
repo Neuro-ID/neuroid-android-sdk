@@ -28,7 +28,7 @@ class NIDLayoutChangeListener(
                         w = currentWidth,
                         h = currentHeight,
                         ts = System.currentTimeMillis()
-                    ).getOwnJson()
+                    )
                 )
         }
     }

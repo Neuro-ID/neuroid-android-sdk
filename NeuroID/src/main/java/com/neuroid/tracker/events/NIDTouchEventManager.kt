@@ -33,7 +33,7 @@ class NIDTouchEventManager(
                                 x = it.x,
                                 y = it.y,
                                 ts = timeMills
-                            ).getOwnJson()
+                            )
                         )
                 }
                 ACTION_MOVE -> {
@@ -44,7 +44,7 @@ class NIDTouchEventManager(
                                 x = it.x,
                                 y = it.y,
                                 ts = timeMills
-                            ).getOwnJson()
+                            )
                         )
                 }
                 ACTION_UP -> {
@@ -55,7 +55,7 @@ class NIDTouchEventManager(
                                 x = it.x,
                                 y = it.y,
                                 ts = timeMills
-                            ).getOwnJson()
+                            )
                         )
                 }
             }
@@ -113,7 +113,7 @@ class NIDTouchEventManager(
                                     "etn" to INPUT
                                 ),
                                 ts = timeMills
-                            ).getOwnJson()
+                            )
                         )
                 }
             } else {
@@ -128,7 +128,7 @@ class NIDTouchEventManager(
                                 ),
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis()
-                            ).getOwnJson())
+                            ))
                 }
             }
             lastView = null

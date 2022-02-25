@@ -16,7 +16,7 @@ object NIDTimerActive {
                 .saveEvent(NIDEventModel(
                     type = USER_INACTIVE,
                     ts = System.currentTimeMillis()
-                ).getOwnJson())
+                ))
         }
 
     }
