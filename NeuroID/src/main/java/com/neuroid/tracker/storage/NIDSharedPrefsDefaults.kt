@@ -1,12 +1,13 @@
-package com.neuroid.tracker.service
+package com.neuroid.tracker.storage
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import java.util.*
 import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(
-    context: Context
+    context: Application
 ) {
     private var sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
     private var sequenceId = 1
@@ -102,7 +103,16 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getUserId() = "null" //Always null
+    fun setUserId(userId: String) {
+        sharedPref?.let {
+            with(it.edit()) {
+                putString(NID_UID, userId)
+                apply()
+            }
+        }
+    }
+
+    fun getUserId() = sharedPref?.getString(NID_DID, "null") ?: "null"
 
     fun getDeviceId(): String {
         var deviceId = sharedPref?.getString(NID_DID, "").orEmpty()
@@ -167,6 +177,7 @@ class NIDSharedPrefsDefaults(
 
     companion object {
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
+        private const val NID_UID = "NID_UID_KEY"
         private const val NID_SID = "NID_SID_KEY"
         private const val NID_CID = "NID_CID_KEY"
         private const val NID_DID = "NID_DID_KEY"

@@ -2,22 +2,13 @@ package com.neuroid.tracker
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
-import com.neuroid.tracker.events.CREATE_SESSION
-import com.neuroid.tracker.events.FORM_SUBMIT
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.service.NIDServiceTracker.NID_ERROR_SERVICE
-import com.neuroid.tracker.service.NIDServiceTracker.NID_ERROR_SYSTEM
-import com.neuroid.tracker.service.NIDServiceTracker.NID_NO_EVENTS_ALLOWED
-import com.neuroid.tracker.service.NIDServiceTracker.NID_OK_SERVICE
-import com.neuroid.tracker.service.NIDSharedPrefsDefaults
+import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
-import kotlinx.coroutines.*
 
 class NeuroID private constructor(
     private var application: Application?,
@@ -37,8 +28,6 @@ class NeuroID private constructor(
         }
     }
 
-    private var jobCaptureEvents: Job? = null
-
     data class Builder(
         var application: Application? = null,
         var clientKey: String = ""
@@ -57,6 +46,19 @@ class NeuroID private constructor(
         fun getInstance() = singleton
     }
 
+    fun setUserID(userId: String) {
+        application?.let {
+            NIDSharedPrefsDefaults(it).setUserId(userId)
+        }
+        getDataStoreInstance().saveEvent(
+            NIDEventModel(
+                type = SET_USER_ID,
+                uid = userId,
+                ts = System.currentTimeMillis()
+            )
+        )
+    }
+
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             getDataStoreInstance().saveEvent(
@@ -64,7 +66,7 @@ class NeuroID private constructor(
                     type = eventName,
                     tgs = tgs,
                     ts = System.currentTimeMillis()
-                ).getOwnJson()
+                )
             )
         }
     }
@@ -74,7 +76,7 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis()
-            ).getOwnJson()
+            )
         )
     }
 
@@ -83,7 +85,7 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
                 ts = System.currentTimeMillis()
-            ).getOwnJson()
+            )
         )
     }
 
@@ -92,23 +94,24 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
                 ts = System.currentTimeMillis()
-            ).getOwnJson()
+            )
         )
     }
 
     fun start() {
         getDataStoreInstance().getAllEvents() // Clean Events ?
         createSession()
-        jobCaptureEvents = startLoopCaptureEvent()
+        application?.let {
+            NIDJobServiceManager.startJob(it, clientKey)
+        }
     }
 
     fun stop() {
-        jobCaptureEvents?.cancel()
-        jobCaptureEvents = null
+        NIDJobServiceManager.stopJob()
     }
 
     private fun createSession() {
-        application?.applicationContext?.let {
+        application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
 
             getDataStoreInstance().saveEvent(
@@ -134,29 +137,8 @@ class NeuroID private constructor(
                     ns = "nid",
                     jsv = "null",
                     ts = System.currentTimeMillis()
-                ).getOwnJson()
+                )
             )
-        }
-    }
-
-    private fun startLoopCaptureEvent(): Job {
-        val timeMills = 5000L
-
-        return CoroutineScope(Dispatchers.Default).launch {
-            while (true) {
-                delay(timeMills)
-
-                application?.applicationContext?.let { context ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        when(NIDServiceTracker.sendEventToServer(clientKey, context)) {
-                            NID_ERROR_SERVICE -> NIDLog.e("NeuroId", "Error service")
-                            NID_ERROR_SYSTEM -> NIDLog.e("NeuroId", "Error system")
-                            NID_NO_EVENTS_ALLOWED -> NIDLog.d("NeuroId", "No events allowed")
-                            NID_OK_SERVICE -> NIDLog.d("NeuroId", "OK service")
-                        }
-                    }
-                }
-            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.neuroid.tracker.events
 
 const val CREATE_SESSION = "CREATE_SESSION"
+const val SET_USER_ID = "SET_USER_ID"
 const val HEARTBEAT = "HEARTBEAT"
 const val ERROR = "ERROR"
 const val LOG = "LOG"

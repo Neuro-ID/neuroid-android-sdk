@@ -6,11 +6,13 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.events.WINDOW_BLUR
+import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.utils.NIDTimerActive
 import java.util.concurrent.Semaphore
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: String)
+    fun saveEvent(event: NIDEventModel)
     fun getAllEvents(): List<String>
 }
 
@@ -47,17 +49,24 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         .build()
 
     @Synchronized
-    override fun saveEvent(event: String) {
+    override fun saveEvent(event: NIDEventModel) {
+        val strEvent = event.getOwnJson()
+
+        if (NIDJobServiceManager.userActive.not()) {
+            NIDJobServiceManager.userActive = true
+            NIDJobServiceManager.restart()
+        }
+
         sharedLock.acquire()
-        if (!listNonActiveEvents.any { event.contains(it) }) {
+        if (!listNonActiveEvents.any { strEvent.contains(it) }) {
             NIDTimerActive.restartTimerActive()
         }
 
         val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
         val newStringEvents = if (lastEvents.isEmpty()) {
-            event
+            strEvent
         } else {
-            "$lastEvents,$event"
+            "$lastEvents,$strEvent"
         }
 
         sharedPref?.let {

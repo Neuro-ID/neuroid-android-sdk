@@ -25,7 +25,7 @@ class NIDTextWatcher(
                         "etn" to INPUT,
                         "et" to "text"
                     )
-                ).getOwnJson()
+                )
             )
 
         getDataStoreInstance()
@@ -38,7 +38,7 @@ class NIDTextWatcher(
                         "etn" to INPUT,
                         "et" to "text"
                     )
-                ).getOwnJson()
+                )
             )
     }
 
