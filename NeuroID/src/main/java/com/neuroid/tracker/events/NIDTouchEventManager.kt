@@ -93,6 +93,9 @@ class NIDTouchEventManager(
                     is SeekBar -> {
                         type = SLIDER_CHANGE
                     }
+                    is Spinner -> {
+                        println("------------------------------> Es un spinner")
+                    }
                     else -> {
                         // Null
                     }
