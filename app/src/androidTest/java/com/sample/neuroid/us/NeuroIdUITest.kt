@@ -1,8 +1,10 @@
 package com.sample.neuroid.us
 
+import android.app.Application
 import android.util.Log
 import android.view.View
 import android.widget.SeekBar
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
@@ -12,7 +14,8 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth.assertThat
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -77,6 +80,22 @@ class NeuroIdUITest {
         Log.d("----> UITest", "----> validateCreateSession - Events: [$events]")
 
         assertThat(events.contains("\"CREATE_SESSION\"")).isTrue()
+    }
+
+    /**
+     * Validate SET_USER_ID
+     */
+    @Test
+    fun validateSetUserId() {
+        NeuroID.getInstance().start()
+        NeuroID.getInstance().setUserID("UUID1234")
+        Thread.sleep(500)
+        NeuroID.getInstance().stop()
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateSetUserId - Events: [$events]")
+
+        assertThat(events.contains("\"SET_USER_ID\"")).isTrue()
     }
 
     /**
@@ -246,6 +265,22 @@ class NeuroIdUITest {
     }
 
     /**
+     * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
+     */
+    @Test
+    fun validateChangeScreenOrientation() {
+        val device = UiDevice.getInstance(getInstrumentation())
+
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        device.setOrientationRight()
+        Thread.sleep(500)
+
+        val events = getDataStoreInstance().getAllEvents().joinToString(",")
+        Log.d("----> UITest", "----> validateChangeScreenOrientation - Events: [$events]")
+        assertThat(events.contains("\"WINDOW_ORIENTATION_CHANGE\"")).isTrue()
+    }
+
+    /**
      * Validate FOCUS when the user click on editText
      */
     @Test
@@ -354,7 +389,7 @@ class NeuroIdUITest {
     /**
      * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
      */
-    /*@Test
+    @Test
     fun validateUserIsInactive() {
 
         Thread.sleep(31000) // +1 second to wait write data
@@ -362,7 +397,7 @@ class NeuroIdUITest {
         val events = getDataStoreInstance().getAllEvents().joinToString(",")
         Log.d("----> UITest", "----> validateUserIsInactive - Events: [$events]")
         assertThat(events.contains("USER_INACTIVE")).isTrue()
-    }*/
+    }
 
     /**
      * Validate the sending of data to the server correctly, if the return code of the server is
@@ -371,17 +406,19 @@ class NeuroIdUITest {
     @ExperimentalCoroutinesApi
     @Test
     fun validateSendDataToService() = runBlockingTest {
-        NeuroID.getInstance().start()
+        val application = ApplicationProvider.getApplicationContext<Application>()
         //Add some events:
         onView(withId(R.id.editText_normal_field))
             .perform(typeText("Some text"))
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
 
-        val context = InstrumentationRegistry.getInstrumentation().context
         CoroutineScope(Dispatchers.IO).launch {
-            val typeResponse = NIDServiceTracker.sendEventToServer("key_live_vtotrandom_form_mobilesandbox", context)
-            assertThat(typeResponse == NIDServiceTracker.NID_OK_SERVICE).isTrue()
+            val typeResponse = NIDServiceTracker.sendEventToServer(
+                "key_live_vtotrandom_form_mobilesandbox",
+                application
+            )
+            assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
         }
     }
 
