@@ -117,7 +117,7 @@ class NeuroIdUITest {
         val strEvents = getDataStoreInstance().getAllEvents()
         val events = strEvents.joinToString(",")
         val eventsRegister = strEvents.filter { it.contains("\"REGISTER_TARGET\"") }
-        NIDLog.d("----> UITest", "----> validateRegisterTargets - Events: [$eventsRegister]")
+        NIDLog.d("----> UITest", "----> validateRegisterTargets - Events: $eventsRegister")
 
         val numberOfInputs = events.splitToSequence("\"REGISTER_TARGET\"").count() - 1
         NIDLog.d("----> UITest", "----> numberOfInputs: $numberOfInputs")
@@ -197,7 +197,7 @@ class NeuroIdUITest {
                     it.contains("\"FORM_SUBMIT_FAILURE\"")  ||
                     it.contains("\"CUSTOM_EVENT\"")
         }
-        NIDLog.d("----> UITest", "----> validateNonAutomaticEvents - Events: [$eventsCustom]")
+        NIDLog.d("----> UITest", "----> validateNonAutomaticEvents - Events: $eventsCustom")
 
         assertThat(
                     events.contains("\"FORM_SUBMIT\"") &&
@@ -224,7 +224,7 @@ class NeuroIdUITest {
             it.contains("\"WINDOW_LOAD\"") ||
                     it.contains("\"WINDOW_FOCUS\"")
         }
-        NIDLog.d("----> UITest", "----> validateLifecycleStartAndResume - Events: [$eventsLifeCycle]")
+        NIDLog.d("----> UITest", "----> validateLifecycleStartAndResume - Events: $eventsLifeCycle")
 
         assertThat(statusList.all { events.contains(it) }).isTrue()
     }
@@ -246,7 +246,7 @@ class NeuroIdUITest {
             it.contains("\"WINDOW_BLUR\"") ||
                     it.contains("\"WINDOW_UNLOAD\"")
         }
-        NIDLog.d("----> UITest", "----> validateLifecyclePauseAndStop - Events: [$eventsLifeCycle]")
+        NIDLog.d("----> UITest", "----> validateLifecyclePauseAndStop - Events: $eventsLifeCycle")
 
         assertThat(statusList.all { events.contains(it) }).isTrue()
     }
@@ -272,7 +272,7 @@ class NeuroIdUITest {
             it.contains("\"TOUCH_START\"") ||
                     it.contains("\"TOUCH_END\"")
         }
-        NIDLog.d("----> UITest", "----> validateClickOnScreen - Events: [$eventsTouch]")
+        NIDLog.d("----> UITest", "----> validateClickOnScreen - Events: $eventsTouch")
         assertThat(eventsList.all { events.contains(it) }).isTrue()
     }
 
@@ -428,7 +428,7 @@ class NeuroIdUITest {
             it.contains("\"RADIO_CHANGE\"") ||
                     it.contains("\"CHECKBOX_CHANGE\"")
         }
-        NIDLog.d("----> UITest", "----> validateClickControlViews - Events: [$eventsControls]")
+        NIDLog.d("----> UITest", "----> validateClickControlViews - Events: $eventsControls")
         assertThat(eventsList.all { events.contains(it) }).isTrue()
     }
 
