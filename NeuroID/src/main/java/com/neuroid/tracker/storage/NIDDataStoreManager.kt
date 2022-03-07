@@ -66,7 +66,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         val newStringEvents = if (lastEvents.isEmpty()) {
             strEvent
         } else {
-            "$lastEvents,$strEvent"
+            "$lastEvents|$strEvent"
         }
 
         sharedPref?.let {
@@ -95,7 +95,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         return if (lastEvents.isEmpty()) {
             listOf()
         } else {
-            lastEvents.split(",")
+            lastEvents.split("|")
         }
     }
 }
