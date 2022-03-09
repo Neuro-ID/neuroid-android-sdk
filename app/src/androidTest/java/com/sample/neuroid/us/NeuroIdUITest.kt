@@ -78,12 +78,11 @@ class NeuroIdUITest {
         NeuroID.getInstance().stop()
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val events = strEvents.joinToString(",")
         val event = strEvents.firstOrNull { it.contains("\"CREATE_SESSION\"") }
 
-        NIDLog.d("----> UITest", "----> validateCreateSession - Event: [$event]")
+        NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
 
-        assertThat(events.contains("\"CREATE_SESSION\"")).isTrue()
+        assertThat(event).matches(NID_STRUCT_CREATE_SESSION)
     }
 
     /**
@@ -162,10 +161,10 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate FORM_SUBMIT, FORM_SUBMIT_SUCCESS and FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
+     * Validate FORM_SUBMIT on NIDCustomEventsActivity class
      */
     @Test
-    fun validateNonAutomaticEvents() {
+    fun validateFormSubmit() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -177,34 +176,88 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
+
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT\"") }.orEmpty()
+
+        NIDLog.d("----> UITest", "----> validateFormSubmit - Event: $event")
+
+        assertThat(event.contains("\"FORM_SUBMIT\"")).isTrue()
+    }
+
+    /**
+     * Validate FORM_SUBMIT_SUCCESS on NIDCustomEventsActivity class
+     */
+    @Test
+    fun validateFormSubmitSuccess() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        onView(withId(R.id.button_show_activity_no_automatic_events))
+            .perform(click())
+        Thread.sleep(400)
+
         onView(withId(R.id.button_send_form_success))
             .perform(click())
         Thread.sleep(600)
+
+
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT_SUCCESS\"") }.orEmpty()
+
+        NIDLog.d("----> UITest", "----> validateFormSubmitSuccess - Event: $event")
+
+        assertThat(event.contains("\"FORM_SUBMIT_SUCCESS\"")).isTrue()
+    }
+
+    /**
+     * Validate FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
+     */
+    @Test
+    fun validateFormSubmitFailure() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        onView(withId(R.id.button_show_activity_no_automatic_events))
+            .perform(click())
+        Thread.sleep(400)
 
         onView(withId(R.id.button_send_form_failure))
             .perform(click())
         Thread.sleep(600)
 
-        onView(withId(R.id.button_send_custom_event))
+
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT_FAILURE\"") }.orEmpty()
+
+        NIDLog.d("----> UITest", "----> validateFormSubmitFailure - Event: $event")
+
+        assertThat(event.contains("\"FORM_SUBMIT_FAILURE\"")).isTrue()
+    }
+
+    /**
+     * Validate CUSTOM_EVENT on NIDCustomEventsActivity class
+     */
+    @Test
+    fun validateFormCustomEvent() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        onView(withId(R.id.button_show_activity_no_automatic_events))
+            .perform(click())
+        Thread.sleep(400)
+
+        onView(withId(R.id.button_send_form_failure))
             .perform(click())
         Thread.sleep(600)
 
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val events = strEvents.joinToString(",")
-        val eventsCustom = strEvents.filter {
-            it.contains("\"FORM_SUBMIT\"") ||
-                    it.contains("\"FORM_SUBMIT_SUCCESS\"")  ||
-                    it.contains("\"FORM_SUBMIT_FAILURE\"")  ||
-                    it.contains("\"CUSTOM_EVENT\"")
-        }
-        NIDLog.d("----> UITest", "----> validateNonAutomaticEvents - Events: $eventsCustom")
 
-        assertThat(
-                    events.contains("\"FORM_SUBMIT\"") &&
-                    events.contains("\"FORM_SUBMIT_SUCCESS\"") &&
-                    events.contains("\"FORM_SUBMIT_FAILURE\"") &&
-                    events.contains("\"CUSTOM_EVENT\"")
-        ).isTrue()
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val event = strEvents.firstOrNull { it.contains("\"CUSTOM_EVENT\"") }.orEmpty()
+
+        NIDLog.d("----> UITest", "----> validateFormCustom - Event: $event")
+
+        assertThat(event.contains("\"CUSTOM_EVENT\"")).isTrue()
     }
 
     /**
