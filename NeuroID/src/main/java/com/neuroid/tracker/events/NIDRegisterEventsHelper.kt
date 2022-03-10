@@ -13,9 +13,7 @@ fun registerViewsEventsForActivity(activity: Activity) {
         android.R.id.content
     )
 
-    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener(
-        activity::class.java.simpleName
-    ))
+    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
     viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
 
     val callBack = activity.window.callback
@@ -31,8 +29,6 @@ fun unRegisterListenerFromActivity(activity: Activity) {
         android.R.id.content
     )
 
-    viewMainContainer.viewTreeObserver.removeOnGlobalFocusChangeListener(NIDFocusChangeListener(
-        activity::class.java.simpleName
-    ))
+    viewMainContainer.viewTreeObserver.removeOnGlobalFocusChangeListener(NIDFocusChangeListener())
     viewMainContainer.viewTreeObserver.removeOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
 }

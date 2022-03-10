@@ -22,7 +22,9 @@ class NIDTouchEventManager(
 
     fun detectView(motionEvent: MotionEvent?, timeMills: Long) {
         motionEvent?.let {
-            detectChangesOnView(it,timeMills)
+            val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
+            val nameView = currentView?.getIdOrTag().orEmpty()
+            detectChangesOnView(currentView,timeMills, motionEvent.action)
 
             when(it.action) {
                 ACTION_DOWN -> {
@@ -30,9 +32,12 @@ class NIDTouchEventManager(
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_START,
-                                x = it.x,
-                                y = it.y,
-                                ts = timeMills
+                                ts = timeMills,
+                                tg = hashMapOf(
+                                    "etn" to nameView,
+                                    "tgs" to nameView,
+                                    "sender" to nameView
+                                )
                             )
                         )
                 }
@@ -76,12 +81,11 @@ class NIDTouchEventManager(
         }
     }
 
-    private fun detectChangesOnView(motion: MotionEvent, timeMills: Long) {
-        val currentView = getView(viewParent, motion.x, motion.y)
+    private fun detectChangesOnView(currentView: View?, timeMills: Long, action: Int) {
         var type = ""
         val nameView = currentView?.getIdOrTag().orEmpty()
 
-        if (motion.action == ACTION_UP) {
+        if (action == ACTION_UP) {
             if (lastView == currentView) {
                 when(currentView) {
                     is CheckBox -> {
@@ -93,9 +97,6 @@ class NIDTouchEventManager(
                     is SeekBar -> {
                         type = SLIDER_CHANGE
                     }
-                    is Spinner -> {
-                        println("------------------------------> Es un spinner")
-                    }
                     else -> {
                         // Null
                     }
@@ -106,8 +107,6 @@ class NIDTouchEventManager(
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
-                                x = motion.x,
-                                y = motion.y,
                                 tg = hashMapOf(
                                     "tgs" to nameView,
                                     "etn" to INPUT
@@ -132,7 +131,7 @@ class NIDTouchEventManager(
                 }
             }
             lastView = null
-        } else if (motion.action == ACTION_DOWN) {
+        } else if (action == ACTION_DOWN) {
             lastView = currentView
         }
     }

@@ -55,6 +55,8 @@ private fun registerComponent(view: View, nameScreen: String) {
                 NIDEventModel(
                     type = REGISTER_TARGET,
                     et = view.javaClass.simpleName,
+                    etn = "INPUT",
+                    ec = nameScreen,
                     eid = idName,
                     tgs = idName,
                     en = idName,

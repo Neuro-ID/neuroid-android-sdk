@@ -1,5 +1,6 @@
 package com.neuroid.tracker.models
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 data class NIDEventModel(
@@ -10,9 +11,12 @@ data class NIDEventModel(
     val v: String? = null,
     val en: String? = null,
     val etn: String? = null,
+    val ec: String? = null,
     val et: String? = null,
     var eid: String? = null,
     val ts: Long,
+    val sm: String? = null,
+    val pd: String? = null,
     val x: Float? = null,
     val y: Float? = null,
     val w: Int? = null,
@@ -47,7 +51,17 @@ data class NIDEventModel(
             tg?.let {
                 val childJson = JSONObject()
                 it.forEach { (key, value) ->
-                    childJson.put(key, value)
+                    if (key == "attr") {
+                        val attrs = value.split("|")
+                        val jsonAttrs = JSONArray()
+                        attrs.forEach { attr ->
+                            val jsonAttr = JSONObject(attr)
+                            jsonAttrs.put(jsonAttr)
+                        }
+                        childJson.put(key, jsonAttrs)
+                    } else {
+                        childJson.put(key, value)
+                    }
                 }
                 jsonObject.put("tg", childJson)
             }
@@ -56,9 +70,12 @@ data class NIDEventModel(
             v?.let { jsonObject.put("v", it) }
             en?.let { jsonObject.put("en", it) }
             etn?.let { jsonObject.put("etn", it) }
+            ec?.let { jsonObject.put("ec", it) }
             et?.let { jsonObject.put("et", it) }
             eid?.let { jsonObject.put("eid", it) }
             jsonObject.put("ts", ts)
+            sm?.let { jsonObject.put("sm", it) }
+            pd?.let { jsonObject.put("pd", it) }
             x?.let { jsonObject.put("x", it) }
             y?.let { jsonObject.put("y", it) }
             w?.let { jsonObject.put("w", it) }
