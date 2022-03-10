@@ -20,4 +20,24 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-dontshrink
+-allowaccessmodification
+
+-keepattributes *Annotation*, Signature, Exception
+-keepattributes SourceFile, LineNumberTable
+-dontwarn android.support.**
+
+-dontnote com.android.vending.licensing.ILicensingService
+-dontnote com.google.vending.licensing.ILicensingService
+-dontnote com.google.android.vending.licensing.ILicensingService
+
 -keep class com.neuroid.tracker.** { *; }
+
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int e(...);
+    public static int w(...);
+}
