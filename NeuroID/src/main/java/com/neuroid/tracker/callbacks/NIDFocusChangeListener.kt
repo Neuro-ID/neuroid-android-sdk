@@ -5,16 +5,13 @@ import android.view.ViewTreeObserver
 import android.widget.EditText
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.FOCUS
-import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.TEXT_CHANGE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 
-class NIDFocusChangeListener(
-    private val screenName: String
-): ViewTreeObserver.OnGlobalFocusChangeListener {
+class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
     private var lastEditText: EditText? = null
 
     override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
@@ -29,11 +26,8 @@ class NIDFocusChangeListener(
                             type = FOCUS,
                             ts = ts,
                             tg = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to INPUT,
-                                "et" to "text"
-                            ),
-                            url = screenName
+                                "tgs" to idName
+                            )
                         )
                     )
 
@@ -55,12 +49,13 @@ class NIDFocusChangeListener(
                                 type = TEXT_CHANGE,
                                 tg = hashMapOf(
                                     "tgs" to lastEditText?.getIdOrTag().orEmpty(),
-                                    "etn" to INPUT,
+                                    "etn" to lastEditText?.getIdOrTag().orEmpty(),
                                     "et" to "text"
                                 ),
-                                v = "S~C~~${lastEditText?.text.toString().length}",
                                 ts = ts,
-                                url = screenName
+                                sm = "",
+                                pd = "",
+                                v = "S~C~~${lastEditText?.text.toString().length}"
                             )
                         )
 
@@ -71,8 +66,7 @@ class NIDFocusChangeListener(
                                 tg = hashMapOf(
                                     "tgs" to lastEditText?.getIdOrTag().orEmpty()
                                 ),
-                                ts = ts,
-                                url = screenName
+                                ts = ts
                             )
                         )
                     null
