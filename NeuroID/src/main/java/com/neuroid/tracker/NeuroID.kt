@@ -59,6 +59,15 @@ class NeuroID private constructor(
         )
     }
 
+    fun getSessionId(): String {
+        var sid = ""
+        application?.let {
+            sid = NIDSharedPrefsDefaults(it).getSessionID()
+        }
+
+        return sid
+    }
+
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             getDataStoreInstance().saveEvent(
