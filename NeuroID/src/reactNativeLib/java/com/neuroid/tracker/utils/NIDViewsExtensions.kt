@@ -7,14 +7,14 @@ fun View?.getIdOrTag(): String {
     return if (this == null) {
         "no_id"
     } else {
-        if (this.id == View.NO_ID) {
-            if(this.tag == null) {
-                "no_id"
+        return if (this.tag == null) {
+            if(this.contentDescription == null) {
+                this.id.toString()
             } else {
-                this.tag.toString()
+                this.contentDescription.toString()
             }
         } else {
-            this.resources.getResourceEntryName(this.id)
+            this.tag.toString()
         }
     }
 }

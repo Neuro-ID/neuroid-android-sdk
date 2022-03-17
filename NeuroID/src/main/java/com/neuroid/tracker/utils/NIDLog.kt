@@ -9,7 +9,6 @@ object NIDLog {
             msg.chunked(900).forEach {
                 Log.d(tag, it)
             }
-            Log.d(tag, msg)
         }
     }
 
@@ -24,7 +23,6 @@ object NIDLog {
             msg.chunked(900).forEach {
                 Log.i(tag, it)
             }
-            Log.i(tag, msg)
         }
     }
 
@@ -33,7 +31,6 @@ object NIDLog {
             msg.chunked(900).forEach {
                 Log.v(tag, it)
             }
-            Log.v(tag, msg)
         }
     }
 
@@ -42,7 +39,6 @@ object NIDLog {
             msg.chunked(900).forEach {
                 Log.w(tag, it)
             }
-            Log.v(tag, msg)
         }
     }
 }

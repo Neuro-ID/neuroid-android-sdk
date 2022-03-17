@@ -4,8 +4,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
+import com.facebook.react.views.text.ReactTextView
+import com.facebook.react.views.textinput.ReactEditText
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
 
 fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
@@ -46,6 +49,15 @@ private fun registerComponent(view: View, nameScreen: String) {
         }
         is Spinner -> {
             et = "Spinner"
+        }
+        is ReactEditText -> {
+            et = "ReactEditText"
+        }
+        is ReactTextView -> {
+            et = "ReactTextView"
+        }
+        else -> {
+            NIDLog.d("NeuroID", "--------------- Other view: $view")
         }
     }
 
