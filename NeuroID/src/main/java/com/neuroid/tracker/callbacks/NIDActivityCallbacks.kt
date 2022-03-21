@@ -16,6 +16,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     //private val sensorListener = NIDSensorListener()
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+        NIDServiceTracker.screenName = activity::class.java.name
+        NIDServiceTracker.screenFragName = ""
         val orientation = activity.resources.configuration.orientation
 
         (activity as? AppCompatActivity)?.supportFragmentManager
@@ -50,17 +52,16 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDServiceTracker.screenName = activity::class.java.name
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
@@ -70,7 +71,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.unregisterListener(sensorListener)
@@ -88,7 +89,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         unRegisterListenerFromActivity(activity)

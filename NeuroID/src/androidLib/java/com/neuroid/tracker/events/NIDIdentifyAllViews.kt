@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
 
 fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
@@ -48,12 +48,16 @@ private fun registerComponent(view: View, nameScreen: String) {
         is Spinner -> {
             et = "Spinner"
         }
-        else -> {
-            NIDLog.d("NeuroID", "--------------- Other view: $view")
-        }
     }
 
     if (et.isNotEmpty()) {
+        val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+            ""
+        } else {
+            "/${NIDServiceTracker.screenFragName}"
+        }
+        val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -66,7 +70,7 @@ private fun registerComponent(view: View, nameScreen: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    url = nameScreen
+                    url = urlView
                 ))
     }
 }

@@ -20,7 +20,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
 
         if (!isExcludeName) {
-            NIDServiceTracker.screenName = f::class.java.name
+            NIDServiceTracker.screenFragName = f::class.java.simpleName
 
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
@@ -56,13 +56,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     type = WINDOW_FOCUS,
                     et = "FRAGMENT",
                     ts = System.currentTimeMillis()))
-        }
-    }
-
-    override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
-        if (!isExcludeName) {
-            NIDServiceTracker.screenName = fm::class.java.name
         }
     }
 

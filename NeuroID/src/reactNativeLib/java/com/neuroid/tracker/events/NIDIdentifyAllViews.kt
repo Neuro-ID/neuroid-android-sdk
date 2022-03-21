@@ -3,13 +3,28 @@ package com.neuroid.tracker.events
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.children
 import androidx.core.view.forEach
+import com.facebook.react.ReactRootView
 import com.facebook.react.views.text.ReactTextView
 import com.facebook.react.views.textinput.ReactEditText
+import com.neuroid.tracker.callbacks.NIDReactRootChangeListener
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
+
+fun addLayoutChangesOnRootView(viewParent: View, nameScreen: String) {
+    if (viewParent is ReactRootView) {
+        viewParent.viewTreeObserver.addOnGlobalLayoutListener(
+            NIDReactRootChangeListener(viewParent, nameScreen)
+        )
+    } else if (viewParent is ViewGroup){
+        viewParent.forEach {
+            addLayoutChangesOnRootView(viewParent, nameScreen)
+        }
+    }
+}
 
 fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
     viewParent.forEach {
@@ -56,12 +71,16 @@ private fun registerComponent(view: View, nameScreen: String) {
         is ReactTextView -> {
             et = "ReactTextView"
         }
-        else -> {
-            NIDLog.d("NeuroID", "--------------- Other view: $view")
-        }
     }
 
     if (et.isNotEmpty()) {
+        val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+            ""
+        } else {
+            "/${NIDServiceTracker.screenFragName}"
+        }
+        val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -74,7 +93,7 @@ private fun registerComponent(view: View, nameScreen: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    url = nameScreen
+                    url = urlView
                 ))
     }
 }
