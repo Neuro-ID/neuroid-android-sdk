@@ -6,6 +6,8 @@ import android.widget.EditText
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.FOCUS
 import com.neuroid.tracker.events.TEXT_CHANGE
+import com.neuroid.tracker.extensions.getSHA256
+import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
@@ -43,11 +45,18 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                 lastEditText = if (lastEditText == null) {
                     newView
                 } else {
+                    val actualText = lastEditText?.text.toString()
+                    val attrs = listOf(
+                        NIDAttrItem("value", "S~C~~${actualText.length}").getJson(),
+                        NIDAttrItem("hash", actualText.getSHA256().take(8)).getJson()
+                    )
+
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TEXT_CHANGE,
                                 tg = hashMapOf(
+                                    "attr" to attrs.joinToString("|"),
                                     "tgs" to lastEditText?.getIdOrTag().orEmpty(),
                                     "etn" to lastEditText?.getIdOrTag().orEmpty(),
                                     "et" to "text"
@@ -55,7 +64,7 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                                 ts = ts,
                                 sm = "",
                                 pd = "",
-                                v = "S~C~~${lastEditText?.text.toString().length}"
+                                v = "S~C~~${actualText.length}"
                             )
                         )
 
