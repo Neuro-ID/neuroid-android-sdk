@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDWindowCallback
 import com.neuroid.tracker.callbacks.NIDFocusChangeListener
 import com.neuroid.tracker.callbacks.NIDLayoutChangeListener
+import java.util.*
 
 fun registerViewsEventsForActivity(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
@@ -20,8 +21,11 @@ fun registerViewsEventsForActivity(activity: Activity) {
     val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
     activity.window.callback = NIDWindowCallback(callBack, touchManager)
 
+    val hashCodeAct = activity.hashCode()
+    val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, activity::class.java.simpleName) }, 400)
+        identifyAllViews(viewMainContainer, activity::class.java.simpleName, guid) }, 400)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {

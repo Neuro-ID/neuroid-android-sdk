@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.hasFragments
 
 class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var actualOrientation = 0
@@ -20,9 +21,15 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         NIDServiceTracker.screenFragName = ""
         val orientation = activity.resources.configuration.orientation
 
-        (activity as? AppCompatActivity)?.supportFragmentManager
-            ?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
-        registerViewsEventsForActivity(activity)
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+
+
+        fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+        fragManager?.let {
+            if (it.hasFragments().not()) {
+                registerViewsEventsForActivity(activity)
+            }
+        }
 
         if (actualOrientation == 0) {
             actualOrientation = orientation

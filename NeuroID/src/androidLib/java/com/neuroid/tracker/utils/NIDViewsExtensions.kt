@@ -2,6 +2,7 @@ package com.neuroid.tracker.utils
 
 import android.content.res.Resources
 import android.view.View
+import androidx.fragment.app.FragmentManager
 
 fun View?.getIdOrTag(): String {
 
@@ -21,5 +22,12 @@ fun View?.getIdOrTag(): String {
                 return "no_id"
             }
         }
+    }
+}
+
+fun FragmentManager.hasFragments(): Boolean {
+    return this.fragments.any {
+        val name = it::class.java.simpleName
+        name != "NavHostFragment" || name != "SupportMapFragment"
     }
 }
