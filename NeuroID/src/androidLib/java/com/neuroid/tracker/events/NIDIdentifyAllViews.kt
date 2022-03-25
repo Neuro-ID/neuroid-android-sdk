@@ -108,10 +108,10 @@ private fun registerListeners(view: View) {
             }
         }
         is AutoCompleteTextView -> {
-            val lastListener = view.onItemClickListener
+            val lastListener: AdapterView.OnItemClickListener? = view.onItemClickListener
             view.onItemClickListener = null
             view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener.onItemClick(adapter, viewList, position, p3)
+                lastListener?.onItemClick(adapter, viewList, position, p3)
                 getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
