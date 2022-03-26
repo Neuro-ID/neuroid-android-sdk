@@ -19,6 +19,9 @@ object NIDServiceTracker {
     @get:Synchronized @set:Synchronized
     var screenName = ""
 
+    @get:Synchronized @set:Synchronized
+    var screenFragName = ""
+
     fun sendEventToServer(key: String, context: Application): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents()
 
@@ -42,6 +45,7 @@ object NIDServiceTracker {
 
             val listJson = "[${listEvents.joinToString(",")}]"
                 .replace("\"url\":\"\"","\"url\":\"$screenName\"")
+                .replace("\\/","/")
 
             val data = getContentForm(context, listJson.encodeToBase64(), key)
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)

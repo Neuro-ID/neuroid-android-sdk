@@ -79,7 +79,7 @@ class NeuroIdUITest {
         NeuroID.getInstance().stop()
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"CREATE_SESSION\"") }
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"CREATE_SESSION\"") }
 
         NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
 
@@ -98,7 +98,7 @@ class NeuroIdUITest {
         NeuroID.getInstance().stop()
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"SET_USER_ID\"") }
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"SET_USER_ID\"") }
 
         NIDLog.d("----> UITest", "----> validateSetUserId - Event: [$event]")
 
@@ -114,7 +114,7 @@ class NeuroIdUITest {
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val eventsRegister = strEvents.filter { it.contains("\"REGISTER_TARGET\"") }
+        val eventsRegister = strEvents.filter { it.contains("\"type\":\"REGISTER_TARGET\"") }
         val event = eventsRegister.firstOrNull().orEmpty()
 
         NIDLog.d("----> UITest", "----> validateRegisterTargets - Events: $eventsRegister")
@@ -149,7 +149,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"SLIDER_CHANGE\"") }
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
 
         NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
 
@@ -175,7 +175,7 @@ class NeuroIdUITest {
 
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT\"") }.orEmpty()
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT\"") }.orEmpty()
 
         NIDLog.d("----> UITest", "----> validateFormSubmit - Event: $event")
 
@@ -200,7 +200,7 @@ class NeuroIdUITest {
 
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT_SUCCESS\"") }.orEmpty()
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT_SUCCESS\"") }.orEmpty()
 
         NIDLog.d("----> UITest", "----> validateFormSubmitSuccess - Event: $event")
 
@@ -225,7 +225,7 @@ class NeuroIdUITest {
 
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"FORM_SUBMIT_FAILURE\"") }.orEmpty()
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT_FAILURE\"") }.orEmpty()
 
         NIDLog.d("----> UITest", "----> validateFormSubmitFailure - Event: $event")
 
@@ -250,7 +250,7 @@ class NeuroIdUITest {
 
 
         val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"CUSTOM_EVENT\"") }.orEmpty()
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"CUSTOM_EVENT\"") }.orEmpty()
 
         NIDLog.d("----> UITest", "----> validateFormCustom - Event: $event")
 
@@ -266,8 +266,8 @@ class NeuroIdUITest {
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("WINDOW_LOAD") }.orEmpty()
-        NIDLog.d("----> UITest", "----> validateLifecycleStartAndResume - Event: $event")
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_LOAD\"") }.orEmpty()
+        NIDLog.d("----> UITest", "----> validateLifecycleStart - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_LOAD)
     }
@@ -281,9 +281,9 @@ class NeuroIdUITest {
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("WINDOW_FOCUS") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_FOCUS\"") }.orEmpty()
 
-        NIDLog.d("----> UITest", "----> validateLifecycleStartAndResume - Event: $event")
+        NIDLog.d("----> UITest", "----> validateLifecycleResume - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_FOCUS)
     }
@@ -301,9 +301,9 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"WINDOW_BLUR\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_BLUR\"") }.orEmpty()
 
-        NIDLog.d("----> UITest", "----> validateLifecyclePauseAndStop - Event: $event")
+        NIDLog.d("----> UITest", "----> validateLifecyclePause - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_BLUR)
     }
@@ -324,8 +324,8 @@ class NeuroIdUITest {
 
         val events = getDataStoreInstance().getAllEvents()
 
-        val event = events.firstOrNull { it.contains("\"WINDOW_UNLOAD\"") }.orEmpty()
-        NIDLog.d("----> UITest", "----> validateLifecyclePauseAndStop - Event: $event")
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_UNLOAD\"") }.orEmpty()
+        NIDLog.d("----> UITest", "----> validateLifecycleStop - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_UNLOAD)
     }
@@ -343,13 +343,13 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"TOUCH_START\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_START\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateClickOnScreen - Event: $event")
         assertThat(event).matches(NID_STRUCT_TOUCH_START)
     }
 
     /**
-     * Validate TOUCH_END when the user click on screen
+     * Validate TOUCH_END when the user up finger on screen
      */
     @Test
     fun validateTouchEnd() {
@@ -362,8 +362,8 @@ class NeuroIdUITest {
 
         val events = getDataStoreInstance().getAllEvents()
 
-        val event = events.firstOrNull { it.contains("\"TOUCH_END\"") }.orEmpty()
-        NIDLog.d("----> UITest", "----> validateClickOnScreen - Event: $event")
+        val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_END\"") }.orEmpty()
+        NIDLog.d("----> UITest", "----> validateEndClickScreen - Event: $event")
         assertThat(event).matches(NID_STRUCT_TOUCH_END)
     }
 
@@ -379,7 +379,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"TOUCH_MOVE\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_MOVE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateSwipeScreen - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_TOUCH_MOVE)
     }
@@ -396,7 +396,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"WINDOW_RESIZE\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_RESIZE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateWindowsResize - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_RESIZE)
     }
@@ -416,7 +416,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"WINDOW_ORIENTATION_CHANGE\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_ORIENTATION_CHANGE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
@@ -433,7 +433,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"FOCUS\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"FOCUS\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateFocusOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_FOCUS)
     }
@@ -455,13 +455,31 @@ class NeuroIdUITest {
         Thread.sleep(600)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"BLUR\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"BLUR\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateBlurOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_BLUR)
     }
 
     /**
-     * Validate TEXT_CHANGE when the user type on editText
+     * Validate INPUT when the user type on editText
+     */
+    @Test
+    fun validateInputText() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+
+        onView(withId(R.id.editText_normal_field))
+            .perform(typeText("Some text"))
+        Thread.sleep(500)
+
+        val events = getDataStoreInstance().getAllEvents()
+        val event = events.firstOrNull { it.contains("\"type\":\"INPUT\"") }.orEmpty()
+        NIDLog.d("----> UITest", "----> validateInputText - Event: [$event]")
+        assertThat(event).matches(NID_STRUCT_INPUT)
+    }
+
+    /**
+     * Validate TEXT_CHANGE when the user type on editText and change focus
      */
     @Test
     fun validateTypeTextOnEditText() {
@@ -477,7 +495,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"TEXT_CHANGE\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"TEXT_CHANGE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateTypeTextOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_TEXT_CHANGE)
     }
@@ -501,7 +519,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"RADIO_CHANGE\"") }.orEmpty()
+        val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
     }
@@ -525,7 +543,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"CHECKBOX_CHANGE\"") }
+        val event = events.firstOrNull { it.contains("\"type\":\"CHECKBOX_CHANGE\"") }
         NIDLog.d("----> UITest", "----> validateClickControlViews - Event: $event")
         assertThat(event).matches(NID_STRUCT_CHECKBOX_CHANGE)
     }
@@ -548,7 +566,7 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"SELECT_CHANGE\"") }
+        val event = events.firstOrNull { it.contains("\"type\":\"SELECT_CHANGE\"") }
         NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
     }
@@ -562,7 +580,7 @@ class NeuroIdUITest {
         Thread.sleep(31000) // +1 second to wait write data
 
         val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"USER_INACTIVE\"") }
+        val event = events.firstOrNull { it.contains("\"type\":\"USER_INACTIVE\"") }
         NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
     }

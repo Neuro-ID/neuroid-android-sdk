@@ -5,20 +5,21 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
-fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
+fun identifyAllViews(viewParent: ViewGroup, nameScreen: String, guid: String) {
     viewParent.forEach {
-        registerComponent(it, nameScreen)
+        registerComponent(it, nameScreen, guid)
         registerListeners(it)
         if (it is ViewGroup) {
-            identifyAllViews(it, nameScreen)
+            identifyAllViews(it, nameScreen, guid)
         }
     }
 }
 
-private fun registerComponent(view: View, nameScreen: String) {
+private fun registerComponent(view: View, nameScreen: String, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
@@ -50,6 +51,14 @@ private fun registerComponent(view: View, nameScreen: String) {
     }
 
     if (et.isNotEmpty()) {
+        val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+            ""
+        } else {
+            "/${NIDServiceTracker.screenFragName}"
+        }
+        val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+        val attrs = "{\"guid\":\"$guid\"}"
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -62,7 +71,10 @@ private fun registerComponent(view: View, nameScreen: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    url = nameScreen
+                    tg = hashMapOf(
+                        "attr" to attrs
+                    ),
+                    url = urlView
                 ))
     }
 }
@@ -96,10 +108,10 @@ private fun registerListeners(view: View) {
             }
         }
         is AutoCompleteTextView -> {
-            val lastListener = view.onItemClickListener
+            val lastListener: AdapterView.OnItemClickListener? = view.onItemClickListener
             view.onItemClickListener = null
             view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener.onItemClick(adapter, viewList, position, p3)
+                lastListener?.onItemClick(adapter, viewList, position, p3)
                 getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(

@@ -11,23 +11,17 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
-    private val nameListExclude = listOf(
-        "androidx.navigation.fragment.NavHostFragment",
-        "com.google.android.gms.maps.SupportMapFragment"
-    )
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
+        NIDServiceTracker.screenFragName = f::class.java.simpleName
 
-        if (!isExcludeName) {
-            NIDServiceTracker.screenName = f::class.java.name
+        getDataStoreInstance()
+            .saveEvent(NIDEventModel(
+                type = WINDOW_LOAD,
+                et = "FRAGMENT",
+                ts = System.currentTimeMillis()))
 
-            getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_LOAD,
-                    et = "FRAGMENT",
-                    ts = System.currentTimeMillis()))
-        }
+        registerViewsEventsForActivity(f.requireActivity())
     }
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
@@ -48,34 +42,20 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
-
-        if (!isExcludeName) {
-            getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_FOCUS,
-                    et = "FRAGMENT",
-                    ts = System.currentTimeMillis()))
-        }
-    }
-
-    override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
-        if (!isExcludeName) {
-            NIDServiceTracker.screenName = fm::class.java.name
-        }
+        getDataStoreInstance()
+            .saveEvent(NIDEventModel(
+                type = WINDOW_FOCUS,
+                et = "FRAGMENT",
+                ts = System.currentTimeMillis()))
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
-        if (!isExcludeName) {
-            getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_BLUR,
-                    et = "FRAGMENT",
-                    ts = System.currentTimeMillis()
-                ))
-        }
+        getDataStoreInstance()
+            .saveEvent(NIDEventModel(
+                type = WINDOW_BLUR,
+                et = "FRAGMENT",
+                ts = System.currentTimeMillis()
+            ))
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -87,15 +67,11 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        val isExcludeName = nameListExclude.any { it ==  f::class.java.name }
-
-        if (!isExcludeName) {
-            getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_UNLOAD,
-                    et = "FRAGMENT",
-                    ts = System.currentTimeMillis()
-                ))
-        }
+        getDataStoreInstance()
+            .saveEvent(NIDEventModel(
+                type = WINDOW_UNLOAD,
+                et = "FRAGMENT",
+                ts = System.currentTimeMillis()
+            ))
     }
 }

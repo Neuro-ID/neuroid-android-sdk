@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.hasFragments
 
 class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var actualOrientation = 0
@@ -16,11 +17,19 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     //private val sensorListener = NIDSensorListener()
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+        NIDServiceTracker.screenName = activity::class.java.name
+        NIDServiceTracker.screenFragName = ""
         val orientation = activity.resources.configuration.orientation
 
-        (activity as? AppCompatActivity)?.supportFragmentManager
-            ?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
-        registerViewsEventsForActivity(activity)
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+
+
+        fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+        fragManager?.let {
+            if (it.hasFragments().not()) {
+                registerViewsEventsForActivity(activity)
+            }
+        }
 
         if (actualOrientation == 0) {
             actualOrientation = orientation
@@ -50,17 +59,16 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDServiceTracker.screenName = activity::class.java.name
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
@@ -70,7 +78,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.unregisterListener(sensorListener)
@@ -88,7 +96,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
-                url = activity::class.java.simpleName,
+                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         unRegisterListenerFromActivity(activity)
