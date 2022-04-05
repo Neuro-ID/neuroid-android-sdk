@@ -11,17 +11,17 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
-fun identifyAllViews(viewParent: ViewGroup, nameScreen: String) {
+fun identifyAllViews(viewParent: ViewGroup, nameScreen: String, guid: String) {
     viewParent.forEach {
-        registerComponent(it, nameScreen)
+        registerComponent(it, nameScreen, guid)
         registerListeners(it)
         if (it is ViewGroup) {
-            identifyAllViews(it, nameScreen)
+            identifyAllViews(it, nameScreen, guid)
         }
     }
 }
 
-private fun registerComponent(view: View, nameScreen: String) {
+private fun registerComponent(view: View, nameScreen: String, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
@@ -65,6 +65,7 @@ private fun registerComponent(view: View, nameScreen: String) {
             "/${NIDServiceTracker.screenFragName}"
         }
         val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+        val attrs = "{\"guid\":\"$guid\"}"
 
         getDataStoreInstance()
             .saveEvent(
@@ -78,6 +79,9 @@ private fun registerComponent(view: View, nameScreen: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
+                    tg = hashMapOf(
+                        "attr" to attrs
+                    ),
                     url = urlView
                 ))
     }
@@ -129,5 +133,6 @@ private fun registerListeners(view: View) {
                         ))
             }
         }
+
     }
 }

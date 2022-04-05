@@ -1,35 +1,18 @@
 package com.neuroid.tracker.callbacks
 
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import com.neuroid.tracker.events.WINDOW_RESIZE
-import com.neuroid.tracker.events.identifyAllViews
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.getReactRoot
 
 class NIDLayoutChangeListener(
-    private val viewMainContainer: View,
-    private val nameScreen: String
+    private val viewMainContainer: View
 ): OnGlobalLayoutListener {
-    private var currentWidth = 0
-    private var currentHeight = 0
-    private var isRegistered = false
+    var currentWidth = 0
+    var currentHeight = 0
 
     override fun onGlobalLayout() {
-        if(isRegistered.not()) {
-            if (viewMainContainer is ViewGroup) {
-                val reactRootView = getReactRoot(viewMainContainer)
-                reactRootView?.let {
-                    if (reactRootView.childCount != 0) {
-                        isRegistered = true
-                        identifyAllViews(viewMainContainer, nameScreen)
-                    }
-                }
-            }
-        }
-
         if (currentWidth == 0 && currentHeight == 0) {
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
