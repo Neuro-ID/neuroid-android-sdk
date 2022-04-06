@@ -23,7 +23,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-
         fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         fragManager?.let {
             if (it.hasFragments().not()) {

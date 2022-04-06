@@ -17,20 +17,28 @@ In this project you will find the source code of the library, and there is also 
 2. In your application gradle add the dependencies:
 * QA Environment:
 ```gradle
+implementation('org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2')
 implementation files('libs/neuro-id-android-v1.0-debug.aar')
-implementation "androidx.security:security-crypto:1.1.0-alpha03"
+implementation 'androidx.security:security-crypto:1.1.0-alpha03'
 ```
 
 * Production Environment:
 ```gradle
+implementation('org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2')
 implementation files('libs/neuro-id-android-v1.0-release.aar')
-implementation "androidx.security:security-crypto:1.1.0-alpha03"
+implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+```
+
+* If your project uses 100% Java, you maybe add the dependency:
+```gradle
+implementation 'androidx.core:core-ktx:1.7.0'
 ```
 
 3. In your application:
 ```kotlin
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
+
 class MyApplication: MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
@@ -45,12 +53,33 @@ class MyApplication: MultiDexApplication() {
     }
 }
 ```
+```java
+import androidx.multidex.MultiDexApplication;
+import com.neuroid.tracker.NeuroID;
+
+public class MyApplication extends MultiDexApplication {
+    @Override
+    public void onCreate(){
+        super.onCreate();
+
+        NeuroID neuroId = new NeuroID.Builder(
+                this,
+                "key_live_vtotrandom_form_mobilesandbox"
+        ).build();
+        NeuroID.setNeuroIdInstance(neuroId);
+        NeuroID.getInstance().start();
+    }
+}
+```
 Note: If it doesn't exist, you must create it and add it in the AndroidManifest.xml
 
 ## Stopping the SDK
 When Neuro-ID will no longer be needed for tracking call the stop() method below. This will completely prevent any subsequent tracking within the application by Neuro-ID.
 ```kotlin
 NeuroID.getInstance().stop()
+```
+```java
+NeuroID.getInstance().stop();
 ```
 
 ## Form Submit
@@ -61,17 +90,26 @@ This should be called whenever a form is submitted.
 ```kotlin
 NeuroID.getInstance().formSubmit()
 ```
+```java
+NeuroID.getInstance().formSubmit();
+```
 
 ### formSubmitFailure
 This should be called whenever a form is rejected for any reason.
 ```kotlin
 NeuroID.getInstance().formSubmitFailure()
 ```
+```java
+NeuroID.getInstance().formSubmitFailure();
+```
 
 ### formSubmitSuccess
 If the form submit is successful, make sure to call the following in addition to formSubmit()
 ```kotlin
 NeuroID.getInstance().formSubmitSuccess()
+```
+```java
+NeuroID.getInstance().formSubmitSuccess();
 ```
 
 ## Custom logging
@@ -81,6 +119,12 @@ NeuroID.getInstance().captureEvent(
     eventName = "CUSTOM_EVENT_EXAMPLE_NAME",
     tgs = "buttonSendCustomEvent"
 )
+```
+```java
+NeuroID.getInstance().captureEvent(
+    eventName = "CUSTOM_EVENT_EXAMPLE_NAME",
+    tgs = "buttonSendCustomEvent"
+);
 ```
 
 ## Sample application

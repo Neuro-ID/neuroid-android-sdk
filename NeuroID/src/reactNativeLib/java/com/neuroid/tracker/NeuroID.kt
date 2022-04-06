@@ -1,5 +1,6 @@
 package com.neuroid.tracker
 
+import android.app.Activity
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
@@ -22,8 +23,6 @@ class NeuroID private constructor(
             firstTime = false
             application?.let {
                 initDataStoreCtx(it.applicationContext)
-                it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
-                NIDTimerActive.initTimer()
             }
         }
     }
@@ -38,11 +37,14 @@ class NeuroID private constructor(
 
     companion object {
         private lateinit var singleton: NeuroID
+
+        @JvmStatic
         fun setNeuroIdInstance(neuroId: NeuroID) {
             singleton = neuroId
             singleton.setupCallbacks()
         }
 
+        @JvmStatic
         fun getInstance() = singleton
     }
 
@@ -117,6 +119,11 @@ class NeuroID private constructor(
 
     fun stop() {
         NIDJobServiceManager.stopJob()
+    }
+
+    fun registerAllViewsForCallerActivity(activity: Activity) {
+        NIDTimerActive.initTimer()
+        registerLaterLifecycleFragments(activity)
     }
 
     private fun createSession() {

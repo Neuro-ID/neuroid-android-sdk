@@ -3,6 +3,7 @@ package com.neuroid.tracker.utils
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.fragment.app.FragmentManager
 import com.facebook.react.ReactRootView
 
 fun View?.getIdOrTag(): String {
@@ -36,5 +37,12 @@ fun getReactRoot(viewGroup: ViewGroup): ReactRootView? {
                 getReactRoot(it as ViewGroup)
             }.firstOrNull { it is ReactRootView }
         }
+    }
+}
+
+fun FragmentManager.hasFragments(): Boolean {
+    return this.fragments.any {
+        val name = it::class.java.simpleName
+        name != "NavHostFragment" || name != "SupportMapFragment"
     }
 }
