@@ -37,11 +37,14 @@ class NeuroID private constructor(
 
     companion object {
         private lateinit var singleton: NeuroID
+
+        @JvmStatic
         fun setNeuroIdInstance(neuroId: NeuroID) {
             singleton = neuroId
             singleton.setupCallbacks()
         }
 
+        @JvmStatic
         fun getInstance() = singleton
     }
 

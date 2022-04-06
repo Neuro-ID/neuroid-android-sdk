@@ -4,8 +4,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
-import com.facebook.react.views.text.ReactTextView
 import com.facebook.react.views.textinput.ReactEditText
+import com.facebook.react.views.view.ReactViewGroup
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -53,8 +53,10 @@ private fun registerComponent(view: View, nameScreen: String, guid: String) {
         is ReactEditText -> {
             et = "ReactEditText"
         }
-        is ReactTextView -> {
-            et = "ReactTextView"
+        is ReactViewGroup -> {
+            if (view.isFocusable) {
+                et = "ReactButton"
+            }
         }
     }
 
@@ -71,7 +73,7 @@ private fun registerComponent(view: View, nameScreen: String, guid: String) {
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
-                    et = view.javaClass.simpleName,
+                    et = et,
                     etn = "INPUT",
                     ec = nameScreen,
                     eid = idName,
