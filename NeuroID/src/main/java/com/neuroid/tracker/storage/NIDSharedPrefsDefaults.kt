@@ -36,6 +36,7 @@ class NIDSharedPrefsDefaults(
             sharedPref?.let {
                 with(it.edit()) {
                     putString(NID_SID, sid)
+                    apply()
                 }
             }
 
@@ -53,6 +54,7 @@ class NIDSharedPrefsDefaults(
         sharedPref?.let {
             with(it.edit()) {
                 putString(NID_SID, sid)
+                apply()
             }
         }
 
