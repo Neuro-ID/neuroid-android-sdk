@@ -28,14 +28,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         // No Operation
     }
 
-    override fun onFragmentActivityCreated(
-        fm: FragmentManager,
-        f: Fragment,
-        savedInstanceState: Bundle?
-    ) {
-        // No operation
-    }
-
     override fun onFragmentViewCreated(
         fm: FragmentManager,
         f: Fragment,
