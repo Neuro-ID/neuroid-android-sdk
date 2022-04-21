@@ -42,6 +42,7 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
+    private val SLEEP_TIME = 1000L
 
     @ExperimentalCoroutinesApi
     private val testDispatcher = TestCoroutineDispatcher()
@@ -507,16 +508,16 @@ class NeuroIdUITest {
     fun validateRadioChange() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        Thread.sleep(SLEEP_TIME) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        Thread.sleep(500)
+        Thread.sleep(SLEEP_TIME)
 
         onView(withId(R.id.radioButton_one))
             .perform(click())
 
-        Thread.sleep(500)
+        Thread.sleep(SLEEP_TIME)
 
         val events = getDataStoreInstance().getAllEvents()
         val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
