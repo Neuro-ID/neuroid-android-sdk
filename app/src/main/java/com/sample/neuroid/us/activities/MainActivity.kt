@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.databinding.DataBindingUtil
+import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.NidActivityMainBinding
 
@@ -27,6 +28,8 @@ class MainActivity : AppCompatActivity() {
             buttonShowActivityFragments.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDSomeFragmentsActivity::class.java))
             }
+
+            textViewSidValue.text = NeuroID.getInstance().getSessionId()
         }
 
         binding.editTextNormalField.addTextChangedListener( object: TextWatcher {
