@@ -19,7 +19,7 @@ jobs:
         with:
             api-level: 29
             target: default
-            profile: Pixel 3
+            profile: Pixel XL
             emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
             disable-animations: true
             script: ./gradlew :app:connectedCheck
