@@ -11,7 +11,7 @@ import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -138,8 +138,8 @@ class NeuroIdUITest {
         onView(withId(R.id.layout_nested))
             .perform(swipeUp())
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+
+        onView(withId(R.id.seekBar_one)).perform(scrollTo())
 
         Thread.sleep(500)
 
@@ -513,7 +513,9 @@ class NeuroIdUITest {
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         Thread.sleep(SLEEP_TIME)
-
+        onView(withId(R.id.radioButton_one))
+            .perform(scrollTo())
+        Thread.sleep(SLEEP_TIME)
         onView(withId(R.id.radioButton_one))
             .perform(click())
 
@@ -624,29 +626,5 @@ class NeuroIdUITest {
                 seekBar.progress = value
             }
         }
-    }
-
-    /**
-     * Validate RADIO_CHANGE when the user click on it
-     */
-    @Test
-    fun validateRadioChange2() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        Thread.sleep(SLEEP_TIME) // When you go to the next test, the activity is destroyed and recreated
-
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-        Thread.sleep(SLEEP_TIME)
-
-        onView(withId(R.id.radioButton_one))
-            .perform(click())
-
-        Thread.sleep(SLEEP_TIME)
-
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
-        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
-        assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
     }
 }
