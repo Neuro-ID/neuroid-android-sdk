@@ -393,7 +393,7 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        Thread.sleep(500)
+        Thread.sleep(1000)
 
         val events = getDataStoreInstance().getAllEvents()
         val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_RESIZE\"") }.orEmpty()
