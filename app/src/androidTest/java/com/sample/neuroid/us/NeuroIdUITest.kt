@@ -138,8 +138,11 @@ class NeuroIdUITest {
         onView(withId(R.id.layout_nested))
             .perform(swipeUp())
 
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
 
-        onView(withId(R.id.seekBar_one)).perform(scrollTo())
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
 
         Thread.sleep(500)
 
@@ -153,7 +156,6 @@ class NeuroIdUITest {
         val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
 
         NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
-
 
         assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
     }
@@ -512,10 +514,9 @@ class NeuroIdUITest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
+
         Thread.sleep(SLEEP_TIME)
-        onView(withId(R.id.radioButton_one))
-            .perform(scrollTo())
-        Thread.sleep(SLEEP_TIME)
+
         onView(withId(R.id.radioButton_one))
             .perform(click())
 
