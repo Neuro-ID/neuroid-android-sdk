@@ -18,7 +18,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
             api-level: 29
-            profile: Nexus 6P
+            profile: Pixel
             emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
             disable-animations: true
             script: ./gradlew :app:connectedCheck
