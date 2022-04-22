@@ -42,7 +42,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
-    private val SLEEP_TIME = 1000L
 
     @ExperimentalCoroutinesApi
     private val testDispatcher = TestCoroutineDispatcher()
@@ -125,40 +124,38 @@ class NeuroIdUITest {
 
     /**
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
-
+     */
     @Test
     fun validateSliderChange() {
-    NIDLog.d("----> UITest", "-------------------------------------------------")
-    Thread.sleep(500) //Wait a half second for create the MainActivity View
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
 
-    onView(withId(R.id.button_show_activity_one_fragment))
-    .perform(click())
-    Thread.sleep(500)
+        onView(withId(R.id.button_show_activity_one_fragment))
+            .perform(click())
+        Thread.sleep(500)
 
-    onView(withId(R.id.layout_nested))
-    .perform(swipeUp())
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
 
-    onView(withId(R.id.layout_nested))
-    .perform(swipeUp())
+        onView(withId(R.id.layout_nested))
+            .perform(swipeUp())
 
-    onView(withId(R.id.layout_nested))
-    .perform(swipeUp())
+        Thread.sleep(500)
 
-    Thread.sleep(500)
+        onView(withId(R.id.seekBar_one)).perform(
+            setValue(50)
+        )
 
-    onView(withId(R.id.seekBar_one)).perform(
-    setValue(50)
-    )
+        Thread.sleep(500)
 
-    Thread.sleep(500)
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
 
-    val strEvents = getDataStoreInstance().getAllEvents()
-    val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
+        NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
 
-    NIDLog.d("----> UITest", "----> validateSliderChange - Event: ")
 
-    assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
-    }*/
+        assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
+    }
 
     /**
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class
@@ -504,23 +501,22 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate RADIO_CHANGE when the user click on it**/
-
+     * Validate RADIO_CHANGE when the user click on it
+     */
     @Test
     fun validateRadioChange() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        Thread.sleep(SLEEP_TIME) // When you go to the next test, the activity is destroyed and recreated
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
+        Thread.sleep(500)
 
-        Thread.sleep(SLEEP_TIME)
-
-        onView(withText(R.string.nid_only_one_fragment_first_radio))
+        onView(withId(R.id.radioButton_one))
             .perform(click())
 
-        Thread.sleep(SLEEP_TIME)
+        Thread.sleep(500)
 
         val events = getDataStoreInstance().getAllEvents()
         val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
