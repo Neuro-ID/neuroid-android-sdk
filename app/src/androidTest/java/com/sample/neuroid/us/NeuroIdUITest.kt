@@ -125,40 +125,40 @@ class NeuroIdUITest {
 
     /**
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
-     */
+
     @Test
     fun validateSliderChange() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) //Wait a half second for create the MainActivity View
+    NIDLog.d("----> UITest", "-------------------------------------------------")
+    Thread.sleep(500) //Wait a half second for create the MainActivity View
 
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-        Thread.sleep(500)
+    onView(withId(R.id.button_show_activity_one_fragment))
+    .perform(click())
+    Thread.sleep(500)
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+    onView(withId(R.id.layout_nested))
+    .perform(swipeUp())
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+    onView(withId(R.id.layout_nested))
+    .perform(swipeUp())
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+    onView(withId(R.id.layout_nested))
+    .perform(swipeUp())
 
-        Thread.sleep(500)
+    Thread.sleep(500)
 
-        onView(withId(R.id.seekBar_one)).perform(
-            setValue(50)
-        )
+    onView(withId(R.id.seekBar_one)).perform(
+    setValue(50)
+    )
 
-        Thread.sleep(500)
+    Thread.sleep(500)
 
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
+    val strEvents = getDataStoreInstance().getAllEvents()
+    val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
 
-        NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
+    NIDLog.d("----> UITest", "----> validateSliderChange - Event: ")
 
-        assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
-    }
+    assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
+    }*/
 
     /**
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class
@@ -505,7 +505,7 @@ class NeuroIdUITest {
 
     /**
      * Validate RADIO_CHANGE when the user click on it
-     */
+
     @Test
     fun validateRadioChange() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
@@ -526,7 +526,7 @@ class NeuroIdUITest {
         val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
-    }
+    }*/
 
     /**
      * Validate CHECKBOX_CHANGE when the user click on it
