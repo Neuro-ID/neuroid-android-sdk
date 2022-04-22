@@ -504,7 +504,7 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate RADIO_CHANGE when the user click on it
+     * Validate RADIO_CHANGE when the user click on it**/
 
     @Test
     fun validateRadioChange() {
@@ -517,7 +517,7 @@ class NeuroIdUITest {
 
         Thread.sleep(SLEEP_TIME)
 
-        onView(withId(R.id.radioButton_one))
+        onView(withText(R.string.nid_only_one_fragment_first_radio))
             .perform(click())
 
         Thread.sleep(SLEEP_TIME)
@@ -526,7 +526,7 @@ class NeuroIdUITest {
         val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
-    }*/
+    }
 
     /**
      * Validate CHECKBOX_CHANGE when the user click on it
