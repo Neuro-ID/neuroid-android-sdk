@@ -625,4 +625,28 @@ class NeuroIdUITest {
             }
         }
     }
+
+    /**
+     * Validate RADIO_CHANGE when the user click on it
+     */
+    @Test
+    fun validateRadioChange2() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+
+        Thread.sleep(SLEEP_TIME) // When you go to the next test, the activity is destroyed and recreated
+
+        onView(withId(R.id.button_show_activity_one_fragment))
+            .perform(click())
+        Thread.sleep(SLEEP_TIME)
+
+        onView(withId(R.id.radioButton_one))
+            .perform(click())
+
+        Thread.sleep(SLEEP_TIME)
+
+        val events = getDataStoreInstance().getAllEvents()
+        val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
+        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
+        assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
+    }
 }
