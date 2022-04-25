@@ -29,6 +29,8 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textIl_normal_field"
             android:layout_width="match_parent"
@@ -68,6 +70,34 @@
                 android:hint="@string/nid_editText_password_hint"/>
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            style="@style/NidTextViewTitle"
+            android:id="@+id/textView_sid_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nid_main_activity_sid_title"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="20dp"
+            android:textSize="14sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
+
+        <TextView
+            style="@style/NidTextViewTitle"
+            android:id="@+id/textView_sid_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="189272372"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:textSize="14sp"
+            android:enabled="true"
+            android:textIsSelectable="true"
+            android:focusable="true"
+            android:longClickable="true"
+            app:layout_constraintStart_toEndOf="@id/textView_sid_title"
+            app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_show_activity_no_automatic_events"
