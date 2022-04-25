@@ -36,12 +36,6 @@ android {
         }
     }
 
-    signingConfigs {
-        release {
-
-        }
-    }
-
     buildTypes {
         debug {
             minifyEnabled false
