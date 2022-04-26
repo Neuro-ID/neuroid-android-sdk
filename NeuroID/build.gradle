@@ -39,7 +39,7 @@ android {
 
     libraryVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "neuro-id-android-v${defaultConfig.versionName}-${variant.buildType.name}.aar"
+            outputFileName = "neuro-id-android-sdk-${variant.buildType.name}.aar"
         }
     }
     compileOptions {
@@ -49,6 +49,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    /*libraryVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "Neuro-Id-Android-SDK-${defaultConfig.versionName}-${variant.buildType.name}.aar"
+        }
+    }*/
 }
 
 dependencies {
