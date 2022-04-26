@@ -85,7 +85,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.4.2"
     implementation "androidx.fragment:fragment-ktx:1.4.1"
 
-    implementation files('libs/neuro-id-android-v1.0-debug.aar') // QA
-    //implementation files('libs/neuro-id-android-v1.0-release.aar') // Production
+    //implementation files('libs/neuro-id-android-v1.0-debug.aar') // QA
+    implementation files('libs/neuro-id-android-v1.0-release.aar') // Production
     implementation "androidx.security:security-crypto:1.1.0-alpha03"
 }
