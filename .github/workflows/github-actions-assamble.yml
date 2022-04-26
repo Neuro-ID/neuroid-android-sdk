@@ -65,5 +65,5 @@ jobs:
           destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
-          destination_branch_create: 'action_publish'
+          destination_branch: 'action_publish'
           commit_message: 'Updating library version'
