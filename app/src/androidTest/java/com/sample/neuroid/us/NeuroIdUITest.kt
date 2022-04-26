@@ -10,8 +10,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -36,6 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
 
 /**
  * Neuro ID: 11 UI Test
@@ -132,13 +132,16 @@ class NeuroIdUITest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
+
         Thread.sleep(500)
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+        onView(withId(R.id.layout_scroll)).perform(
+            swipeUp()
+        )
 
-        onView(withId(R.id.layout_nested))
-            .perform(swipeUp())
+        onView(withId(R.id.layout_scroll)).perform(
+            swipeUp()
+        )
 
         Thread.sleep(500)
 
@@ -611,7 +614,7 @@ class NeuroIdUITest {
     fun setValue(value: Int): ViewAction {
         return object : ViewAction {
             override fun getConstraints(): org.hamcrest.Matcher<View> {
-                return ViewMatchers.isAssignableFrom(SeekBar::class.java)
+                return isAssignableFrom(SeekBar::class.java)
             }
 
             override fun getDescription(): String {
