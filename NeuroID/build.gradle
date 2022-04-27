@@ -49,6 +49,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    /*libraryVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "Neuro-Id-Android-SDK-${defaultConfig.versionName}-${variant.buildType.name}.aar"
+        }
+    }*/
 }
 
 dependencies {
