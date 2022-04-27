@@ -33,6 +33,6 @@ class NIDSensorListener: SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
+        NIDLog.d("NeuroId", "onAccuracyChanged" )
     }
 }

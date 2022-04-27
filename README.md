@@ -11,21 +11,21 @@ In this project you will find the source code of the library, and there is also 
 
 ### Install the library
 1. Copy the .aar file found in the libs folder of the demo application to the libs folder of your project. There are two files:
-* libs/neuro-id-android-v1.0-debug.aar: Debug and QA Environment
-* libs/neuro-id-android-v1.0-release.aar: Release and Production Environment
+* libs/neuro-id-android-sdk-debug.aar: Debug and QA Environment
+* libs/neuro-id-android-sdk-release.aar: Release and Production Environment
 
 2. In your application gradle add the dependencies:
 * QA Environment:
 ```gradle
 implementation('org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2')
-implementation files('libs/neuro-id-android-v1.0-debug.aar')
+implementation files('libs/neuro-id-android-sdk-debug.aar')
 implementation 'androidx.security:security-crypto:1.1.0-alpha03'
 ```
 
 * Production Environment:
 ```gradle
 implementation('org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2')
-implementation files('libs/neuro-id-android-v1.0-release.aar')
+implementation files('libs/neuro-id-android-sdk-release.aar')
 implementation 'androidx.security:security-crypto:1.1.0-alpha03'
 ```
 
