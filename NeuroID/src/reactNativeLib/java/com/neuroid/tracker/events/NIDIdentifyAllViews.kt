@@ -11,17 +11,17 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
-fun identifyAllViews(viewParent: ViewGroup, nameScreen: String, guid: String) {
+fun identifyAllViews(viewParent: ViewGroup, guid: String) {
     viewParent.forEach {
-        registerComponent(it, nameScreen, guid)
+        registerComponent(it, guid)
         registerListeners(it)
         if (it is ViewGroup) {
-            identifyAllViews(it, nameScreen, guid)
+            identifyAllViews(it, guid)
         }
     }
 }
 
-private fun registerComponent(view: View, nameScreen: String, guid: String) {
+private fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
@@ -75,7 +75,7 @@ private fun registerComponent(view: View, nameScreen: String, guid: String) {
                     type = REGISTER_TARGET,
                     et = et,
                     etn = "INPUT",
-                    ec = nameScreen,
+                    ec = NIDServiceTracker.screenName,
                     eid = idName,
                     tgs = idName,
                     en = idName,
