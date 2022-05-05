@@ -57,13 +57,16 @@ private fun registerComponent(view: View, guid: String) {
             "/${NIDServiceTracker.screenFragName}"
         }
         val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
-        val attrs = "{\"guid\":\"$guid\"}"
+        val attrs = "{" +
+                "\"n\":\"guid\"," +
+                "\"v\":\"$guid\"" +
+                "}"
 
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
-                    et = view.javaClass.simpleName,
+                    et = et + "//" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,
                     eid = idName,

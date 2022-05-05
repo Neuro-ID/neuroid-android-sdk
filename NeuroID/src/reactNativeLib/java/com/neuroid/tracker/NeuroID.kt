@@ -155,7 +155,7 @@ class NeuroID private constructor(
                     dnt = false,
                     url = "",
                     ns = "nid",
-                    jsv = "null",
+                    jsv = "4.android-1.2.1",
                     ts = System.currentTimeMillis()
                 )
             )

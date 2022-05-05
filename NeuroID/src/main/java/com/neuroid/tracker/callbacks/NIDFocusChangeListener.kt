@@ -47,7 +47,7 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                 } else {
                     val actualText = lastEditText?.text.toString()
                     val attrs = listOf(
-                        NIDAttrItem("value", "S~C~~${actualText.length}").getJson(),
+                        NIDAttrItem("v", "S~C~~${actualText.length}").getJson(),
                         NIDAttrItem("hash", actualText.getSHA256().take(8)).getJson()
                     )
 
@@ -62,8 +62,8 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                                     "et" to "text"
                                 ),
                                 ts = ts,
-                                sm = "",
-                                pd = "",
+                                //sm = "",
+                                //pd = "",
                                 v = "S~C~~${actualText.length}"
                             )
                         )
