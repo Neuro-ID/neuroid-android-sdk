@@ -37,7 +37,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                et = "FRAGMENT",
                 ts = System.currentTimeMillis()))
     }
 

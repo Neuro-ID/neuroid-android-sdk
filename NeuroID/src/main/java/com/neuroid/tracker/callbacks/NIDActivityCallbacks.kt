@@ -67,7 +67,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
