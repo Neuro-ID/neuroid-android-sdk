@@ -1,0 +1,48 @@
+name: Android Assamble
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    name: Release Simple Library
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Cache Gradle and wrapper
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant Permission for Gradlew to Execute
+        run: chmod +x gradlew
+
+      - name: Build AAR ⚙️🛠
+        run: bash ./gradlew :NeuroID:assemble
+
+      - name: Pushes test file
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-release.aar'
+          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
+          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
+          user_email: 'alejandro.bautista@neuro-id.com'
+          user_name: 'alejandrobautistar'
+          destination_branch: 'master'
+          commit_message: 'Updating library version'
