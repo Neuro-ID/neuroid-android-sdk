@@ -162,7 +162,9 @@ class NIDSharedPrefsDefaults(
 
     fun getSDKVersion() = "${Build.VERSION.RELEASE}-android-${Build.VERSION.SDK_INT}"
 
-    fun getLocale(): String = Locale.getDefault().toLanguageTag()
+    fun getLocale(): String = Locale.getDefault().toString()
+
+    fun getLanguage(): String = Locale.getDefault().language
 
     fun getUserAgent() = System.getProperty("http.agent").orEmpty()
 
