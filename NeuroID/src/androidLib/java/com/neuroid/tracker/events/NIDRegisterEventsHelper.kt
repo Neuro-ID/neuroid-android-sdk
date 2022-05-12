@@ -25,7 +25,7 @@ fun registerViewsEventsForActivity(activity: Activity) {
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, activity::class.java.simpleName, guid) }, 400)
+        identifyAllViews(viewMainContainer, guid) }, 400)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {

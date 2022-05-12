@@ -146,16 +146,16 @@ class NeuroID private constructor(
                     loc = sharedDefaults.getLocale(),
                     ua = sharedDefaults.getUserAgent(),
                     tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLocale(),
+                    lng = sharedDefaults.getLanguage(),
                     ce = true,
                     je = true,
                     ol = true,
                     p = sharedDefaults.getPlatform(),
-                    jsl = listOf("na"),
+                    jsl = listOf(),
                     dnt = false,
                     url = "",
                     ns = "nid",
-                    jsv = "null",
+                    jsv = "4.android-1.2.1",
                     ts = System.currentTimeMillis()
                 )
             )

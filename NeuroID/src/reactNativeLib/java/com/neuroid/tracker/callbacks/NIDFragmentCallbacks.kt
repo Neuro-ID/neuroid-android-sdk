@@ -18,7 +18,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
-                et = "FRAGMENT",
                 ts = System.currentTimeMillis()))
 
         registerViewsEventsForFragment(f.requireActivity())
@@ -37,7 +36,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                et = "FRAGMENT",
                 ts = System.currentTimeMillis()))
     }
 
@@ -45,7 +43,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
-                et = "FRAGMENT",
                 ts = System.currentTimeMillis()
             ))
     }
@@ -62,7 +59,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
-                et = "FRAGMENT",
                 ts = System.currentTimeMillis()
             ))
     }

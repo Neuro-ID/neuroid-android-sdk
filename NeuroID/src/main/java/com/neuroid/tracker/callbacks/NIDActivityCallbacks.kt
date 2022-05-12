@@ -58,7 +58,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
-                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
     }
@@ -67,7 +66,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_FOCUS,
-                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
@@ -77,7 +75,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_BLUR,
-                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         //sensorManager?.unregisterListener(sensorListener)
@@ -95,7 +92,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
-                url = activity::class.java.name,
                 ts = System.currentTimeMillis()
             ))
         unRegisterListenerFromActivity(activity)

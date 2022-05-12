@@ -46,6 +46,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    flavorDimensions "version"
+
+    productFlavors {
+        androidLib {
+            dimension "version"
+        }
+        reactNativeLib {
+            dimension "version"
+        }
+    }
+
     buildFeatures {
         dataBinding true
         viewBinding true
@@ -62,13 +74,14 @@ android {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/ASL2.0']
         }
     }
+    namespace 'com.sample.neuroid.us'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.6.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     testImplementation 'junit:junit:4.+'
@@ -85,7 +98,6 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:2.4.2"
     implementation "androidx.fragment:fragment-ktx:1.4.1"
 
-    //implementation files('libs/neuro-id-android-sdk-debug.aar') // QA
-    implementation files('libs/neuro-id-android-sdk-release.aar') // Production
+    implementation project(':NeuroID')
     implementation "androidx.security:security-crypto:1.1.0-alpha03"
 }

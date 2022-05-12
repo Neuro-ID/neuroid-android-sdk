@@ -37,7 +37,7 @@ fun registerViewsEventsForActivity(activity: Activity) {
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    identifyAllViews(viewMainContainer, activity::class.java.simpleName, guid)
+    identifyAllViews(viewMainContainer, guid)
 }
 
 fun registerViewsEventsForFragment(activity: Activity) {
@@ -55,7 +55,7 @@ fun registerViewsEventsForFragment(activity: Activity) {
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    identifyAllViews(viewMainContainer, activity::class.java.simpleName, guid)
+    identifyAllViews(viewMainContainer, guid)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {
