@@ -37,7 +37,7 @@ android {
 
     libraryVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "neuro-id-android-sdk-${variant.buildType.name}.aar"
+            outputFileName = "neuro-id-android-sdk-${variant.getFlavorName()}-${variant.buildType.name}.aar"
         }
     }
     compileOptions {
