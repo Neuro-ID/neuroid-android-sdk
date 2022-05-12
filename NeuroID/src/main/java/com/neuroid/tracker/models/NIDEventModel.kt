@@ -105,7 +105,10 @@ data class NIDEventModel(
             tch?.let { jsonObject.put("tch", it) }
             url?.let { jsonObject.put("url", it) }
             ns?.let { jsonObject.put("ns", it) }
-            jsl?.let { jsonObject.put("jsl", it) }
+            jsl?.let {
+                val values = JSONArray()
+                jsonObject.put("jsl", values)
+            }
             jsv?.let {
                 if (it == "null") {
                     jsonObject.put("jsv", null)
