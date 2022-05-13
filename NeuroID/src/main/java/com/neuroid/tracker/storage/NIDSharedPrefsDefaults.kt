@@ -160,8 +160,6 @@ class NIDSharedPrefsDefaults(
         return String.format("%02x", rawId)
     }
 
-    fun getSDKVersion() = "${Build.VERSION.RELEASE}-android-${Build.VERSION.SDK_INT}"
-
     fun getLocale(): String = Locale.getDefault().toString()
 
     fun getLanguage(): String = Locale.getDefault().language
