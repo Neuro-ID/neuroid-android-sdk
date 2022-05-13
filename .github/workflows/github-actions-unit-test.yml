@@ -19,7 +19,7 @@ jobs:
 
       # Execute unit tests
       - name: Unit Test
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: ReactiveCircus/android-emulator-runner@v2.24.0
         with:
             api-level: 29
             profile: Nexus 6P
