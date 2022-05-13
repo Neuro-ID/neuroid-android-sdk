@@ -25,5 +25,5 @@ jobs:
             profile: Nexus 6P
             emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
             disable-animations: false
-            script: ./gradlew :app:connectedandroidLibDebugCheck
+            script: ./gradlew :app:connectedandroidLibDebugAndroidTest
 
