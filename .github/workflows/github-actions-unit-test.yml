@@ -19,10 +19,11 @@ jobs:
 
       # Execute unit tests
       - name: Unit Test
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: ReactiveCircus/android-emulator-runner@v2.24.0
         with:
             api-level: 29
             profile: Nexus 6P
             emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            script: ./gradlew :app:connectedCheck
+            disable-animations: false
+            script: ./gradlew :app:connectedandroidLibDebugAndroidTest
 

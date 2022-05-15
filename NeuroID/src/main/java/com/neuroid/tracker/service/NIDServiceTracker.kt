@@ -94,7 +94,7 @@ object NIDServiceTracker {
             "pid" to sharedDefaults.getPageId(),
             "iid" to sharedDefaults.getIntermediateId(),
             "url" to screenName,
-            "jsv" to sharedDefaults.getSDKVersion(),
+            "jsv" to "4.android-1.2.1",
             "events" to events
         )
 
