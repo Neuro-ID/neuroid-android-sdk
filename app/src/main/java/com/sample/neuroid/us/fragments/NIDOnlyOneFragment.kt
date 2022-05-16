@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.databinding.NidFragmentOnlyOneBinding
 
 class NIDOnlyOneFragment: Fragment() {
@@ -17,6 +18,7 @@ class NIDOnlyOneFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        NeuroID.getInstance().setScreenName("NID_ONLY_ONE_FRAGMENT_PAGE")
         binding.seekBarOne.max = 100
         binding.seekBarOne.progress = 20
     }

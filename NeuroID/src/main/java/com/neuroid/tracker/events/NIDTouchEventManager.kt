@@ -23,7 +23,8 @@ class NIDTouchEventManager(
     fun detectView(motionEvent: MotionEvent?, timeMills: Long) {
         motionEvent?.let {
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
-            val nameView = currentView?.getIdOrTag().orEmpty()
+            val nameView = currentView?.getIdOrTag() ?: "main_view"
+
             detectChangesOnView(currentView,timeMills, motionEvent.action)
 
             when(it.action) {

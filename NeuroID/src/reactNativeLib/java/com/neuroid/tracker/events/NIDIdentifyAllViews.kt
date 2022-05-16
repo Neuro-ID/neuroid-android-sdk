@@ -66,10 +66,13 @@ private fun registerComponent(view: View, guid: String) {
         } else {
             "/${NIDServiceTracker.screenFragName}"
         }
-        val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+        val urlView = NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
         val attrs = "{" +
-                "\"n\":\"guid\"" +
+                "\"n\":\"guid\"," +
                 "\"v\":\"$guid\"" +
+                "}|{" +
+                "\"n\":\"screenHierarchy\"," +
+                "\"v\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
                 "}"
 
         getDataStoreInstance()
