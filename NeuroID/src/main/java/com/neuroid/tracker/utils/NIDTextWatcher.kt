@@ -17,23 +17,11 @@ class NIDTextWatcher(
 
     override fun onTextChanged(sequence: CharSequence?, p1: Int, p2: Int, p3: Int) {
         val attrs = listOf(
-            NIDAttrItem("value", "S~C~~${sequence?.length ?: 0}").getJson(),
+            NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
             NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
         )
 
         val ts = System.currentTimeMillis()
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = KEY_UP,
-                    ts = ts,
-                    tg = hashMapOf(
-                        "tgs" to idName,
-                        "etn" to INPUT,
-                        "et" to "text"
-                    )
-                )
-            )
 
         getDataStoreInstance()
             .saveEvent(
