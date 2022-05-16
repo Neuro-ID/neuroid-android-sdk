@@ -13,6 +13,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
+        NIDServiceTracker.screenName = "AppInit"
         NIDServiceTracker.screenFragName = f::class.java.simpleName
 
         getDataStoreInstance()

@@ -8,6 +8,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
+import com.neuroid.tracker.utils.getParents
 
 fun identifyAllViews(viewParent: ViewGroup, guid: String) {
     viewParent.forEach {
@@ -56,10 +57,14 @@ private fun registerComponent(view: View, guid: String) {
         } else {
             "/${NIDServiceTracker.screenFragName}"
         }
-        val urlView = NIDServiceTracker.screenName + "$pathFrag/" + idName
+        val urlView = NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+
         val attrs = "{" +
                 "\"n\":\"guid\"," +
                 "\"v\":\"$guid\"" +
+                "}|{" +
+                "\"n\":\"screenHierarchy\"," +
+                "\"v\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
                 "}"
 
         getDataStoreInstance()
