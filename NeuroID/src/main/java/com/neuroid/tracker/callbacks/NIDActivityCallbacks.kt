@@ -17,8 +17,9 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     //private val sensorListener = NIDSensorListener()
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
-        NIDServiceTracker.screenName = activity::class.java.name
+        NIDServiceTracker.screenActivityName = activity::class.java.name
         NIDServiceTracker.screenFragName = ""
+        NIDServiceTracker.screenName = "AppInit"
         val orientation = activity.resources.configuration.orientation
 
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager

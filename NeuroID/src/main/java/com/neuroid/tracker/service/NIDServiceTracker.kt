@@ -15,9 +15,11 @@ import java.net.URL
 import java.net.URLEncoder
 
 object NIDServiceTracker {
-
     @get:Synchronized @set:Synchronized
     var screenName = ""
+
+    @get:Synchronized @set:Synchronized
+    var screenActivityName = ""
 
     @get:Synchronized @set:Synchronized
     var screenFragName = ""
@@ -44,7 +46,7 @@ object NIDServiceTracker {
             conn.setRequestProperty("Authorization", "Basic $key")
 
             val listJson = "[${listEvents.joinToString(",")}]"
-                .replace("\"url\":\"\"","\"url\":\"$screenName\"")
+                .replace("\"url\":\"\"","\"url\":\"$screenActivityName\"")
                 .replace("\\/","/")
 
             val data = getContentForm(context, listJson.encodeToBase64(), key)
@@ -93,7 +95,7 @@ object NIDServiceTracker {
             "uid" to sharedDefaults.getUserId(),
             "pid" to sharedDefaults.getPageId(),
             "iid" to sharedDefaults.getIntermediateId(),
-            "url" to screenName,
+            "url" to screenActivityName,
             "jsv" to "4.android-1.2.1",
             "events" to events
         )
