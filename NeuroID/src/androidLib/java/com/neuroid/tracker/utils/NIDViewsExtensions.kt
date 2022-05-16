@@ -11,7 +11,7 @@ fun View?.getIdOrTag(): String {
     } else {
         if (this.id == View.NO_ID) {
             if(this.tag == null) {
-                "no_id"
+                this.getRandomId()
             } else {
                 this.tag.toString()
             }
@@ -19,10 +19,16 @@ fun View?.getIdOrTag(): String {
             try {
                 this.resources.getResourceEntryName(this.id)
             } catch (e: Resources.NotFoundException) {
-                return "no_id"
+                return this.getRandomId()
             }
         }
     }
+}
+
+fun View.getRandomId(): String {
+    val viewCoordinates = "${this.x}_${this.y}".replace(".","")
+
+    return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
 fun FragmentManager.hasFragments(): Boolean {
