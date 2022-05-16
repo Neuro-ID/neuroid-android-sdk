@@ -76,7 +76,7 @@ private fun registerComponent(view: View, guid: String) {
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
-                    et = et + "//" + view.javaClass.simpleName,
+                    et = et + "::" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,
                     eid = idName,
