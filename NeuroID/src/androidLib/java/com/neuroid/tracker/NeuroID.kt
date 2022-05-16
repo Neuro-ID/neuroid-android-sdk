@@ -5,6 +5,7 @@ import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
@@ -60,6 +61,10 @@ class NeuroID private constructor(
                 ts = System.currentTimeMillis()
             )
         )
+    }
+
+    fun setScreenName(screen: String) {
+        NIDServiceTracker.screenName = screen
     }
 
     fun getSessionId(): String {

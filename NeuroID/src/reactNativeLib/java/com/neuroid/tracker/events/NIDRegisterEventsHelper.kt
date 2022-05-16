@@ -9,7 +9,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import java.util.*
 
 fun registerLaterLifecycleFragments(activity: Activity) {
-    NIDServiceTracker.screenName = activity::class.java.name
+    NIDServiceTracker.screenActivityName = activity::class.java.name
 
     val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
     fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
