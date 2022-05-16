@@ -57,5 +57,5 @@ jobs:
           destination_folder: 'neuroid-reactnative-sdk/android/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
-          destination_branch: 'feature/fastlane_publish'
+          destination_branch: 'main'
           commit_message: 'Updating library version'
