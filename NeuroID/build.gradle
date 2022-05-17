@@ -47,12 +47,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    namespace 'com.neuroid.tracker'
-    /*libraryVariants.all { variant ->
-        variant.outputs.all {
-            outputFileName = "Neuro-Id-Android-SDK-${defaultConfig.versionName}-${variant.buildType.name}.aar"
-        }
-    }*/
 }
 
 dependencies {
