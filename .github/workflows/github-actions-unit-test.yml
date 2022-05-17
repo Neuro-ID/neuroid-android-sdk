@@ -17,6 +17,22 @@ jobs:
         with:
           java-version: 11
 
+      - name: Cache Gradle and wrapper
+        uses: actions/cache@v2
+        with:
+            path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+            restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant Permission for Gradlew to Execute
+        run: chmod +x gradlew
+
+      - name: Build AAR ⚙️🛠
+        run: bash ./gradlew :app:assembleDebug
+
       # Execute unit tests
       - name: Unit Test
         uses: ReactiveCircus/android-emulator-runner@v2.24.0
