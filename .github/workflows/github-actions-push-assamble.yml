@@ -1,13 +1,12 @@
-name: Android Assamble
+name: Publishing NeuroID SDK
 on:
   push:
     branches:
       - master
-      - feature/ENG-2156_commit_message
 
 jobs:
   publish:
-    name: Release Simple Library
+    name: Release NeuroID SDK
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +34,7 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Pushes Library on Sandbox Project
+      - name: Pushes Release Library on Sandbox Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -48,7 +47,7 @@ jobs:
           destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Pushes Library on Sandbox Project
+      - name: Pushes Debug Library on Sandbox Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -61,7 +60,7 @@ jobs:
           destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Pushes Library on ReactNative Project
+      - name: Pushes Release Library on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
@@ -74,7 +73,7 @@ jobs:
           destination_branch: 'main'
           commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Pushes Library on ReactNative Project
+      - name: Pushes Debug Library on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
