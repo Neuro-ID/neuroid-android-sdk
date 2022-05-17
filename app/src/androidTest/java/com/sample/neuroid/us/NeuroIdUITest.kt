@@ -46,8 +46,8 @@ class NeuroIdUITest {
     private val testDispatcher = TestCoroutineDispatcher()
 
     @get:Rule
-    var activityRule: ActivityScenarioRule<MainActivity>
-            = ActivityScenarioRule(MainActivity::class.java)
+    var activityRule: ActivityScenarioRule<MainActivity> =
+        ActivityScenarioRule(MainActivity::class.java)
 
     /**
      * The sending of events to the server is stopped so that they are not eliminated from
@@ -77,11 +77,9 @@ class NeuroIdUITest {
         Thread.sleep(500)
         NeuroID.getInstance().stop()
 
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"CREATE_SESSION\"") }
-
+        val eventType = "\"type\":\"CREATE_SESSION\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
-
         assertThat(event).matches(NID_STRUCT_CREATE_SESSION)
     }
 
@@ -96,8 +94,8 @@ class NeuroIdUITest {
         Thread.sleep(500)
         NeuroID.getInstance().stop()
 
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"SET_USER_ID\"") }
+        val eventType = "\"type\":\"SET_USER_ID\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateSetUserId - Event: [$event]")
 
@@ -150,9 +148,8 @@ class NeuroIdUITest {
 
         Thread.sleep(500)
 
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"SLIDER_CHANGE\"") }
-
+        val eventType = "\"type\":\"SLIDER_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
 
 
@@ -175,9 +172,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT\"") }.orEmpty()
+        val eventType = "\"type\":\"FORM_SUBMIT\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateFormSubmit - Event: $event")
 
@@ -200,10 +196,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT_SUCCESS\"") }.orEmpty()
-
+        val eventType = "\"type\":\"FORM_SUBMIT_SUCCESS\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateFormSubmitSuccess - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_FORM_SUCCESS)
@@ -225,9 +219,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"FORM_SUBMIT_FAILURE\"") }.orEmpty()
+        val eventType = "\"type\":\"FORM_SUBMIT_FAILURE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateFormSubmitFailure - Event: $event")
 
@@ -250,9 +243,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val event = strEvents.firstOrNull { it.contains("\"type\":\"CUSTOM_EVENT\"") }.orEmpty()
+        val eventType = "\"type\":\"CUSTOM_EVENT\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateFormCustom - Event: $event")
 
@@ -267,8 +259,8 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_LOAD\"") }.orEmpty()
+        val eventType = "\"type\":\"WINDOW_LOAD\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateLifecycleStart - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_LOAD)
@@ -282,8 +274,9 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_FOCUS\"") }.orEmpty()
+
+        val eventType = "\"type\":\"WINDOW_FOCUS\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateLifecycleResume - Event: $event")
 
@@ -302,8 +295,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_BLUR\"") }.orEmpty()
+        val eventType = "\"type\":\"WINDOW_BLUR\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateLifecyclePause - Event: $event")
 
@@ -324,9 +317,8 @@ class NeuroIdUITest {
         Espresso.pressBack()
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_UNLOAD\"") }.orEmpty()
+        val eventType = "\"type\":\"WINDOW_UNLOAD\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateLifecycleStop - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_UNLOAD)
@@ -344,8 +336,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_START\"") }.orEmpty()
+        val eventType = "\"type\":\"TOUCH_START\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateClickOnScreen - Event: $event")
         assertThat(event).matches(NID_STRUCT_TOUCH_START)
     }
@@ -362,9 +354,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-
-        val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_END\"") }.orEmpty()
+        val eventType = "\"type\":\"TOUCH_END\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateEndClickScreen - Event: $event")
         assertThat(event).matches(NID_STRUCT_TOUCH_END)
     }
@@ -382,6 +373,7 @@ class NeuroIdUITest {
 
         val events = getDataStoreInstance().getAllEvents()
         val event = events.firstOrNull { it.contains("\"type\":\"TOUCH_MOVE\"") }.orEmpty()
+
         NIDLog.d("----> UITest", "----> validateSwipeScreen - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_TOUCH_MOVE)
     }
@@ -397,8 +389,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(1000)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_RESIZE\"") }.orEmpty()
+        val eventType = "\"type\":\"WINDOW_RESIZE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateWindowsResize - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_RESIZE)
     }
@@ -414,11 +406,9 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         Thread.sleep(500)
-        device.setOrientationNatural()
-        Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"WINDOW_ORIENTATION_CHANGE\"") }.orEmpty()
+        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
@@ -434,8 +424,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"FOCUS\"") }.orEmpty()
+        val eventType = "\"type\":\"FOCUS\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateFocusOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_FOCUS)
     }
@@ -456,8 +446,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"BLUR\"") }.orEmpty()
+        val eventType = "\"type\":\"BLUR\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateBlurOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_BLUR)
     }
@@ -469,13 +459,13 @@ class NeuroIdUITest {
     fun validateInputText() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-
+        val text = "Some text"
         onView(withId(R.id.editText_normal_field))
-            .perform(typeText("Some text"))
+            .perform(typeText(text))
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"INPUT\"") }.orEmpty()
+        val eventType = "\"type\":\"INPUT\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,text.length)
         NIDLog.d("----> UITest", "----> validateInputText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_INPUT)
     }
@@ -496,8 +486,8 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"TEXT_CHANGE\"") }.orEmpty()
+        val eventType = "\"type\":\"TEXT_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateTypeTextOnEditText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_TEXT_CHANGE)
     }
@@ -520,8 +510,8 @@ class NeuroIdUITest {
 
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"RADIO_CHANGE\"") }.orEmpty()
+        val eventType = "\"type\":\"RADIO_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
     }
@@ -544,8 +534,8 @@ class NeuroIdUITest {
 
         Thread.sleep(500)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"CHECKBOX_CHANGE\"") }
+        val eventType = "\"type\":\"CHECKBOX_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateClickControlViews - Event: $event")
         assertThat(event).matches(NID_STRUCT_CHECKBOX_CHANGE)
     }
@@ -567,8 +557,8 @@ class NeuroIdUITest {
 
         Thread.sleep(1000)
 
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"SELECT_CHANGE\"") }
+        val eventType = "\"type\":\"SELECT_CHANGE\""
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
     }
@@ -626,4 +616,11 @@ class NeuroIdUITest {
             }
         }
     }
+
+    private fun validateEventCount(eventList: List<String>, eventType: String,maxEventsCount:Int = 1): String {
+        val events = eventList.filter { it.contains(eventType) }
+        assert(events.size == maxEventsCount)
+        return events.first()
+    }
+
 }

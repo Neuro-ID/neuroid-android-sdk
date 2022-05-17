@@ -20,6 +20,5 @@ class NIDOnlyOneFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         NeuroID.getInstance().setScreenName("NID_ONLY_ONE_FRAGMENT_PAGE")
         binding.seekBarOne.max = 100
-        binding.seekBarOne.progress = 20
     }
 }
