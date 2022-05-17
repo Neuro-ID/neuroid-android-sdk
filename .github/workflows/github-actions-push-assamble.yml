@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - feature/ENG-2156_commit_message
 
 jobs:
   publish:
