@@ -10,7 +10,6 @@ import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
@@ -32,15 +31,6 @@ class NIDFocusChangeListener: ViewTreeObserver.OnGlobalFocusChangeListener {
                             )
                         )
                     )
-
-                val textWatcher = NIDTextWatcher(idName)
-                newView.removeTextChangedListener(textWatcher)
-                newView.addTextChangedListener(textWatcher)
-
-                val actionCallback = newView.customSelectionActionModeCallback
-                if (actionCallback !is NIDContextMenuCallbacks) {
-                    newView.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
-                }
 
                 lastEditText = if (lastEditText == null) {
                     newView
