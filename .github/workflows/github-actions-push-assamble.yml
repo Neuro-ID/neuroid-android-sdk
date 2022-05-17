@@ -46,6 +46,20 @@ jobs:
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'master'
+          commit_message: ${{ github.event.head_commit.message }}
+
+      - name: Pushes Library on Sandbox Project
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-androidLib-debug.aar'
+          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
+          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
+          user_email: 'alejandro.bautista@neuro-id.com'
+          user_name: 'alejandrobautistar'
+          destination_branch: 'master'
+          commit_message: ${{ github.event.head_commit.message }}
 
       - name: Pushes Library on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
@@ -58,6 +72,7 @@ jobs:
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'main'
+          commit_message: ${{ github.event.head_commit.message }}
 
       - name: Pushes Library on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
