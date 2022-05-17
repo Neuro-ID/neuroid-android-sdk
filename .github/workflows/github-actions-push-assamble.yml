@@ -1,4 +1,4 @@
-name: Android Assamble
+name: Publishing NeuroID SDK
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   publish:
-    name: Release Simple Library
+    name: Release NeuroID SDK
     runs-on: ubuntu-latest
 
     steps:
@@ -32,30 +32,30 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build AAR ⚙️🛠
-        run: bash ./gradlew :NeuroID:assembleRelease
+        run: bash ./gradlew :NeuroID:assemble
 
-      - name: Pushes Library on Sandbox Project
+      - name: Push SDK on Sandbox Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-androidLib-release.aar'
+          source_file: 'NeuroID/build/outputs/aar/androidLib/'
           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
+          destination_folder: 'app/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'master'
-          commit_message: 'Updating library version'
+          commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Pushes Library on ReactNative Project
+      - name: Push SDK on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-reactNativeLib-release.aar'
+          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
           destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'neuroid-reactnative-sdk/android/libs/'
+          destination_folder: 'android/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'main'
-          commit_message: 'Updating library version'
+          commit_message: ${{ github.event.head_commit.message }}
