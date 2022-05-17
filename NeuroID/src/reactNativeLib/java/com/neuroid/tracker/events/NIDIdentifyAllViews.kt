@@ -4,11 +4,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
+import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
@@ -62,6 +64,17 @@ private fun registerComponent(view: View, guid: String) {
     }
 
     if (et.isNotEmpty()) {
+        if (view is EditText) {
+            val textWatcher = NIDTextWatcher(idName)
+            view.removeTextChangedListener(textWatcher)
+            view.addTextChangedListener(textWatcher)
+
+            val actionCallback = view.customSelectionActionModeCallback
+            if (actionCallback !is NIDContextMenuCallbacks) {
+                view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+            }
+        }
+
         val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
             ""
         } else {
