@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feature/ENG-2156_commit_message
 
 jobs:
   publish:
@@ -34,12 +35,12 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Pushes Release Library on Sandbox Project
+      - name: Push SDK on Sandbox Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-androidLib-release.aar'
+          source_file: 'NeuroID/build/outputs/aar/androidLib/'
           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
           destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
@@ -47,38 +48,12 @@ jobs:
           destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Pushes Debug Library on Sandbox Project
+      - name: Push SDK on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-androidLib-debug.aar'
-          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
-          user_email: 'alejandro.bautista@neuro-id.com'
-          user_name: 'alejandrobautistar'
-          destination_branch: 'master'
-          commit_message: ${{ github.event.head_commit.message }}
-
-      - name: Pushes Release Library on ReactNative Project
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-reactNativeLib-release.aar'
-          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'neuroid-reactnative-sdk/android/libs/'
-          user_email: 'alejandro.bautista@neuro-id.com'
-          user_name: 'alejandrobautistar'
-          destination_branch: 'main'
-          commit_message: ${{ github.event.head_commit.message }}
-
-      - name: Pushes Debug Library on ReactNative Project
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-reactNativeLib-debug.aar'
+          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
           destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
           destination_folder: 'neuroid-reactnative-sdk/android/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
