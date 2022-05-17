@@ -74,7 +74,6 @@ android {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/ASL2.0']
         }
     }
-    namespace 'com.sample.neuroid.us'
 }
 
 dependencies {
