@@ -42,7 +42,7 @@ jobs:
         with:
           source_file: 'NeuroID/build/outputs/aar/androidLib/'
           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
+          destination_folder: 'app/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'master'
@@ -55,7 +55,7 @@ jobs:
         with:
           source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
           destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'neuroid-reactnative-sdk/android/libs/'
+          destination_folder: 'android/libs/'
           user_email: 'alejandro.bautista@neuro-id.com'
           user_name: 'alejandrobautistar'
           destination_branch: 'main'
