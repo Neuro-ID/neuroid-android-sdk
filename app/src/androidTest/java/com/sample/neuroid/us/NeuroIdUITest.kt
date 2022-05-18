@@ -296,7 +296,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"WINDOW_BLUR\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
 
         NIDLog.d("----> UITest", "----> validateLifecyclePause - Event: $event")
 
@@ -318,7 +318,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"WINDOW_UNLOAD\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
         NIDLog.d("----> UITest", "----> validateLifecycleStop - Event: $event")
 
         assertThat(event).matches(NID_STRUCT_WINDOW_UNLOAD)
@@ -465,7 +465,8 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"INPUT\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,text.length)
+        val event =
+            validateEventCount(getDataStoreInstance().getAllEvents(), eventType, text.length)
         NIDLog.d("----> UITest", "----> validateInputText - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_INPUT)
     }
@@ -617,9 +618,15 @@ class NeuroIdUITest {
         }
     }
 
-    private fun validateEventCount(eventList: List<String>, eventType: String,maxEventsCount:Int = 1): String {
+    private fun validateEventCount(
+        eventList: List<String>,
+        eventType: String,
+        maxEventsCount: Int = 1
+    ): String {
         val events = eventList.filter { it.contains(eventType) }
-        assert(events.size == maxEventsCount)
+        if (maxEventsCount > 0) {
+            assert(events.size == maxEventsCount)
+        }
         return events.first()
     }
 
