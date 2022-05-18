@@ -1,5 +1,6 @@
 package com.neuroid.tracker.events
 
+import android.util.Log
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
@@ -91,12 +92,15 @@ class NIDTouchEventManager(
                 when(currentView) {
                     is CheckBox -> {
                         type = CHECKBOX_CHANGE
+                        Log.i("CheckBoxChange","CheckBoxID:"+currentView.getIdOrTag())
                     }
                     is RadioButton -> {
                         type = RADIO_CHANGE
+                        Log.i("RadioButtonChange","CheckBoxID:"+currentView.getIdOrTag())
                     }
                     is SeekBar -> {
                         type = SLIDER_CHANGE
+                        Log.i("SliderChange","CheckBoxID:"+currentView.getIdOrTag())
                     }
                     else -> {
                         // Null

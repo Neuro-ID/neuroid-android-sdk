@@ -9,7 +9,7 @@ import com.neuroid.tracker.callbacks.NIDFocusChangeListener
 import com.neuroid.tracker.callbacks.NIDLayoutChangeListener
 import java.util.*
 
-fun registerViewsEventsForActivity(activity: Activity) {
+fun registerViewsEventsForActivity(activity: Activity, hasNotFragments: Boolean) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     )
@@ -24,8 +24,22 @@ fun registerViewsEventsForActivity(activity: Activity) {
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
+    if (hasNotFragments) {
+        android.os.Handler(Looper.getMainLooper()).postDelayed({
+            identifyAllViews(viewMainContainer, guid) }, 400)
+    }
+}
+
+fun registerViewsEventsForFragment(activity: Activity) {
+    val viewMainContainer = activity.window.decorView.findViewById<View>(
+        android.R.id.content
+    )
+
+    val hashCodeAct = activity.hashCode()
+    val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid) }, 400)
+        identifyAllViews(viewMainContainer as ViewGroup, guid) }, 400)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {
