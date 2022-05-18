@@ -23,10 +23,11 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         val orientation = activity.resources.configuration.orientation
 
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+        val hasFragments = fragManager?.hasFragments() ?: false
 
-        fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
-        fragManager?.let {
-            registerViewsEventsForActivity(activity, it.hasFragments().not())
+        registerViewsEventsForActivity(activity, hasFragments.not())
+        if (hasFragments) {
+            fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         }
 
         if (actualOrientation == 0) {

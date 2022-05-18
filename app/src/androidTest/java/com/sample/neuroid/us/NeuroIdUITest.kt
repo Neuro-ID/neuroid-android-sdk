@@ -37,7 +37,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Neuro ID: 11 UI Test
+ * Neuro ID: 26 UI Test
  */
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
