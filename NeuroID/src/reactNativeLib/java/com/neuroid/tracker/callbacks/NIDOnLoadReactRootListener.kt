@@ -4,8 +4,10 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.registerViewsEventsForActivity
 import com.neuroid.tracker.utils.getReactRoot
+import com.neuroid.tracker.utils.hasFragments
 
 class NIDOnLoadReactRootListener(
     private val viewMainContainer: View,
@@ -20,7 +22,10 @@ class NIDOnLoadReactRootListener(
                 reactRootView?.let {
                     if (reactRootView.childCount != 0) {
                         isRegistered = true
-                        registerViewsEventsForActivity(activity)
+                        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+                        val hasNotFrag = fragManager?.hasFragments()?.not() ?: true
+
+                        registerViewsEventsForActivity(activity, hasNotFrag)
 
                         viewMainContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     }

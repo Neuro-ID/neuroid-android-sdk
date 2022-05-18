@@ -21,7 +21,7 @@ fun registerLaterLifecycleFragments(activity: Activity) {
     viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDOnLoadReactRootListener(viewMainContainer, activity))
 }
 
-fun registerViewsEventsForActivity(activity: Activity) {
+fun registerViewsEventsForActivity(activity: Activity, hasNotFragments: Boolean) {
 
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
@@ -34,10 +34,11 @@ fun registerViewsEventsForActivity(activity: Activity) {
     val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
     activity.window.callback = NIDWindowCallback(callBack, touchManager)
 
-    val hashCodeAct = activity.hashCode()
-    val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-
-    identifyAllViews(viewMainContainer, guid)
+    if (hasNotFragments) {
+        val hashCodeAct = activity.hashCode()
+        val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+        identifyAllViews(viewMainContainer, guid)
+    }
 }
 
 fun registerViewsEventsForFragment(activity: Activity) {
@@ -45,17 +46,10 @@ fun registerViewsEventsForFragment(activity: Activity) {
         android.R.id.content
     )
 
-    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
-    viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
-
-    val callBack = activity.window.callback
-    val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
-    activity.window.callback = NIDWindowCallback(callBack, touchManager)
-
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    identifyAllViews(viewMainContainer, guid)
+    identifyAllViews(viewMainContainer as ViewGroup, guid)
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {

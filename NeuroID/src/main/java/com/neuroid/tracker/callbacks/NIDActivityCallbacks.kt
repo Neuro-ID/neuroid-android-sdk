@@ -26,9 +26,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
         fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         fragManager?.let {
-            if (it.hasFragments().not()) {
-                registerViewsEventsForActivity(activity)
-            }
+            registerViewsEventsForActivity(activity, it.hasFragments().not())
         }
 
         if (actualOrientation == 0) {
