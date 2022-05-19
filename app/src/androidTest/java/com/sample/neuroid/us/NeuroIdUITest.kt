@@ -30,15 +30,15 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.anything
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import org.junit.*
+import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 
 /**
  * Neuro ID: 26 UI Test
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
 
@@ -70,8 +70,8 @@ class NeuroIdUITest {
     /**
      * Validate CREATE_SESSION on start method
      */
-    @Test
-    fun validateCreateSession() {
+    @Test()
+    fun test01ValidateCreateSession() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance().start()
         Thread.sleep(500)
@@ -87,7 +87,7 @@ class NeuroIdUITest {
      * Validate SET_USER_ID
      */
     @Test
-    fun validateSetUserId() {
+    fun test02ValidateSetUserId() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance().start()
         NeuroID.getInstance().setUserID("UUID1234")
@@ -106,7 +106,7 @@ class NeuroIdUITest {
      * Validate REGISTER_TARGET on MainActivity class
      */
     @Test
-    fun validateRegisterTargets() {
+    fun test03ValidateRegisterTargets() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(2000) //Wait a half second for create the MainActivity View
 
@@ -123,7 +123,7 @@ class NeuroIdUITest {
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
      */
     @Test
-    fun validateSliderChange() {
+    fun test04ValidateSliderChange() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -160,7 +160,7 @@ class NeuroIdUITest {
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class
      */
     @Test
-    fun validateFormSubmit() {
+    fun test05ValidateFormSubmit() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -184,7 +184,7 @@ class NeuroIdUITest {
      * Validate FORM_SUBMIT_SUCCESS on NIDCustomEventsActivity class
      */
     @Test
-    fun validateFormSubmitSuccess() {
+    fun test06ValidateFormSubmitSuccess() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -207,7 +207,7 @@ class NeuroIdUITest {
      * Validate FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
      */
     @Test
-    fun validateFormSubmitFailure() {
+    fun test07ValidateFormSubmitFailure() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -231,7 +231,7 @@ class NeuroIdUITest {
      * Validate CUSTOM_EVENT on NIDCustomEventsActivity class
      */
     @Test
-    fun validateFormCustomEvent() {
+    fun test08ValidateFormCustomEvent() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -255,7 +255,7 @@ class NeuroIdUITest {
      * Validate WINDOW_LOAD on MainActivity class
      */
     @Test
-    fun validateLifecycleStart() {
+    fun test09ValidateLifecycleStart() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
@@ -270,7 +270,7 @@ class NeuroIdUITest {
      * Validate WINDOW_FOCUS on MainActivity class
      */
     @Test
-    fun validateLifecycleResume() {
+    fun test10ValidateLifecycleResume() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) //Wait a half second for create the MainActivity View
@@ -287,7 +287,7 @@ class NeuroIdUITest {
      * Validate WINDOW_BLUR on MainActivity class
      */
     @Test
-    fun validateLifecyclePause() {
+    fun test11ValidateLifecyclePause() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500)
@@ -307,7 +307,7 @@ class NeuroIdUITest {
      * Validate WINDOW_UNLOAD on MainActivity class
      */
     @Test
-    fun validateLifecycleStop() {
+    fun test12ValidateLifecycleStop() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500)
@@ -328,7 +328,7 @@ class NeuroIdUITest {
      * Validate TOUCH_START when the user click on screen
      */
     @Test
-    fun validateTouchStart() {
+    fun test13ValidateTouchStart() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -346,7 +346,7 @@ class NeuroIdUITest {
      * Validate TOUCH_END when the user up finger on screen
      */
     @Test
-    fun validateTouchEnd() {
+    fun test14ValidateTouchEnd() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -364,7 +364,7 @@ class NeuroIdUITest {
      * Validate TOUCH_MOVE when the user scroll on screen
      */
     @Test
-    fun validateSwipeScreen() {
+    fun test15ValidateSwipeScreen() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.layout_main))
@@ -382,12 +382,12 @@ class NeuroIdUITest {
      * Validate WINDOW_RESIZE when the user click on editText
      */
     @Test
-    fun validateWindowsResize() {
+    fun test16ValidateWindowsResize() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        Thread.sleep(1000)
+        Thread.sleep(5000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
@@ -396,28 +396,10 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
-     */
-    @Test
-    fun validateChangeScreenOrientation() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        val device = UiDevice.getInstance(getInstrumentation())
-
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-        device.setOrientationRight()
-        Thread.sleep(500)
-
-        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
-        assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
-    }
-
-    /**
      * Validate FOCUS when the user click on editText
      */
     @Test
-    fun validateFocusOnEditText() {
+    fun test17ValidateFocusOnEditText() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
@@ -434,7 +416,7 @@ class NeuroIdUITest {
      * Validate BLUR when the user change the focus
      */
     @Test
-    fun validateBlurOnEditText() {
+    fun test18ValidateBlurOnEditText() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
@@ -456,7 +438,7 @@ class NeuroIdUITest {
      * Validate INPUT when the user type on editText
      */
     @Test
-    fun validateInputText() {
+    fun test19ValidateInputText() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         val text = "Some text"
@@ -475,7 +457,7 @@ class NeuroIdUITest {
      * Validate TEXT_CHANGE when the user type on editText and change focus
      */
     @Test
-    fun validateTypeTextOnEditText() {
+    fun test21ValidateTypeTextOnEditText() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
@@ -497,7 +479,7 @@ class NeuroIdUITest {
      * Validate RADIO_CHANGE when the user click on it
      */
     @Test
-    fun validateRadioChange() {
+    fun test22ValidateRadioChange() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -521,7 +503,7 @@ class NeuroIdUITest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun validateCheckBox() {
+    fun test23ValidateCheckBox() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -545,7 +527,7 @@ class NeuroIdUITest {
      * Validate SELECT_CHANGE when the user select one item on list
      */
     @Test
-    fun validateComboBoxSelectItem() {
+    fun test24ValidateComboBoxSelectItem() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
@@ -554,29 +536,17 @@ class NeuroIdUITest {
 
         onView(withId(R.id.spinner_example))
             .perform(click())
+        Thread.sleep(1000)
         onData(anything()).atPosition(1).perform(click())
 
         Thread.sleep(1000)
 
         val eventType = "\"type\":\"SELECT_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
         NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
     }
 
-    /**
-     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
-     */
-    @Test
-    fun validateUserIsInactive() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(31000) // +1 second to wait write data
-
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"USER_INACTIVE\"") }
-        NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
-        assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
-    }
 
     /**
      * Validate the sending of data to the server correctly, if the return code of the server is
@@ -584,7 +554,7 @@ class NeuroIdUITest {
      */
     @ExperimentalCoroutinesApi
     @Test
-    fun validateSendDataToService() = runBlockingTest {
+    fun test25ValidateSendDataToService() = runBlockingTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         //Add some events:
         onView(withId(R.id.editText_normal_field))
@@ -599,6 +569,41 @@ class NeuroIdUITest {
             )
             assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
         }
+    }
+
+    /**
+     * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
+     */
+    @Test
+    fun test26ValidateChangeScreenOrientation() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val device = UiDevice.getInstance(getInstrumentation())
+
+        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        device.setOrientationRight()
+        Thread.sleep(2000)
+        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
+        val events = getDataStoreInstance().getAllEvents()
+        device.setOrientationNatural()
+        Thread.sleep(500)
+        val event = validateEventCount(events, eventType, 1)
+        NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
+        assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
+    }
+
+    /**
+     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
+     */
+    @Test
+    fun test27ValidateUserIsInactive() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(35000) // +1 second to wait write data
+
+        val events = getDataStoreInstance().getAllEvents()
+        val eventType = "\"type\":\"USER_INACTIVE\""
+        val event = validateEventCount(events, eventType)
+        NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
+        assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
     }
 
     fun setValue(value: Int): ViewAction {
@@ -625,7 +630,7 @@ class NeuroIdUITest {
     ): String {
         val events = eventList.filter { it.contains(eventType) }
         if (maxEventsCount > 0) {
-            assert(events.size == maxEventsCount)
+            assertEquals(maxEventsCount, events.size)
         }
         return events.first()
     }
