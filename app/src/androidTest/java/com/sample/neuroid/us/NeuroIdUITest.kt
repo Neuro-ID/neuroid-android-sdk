@@ -555,6 +555,7 @@ class NeuroIdUITest {
 
         onView(withId(R.id.spinner_example))
             .perform(click())
+        Thread.sleep(1000)
         onData(anything()).atPosition(1).perform(click())
 
         Thread.sleep(1000)
