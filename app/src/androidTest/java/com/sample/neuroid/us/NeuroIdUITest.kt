@@ -407,11 +407,12 @@ class NeuroIdUITest {
         device.setOrientationRight()
         Thread.sleep(500)
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 1)
-        NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
-        assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
+        val events = getDataStoreInstance().getAllEvents()
         device.setOrientationNatural()
         Thread.sleep(500)
+        val event = validateEventCount(events, eventType, 1)
+        NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
+        assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
 
     /**
