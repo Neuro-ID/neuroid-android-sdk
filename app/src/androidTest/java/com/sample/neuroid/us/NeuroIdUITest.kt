@@ -30,15 +30,14 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.anything
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import org.junit.*
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 
 /**
  * Neuro ID: 26 UI Test
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 class NeuroIdUITest {
 
@@ -70,7 +69,7 @@ class NeuroIdUITest {
     /**
      * Validate CREATE_SESSION on start method
      */
-    @Test
+    @Test()
     fun validateCreateSession() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance().start()
@@ -387,7 +386,7 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        Thread.sleep(1000)
+        Thread.sleep(5000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
@@ -406,9 +405,11 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         Thread.sleep(500)
+        device.setOrientationNatural()
+        Thread.sleep(500)
 
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
