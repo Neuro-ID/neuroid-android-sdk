@@ -1,6 +1,7 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -49,7 +50,10 @@ fun registerViewsEventsForFragment(activity: Activity) {
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    identifyAllViews(viewMainContainer as ViewGroup, guid)
+    android.os.Handler(Looper.getMainLooper()).postDelayed({
+        identifyAllViews(viewMainContainer as ViewGroup, guid)
+    }, 400)
+
 }
 
 fun unRegisterListenerFromActivity(activity: Activity) {

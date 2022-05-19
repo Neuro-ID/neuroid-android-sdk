@@ -4,7 +4,7 @@ import android.util.Base64
 import java.security.MessageDigest
 
 fun String.encodeToBase64(): String =
-    Base64.encodeToString(this.toByteArray(Charsets.UTF_8), Base64.DEFAULT)
+    Base64.encodeToString(this.toByteArray(Charsets.UTF_8), Base64.URL_SAFE)
 
 fun String.getSHA256(): String {
     return if (this.isBlank()) {
