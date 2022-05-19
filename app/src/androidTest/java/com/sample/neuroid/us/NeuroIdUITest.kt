@@ -405,7 +405,7 @@ class NeuroIdUITest {
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
-        Thread.sleep(500)
+        Thread.sleep(2000)
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
         val events = getDataStoreInstance().getAllEvents()
         device.setOrientationNatural()
@@ -562,7 +562,7 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val eventType = "\"type\":\"SELECT_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
         NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
     }
