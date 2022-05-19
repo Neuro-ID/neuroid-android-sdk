@@ -22,7 +22,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@v2.24.0
         with:
             api-level: 31
-            profile: Pixel 3 XL
+            profile: Nexus 6P
             emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
             disable-animations: false
             script: ./gradlew :app:connectedandroidLibDebugAndroidTest
