@@ -542,24 +542,11 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val eventType = "\"type\":\"SELECT_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
         NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
     }
 
-    /**
-     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
-     */
-    @Test
-    fun test25ValidateUserIsInactive() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(31000) // +1 second to wait write data
-
-        val events = getDataStoreInstance().getAllEvents()
-        val event = events.firstOrNull { it.contains("\"type\":\"USER_INACTIVE\"") }
-        NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
-        assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
-    }
 
     /**
      * Validate the sending of data to the server correctly, if the return code of the server is
@@ -567,7 +554,7 @@ class NeuroIdUITest {
      */
     @ExperimentalCoroutinesApi
     @Test
-    fun test26ValidateSendDataToService() = runBlockingTest {
+    fun test25ValidateSendDataToService() = runBlockingTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         //Add some events:
         onView(withId(R.id.editText_normal_field))
@@ -588,7 +575,7 @@ class NeuroIdUITest {
      * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
      */
     @Test
-    fun test27ValidateChangeScreenOrientation() {
+    fun test26ValidateChangeScreenOrientation() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         val device = UiDevice.getInstance(getInstrumentation())
 
@@ -602,6 +589,21 @@ class NeuroIdUITest {
         val event = validateEventCount(events, eventType, 1)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
+    }
+
+    /**
+     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
+     */
+    @Test
+    fun test27ValidateUserIsInactive() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(35000) // +1 second to wait write data
+
+        val events = getDataStoreInstance().getAllEvents()
+        val eventType = "\"type\":\"USER_INACTIVE\""
+        val event = validateEventCount(events, eventType)
+        NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
+        assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
     }
 
     fun setValue(value: Int): ViewAction {
