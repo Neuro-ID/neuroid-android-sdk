@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.anything
 import org.junit.*
+import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
@@ -405,13 +406,12 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         Thread.sleep(500)
-        device.setOrientationNatural()
-        Thread.sleep(500)
-
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 1)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
+        device.setOrientationNatural()
+        Thread.sleep(500)
     }
 
     /**
@@ -627,7 +627,7 @@ class NeuroIdUITest {
     ): String {
         val events = eventList.filter { it.contains(eventType) }
         if (maxEventsCount > 0) {
-            assert(events.size == maxEventsCount)
+            assertEquals(maxEventsCount, events.size)
         }
         return events.first()
     }
