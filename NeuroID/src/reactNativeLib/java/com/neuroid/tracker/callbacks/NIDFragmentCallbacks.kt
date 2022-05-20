@@ -34,18 +34,11 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_FOCUS,
-                ts = System.currentTimeMillis()))
+        //No operation
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_BLUR,
-                ts = System.currentTimeMillis()
-            ))
+        //No operation
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
