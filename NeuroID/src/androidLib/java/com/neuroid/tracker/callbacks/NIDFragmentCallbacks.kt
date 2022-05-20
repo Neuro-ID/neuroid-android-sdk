@@ -21,7 +21,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                 type = WINDOW_LOAD,
                 ts = System.currentTimeMillis()))
 
-        registerViewsEventsForActivity(f.requireActivity())
+        registerViewsEventsForFragment(f.requireActivity())
     }
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
