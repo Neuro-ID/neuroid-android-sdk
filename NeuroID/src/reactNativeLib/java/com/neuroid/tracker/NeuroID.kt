@@ -56,7 +56,7 @@ class NeuroID private constructor(
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = SET_USER_ID,
-                uid = userId ?: "",
+                uid = userId,
                 ts = System.currentTimeMillis()
             )
         )
@@ -128,10 +128,12 @@ class NeuroID private constructor(
 
     fun registerAllViewsForCallerActivity(activity: Activity) {
         NIDTimerActive.initTimer()
-        activity.application.registerActivityLifecycleCallbacks(NIDActivityCallbacks(
-            activity::class.java.name,
-            activity.resources.configuration.orientation
-        ))
+        activity.application.registerActivityLifecycleCallbacks(
+            NIDActivityCallbacks(
+                activity::class.java.name,
+                activity.resources.configuration.orientation
+            )
+        )
         registerLaterLifecycleFragments(activity)
     }
 

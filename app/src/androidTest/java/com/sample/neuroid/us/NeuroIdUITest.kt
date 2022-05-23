@@ -78,6 +78,7 @@ class NeuroIdUITest {
         Thread.sleep(2000) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
+        System.out.println(strEvents)
         val eventsRegister = strEvents.filter { it.contains("\"type\":\"REGISTER_TARGET\"") }
         val event = eventsRegister.firstOrNull().orEmpty()
 
