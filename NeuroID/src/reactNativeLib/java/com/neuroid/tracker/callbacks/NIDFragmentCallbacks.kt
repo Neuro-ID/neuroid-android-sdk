@@ -11,17 +11,23 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDServiceTracker.screenName = "AppInit"
-        NIDServiceTracker.screenFragName = f::class.java.simpleName
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            NIDServiceTracker.screenName = "AppInit"
+            NIDServiceTracker.screenFragName = f::class.java.simpleName
 
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_LOAD,
-                ts = System.currentTimeMillis()))
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_LOAD,
+                        ts = System.currentTimeMillis()
+                    )
+                )
 
-        registerViewsEventsForFragment(f.requireActivity())
+            registerTargetFromFragment(f.requireActivity(), false)
+        }
     }
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
@@ -34,18 +40,11 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_FOCUS,
-                ts = System.currentTimeMillis()))
+        //No operation
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_BLUR,
-                ts = System.currentTimeMillis()
-            ))
+        //No operation
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -57,10 +56,14 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_UNLOAD,
-                ts = System.currentTimeMillis()
-            ))
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_UNLOAD,
+                        ts = System.currentTimeMillis()
+                    )
+                )
+        }
     }
 }

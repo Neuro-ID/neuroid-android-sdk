@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -127,6 +128,10 @@ class NeuroID private constructor(
 
     fun registerAllViewsForCallerActivity(activity: Activity) {
         NIDTimerActive.initTimer()
+        activity.application.registerActivityLifecycleCallbacks(NIDActivityCallbacks(
+            activity::class.java.name,
+            activity.resources.configuration.orientation
+        ))
         registerLaterLifecycleFragments(activity)
     }
 

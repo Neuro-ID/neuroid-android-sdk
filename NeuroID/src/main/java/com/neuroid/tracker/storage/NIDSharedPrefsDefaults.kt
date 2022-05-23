@@ -2,7 +2,6 @@ package com.neuroid.tracker.storage
 
 import android.app.Application
 import android.content.Context
-import android.os.Build
 import java.util.*
 import kotlin.random.Random
 
