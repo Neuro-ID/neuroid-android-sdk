@@ -14,6 +14,7 @@ import android.widget.Spinner
 import androidx.core.view.children
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDTouchEventManager(
@@ -26,9 +27,9 @@ class NIDTouchEventManager(
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
             val nameView = currentView?.getIdOrTag() ?: "main_view"
 
-            detectChangesOnView(currentView,timeMills, motionEvent.action)
+            detectChangesOnView(currentView, timeMills, motionEvent.action)
 
-            when(it.action) {
+            when (it.action) {
                 ACTION_DOWN -> {
                     getDataStoreInstance()
                         .saveEvent(
@@ -73,10 +74,10 @@ class NIDTouchEventManager(
         val view = subView.children.firstOrNull {
             val location = IntArray(2)
             it.getLocationInWindow(location)
-            (x >= location[0] && x <= location[0] + it.width &&  y >= location[1] && y <= location[1] + it.height)
+            (x >= location[0] && x <= location[0] + it.width && y >= location[1] && y <= location[1] + it.height)
         }
 
-        return when(view) {
+        return when (view) {
             is Spinner -> view
             is ViewGroup -> getView(view, x, y)
             else -> view
@@ -89,18 +90,24 @@ class NIDTouchEventManager(
 
         if (action == ACTION_UP) {
             if (lastView == currentView) {
-                when(currentView) {
+                when (currentView) {
                     is CheckBox -> {
                         type = CHECKBOX_CHANGE
-                        Log.i("CheckBoxChange","CheckBoxID:"+currentView.getIdOrTag())
+                        Log.i(
+                            NIDLog.CHECK_BOX_CHANGE_TAG,
+                            NIDLog.CHECK_BOX_ID + currentView.getIdOrTag()
+                        )
                     }
                     is RadioButton -> {
                         type = RADIO_CHANGE
-                        Log.i("RadioButtonChange","CheckBoxID:"+currentView.getIdOrTag())
+                        Log.i(
+                            NIDLog.RADIO_BUTTON_CHANGE_TAG,
+                            NIDLog.RADIO_BUTTON_ID + currentView.getIdOrTag()
+                        )
                     }
                     is SeekBar -> {
                         type = SLIDER_CHANGE
-                        Log.i("SliderChange","CheckBoxID:"+currentView.getIdOrTag())
+                        Log.i(NIDLog.SLIDER_CHANGE_TAG, NIDLog.SLIDER_ID + currentView.getIdOrTag())
                     }
                     else -> {
                         // Null
@@ -132,7 +139,8 @@ class NIDTouchEventManager(
                                 ),
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis()
-                            ))
+                            )
+                        )
                 }
             }
             lastView = null
