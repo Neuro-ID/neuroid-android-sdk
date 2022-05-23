@@ -12,12 +12,14 @@ import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
-fun identifyAllViews(viewParent: ViewGroup, guid: String) {
+fun identifyAllViews(viewParent: ViewGroup, guid: String, changeOrientation: Boolean) {
     viewParent.forEach {
-        registerComponent(it, guid)
+        if (changeOrientation.not()) {
+            registerComponent(it, guid)
+        }
         registerListeners(it)
         if (it is ViewGroup) {
-            identifyAllViews(it, guid)
+            identifyAllViews(it, guid, changeOrientation)
         }
     }
 }
@@ -54,18 +56,6 @@ private fun registerComponent(view: View, guid: String) {
     }
 
     if (et.isNotEmpty()) {
-        if (view is EditText) {
-            val textWatcher = NIDTextWatcher(idName)
-            view.removeTextChangedListener(textWatcher)
-            view.addTextChangedListener(textWatcher)
-
-            val actionCallback = view.customSelectionActionModeCallback
-            if (actionCallback !is NIDContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
-            }
-        }
-
-
         val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
             ""
         } else {
@@ -103,6 +93,17 @@ private fun registerComponent(view: View, guid: String) {
 
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
+
+    if (view is EditText) {
+        val textWatcher = NIDTextWatcher(idName)
+        view.removeTextChangedListener(textWatcher)
+        view.addTextChangedListener(textWatcher)
+
+        val actionCallback = view.customSelectionActionModeCallback
+        if (actionCallback !is NIDContextMenuCallbacks) {
+            view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+        }
+    }
 
     when (view) {
         is Spinner -> {

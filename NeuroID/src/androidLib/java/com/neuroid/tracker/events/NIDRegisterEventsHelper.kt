@@ -9,28 +9,35 @@ import com.neuroid.tracker.callbacks.NIDFocusChangeListener
 import com.neuroid.tracker.callbacks.NIDLayoutChangeListener
 import java.util.*
 
-fun registerViewsEventsForActivity(activity: Activity, hasNotFragments: Boolean) {
+fun registerWindowListeners(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     )
 
-    viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
-    viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
-
     val callBack = activity.window.callback
-    val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
-    activity.window.callback = NIDWindowCallback(callBack, touchManager)
+
+    if (callBack !is NIDWindowCallback) {
+        viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
+        viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
+
+        val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
+        activity.window.callback = NIDWindowCallback(callBack, touchManager)
+    }
+}
+
+fun registerTargetFromActivity(activity: Activity, changeOrientation: Boolean) {
+    val viewMainContainer = activity.window.decorView.findViewById<View>(
+        android.R.id.content
+    ) as ViewGroup
 
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    if (hasNotFragments) {
-        android.os.Handler(Looper.getMainLooper()).postDelayed({
-            identifyAllViews(viewMainContainer, guid) }, 400)
-    }
+    android.os.Handler(Looper.getMainLooper()).postDelayed({
+        identifyAllViews(viewMainContainer, guid, changeOrientation) }, 400)
 }
 
-fun registerViewsEventsForFragment(activity: Activity) {
+fun registerTargetFromFragment(activity: Activity, changeOrientation: Boolean) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     )
@@ -39,14 +46,5 @@ fun registerViewsEventsForFragment(activity: Activity) {
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer as ViewGroup, guid) }, 400)
-}
-
-fun unRegisterListenerFromActivity(activity: Activity) {
-    val viewMainContainer = activity.window.decorView.findViewById<View>(
-        android.R.id.content
-    )
-
-    viewMainContainer.viewTreeObserver.removeOnGlobalFocusChangeListener(NIDFocusChangeListener())
-    viewMainContainer.viewTreeObserver.removeOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
+        identifyAllViews(viewMainContainer as ViewGroup, guid, changeOrientation) }, 400)
 }

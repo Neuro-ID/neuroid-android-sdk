@@ -11,54 +11,54 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.hasFragments
 
 class NIDActivityCallbacks: ActivityLifecycleCallbacks {
-    private var auxOrientation = 0
+    private var auxOrientation = -1
     private var activitiesStarted = 0
-    private var previousActivityName = ""
+    private var listActivities = ArrayList<String>()
+    private var wasChanged = false
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
-        if (auxOrientation == 0) { auxOrientation = orientation }
+        if (auxOrientation == -1) { auxOrientation = orientation }
+        val existActivity = listActivities.contains(currentActivityName)
 
         NIDServiceTracker.screenActivityName = currentActivityName
         NIDServiceTracker.screenFragName = ""
         NIDServiceTracker.screenName = "AppInit"
 
-        if (previousActivityName == currentActivityName) {
-            if (auxOrientation != orientation) {
-                val strOrientation = if (auxOrientation == 1) {
-                    "Landscape"
-                } else {
-                    "Portrait"
-                }
+        registerWindowListeners(activity)
 
-                getDataStoreInstance()
-                    .saveEvent(NIDEventModel(
-                        type = WINDOW_ORIENTATION_CHANGE,
-                        ts = System.currentTimeMillis(),
-                        tg = hashMapOf(
-                            "orientation" to strOrientation
-                        )
-                    ))
-                auxOrientation = orientation
+        val changedOrientation = auxOrientation != orientation
+        wasChanged = changedOrientation
+
+        if(existActivity.not() && changedOrientation.not())  {
+            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+            fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+        }
+
+        if (changedOrientation) {
+            val strOrientation = if (auxOrientation == 1) {
+                "Landscape"
+            } else {
+                "Portrait"
             }
-        } else {
-            previousActivityName = currentActivityName
 
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
-                    type = WINDOW_LOAD,
-                    ts = System.currentTimeMillis()
+                    type = WINDOW_ORIENTATION_CHANGE,
+                    ts = System.currentTimeMillis(),
+                    tg = hashMapOf(
+                        "orientation" to strOrientation
+                    )
                 ))
-
-            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-            val hasFragments = fragManager?.hasFragments() ?: false
-
-            registerViewsEventsForActivity(activity, hasFragments.not())
-            if (hasFragments) {
-                fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
-            }
+            auxOrientation = orientation
         }
+
+        getDataStoreInstance()
+            .saveEvent(NIDEventModel(
+                type = WINDOW_LOAD,
+                ts = System.currentTimeMillis()
+            ))
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -70,6 +70,23 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 ))
         }
         activitiesStarted++
+
+        val currentActivityName = activity::class.java.name
+        val existActivity = listActivities.contains(currentActivityName)
+
+        if (existActivity.not()) {
+            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+            val hasFragments = fragManager?.hasFragments() ?: false
+
+            listActivities.add(currentActivityName)
+            wasChanged = if (hasFragments) {
+                registerTargetFromFragment(activity, wasChanged)
+                false
+            } else {
+                registerTargetFromActivity(activity, wasChanged)
+                false
+            }
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -96,11 +113,12 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        val currentActivityName = activity::class.java.name
+        listActivities.remove(currentActivityName)
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
                 ts = System.currentTimeMillis()
             ))
-        unRegisterListenerFromActivity(activity)
     }
 }

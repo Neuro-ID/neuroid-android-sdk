@@ -128,7 +128,10 @@ class NeuroID private constructor(
 
     fun registerAllViewsForCallerActivity(activity: Activity) {
         NIDTimerActive.initTimer()
-        activity.application.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+        activity.application.registerActivityLifecycleCallbacks(NIDActivityCallbacks(
+            activity::class.java.name,
+            activity.resources.configuration.orientation
+        ))
         registerLaterLifecycleFragments(activity)
     }
 
