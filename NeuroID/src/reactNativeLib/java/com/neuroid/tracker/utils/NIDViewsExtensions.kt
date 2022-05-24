@@ -1,10 +1,6 @@
 package com.neuroid.tracker.utils
 
 import android.view.View
-import android.view.ViewGroup
-import androidx.core.view.children
-import androidx.fragment.app.FragmentManager
-import com.facebook.react.ReactRootView
 
 fun View?.getIdOrTag(): String {
 
@@ -13,7 +9,7 @@ fun View?.getIdOrTag(): String {
     } else {
         return if (this.tag == null) {
             if(this.contentDescription == null) {
-                this.id.toString()
+                this.getRandomId()
             } else {
                 this.contentDescription.toString()
             }
@@ -21,6 +17,12 @@ fun View?.getIdOrTag(): String {
             this.tag.toString()
         }
     }
+}
+
+fun View.getRandomId(): String {
+    val viewCoordinates = "${this.x}_${this.y}".replace(".","")
+
+    return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
 fun View.getParents(): String {
@@ -31,29 +33,5 @@ private fun getParentsOfView(layers: Int, view: View): String {
     val childView = view.parent as View
     return if (layers == 3 || childView.id == android.R.id.content) "" else {
         "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
-    }
-}
-
-fun getReactRoot(viewGroup: ViewGroup): ReactRootView? {
-    val listChildren: List<View> = viewGroup.children.filter { it is ViewGroup}.toList()
-    val rootReact = listChildren.firstOrNull { it is ReactRootView }
-
-    return when {
-        listChildren.isEmpty() -> null
-        rootReact != null -> {
-            rootReact as ReactRootView
-        }
-        else -> {
-            listChildren.map {
-                getReactRoot(it as ViewGroup)
-            }.firstOrNull { it is ReactRootView }
-        }
-    }
-}
-
-fun FragmentManager.hasFragments(): Boolean {
-    return this.fragments.any {
-        val name = it::class.java.simpleName
-        name != "NavHostFragment" || name != "SupportMapFragment"
     }
 }

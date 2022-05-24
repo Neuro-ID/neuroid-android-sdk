@@ -75,7 +75,8 @@ class NeuroIdUITest {
     @Test
     fun test01ValidateRegisterTargets() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(2000) //Wait a half second for create the MainActivity View
+        NeuroID.getInstance().start()
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
         System.out.println(strEvents)

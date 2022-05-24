@@ -26,8 +26,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         NIDServiceTracker.screenFragName = ""
         NIDServiceTracker.screenName = "AppInit"
 
-        registerWindowListeners(activity)
-
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation
 
@@ -75,18 +73,16 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         val existActivity = listActivities.contains(currentActivityName)
 
         if (existActivity.not()) {
+            listActivities.add(currentActivityName)
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
             val hasFragments = fragManager?.hasFragments() ?: false
-
-            listActivities.add(currentActivityName)
-            wasChanged = if (hasFragments) {
-                registerTargetFromFragment(activity, wasChanged)
-                false
-            } else {
-                registerTargetFromActivity(activity, wasChanged)
-                false
+            if (hasFragments.not()) {
+                registerTargetFromScreen(activity, wasChanged)
             }
+            wasChanged = false
         }
+
+        registerWindowListeners(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
