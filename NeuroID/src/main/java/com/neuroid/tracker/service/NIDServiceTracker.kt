@@ -32,7 +32,7 @@ object NIDServiceTracker {
 
         if (listEvents.isEmpty().not()) {
             val strUrl = if (BuildConfig.DEBUG)
-                "https://api.usw2-dev1.nidops.net/v3/c"
+                "https://api.neuro-id.com/v3/c"
             else
                 "https://api.neuro-id.com/v3/c"
 
