@@ -30,12 +30,8 @@ object NIDServiceTracker {
         if (listEvents.isEmpty().not()) {
             val strUrl = if (BuildConfig.DEBUG) {
                 "https://api.neuro-id.com/v3/c"
-//                "https://nidmobile.ngrok.io/v3/c"
-                // Send all traffic to production fo now.
-//                "https://api.usw2-dev1.nidops.net/v3/c"
             } else {
                 "https://api.neuro-id.com/v3/c"
-//                "https://nidmobile.ngrok.io/v3/c"
             }
 
             NIDLog.d("NeuroID", "Url: $strUrl")
