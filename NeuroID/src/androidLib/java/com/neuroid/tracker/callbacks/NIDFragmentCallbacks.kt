@@ -23,7 +23,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     type = WINDOW_LOAD,
                     ts = System.currentTimeMillis()))
 
-            registerTargetFromFragment(f.requireActivity(), false)
+            registerTargetFromScreen(f.requireActivity(), false)
         }
     }
 

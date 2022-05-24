@@ -56,7 +56,7 @@ class NeuroID private constructor(
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = SET_USER_ID,
-                uid = userId ?: "",
+                uid = userId,
                 ts = System.currentTimeMillis()
             )
         )
