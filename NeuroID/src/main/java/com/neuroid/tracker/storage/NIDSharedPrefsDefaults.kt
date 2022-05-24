@@ -113,6 +113,7 @@ class NIDSharedPrefsDefaults(
         }
     }
 
+    // Must be set to null string
     fun getUserId() = sharedPref?.getString(NID_UID, "null")
 
     fun getDeviceId(): String {
