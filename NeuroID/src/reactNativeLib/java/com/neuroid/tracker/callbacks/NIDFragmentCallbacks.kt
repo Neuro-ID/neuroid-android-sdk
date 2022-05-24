@@ -26,7 +26,7 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     )
                 )
 
-            registerTargetFromFragment(f.requireActivity(), false)
+            registerTargetFromScreen(f.requireActivity(), false)
         }
     }
 
