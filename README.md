@@ -128,7 +128,7 @@ NeuroID.getInstance().captureEvent(
 ```
 
 ## Sample application
-If you want to see the demo of this project deployed, just launch the application "NeuroIdAndroidExample"
+If you want to see the demo of this project deployed, just launch the application "NeuroIdAndroidExample".
 
 ## License
 The Neuro-ID Mobile SDK is provided under an [MIT License](LICENSE).
