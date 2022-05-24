@@ -9,7 +9,7 @@ fun View?.getIdOrTag(): String {
     } else {
         return if (this.tag == null) {
             if(this.contentDescription == null) {
-                this.id.toString()
+                this.getRandomId()
             } else {
                 this.contentDescription.toString()
             }
@@ -17,6 +17,12 @@ fun View?.getIdOrTag(): String {
             this.tag.toString()
         }
     }
+}
+
+fun View.getRandomId(): String {
+    val viewCoordinates = "${this.x}_${this.y}".replace(".","")
+
+    return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
 fun View.getParents(): String {
