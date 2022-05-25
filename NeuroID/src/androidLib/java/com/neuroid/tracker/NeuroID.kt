@@ -67,6 +67,12 @@ class NeuroID private constructor(
         NIDServiceTracker.screenName = screen
     }
 
+    fun excludeViewByResourceID(id: String) {
+        application?.let {
+            getDataStoreInstance().addViewIdExclude(id)
+        }
+    }
+
     fun getSessionId(): String {
         var sid = ""
         application?.let {

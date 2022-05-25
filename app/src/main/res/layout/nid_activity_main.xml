@@ -80,11 +80,11 @@
             android:layout_marginTop="8dp"
             android:layout_marginStart="20dp"
             android:textSize="14sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textIl_password_field"
+            app:layout_constraintBottom_toBottomOf="@id/textView_sid_value"/>
 
-        <TextView
-            style="@style/NidTextViewTitle"
+        <EditText
             android:id="@+id/textView_sid_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -92,10 +92,8 @@
             android:layout_marginTop="8dp"
             android:layout_marginStart="8dp"
             android:textSize="14sp"
-            android:enabled="true"
-            android:textIsSelectable="true"
-            android:focusable="true"
-            android:longClickable="true"
+            android:enabled="false"
+            android:inputType="number"
             app:layout_constraintStart_toEndOf="@id/textView_sid_title"
             app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
 
