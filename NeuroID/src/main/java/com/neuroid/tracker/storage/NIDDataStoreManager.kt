@@ -14,6 +14,7 @@ import java.util.concurrent.Semaphore
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
     fun getAllEvents(): List<String>
+    fun addViewIdExclude(id: String)
 }
 
 fun initDataStoreCtx(context: Context) {
@@ -33,6 +34,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         USER_INACTIVE,
         WINDOW_BLUR //Block screen
     )
+    private val listIdsExcluded = arrayListOf<String>()
 
     fun init(context: Context) {
         sharedPref = EncryptedSharedPreferences.create(
@@ -50,33 +52,35 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
-        val strEvent = event.getOwnJson()
+        if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs")}) {
+            val strEvent = event.getOwnJson()
 
-        if (NIDJobServiceManager.userActive.not()) {
-            NIDJobServiceManager.userActive = true
-            NIDJobServiceManager.restart()
-        }
-
-        sharedLock.acquire()
-        if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-            NIDTimerActive.restartTimerActive()
-        }
-
-        val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
-        val newStringEvents = if (lastEvents.isEmpty()) {
-            strEvent
-        } else {
-            "$lastEvents|$strEvent"
-        }
-
-        sharedPref?.let {
-            with (it.edit()) {
-                putString(NID_STRING_EVENTS, newStringEvents)
-                apply()
+            if (NIDJobServiceManager.userActive.not()) {
+                NIDJobServiceManager.userActive = true
+                NIDJobServiceManager.restart()
             }
-        }
 
-        sharedLock.release()
+            sharedLock.acquire()
+            if (!listNonActiveEvents.any { strEvent.contains(it) }) {
+                NIDTimerActive.restartTimerActive()
+            }
+
+            val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
+            val newStringEvents = if (lastEvents.isEmpty()) {
+                strEvent
+            } else {
+                "$lastEvents|$strEvent"
+            }
+
+            sharedPref?.let {
+                with (it.edit()) {
+                    putString(NID_STRING_EVENTS, newStringEvents)
+                    apply()
+                }
+            }
+
+            sharedLock.release()
+        }
     }
 
     override fun getAllEvents(): List<String> {
@@ -96,6 +100,12 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
             listOf()
         } else {
             lastEvents.split("|")
+        }
+    }
+
+    override fun addViewIdExclude(id: String) {
+        if (listIdsExcluded.none { it == id }) {
+            listIdsExcluded.add(id)
         }
     }
 }

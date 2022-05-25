@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.hasFragments
 
 class NIDActivityCallbacks(
     firstActivityName: String,
@@ -77,8 +78,11 @@ class NIDActivityCallbacks(
 
         if (existActivity.not()) {
             listActivities.add(currentActivityName)
-
-            registerTargetFromScreen(activity, wasChanged)
+            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+            val hasFragments = fragManager?.hasFragments() ?: false
+            if (hasFragments.not()) {
+                registerTargetFromScreen(activity, wasChanged)
+            }
             wasChanged = false
         }
     }
