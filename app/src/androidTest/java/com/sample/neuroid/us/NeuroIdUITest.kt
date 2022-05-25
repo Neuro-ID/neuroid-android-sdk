@@ -75,7 +75,6 @@ class NeuroIdUITest {
     @Test
     fun test01ValidateRegisterTargets() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance().start()
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
@@ -392,7 +391,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
         NIDLog.d("----> UITest", "----> validateWindowsResize - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_RESIZE)
     }

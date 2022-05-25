@@ -4,10 +4,7 @@ import android.app.Activity
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
-import com.neuroid.tracker.callbacks.NIDWindowCallback
-import com.neuroid.tracker.callbacks.NIDFocusChangeListener
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
-import com.neuroid.tracker.callbacks.NIDLayoutChangeListener
 import java.util.*
 
 fun registerWindowListeners(activity: Activity) {
