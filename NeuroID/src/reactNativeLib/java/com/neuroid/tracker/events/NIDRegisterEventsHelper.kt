@@ -32,12 +32,18 @@ fun registerWindowListeners(activity: Activity) {
 
     val callBack = activity.window.callback
 
-    if (callBack !is NIDWindowCallback) {
-        viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(NIDFocusChangeListener())
-        viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(NIDLayoutChangeListener(viewMainContainer))
+    if (callBack !is NIDGlobalEventCallback) {
+        val nidGlobalEventCallback = NIDGlobalEventCallback(
+            callBack,
+            NIDTouchEventManager(viewMainContainer as ViewGroup),
+            viewMainContainer
+        )
+        viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(nidGlobalEventCallback)
+        viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(
+            nidGlobalEventCallback
+        )
 
-        val touchManager = NIDTouchEventManager(viewMainContainer as ViewGroup)
-        activity.window.callback = NIDWindowCallback(callBack, touchManager)
+        activity.window.callback = nidGlobalEventCallback
     }
 }
 
@@ -50,5 +56,6 @@ fun registerTargetFromScreen(activity: Activity, changeOrientation: Boolean) {
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, changeOrientation) }, 400)
+        identifyAllViews(viewMainContainer, guid, changeOrientation)
+    }, 400)
 }

@@ -22,8 +22,8 @@ class NIDTouchEventManager(
 ) {
     private var lastView: View? = null
 
-    fun detectView(motionEvent: MotionEvent?, timeMills: Long) {
-        motionEvent?.let {
+    fun detectView(motionEvent: MotionEvent?, timeMills: Long): View? {
+        return motionEvent?.let {
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
             val nameView = currentView?.getIdOrTag() ?: "main_view"
 
@@ -67,6 +67,7 @@ class NIDTouchEventManager(
                         )
                 }
             }
+            currentView
         }
     }
 
