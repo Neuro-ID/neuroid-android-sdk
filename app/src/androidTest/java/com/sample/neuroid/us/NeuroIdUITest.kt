@@ -70,28 +70,10 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate REGISTER_TARGET on MainActivity class
-     */
-    @Test
-    fun test01ValidateRegisterTargets() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance().start()
-        Thread.sleep(500) //Wait a half second for create the MainActivity View
-
-        val strEvents = getDataStoreInstance().getAllEvents()
-        val eventsRegister = strEvents.filter { it.contains("\"type\":\"REGISTER_TARGET\"") }
-        val event = eventsRegister.firstOrNull().orEmpty()
-
-        NIDLog.d("----> UITest", "----> validateRegisterTargets - Events: $eventsRegister")
-
-        assertThat(event).matches(NID_STRUCT_REGISTER_TARGET)
-    }
-
-    /**
      * Validate CREATE_SESSION on start method
      */
     @Test
-    fun test02ValidateCreateSession() {
+    fun test01ValidateCreateSession() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance().stop()
         NeuroID.getInstance().start()
@@ -101,6 +83,23 @@ class NeuroIdUITest {
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
         assertThat(event).matches(NID_STRUCT_CREATE_SESSION)
+    }
+
+    /**
+     * Validate REGISTER_TARGET on MainActivity class
+     */
+    @Test
+    fun test02ValidateRegisterTargets() {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        Thread.sleep(500) //Wait a half second for create the MainActivity View
+
+        val strEvents = getDataStoreInstance().getAllEvents()
+        val eventsRegister = strEvents.filter { it.contains("\"type\":\"REGISTER_TARGET\"") }
+        val event = eventsRegister.firstOrNull().orEmpty()
+
+        NIDLog.d("----> UITest", "----> validateRegisterTargets - Events: $eventsRegister")
+
+        assertThat(event).matches(NID_STRUCT_REGISTER_TARGET)
     }
 
     /**

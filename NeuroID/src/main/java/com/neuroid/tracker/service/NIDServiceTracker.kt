@@ -56,6 +56,7 @@ object NIDServiceTracker {
 
             val data = getContentForm(context, listJson.encodeToBase64(), key)
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
+            NIDLog.d("NeuroID", "Events: $listJson")
 
             try {
                 val os: OutputStream = conn.outputStream
@@ -65,7 +66,6 @@ object NIDServiceTracker {
                 writer.close()
                 os.close()
 
-                NIDLog.d("NeuroID", "Events: $listJson")
                 val code = conn.responseCode
                 val message = conn.responseMessage
 

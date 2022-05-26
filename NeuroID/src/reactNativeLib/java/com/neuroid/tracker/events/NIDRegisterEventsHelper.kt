@@ -21,7 +21,9 @@ fun registerLaterLifecycleFragments(activity: Activity) {
 
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-    identifyAllViews(viewMainContainer, guid, false)
+    android.os.Handler(Looper.getMainLooper()).postDelayed({
+        identifyAllViews(viewMainContainer, guid, false)
+    }, 300)
     registerWindowListeners(activity)
 }
 
@@ -57,5 +59,5 @@ fun registerTargetFromScreen(activity: Activity, changeOrientation: Boolean) {
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
         identifyAllViews(viewMainContainer, guid, changeOrientation)
-    }, 400)
+    }, 300)
 }

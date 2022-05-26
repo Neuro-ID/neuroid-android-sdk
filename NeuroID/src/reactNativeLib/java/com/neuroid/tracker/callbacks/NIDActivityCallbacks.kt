@@ -28,8 +28,6 @@ class NIDActivityCallbacks(
         NIDServiceTracker.screenFragName = ""
         NIDServiceTracker.screenName = "AppInit"
 
-        registerWindowListeners(activity)
-
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation
 
@@ -85,6 +83,8 @@ class NIDActivityCallbacks(
             }
             wasChanged = false
         }
+
+        registerWindowListeners(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
