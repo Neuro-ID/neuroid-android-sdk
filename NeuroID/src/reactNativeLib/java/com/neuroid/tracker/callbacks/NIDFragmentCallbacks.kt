@@ -15,7 +15,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            NIDServiceTracker.screenName = "AppInit"
             NIDServiceTracker.screenFragName = f::class.java.simpleName
 
             getDataStoreInstance()
