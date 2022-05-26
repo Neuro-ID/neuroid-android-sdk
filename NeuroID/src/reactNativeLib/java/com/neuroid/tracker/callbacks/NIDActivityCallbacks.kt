@@ -82,9 +82,8 @@ class NIDActivityCallbacks(
                 registerTargetFromScreen(activity, wasChanged)
             }
             wasChanged = false
+            registerWindowListeners(activity)
         }
-
-        registerWindowListeners(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {

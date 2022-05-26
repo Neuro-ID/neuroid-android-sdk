@@ -15,15 +15,6 @@ fun registerLaterLifecycleFragments(activity: Activity) {
     val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
     fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
 
-    val viewMainContainer = activity.window.decorView.findViewById<View>(
-        android.R.id.content
-    ) as ViewGroup
-
-    val hashCodeAct = activity.hashCode()
-    val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-    android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, false)
-    }, 300)
     registerWindowListeners(activity)
 }
 
