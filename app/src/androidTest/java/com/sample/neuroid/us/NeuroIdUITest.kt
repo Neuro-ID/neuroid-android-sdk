@@ -82,6 +82,7 @@ class NeuroIdUITest {
         val eventType = "\"type\":\"CREATE_SESSION\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
+        NIDLog.d("----> UITest", "----> validateCreateSession - Events: $event")
         assertThat(event).matches(NID_STRUCT_CREATE_SESSION)
     }
 
