@@ -10,6 +10,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDTimerActive
+import com.neuroid.tracker.utils.NIDVersion
 
 class NeuroID private constructor(
     private var application: Application?,
@@ -158,7 +159,7 @@ class NeuroID private constructor(
                     dnt = false,
                     url = "",
                     ns = "nid",
-                    jsv = "4.android-1.2.1",
+                    jsv = NIDVersion.getSDKVersion(),
                     ts = System.currentTimeMillis()
                 )
             )

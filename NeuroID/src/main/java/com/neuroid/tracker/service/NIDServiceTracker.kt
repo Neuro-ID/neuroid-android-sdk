@@ -7,6 +7,7 @@ import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDVersion
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -101,7 +102,7 @@ object NIDServiceTracker {
             "pid" to sharedDefaults.getPageId(),
             "iid" to sharedDefaults.getIntermediateId(),
             "url" to screenActivityName,
-            "jsv" to "4.android-1.2.11",
+            "jsv" to NIDVersion.getSDKVersion(),
             "events" to events
         )
 
