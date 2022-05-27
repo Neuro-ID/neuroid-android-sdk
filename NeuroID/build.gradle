@@ -15,7 +15,7 @@ android {
 
     def runTasks = gradle.startParameter.taskNames
     if (':NeuroID:assemble' in runTasks) {
-        def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
+        def versionPatch = versionProps['VERSION_PATCH'].toInteger() + 1
         versionProps['VERSION_PATCH'] = versionPatch.toString()
         versionProps.store(versionPropsFile.newWriter(), null)
     }
@@ -33,12 +33,13 @@ android {
             debuggable true
             jniDebuggable true
             buildConfigField "String","VERSION_NAME", "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
-            buildConfigField "String", "GIT_HASH", versionProps['GIT_HASH']
+            buildConfigField "String", "GIT_HASH", System.getenv("GIT_HASH") as String ?: "\"NO_HASH\""
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
+            buildConfigField "String","VERSION_NAME", "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
+            buildConfigField "String", "GIT_HASH", System.getenv("GIT_HASH") as String ?: "\"NO_HASH\""
         }
     }
 
