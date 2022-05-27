@@ -11,6 +11,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDTimerActive
+import com.neuroid.tracker.utils.NIDVersion
 
 class NeuroID private constructor(
     private var application: Application?,
