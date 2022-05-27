@@ -37,3 +37,12 @@ jobs:
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
+
+      - name: Check changes
+        run: git status
+      - name: Add version.properties
+        run: git add version.properties
+      - name: commit
+        run: git commit -m "Automatic commit to push version"
+      - name: push
+        run: git push
