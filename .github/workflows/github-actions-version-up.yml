@@ -39,7 +39,10 @@ jobs:
         run: bash ./gradlew :NeuroID:assemble
 
       - name: Check changes
-        run: git status
+        run: |
+          git config --global user.email alejandro.bautista@neuro-id.com
+          git config --global user.name alejandrobautistar
+          git status
       - name: Add version.properties
         run: git add version.properties
       - name: commit
