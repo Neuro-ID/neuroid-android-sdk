@@ -13,13 +13,6 @@ if (versionPropsFile.exists()) {
 android {
     compileSdk 31
 
-    def runTasks = gradle.startParameter.taskNames
-    if (':NeuroID:assemble' in runTasks) {
-        def versionPatch = versionProps['VERSION_PATCH'].toInteger() + 1
-        versionProps['VERSION_PATCH'] = versionPatch.toString()
-        versionProps.store(versionPropsFile.newWriter(), null)
-    }
-
     defaultConfig {
         minSdk 21
         targetSdk 31
