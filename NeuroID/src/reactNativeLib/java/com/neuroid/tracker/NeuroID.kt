@@ -168,10 +168,18 @@ class NeuroID private constructor(
                     dnt = false,
                     url = "",
                     ns = "nid",
-                    jsv = "4.android-1.2.1",
+                    jsv = getSDKVersion(),
                     ts = System.currentTimeMillis()
                 )
             )
         }
+    }
+
+    fun getSDKVersion(): String {
+        return "4.android-" + BuildConfig.VERSION_NAME
+    }
+
+    fun getInternalCurrentVersion(): String {
+        return getSDKVersion() + " " + BuildConfig.GIT_HASH
     }
 }

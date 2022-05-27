@@ -3,7 +3,11 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - version.properties
 
+env:
+  GIT_HASH: ${{github.GITHUB_SHA}}
 jobs:
   publish:
     name: Release NeuroID SDK
@@ -42,8 +46,8 @@ jobs:
           source_file: 'NeuroID/build/outputs/aar/androidLib/'
           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
           destination_folder: 'app/libs/'
-          user_email: 'alejandro.bautista@neuro-id.com'
-          user_name: 'alejandrobautistar'
+          user_email: 'robot@neuro-id.com'
+          user_name: 'robot'
           destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
@@ -55,7 +59,8 @@ jobs:
           source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
           destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
           destination_folder: 'android/libs/'
-          user_email: 'alejandro.bautista@neuro-id.com'
-          user_name: 'alejandrobautistar'
+          user_email: 'robot@neuro-id.com'
+          user_name: 'robot'
           destination_branch: 'main'
           commit_message: ${{ github.event.head_commit.message }}
+
