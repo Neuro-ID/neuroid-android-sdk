@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - version.properties
 
 jobs:
   publish:
@@ -59,3 +61,12 @@ jobs:
           user_name: 'alejandrobautistar'
           destination_branch: 'main'
           commit_message: ${{ github.event.head_commit.message }}
+
+      - name: Push to update version.properties
+        run: |
+          git config --global user.email robot@neuro-id.com
+          git config --global user.name robot
+          git status
+          git add version.properties
+          git commit -m "Automatic commit to push version"
+          git push
