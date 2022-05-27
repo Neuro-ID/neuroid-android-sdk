@@ -38,7 +38,7 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Check changes
+      - name: Push to update version.properties
         run: |
           git config --global user.email robot@neuro-id.com
           git config --global user.name robot
