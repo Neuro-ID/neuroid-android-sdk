@@ -12,12 +12,18 @@ import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
-fun identifyAllViews(viewParent: ViewGroup, guid: String, changeOrientation: Boolean) {
+fun identifyAllViews(
+    viewParent: ViewGroup,
+    guid: String,
+    changeOrientation: Boolean,
+    registerListener: Boolean = true
+) {
     viewParent.forEach {
         if (changeOrientation.not()) {
             registerComponent(it, guid)
         }
-        registerListeners(it)
+        if (registerListener)
+            registerListeners(it)
         if (it is ViewGroup) {
             identifyAllViews(it, guid, changeOrientation)
         }
@@ -28,7 +34,7 @@ private fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
-    when(view) {
+    when (view) {
         is EditText -> {
             et = "Edittext"
         }
@@ -87,7 +93,8 @@ private fun registerComponent(view: View, guid: String) {
                         "attr" to attrs
                     ),
                     url = urlView
-                ))
+                )
+            )
     }
 }
 
@@ -109,8 +116,13 @@ private fun registerListeners(view: View) {
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
-            view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
+            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    adapter: AdapterView<*>?,
+                    viewList: View?,
+                    position: Int,
+                    p3: Long
+                ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
                     getDataStoreInstance()
                         .saveEvent(
@@ -122,7 +134,8 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis()
-                            ))
+                            )
+                        )
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -133,20 +146,22 @@ private fun registerListeners(view: View) {
         is AutoCompleteTextView -> {
             val lastListener: AdapterView.OnItemClickListener? = view.onItemClickListener
             view.onItemClickListener = null
-            view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener?.onItemClick(adapter, viewList, position, p3)
-                getDataStoreInstance()
-                    .saveEvent(
-                        NIDEventModel(
-                            type = SELECT_CHANGE,
-                            tg = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to "INPUT",
-                                "et" to "text"
-                            ),
-                            ts = System.currentTimeMillis()
-                        ))
-            }
+            view.onItemClickListener =
+                AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+                    lastListener?.onItemClick(adapter, viewList, position, p3)
+                    getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = SELECT_CHANGE,
+                                tg = hashMapOf(
+                                    "tgs" to idName,
+                                    "etn" to "INPUT",
+                                    "et" to "text"
+                                ),
+                                ts = System.currentTimeMillis()
+                            )
+                        )
+                }
         }
     }
 }

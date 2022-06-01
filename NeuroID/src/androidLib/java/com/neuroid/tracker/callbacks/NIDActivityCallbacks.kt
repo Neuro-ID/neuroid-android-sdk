@@ -71,16 +71,20 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
         val currentActivityName = activity::class.java.name
         val existActivity = listActivities.contains(currentActivityName)
-
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+        val hasFragments = fragManager?.hasFragments() ?: false
         if (existActivity.not()) {
             listActivities.add(currentActivityName)
-            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-            val hasFragments = fragManager?.hasFragments() ?: false
+
             if (hasFragments.not()) {
                 registerTargetFromScreen(activity, wasChanged)
             }
             wasChanged = false
             registerWindowListeners(activity)
+        }else{
+            if (hasFragments.not()) {
+                registerTargetFromScreen(activity, wasChanged,false)
+            }
         }
     }
 
