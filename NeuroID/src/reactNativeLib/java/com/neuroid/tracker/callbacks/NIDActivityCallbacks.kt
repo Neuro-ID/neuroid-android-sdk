@@ -31,7 +31,7 @@ class NIDActivityCallbacks(
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation
 
-        if(existActivity.not() && changedOrientation.not())  {
+        if(existActivity.not())  {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         }
@@ -62,7 +62,9 @@ class NIDActivityCallbacks(
     }
 
     override fun onActivityStarted(activity: Activity) {
+        var cameBackFromBehind = false
         if (activitiesStarted == 0) {
+            cameBackFromBehind = true
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_FOCUS,
@@ -74,12 +76,17 @@ class NIDActivityCallbacks(
         val currentActivityName = activity::class.java.name
         val existActivity = listActivities.contains(currentActivityName)
 
-        if (existActivity.not()) {
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+        val hasFragments = fragManager?.hasFragments() ?: false
+
+        if (existActivity) {
+            if (hasFragments.not() && cameBackFromBehind.not()) {
+                registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+            }
+        } else {
             listActivities.add(currentActivityName)
-            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-            val hasFragments = fragManager?.hasFragments() ?: false
             if (hasFragments.not()) {
-                registerTargetFromScreen(activity, wasChanged)
+                registerTargetFromScreen(activity, wasChanged.not(), true)
             }
             wasChanged = false
             registerWindowListeners(activity)

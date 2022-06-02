@@ -10,10 +10,15 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
-class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
+class NIDFragmentCallbacks(
+    isChangeOrientation: Boolean
+)
+    : FragmentManager.FragmentLifecycleCallbacks() {
     private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+    private var _isChangeOrientation = isChangeOrientation
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
+
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             NIDServiceTracker.screenName = "AppInit"
             NIDServiceTracker.screenFragName = f::class.java.simpleName
@@ -22,8 +27,6 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                 .saveEvent(NIDEventModel(
                     type = WINDOW_LOAD,
                     ts = System.currentTimeMillis()))
-
-            registerTargetFromScreen(f.requireActivity(), false)
         }
     }
 
@@ -37,11 +40,10 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        // No Operation
-    }
-
-    override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        // No Operation
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
+            _isChangeOrientation = false
+        }
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -49,11 +51,12 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
-        // No operation
+        //No operation
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_UNLOAD,

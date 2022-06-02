@@ -12,6 +12,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+    private var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
@@ -25,7 +26,29 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
                     )
                 )
 
-            registerTargetFromScreen(f.requireActivity(), false)
+            val concatName = f.toString().split(" ")
+            val fragName = if (concatName.isNotEmpty()) {
+                concatName[0]
+            } else {
+                ""
+            }
+
+            if (listFragment.contains(fragName)) {
+                val index = listFragment.indexOf(fragName)
+                if (index != listFragment.size -1) {
+                    listFragment.removeLast()
+                    registerTargetFromScreen(f.requireActivity(),
+                        registerTarget = true,
+                        registerListeners = false
+                    )
+                }
+            } else {
+                listFragment.add(fragName)
+                registerTargetFromScreen(f.requireActivity(),
+                    registerTarget = true,
+                    registerListeners = true
+                )
+            }
         }
     }
 

@@ -26,15 +26,14 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         NIDServiceTracker.screenFragName = ""
         NIDServiceTracker.screenName = "AppInit"
 
-        val changedOrientation = auxOrientation != orientation
-        wasChanged = changedOrientation
+        wasChanged = auxOrientation != orientation
 
-        if(existActivity.not() && changedOrientation.not())  {
+        if(existActivity.not())  {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-            fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+            fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(wasChanged), true)
         }
 
-        if (changedOrientation) {
+        if (wasChanged) {
             val strOrientation = if (auxOrientation == 1) {
                 "Landscape"
             } else {
@@ -60,7 +59,9 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityStarted(activity: Activity) {
+        var cameBackFromBehind = false
         if (activitiesStarted == 0) {
+            cameBackFromBehind = true
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_FOCUS,
@@ -72,12 +73,17 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         val currentActivityName = activity::class.java.name
         val existActivity = listActivities.contains(currentActivityName)
 
-        if (existActivity.not()) {
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+        val hasFragments = fragManager?.hasFragments() ?: false
+
+        if (existActivity) {
+            if (hasFragments.not() && cameBackFromBehind.not()) {
+                registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+            }
+        } else {
             listActivities.add(currentActivityName)
-            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-            val hasFragments = fragManager?.hasFragments() ?: false
             if (hasFragments.not()) {
-                registerTargetFromScreen(activity, wasChanged)
+                registerTargetFromScreen(activity, wasChanged.not())
             }
             wasChanged = false
             registerWindowListeners(activity)
@@ -108,8 +114,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        val currentActivityName = activity::class.java.name
-        listActivities.remove(currentActivityName)
+        val activityDestroyed = activity::class.java.name
+        listActivities.remove(activityDestroyed)
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
