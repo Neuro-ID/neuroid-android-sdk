@@ -54,6 +54,9 @@ private fun registerComponent(view: View, guid: String) {
         is Button -> {
             et = "Button"
         }
+        is ImageButton -> {
+            et = "Button"
+        }
         is SeekBar -> {
             et = "SeekBar"
         }
