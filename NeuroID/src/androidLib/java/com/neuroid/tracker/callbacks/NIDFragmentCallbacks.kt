@@ -44,7 +44,6 @@ class NIDFragmentCallbacks(
             registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
             _isChangeOrientation = false
         }
-        // No Operation
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {

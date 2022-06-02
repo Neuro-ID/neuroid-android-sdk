@@ -15,7 +15,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var activitiesStarted = 0
     private var listActivities = ArrayList<String>()
     private var wasChanged = false
-    private var previousActivityName = ""
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val currentActivityName = activity::class.java.name
@@ -115,8 +114,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        previousActivityName = activity::class.java.name
-        listActivities.remove(previousActivityName)
+        val activityDestroyed = activity::class.java.name
+        listActivities.remove(activityDestroyed)
         getDataStoreInstance()
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,

@@ -14,14 +14,21 @@ import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
-fun identifyAllViews(viewParent: ViewGroup, guid: String, changeOrientation: Boolean) {
+fun identifyAllViews(
+    viewParent: ViewGroup,
+    guid: String,
+    registerTarget: Boolean,
+    registerListeners: Boolean
+) {
     viewParent.forEach {
-        if (changeOrientation.not()) {
+        if (registerTarget) {
             registerComponent(it, guid)
         }
-        registerListeners(it)
+        if (registerListeners) {
+            registerListeners(it)
+        }
         if (it is ViewGroup) {
-            identifyAllViews(it, guid, changeOrientation)
+            identifyAllViews(it, guid, registerTarget, registerListeners)
         }
     }
 }
