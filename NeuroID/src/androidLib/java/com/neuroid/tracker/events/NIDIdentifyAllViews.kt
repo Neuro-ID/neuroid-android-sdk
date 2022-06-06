@@ -106,7 +106,6 @@ private fun registerListeners(view: View) {
 
     if (view is EditText) {
         val textWatcher = NIDTextWatcher(idName)
-        view.removeTextChangedListener(textWatcher)
         view.addTextChangedListener(textWatcher)
 
         val actionCallback = view.customSelectionActionModeCallback

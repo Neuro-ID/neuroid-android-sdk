@@ -20,8 +20,8 @@ class NIDGlobalEventCallback(
     ViewTreeObserver.OnGlobalLayoutListener, Window.Callback {
 
     private var lastEditText: EditText? = null
-    var currentWidth = 0
-    var currentHeight = 0
+    private var currentWidth = 0
+    private var currentHeight = 0
 
     override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
         val ts = System.currentTimeMillis()
