@@ -92,6 +92,8 @@ class NeuroIdUITest {
     @Test
     fun test00ValidateRegisterTargets() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        onView(withId(R.id.button_show_activity_one_fragment))
+            .perform(click())
         Thread.sleep(1000) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
