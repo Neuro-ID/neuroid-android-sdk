@@ -90,9 +90,9 @@ class NeuroIdUITest {
      * Validate REGISTER_TARGET on MainActivity class
      */
     @Test
-    fun test02ValidateRegisterTargets() {
+    fun test00ValidateRegisterTargets() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) //Wait a half second for create the MainActivity View
+        Thread.sleep(1000) //Wait a half second for create the MainActivity View
 
         val strEvents = getDataStoreInstance().getAllEvents()
         val eventsRegister = strEvents.filter { it.contains("\"type\":\"REGISTER_TARGET\"") }
@@ -173,7 +173,7 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-        val eventType = "\"type\":\"FORM_SUBMIT\""
+        val eventType = "\"type\":\"APPLICATION_SUBMIT\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateFormSubmit - Event: $event")
@@ -197,7 +197,7 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-        val eventType = "\"type\":\"FORM_SUBMIT_SUCCESS\""
+        val eventType = "\"type\":\"APPLICATION_SUBMIT_SUCCESS\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateFormSubmitSuccess - Event: $event")
 
@@ -220,7 +220,7 @@ class NeuroIdUITest {
             .perform(click())
         Thread.sleep(600)
 
-        val eventType = "\"type\":\"FORM_SUBMIT_FAILURE\""
+        val eventType = "\"type\":\"APPLICATION_SUBMIT_FAILURE\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
 
         NIDLog.d("----> UITest", "----> validateFormSubmitFailure - Event: $event")
