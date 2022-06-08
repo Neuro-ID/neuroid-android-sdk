@@ -333,7 +333,7 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-        onView(withId(R.id.textView_label_one))
+        onView(withId(R.id.editText_normal_field))
             .perform(click())
         Thread.sleep(500)
 
@@ -351,7 +351,7 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-        onView(withId(R.id.textView_label_one))
+        onView(withId(R.id.editText_normal_field))
             .perform(click())
         Thread.sleep(500)
 
@@ -388,7 +388,7 @@ class NeuroIdUITest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        Thread.sleep(500)
+        Thread.sleep(1000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
         val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
