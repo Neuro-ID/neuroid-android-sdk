@@ -1,16 +1,11 @@
 package com.sample.neuroid.us
 
 import android.app.Application
-import android.view.View
-import android.widget.SeekBar
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
-import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.UiController
-import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -30,7 +25,6 @@ import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
-import org.hamcrest.CoreMatchers.anything
 import org.junit.*
 import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
@@ -120,43 +114,6 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "----> validateSetUserId - Event: [$event]")
 
         assertThat(event).matches(NID_STRUCT_USER_ID)
-    }
-
-    /**
-     * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
-     */
-    @Test
-    fun test04ValidateSliderChange() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) //Wait a half second for create the MainActivity View
-
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-
-        Thread.sleep(500)
-
-        onView(withId(R.id.layout_scroll)).perform(
-            swipeUp()
-        )
-
-        onView(withId(R.id.layout_scroll)).perform(
-            swipeUp()
-        )
-
-        Thread.sleep(500)
-
-        onView(withId(R.id.seekBar_one)).perform(
-            setValue(50)
-        )
-
-        Thread.sleep(500)
-
-        val eventType = "\"type\":\"SLIDER_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
-
-
-        assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
     }
 
     /**
@@ -393,7 +350,7 @@ class NeuroIdUITest {
         Thread.sleep(1000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType,0)
+        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
         NIDLog.d("----> UITest", "----> validateWindowsResize - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_RESIZE)
     }
@@ -478,78 +435,6 @@ class NeuroIdUITest {
         assertThat(event).matches(NID_STRUCT_TEXT_CHANGE)
     }
 
-    /**
-     * Validate RADIO_CHANGE when the user click on it
-     */
-    @Test
-    fun test21ValidateRadioChange() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-        Thread.sleep(500)
-
-        onView(withId(R.id.radioButton_one))
-            .perform(click())
-
-        Thread.sleep(500)
-
-        val eventType = "\"type\":\"RADIO_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
-        assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
-    }
-
-    /**
-     * Validate CHECKBOX_CHANGE when the user click on it
-     */
-    @Test
-    fun test22ValidateCheckBox() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-        Thread.sleep(500)
-
-        onView(withId(R.id.check_one))
-            .perform(click())
-
-        Thread.sleep(500)
-
-        val eventType = "\"type\":\"CHECKBOX_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateClickControlViews - Event: $event")
-        assertThat(event).matches(NID_STRUCT_CHECKBOX_CHANGE)
-    }
-
-    /**
-     * Validate SELECT_CHANGE when the user select one item on list
-     */
-    @Test
-    fun test23ValidateComboBoxSelectItem() {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-        onView(withId(R.id.button_show_activity_fragments))
-            .perform(click())
-        Thread.sleep(500)
-
-        onView(withId(R.id.spinner_example))
-            .perform(click())
-        Thread.sleep(1000)
-        onData(anything()).atPosition(1).perform(click())
-
-        Thread.sleep(1000)
-
-        val eventType = "\"type\":\"SELECT_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType, 0)
-        NIDLog.d("----> UITest", "----> validateComboBoxSelectItem - Event: [$event]")
-        assertThat(event).matches(NID_STRUCT_SELECT_CHANGE)
-    }
-
 
     /**
      * Validate the sending of data to the server correctly, if the return code of the server is
@@ -607,23 +492,6 @@ class NeuroIdUITest {
         val event = validateEventCount(events, eventType)
         NIDLog.d("----> UITest", "----> validateUserIsInactive - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_USER_INACTIVE)
-    }
-
-    fun setValue(value: Int): ViewAction {
-        return object : ViewAction {
-            override fun getConstraints(): org.hamcrest.Matcher<View> {
-                return isAssignableFrom(SeekBar::class.java)
-            }
-
-            override fun getDescription(): String {
-                return "Set SeekBar value to $value"
-            }
-
-            override fun perform(uiController: UiController?, view: View) {
-                val seekBar = view as SeekBar
-                seekBar.progress = value
-            }
-        }
     }
 
     private fun validateEventCount(
