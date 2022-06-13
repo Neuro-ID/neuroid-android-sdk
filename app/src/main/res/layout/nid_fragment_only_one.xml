@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="match_parent">
 
         <TextView
-            style="@style/NidTextViewSubTitle"
             android:id="@+id/textView_label_subtitle"
+            style="@style/NidTextViewSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/nid_only_one_fragment"
             android:layout_marginTop="20dp"
+            android:text="@string/nid_only_one_fragment"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -22,31 +23,31 @@
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
             android:text="@string/nid_only_one_fragment_description"
-            app:layout_constraintTop_toBottomOf="@id/textView_label_subtitle"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/textView_label_subtitle" />
 
         <ScrollView
+            android:id="@+id/layout_scroll"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
-            android:id="@+id/layout_scroll"
-            app:layout_constraintTop_toBottomOf="@id/textView_description"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView_description">
 
             <LinearLayout
-                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <TextView
                     style="@style/NidTextViewSubTitleBlue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginTop="30dp"
                     android:text="@string/nid_only_one_fragment_checkboxes" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
@@ -54,53 +55,55 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/nid_only_one_fragment_first_check"/>
+                    android:text="@string/nid_only_one_fragment_first_check" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/check_two"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/nid_only_one_fragment_second_check"/>
+                    android:text="@string/nid_only_one_fragment_second_check" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/check_three"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/nid_only_one_fragment_third_check"/>
+                    android:text="@string/nid_only_one_fragment_third_check" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/check_four"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/nid_only_one_fragment_fourth_check"/>
+                    android:text="@string/nid_only_one_fragment_fourth_check" />
 
                 <TextView
                     style="@style/NidTextViewSubTitleBlue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginTop="30dp"
                     android:text="@string/nid_only_one_fragment_radiobuttons" />
 
                 <RadioGroup
                     android:id="@+id/radioGroup_one"
-                    android:layout_marginStart="20dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp">
 
                     <RadioButton
                         android:id="@+id/radioButton_one"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/nid_only_one_fragment_first_radio" />
+
                     <RadioButton
                         android:id="@+id/radioButton_two"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/nid_only_one_fragment_second_radio" />
+
                     <RadioButton
                         android:id="@+id/radioButton_three"
                         android:layout_width="wrap_content"
@@ -112,8 +115,8 @@
                     style="@style/NidTextViewSubTitleBlue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginTop="30dp"
                     android:text="@string/nid_only_one_fragment_switches" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -121,42 +124,63 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    app:switchPadding="10dp"
-                    android:text="@string/nid_only_one_fragment_first_switch"/>
+                    android:text="@string/nid_only_one_fragment_first_switch"
+                    app:switchPadding="10dp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_two"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    app:switchPadding="10dp"
-                    android:text="@string/nid_only_one_fragment_second_switch"/>
+                    android:text="@string/nid_only_one_fragment_second_switch"
+                    app:switchPadding="10dp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_three"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    app:switchPadding="10dp"
-                    android:text="@string/nid_only_one_fragment_third_switch"/>
+                    android:text="@string/nid_only_one_fragment_third_switch"
+                    app:switchPadding="10dp" />
 
                 <TextView
                     style="@style/NidTextViewSubTitleBlue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginTop="30dp"
                     android:text="@string/nid_only_one_fragment_seekbar" />
 
                 <SeekBar
                     android:id="@+id/seekBar_one"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="30dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
-                    android:max="100"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="30dp"
+                    android:max="100" />
+
+                <ToggleButton
+                    android:id="@+id/toggle_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="30dp" />
+
+
+                <RatingBar
+                    android:id="@+id/rating_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="30dp"
+                    android:max="100" />
+
 
             </LinearLayout>
 

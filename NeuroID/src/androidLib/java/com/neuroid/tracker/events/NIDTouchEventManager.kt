@@ -6,6 +6,8 @@ import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.AppCompatCheckBox
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -26,15 +28,17 @@ class NIDTouchEventManager(
 
             detectChangesOnView(currentView, timeMills, motionEvent.action)
 
-            val typeOfView = when(currentView) {
+            val typeOfView = when (currentView) {
                 is EditText,
                 is CheckBox,
                 is RadioButton,
                 is ToggleButton,
                 is Switch,
+                is SwitchCompat,
                 is ImageButton,
                 is SeekBar,
-                is Spinner
+                is Spinner,
+                is RatingBar
                 -> 1
                 is Button -> 2
                 else -> 0
@@ -139,7 +143,7 @@ class NIDTouchEventManager(
         if (action == ACTION_UP) {
             if (lastView == currentView) {
                 when (currentView) {
-                    is CheckBox -> {
+                    is CheckBox, is AppCompatCheckBox -> {
                         type = CHECKBOX_CHANGE
                         Log.i(
                             NIDLog.CHECK_BOX_CHANGE_TAG,
@@ -152,6 +156,15 @@ class NIDTouchEventManager(
                             NIDLog.RADIO_BUTTON_CHANGE_TAG,
                             NIDLog.RADIO_BUTTON_ID + currentView.getIdOrTag()
                         )
+                    }
+                    is Switch, is SwitchCompat -> {
+                        type = SWITCH_CHANGE
+                    }
+                    is ToggleButton -> {
+                        type = TOGGLE_BUTTON_CHANGE
+                    }
+                    is RatingBar -> {
+                        type = RATING_BAR_CHANGE
                     }
                     is SeekBar -> {
                         type = SLIDER_CHANGE
