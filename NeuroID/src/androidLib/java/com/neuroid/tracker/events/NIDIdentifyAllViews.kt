@@ -3,6 +3,8 @@ package com.neuroid.tracker.events
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.AppCompatCheckBox
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.neuroid.tracker.models.NIDEventModel
@@ -35,11 +37,11 @@ private fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
-    when(view) {
+    when (view) {
         is EditText -> {
             et = "Edittext"
         }
-        is CheckBox -> {
+        is CheckBox, is AppCompatCheckBox -> {
             et = "CheckBox"
         }
         is RadioButton -> {
@@ -48,13 +50,10 @@ private fun registerComponent(view: View, guid: String) {
         is ToggleButton -> {
             et = "ToggleButton"
         }
-        is Switch -> {
+        is Switch, is SwitchCompat -> {
             et = "Switch"
         }
-        is Button -> {
-            et = "Button"
-        }
-        is ImageButton -> {
+        is Button, is ImageButton -> {
             et = "Button"
         }
         is SeekBar -> {
@@ -62,6 +61,9 @@ private fun registerComponent(view: View, guid: String) {
         }
         is Spinner -> {
             et = "Spinner"
+        }
+        is RatingBar -> {
+            et = "RatingBar"
         }
     }
 
@@ -97,7 +99,8 @@ private fun registerComponent(view: View, guid: String) {
                         "attr" to attrs
                     ),
                     url = urlView
-                ))
+                )
+            )
     }
 }
 
@@ -118,8 +121,13 @@ private fun registerListeners(view: View) {
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
-            view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
+            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    adapter: AdapterView<*>?,
+                    viewList: View?,
+                    position: Int,
+                    p3: Long
+                ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
                     getDataStoreInstance()
                         .saveEvent(
@@ -131,7 +139,8 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis()
-                            ))
+                            )
+                        )
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -142,20 +151,22 @@ private fun registerListeners(view: View) {
         is AutoCompleteTextView -> {
             val lastListener: AdapterView.OnItemClickListener? = view.onItemClickListener
             view.onItemClickListener = null
-            view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener?.onItemClick(adapter, viewList, position, p3)
-                getDataStoreInstance()
-                    .saveEvent(
-                        NIDEventModel(
-                            type = SELECT_CHANGE,
-                            tg = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to "INPUT",
-                                "et" to "text"
-                            ),
-                            ts = System.currentTimeMillis()
-                        ))
-            }
+            view.onItemClickListener =
+                AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+                    lastListener?.onItemClick(adapter, viewList, position, p3)
+                    getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = SELECT_CHANGE,
+                                tg = hashMapOf(
+                                    "tgs" to idName,
+                                    "etn" to "INPUT",
+                                    "et" to "text"
+                                ),
+                                ts = System.currentTimeMillis()
+                            )
+                        )
+                }
         }
     }
 }
