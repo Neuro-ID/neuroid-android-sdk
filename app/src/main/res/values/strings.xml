@@ -28,6 +28,8 @@
     <string name="nid_only_one_fragment_second_switch">Second switch</string>
     <string name="nid_only_one_fragment_third_switch">Third switch</string>
     <string name="nid_only_one_fragment_seekbar">\u2022 SeekBar</string>
+    <string name="nid_only_one_fragment_toggle_button">\u2022 Toggle Button</string>
+    <string name="nid_only_one_fragment_rating_bar">\u2022 Rating Bar</string>
 
     <string name="nid_fragment_one_title">Fragment one</string>
     <string name="nid_fragment_one_custom_event">Send custom event</string>
