@@ -584,12 +584,12 @@ class NeuroIdUITest {
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
-        Thread.sleep(2000)
-        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        val events = getDataStoreInstance().getAllEvents()
+        Thread.sleep(500)
         device.setOrientationNatural()
         Thread.sleep(500)
-        val event = validateEventCount(events, eventType, 1)
+        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
+        val events = getDataStoreInstance().getAllEvents()
+        val event = validateEventCount(events, eventType, 2)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
