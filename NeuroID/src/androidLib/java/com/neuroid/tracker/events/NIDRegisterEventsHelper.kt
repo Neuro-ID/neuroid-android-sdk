@@ -5,6 +5,8 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
+import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.getDecorViews
 import java.util.*
 
 fun registerWindowListeners(activity: Activity) {
@@ -19,7 +21,14 @@ fun registerWindowListeners(activity: Activity) {
             callBack,
             NIDTouchEventManager(viewMainContainer as ViewGroup),
             viewMainContainer
-        )
+        ){ isFocus ->
+            if (isFocus.not()) {
+                val lastDecorView = getDecorViews().lastOrNull()
+                NIDLog.i("----------------- Neuro ID", "lastDecorView: $lastDecorView")
+            }
+        }
+
+
         viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(nidGlobalEventCallback)
         viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(
             nidGlobalEventCallback

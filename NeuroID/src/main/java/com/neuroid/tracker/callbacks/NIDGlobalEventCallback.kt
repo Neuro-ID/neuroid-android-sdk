@@ -15,7 +15,8 @@ import com.neuroid.tracker.utils.getIdOrTag
 class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
     private val eventManager: NIDTouchEventManager,
-    private val viewMainContainer: View
+    private val viewMainContainer: View,
+    private val listener: (Boolean) -> Unit
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
     ViewTreeObserver.OnGlobalLayoutListener, Window.Callback {
 
@@ -170,8 +171,9 @@ class NIDGlobalEventCallback(
         return windowCallback.onContentChanged()
     }
 
-    override fun onWindowFocusChanged(p0: Boolean) {
-        return windowCallback.onWindowFocusChanged(p0)
+    override fun onWindowFocusChanged(focus: Boolean) {
+        listener.invoke(focus)
+        return windowCallback.onWindowFocusChanged(focus)
     }
 
     override fun onAttachedToWindow() {

@@ -1,8 +1,10 @@
 package com.neuroid.tracker.utils
 
 import android.content.res.Resources
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.FragmentManager
+import java.lang.reflect.Method
 
 fun View?.getIdOrTag(): String {
 
@@ -40,6 +42,28 @@ private fun getParentsOfView(layers: Int, view: View): String {
     return if (layers == 3 || childView.id == android.R.id.content) "" else {
         "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
     }
+}
+
+fun getDecorViews(): List<View> {
+    val listViews = ArrayList<View>()
+
+    try {
+        val wmgClass = Class.forName("android.view.WindowManagerGlobal")
+        val wmgInstance = wmgClass.getMethod("getInstance").invoke(null)
+        val getViewRootNames: Method = wmgClass.getMethod("getViewRootNames")
+        val getRootView: Method = wmgClass.getMethod("getRootView", String::class.java)
+        val rootViewNames =
+            getViewRootNames.invoke(wmgInstance) as Array<String>
+        for (viewName in rootViewNames) {
+            val rootView: View = getRootView.invoke(wmgInstance, viewName) as View
+            listViews.add(rootView)
+            NIDLog.i("----------------- Neuro ID", "Found root view: $viewName: $rootView")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    return listViews
 }
 
 fun FragmentManager.hasFragments(): Boolean {
