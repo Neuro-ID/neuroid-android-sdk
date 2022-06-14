@@ -34,6 +34,9 @@
         <activity android:name=".activities.NIDCustomEventsActivity"
             android:exported="false"
             android:theme="@style/Theme.NeuroIdAndroidExample"/>
+        <activity android:name=".activities.NIDDialogsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NeuroIdAndroidExample"/>
     </application>
 
 </manifest>

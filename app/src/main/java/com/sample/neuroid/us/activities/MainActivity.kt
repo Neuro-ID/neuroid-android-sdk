@@ -29,23 +29,26 @@ class MainActivity : AppCompatActivity() {
             buttonShowActivityFragments.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDSomeFragmentsActivity::class.java))
             }
+            buttonShowActivityDialogs.setOnClickListener {
+                startActivity(Intent(this@MainActivity, NIDDialogsActivity::class.java))
+            }
 
             textViewSidValue.setText( NeuroID.getInstance().getSessionId())
+
+            editTextNormalField.addTextChangedListener( object: TextWatcher {
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                    println("----------------- beforeTextChanged")
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                    println("----------------- onTextChanged")
+                }
+
+                override fun afterTextChanged(p0: Editable?) {
+                    println("----------------- afterTextChanged")
+                }
+
+            })
         }
-
-        binding.editTextNormalField.addTextChangedListener( object: TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                println("----------------- beforeTextChanged")
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                println("----------------- onTextChanged")
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-                println("----------------- afterTextChanged")
-            }
-
-        })
     }
 }

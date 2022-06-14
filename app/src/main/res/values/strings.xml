@@ -8,6 +8,7 @@
     <string name="nid_main_button_show_activity_non_automatic_events">Show Non-automatic events</string>
     <string name="nid_main_button_show_activity_one_fragment">Show Activity with one fragment</string>
     <string name="nid_main_button_show_activity_fragments">Show Activity with fragments</string>
+    <string name="nid_main_button_show_activity_dialogs">Show Activity with dialogs</string>
     <string name="nid_editText_normal_hint">Normal Input</string>
     <string name="nid_editText_password_hint">Password Input</string>
     <string name="nid_second_activity_title">Second Activity</string>
@@ -64,4 +65,15 @@
     <string name="nid_form_submit_failure_custom_events_activity">Event form submit failure</string>
     <string name="nid_form_custom_tag_events_activity">Event custom</string>
     <string name="nid_custom_events_saved_event_activity">Event saved</string>
+
+    <string name="nid_dialogs_activity_title">Dialogs Activity</string>
+    <string name="nid_dialogs_activity_description">This screen can launch different types of dialogs. Try it clicking on buttons</string>
+    <string name="nid_dialogs_activity_alert_dialog_button">Show an Alert Dialog</string>
+    <string name="nid_dialogs_activity_custom_dialog_button">Show an Custom Dialog</string>
+    <string name="nid_dialogs_activity_date_picker">Show Date picker</string>
+    <string name="nid_dialogs_activity_time_picker">Show Time picker</string>
+
+    <string name="nid_dialogs_custom_dialog_title">Custom Dialog</string>
+    <string name="nid_dialogs_custom_dialog_description">This is a complex dialog, with its own layout which in turn contains more views</string>
+    <string name="nid_dialogs_custom_dialog_button">OK!</string>
 </resources>
