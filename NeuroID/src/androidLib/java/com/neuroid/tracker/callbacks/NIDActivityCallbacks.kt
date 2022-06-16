@@ -2,6 +2,9 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.Context.SENSOR_SERVICE
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.*
@@ -15,6 +18,9 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var activitiesStarted = 0
     private var listActivities = ArrayList<String>()
     private var wasChanged = false
+    private var sensorManager: SensorManager? = null
+    private var mAccelerometer: Sensor? = null
+    private val sensorListener = NIDSensorListener()
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val currentActivityName = activity::class.java.name
@@ -87,15 +93,17 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             }
             wasChanged = false
             registerWindowListeners(activity)
+            sensorManager = activity.getSystemService(SENSOR_SERVICE) as SensorManager
+            mAccelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
-        //No operation
+        sensorManager?.registerListener(sensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        //No operation
+        sensorManager?.unregisterListener(sensorListener)
     }
 
     override fun onActivityStopped(activity: Activity) {
