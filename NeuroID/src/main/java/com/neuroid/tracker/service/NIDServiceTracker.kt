@@ -32,10 +32,8 @@ object NIDServiceTracker {
         val listEvents = getDataStoreInstance().getAllEvents()
 
         if (listEvents.isEmpty().not()) {
-            val strUrl = if (BuildConfig.DEBUG)
-                "https://api.neuro-id.com/v3/c"
-            else
-                "https://api.neuro-id.com/v3/c"
+            // Allow for override of this URL in config
+            val strUrl = "https://api.neuro-id.com/v3/c"
 
             NIDLog.d("NeuroID", "Url: $strUrl")
             val url = URL(strUrl)
