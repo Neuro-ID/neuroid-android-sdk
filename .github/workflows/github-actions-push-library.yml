@@ -1,0 +1,52 @@
+name: UpdateLibrary
+on:
+  push:
+    branches:
+      - feature/NO_TICKET/update_libraries
+    paths-ignore:
+      - version.properties
+      - app/libs
+
+env:
+  GIT_HASH: ${{github.sha}}
+jobs:
+  publish:
+    name: Release NeuroID SDK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Cache Gradle and wrapper
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Grant Permission for Gradlew to Execute
+        run: chmod +x gradlew
+
+      - name: Build AAR ⚙️🛠
+        run: bash ./gradlew :NeuroID:assemble
+
+      - name: Update Internal Library
+        run: |
+             cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar app/libs
+             cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-debug.aar app/libs
+             cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar app/libs
+             cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-debug.aar app/libs
+             git add app/libs
+             git commit -m "updating libraries"
+             git push
+
+
