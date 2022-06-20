@@ -45,6 +45,8 @@ jobs:
              cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-debug.aar app/libs
              cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar app/libs
              cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-debug.aar app/libs
+             git config --global user.email "robot@neuro-id.com"
+             git config --global user.name "robot"
              git add app/libs
              git commit -m "updating libraries"
              git push
