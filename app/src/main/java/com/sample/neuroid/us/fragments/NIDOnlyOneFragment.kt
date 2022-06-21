@@ -19,7 +19,5 @@ class NIDOnlyOneFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         NeuroID.getInstance().setScreenName("NID_ONLY_ONE_FRAGMENT_PAGE")
-        binding.seekBarOne.max = 100
-        binding.seekBarOne.progress = 20
     }
 }

@@ -1,4 +1,4 @@
-name: Android Assamble
+name: Release production SDK
 on:
   push:
     tags:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   publish:
-    name: Release Simple Library
+    name: Publishing SDK
     runs-on: ubuntu-latest
 
     steps:
@@ -45,25 +45,22 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Upload Simple Library AAR 🗳
+      - name: Upload Native AAR 🗳
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/neuro-id-android-sdk-release.aar
-          asset_name: neuro-id-android-sdk-release.aar
+          asset_path: NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar
+          asset_name: neuro-id-android-sdk-androidLib-release
           asset_content_type: application/aar
 
-      - name: Pushes test file
-        uses: dmnemec/copy_file_to_another_repo_action@main
+      - name: Upload React Native AAR 🗳
+        uses: actions/upload-release-asset@v1
         env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          source_file: 'NeuroID/build/outputs/aar/neuro-id-android-sdk-release.aar'
-          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'neuroid-android-sdk-sandbox/app/libs/'
-          user_email: 'alejandro.bautista@neuro-id.com'
-          user_name: 'alejandrobautistar'
-          destination_branch: 'action_publish'
-          commit_message: 'Updating library version'
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar
+          asset_name: neuro-id-android-sdk-reactNativeLib-release
+          asset_content_type: application/aar

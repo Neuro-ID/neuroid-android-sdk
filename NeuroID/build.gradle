@@ -2,6 +2,13 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'maven-publish'
+}
+
+def versionPropsFile = rootProject.file("version.properties")
+def versionProps = new Properties()
+if (versionPropsFile.exists()) {
+    versionProps.load(new FileInputStream(versionPropsFile))
 }
 
 android {
@@ -17,10 +24,17 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
+            debuggable true
+            jniDebuggable true
+            buildConfigField "String", "VERSION_NAME", "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
+            buildConfigField "String", "GIT_HASH", System.getenv("GIT_HASH") as String ?: "\"NO_HASH\""
+            buildConfigField "String", "GIT_HASH", "\"${System.getenv("GIT_HASH") as String ?: "NO_HASH"}\""
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "VERSION_NAME", "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
+            buildConfigField "String", "GIT_HASH", "\"${System.getenv("GIT_HASH") as String ?: "NO_HASH"}\""
         }
     }
 
@@ -37,7 +51,7 @@ android {
 
     libraryVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "neuro-id-android-sdk-${variant.getFlavorName()}-${variant.buildType.name}.aar"
+            outputFileName = "${variant.getFlavorName()}/neuro-id-android-sdk-${variant.getFlavorName()}-${variant.buildType.name}.aar"
         }
     }
     compileOptions {
@@ -63,4 +77,48 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
     reactNativeLibImplementation("com.facebook.react:react-native:+")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            androidLibRelease(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.androidLibRelease
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.neuroid'
+                artifactId = 'android-sdk'
+                version = '1.0.0'
+            }
+            // Creates a Maven publication called “debug”.
+            androidLibdebug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                from components.androidLibDebug
+
+                groupId = 'com.neuroid'
+                artifactId = 'android-sdk-debug'
+                version = '1.0.0'
+            }
+            reactNativeLibRelease(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.reactNativeLibRelease
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.neuroid'
+                artifactId = 'react-android-sdk'
+                version = '1.0.0'
+            }
+            // Creates a Maven publication called “debug”.
+            reactNativeLibDebug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                from components.reactNativeLibDebug
+
+                groupId = 'com.neuroid'
+                artifactId = 'react-android-sdk-debug'
+                version = '1.0.0'
+            }
+        }
+    }
 }

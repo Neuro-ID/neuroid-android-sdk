@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -10,6 +11,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDTimerActive
+import com.neuroid.tracker.utils.NIDVersion
 
 class NeuroID private constructor(
     private var application: Application?,
@@ -63,6 +65,12 @@ class NeuroID private constructor(
 
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen
+    }
+
+    fun excludeViewByResourceID(id: String) {
+        application?.let {
+            getDataStoreInstance().addViewIdExclude(id)
+        }
     }
 
     fun getSessionId(): String {
@@ -127,6 +135,12 @@ class NeuroID private constructor(
 
     fun registerAllViewsForCallerActivity(activity: Activity) {
         NIDTimerActive.initTimer()
+        activity.application.registerActivityLifecycleCallbacks(
+            NIDActivityCallbacks(
+                activity::class.java.name,
+                activity.resources.configuration.orientation
+            )
+        )
         registerLaterLifecycleFragments(activity)
     }
 
@@ -155,7 +169,7 @@ class NeuroID private constructor(
                     dnt = false,
                     url = "",
                     ns = "nid",
-                    jsv = "4.android-1.2.1",
+                    jsv = NIDVersion.getSDKVersion(),
                     ts = System.currentTimeMillis()
                 )
             )

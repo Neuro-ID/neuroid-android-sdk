@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        NeuroID.getInstance().excludeViewByResourceID("textView_sid_value")
 
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, NIDSomeFragmentsActivity::class.java))
             }
 
-            textViewSidValue.text = NeuroID.getInstance().getSessionId()
+            textViewSidValue.setText( NeuroID.getInstance().getSessionId())
         }
 
         binding.editTextNormalField.addTextChangedListener( object: TextWatcher {

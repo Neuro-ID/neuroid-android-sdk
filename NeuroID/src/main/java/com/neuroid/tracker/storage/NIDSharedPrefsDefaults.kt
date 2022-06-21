@@ -2,7 +2,6 @@ package com.neuroid.tracker.storage
 
 import android.app.Application
 import android.content.Context
-import android.os.Build
 import java.util.*
 import kotlin.random.Random
 
@@ -114,7 +113,8 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getUserId() = sharedPref?.getString(NID_UID, "null") ?: "null"
+    // Must be set to null string
+    fun getUserId() = sharedPref?.getString(NID_UID, "null")
 
     fun getDeviceId(): String {
         var deviceId = sharedPref?.getString(NID_DID, "").orEmpty()

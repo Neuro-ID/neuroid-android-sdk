@@ -15,13 +15,28 @@ class NIDTextWatcher(
         // No op
     }
 
-    override fun onTextChanged(sequence: CharSequence?, p1: Int, p2: Int, p3: Int) {
+    override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
+        val ts = System.currentTimeMillis()
+        var typeEvent = ""
+
         val attrs = listOf(
             NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
             NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
         )
 
-        val ts = System.currentTimeMillis()
+        if (before == 0 && count - before > 1) {
+            typeEvent = PASTE
+        }
+
+        if (typeEvent.isNotEmpty()) {
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = typeEvent,
+                        ts = System.currentTimeMillis(),
+                    )
+                )
+        }
 
         getDataStoreInstance()
             .saveEvent(

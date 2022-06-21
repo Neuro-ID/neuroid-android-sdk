@@ -4,20 +4,31 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.forEach
+import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
-fun identifyAllViews(viewParent: ViewGroup, guid: String) {
+fun identifyAllViews(
+    viewParent: ViewGroup,
+    guid: String,
+    registerTarget: Boolean,
+    registerListeners: Boolean
+) {
     viewParent.forEach {
-        registerComponent(it, guid)
-        registerListeners(it)
+        if (registerTarget) {
+            registerComponent(it, guid)
+        }
+        if (registerListeners) {
+            registerListeners(it)
+        }
         if (it is ViewGroup) {
-            identifyAllViews(it, guid)
+            identifyAllViews(it, guid, registerTarget, registerListeners)
         }
     }
 }
@@ -98,6 +109,17 @@ private fun registerComponent(view: View, guid: String) {
 
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
+
+    if (view is EditText) {
+        val textWatcher = NIDTextWatcher(idName)
+        view.removeTextChangedListener(textWatcher)
+        view.addTextChangedListener(textWatcher)
+
+        val actionCallback = view.customSelectionActionModeCallback
+        if (actionCallback !is NIDContextMenuCallbacks) {
+            view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+        }
+    }
 
     when (view) {
         is Spinner -> {

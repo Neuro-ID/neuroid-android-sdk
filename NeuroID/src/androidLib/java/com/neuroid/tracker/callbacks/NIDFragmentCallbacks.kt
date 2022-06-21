@@ -10,18 +10,24 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
-class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
+class NIDFragmentCallbacks(
+    isChangeOrientation: Boolean
+)
+    : FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+    private var _isChangeOrientation = isChangeOrientation
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDServiceTracker.screenName = "AppInit"
-        NIDServiceTracker.screenFragName = f::class.java.simpleName
 
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_LOAD,
-                ts = System.currentTimeMillis()))
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            NIDServiceTracker.screenName = "AppInit"
+            NIDServiceTracker.screenFragName = f::class.java.simpleName
 
-        registerViewsEventsForActivity(f.requireActivity())
+            getDataStoreInstance()
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_LOAD,
+                    ts = System.currentTimeMillis()))
+        }
     }
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
@@ -34,18 +40,10 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         v: View,
         savedInstanceState: Bundle?
     ) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_FOCUS,
-                ts = System.currentTimeMillis()))
-    }
-
-    override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_BLUR,
-                ts = System.currentTimeMillis()
-            ))
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
+            _isChangeOrientation = false
+        }
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
@@ -53,14 +51,17 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     }
 
     override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
-        // No operation
+        //No operation
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_UNLOAD,
-                ts = System.currentTimeMillis()
-            ))
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+
+            getDataStoreInstance()
+                .saveEvent(NIDEventModel(
+                    type = WINDOW_UNLOAD,
+                    ts = System.currentTimeMillis()
+                ))
+        }
     }
 }

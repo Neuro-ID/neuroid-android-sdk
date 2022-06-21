@@ -7,6 +7,7 @@ import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDVersion
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -15,44 +16,46 @@ import java.net.URL
 import java.net.URLEncoder
 
 object NIDServiceTracker {
-    @get:Synchronized @set:Synchronized
+    @get:Synchronized
+    @set:Synchronized
     var screenName = ""
 
-    @get:Synchronized @set:Synchronized
+    @get:Synchronized
+    @set:Synchronized
     var screenActivityName = ""
 
-    @get:Synchronized @set:Synchronized
+    @get:Synchronized
+    @set:Synchronized
     var screenFragName = ""
 
     fun sendEventToServer(key: String, context: Application): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents()
 
         if (listEvents.isEmpty().not()) {
-            val strUrl = if (BuildConfig.DEBUG) {
-                "https://api.neuro-id.com/v3/c"
-                // Send all traffic to production fo now.
-//                "https://api.usw2-dev1.nidops.net/v3/c"
-            } else {
-                "https://api.neuro-id.com/v3/c"
-            }
+            // Allow for override of this URL in config
+            val strUrl = "https://api.neuro-id.com/v3/c"
 
             NIDLog.d("NeuroID", "Url: $strUrl")
             val url = URL(strUrl)
-            val conn:HttpURLConnection = url.openConnection() as HttpURLConnection
+            val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.doInput = true
             conn.doOutput = true
             conn.readTimeout = 5000
             conn.connectTimeout = 5000
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+            conn.setRequestProperty(
+                "Content-Type",
+                "application/x-www-form-urlencoded;charset=UTF-8"
+            )
             conn.setRequestProperty("Authorization", "Basic $key")
 
             val listJson = "[${listEvents.joinToString(",")}]"
-                .replace("\"url\":\"\"","\"url\":\"$screenActivityName\"")
-                .replace("\\/","/")
+                .replace("\"url\":\"\"", "\"url\":\"$screenActivityName\"")
+                .replace("\\/", "/")
 
             val data = getContentForm(context, listJson.encodeToBase64(), key)
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
+            NIDLog.d("NeuroID", "Events: $listJson")
 
             try {
                 val os: OutputStream = conn.outputStream
@@ -62,7 +65,6 @@ object NIDServiceTracker {
                 writer.close()
                 os.close()
 
-                NIDLog.d("NeuroID", "Events: $listJson")
                 val code = conn.responseCode
                 val message = conn.responseMessage
 
@@ -98,7 +100,7 @@ object NIDServiceTracker {
             "pid" to sharedDefaults.getPageId(),
             "iid" to sharedDefaults.getIntermediateId(),
             "url" to screenActivityName,
-            "jsv" to "4.android-1.2.1",
+            "jsv" to NIDVersion.getSDKVersion(),
             "events" to events
         )
 

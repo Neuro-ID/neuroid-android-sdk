@@ -8,7 +8,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDLayoutChangeListener(
     private val viewMainContainer: View
-): OnGlobalLayoutListener {
+) : OnGlobalLayoutListener {
     var currentWidth = 0
     var currentHeight = 0
 
