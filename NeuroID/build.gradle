@@ -107,7 +107,7 @@ afterEvaluate {
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.neuroid'
-                artifactId = 'android-sdk'
+                artifactId = 'react-android-sdk'
                 version = '1.0.0'
             }
             // Creates a Maven publication called “debug”.
@@ -116,7 +116,7 @@ afterEvaluate {
                 from components.reactNativeLibDebug
 
                 groupId = 'com.neuroid'
-                artifactId = 'android-sdk-debug'
+                artifactId = 'react-android-sdk-debug'
                 version = '1.0.0'
             }
         }
