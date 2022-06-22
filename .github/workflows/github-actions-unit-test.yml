@@ -2,12 +2,13 @@ name: Unit Test
 on:
   pull_request:
     branches:
-    - master
     - develop
 
 jobs:
   test:
+    name: SDK Test
     runs-on: macos-latest
+
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -16,6 +17,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+
+      - name: Build AAR ⚙️🛠
+        run: bash ./gradlew :NeuroID:assemble
 
       # Execute unit tests
       - name: Unit Test
