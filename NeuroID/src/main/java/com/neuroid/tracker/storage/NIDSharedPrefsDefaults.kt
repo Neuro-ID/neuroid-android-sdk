@@ -114,7 +114,11 @@ class NIDSharedPrefsDefaults(
     }
 
     // Must be set to null string
-    fun getUserId() = sharedPref?.getString(NID_UID, "null")
+    fun getUserId(): String {
+        val uid = sharedPref?.getString(NID_UID, "null") ?: ""
+
+        return uid.ifBlank { "null" }
+    }
 
     fun getDeviceId(): String {
         var deviceId = sharedPref?.getString(NID_DID, "").orEmpty()
