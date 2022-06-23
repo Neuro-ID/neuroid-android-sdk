@@ -90,6 +90,11 @@ dependencies {
     reactNativeLibImplementation("com.facebook.react:react-native:+")
 }
 
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
 afterEvaluate {
     publishing {
         publications {
@@ -102,6 +107,7 @@ afterEvaluate {
                 groupId = 'com.neuroid'
                 artifactId = 'android-sdk'
                 version = versionName
+                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             androidLibdebug(MavenPublication) {
@@ -111,6 +117,7 @@ afterEvaluate {
                 groupId = 'com.neuroid'
                 artifactId = 'android-sdk-debug'
                 version = versionName
+                artifact androidSourcesJar
             }
             reactNativeLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
@@ -120,6 +127,7 @@ afterEvaluate {
                 groupId = 'com.neuroid'
                 artifactId = 'react-android-sdk'
                 version = versionName
+                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             reactNativeLibDebug(MavenPublication) {
@@ -129,6 +137,7 @@ afterEvaluate {
                 groupId = 'com.neuroid'
                 artifactId = 'react-android-sdk-debug'
                 version = versionName
+                artifact androidSourcesJar
             }
         }
     }
