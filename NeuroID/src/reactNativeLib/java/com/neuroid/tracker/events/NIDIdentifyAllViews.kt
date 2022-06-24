@@ -121,7 +121,6 @@ private fun registerListeners(view: View) {
                 view.addTextChangedListener(textWatcher)
             }
         }
-
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
