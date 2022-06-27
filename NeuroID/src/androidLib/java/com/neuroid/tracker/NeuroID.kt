@@ -1,7 +1,6 @@
 package com.neuroid.tracker
 
 import android.app.Application
-import android.hardware.usb.UsbEndpoint
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel

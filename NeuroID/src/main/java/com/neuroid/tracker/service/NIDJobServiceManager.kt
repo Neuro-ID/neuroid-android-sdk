@@ -1,7 +1,6 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
-import android.hardware.usb.UsbEndpoint
 import kotlinx.coroutines.*
 
 object NIDJobServiceManager {

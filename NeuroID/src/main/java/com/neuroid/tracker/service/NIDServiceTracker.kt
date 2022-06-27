@@ -1,9 +1,6 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
-import android.hardware.usb.UsbEndpoint
-import com.neuroid.tracker.BuildConfig
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
