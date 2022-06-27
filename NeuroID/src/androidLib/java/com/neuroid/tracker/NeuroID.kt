@@ -17,6 +17,7 @@ class NeuroID private constructor(
     private var clientKey: String
 ) {
     private var firstTime = true
+    private var endpoint = "https://api.neuro-id.com/v3/c"
 
     @Synchronized
     private fun setupCallbacks() {
@@ -122,17 +123,23 @@ class NeuroID private constructor(
         )
     }
 
+    fun configureWithOptions(clientKey: String, endpoint: String) {
+        this.endpoint = endpoint
+        this.clientKey = clientKey
+    }
+
     fun start() {
         getDataStoreInstance().getAllEvents() // Clean Events ?
         createSession()
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey)
+            NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
     }
 
     fun stop() {
         NIDJobServiceManager.stopJob()
     }
+
 
     private fun createSession() {
         application?.let {

@@ -1,7 +1,6 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
-import com.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -28,15 +27,14 @@ object NIDServiceTracker {
     @set:Synchronized
     var screenFragName = ""
 
-    fun sendEventToServer(key: String, context: Application): Pair<Int, Boolean> {
+    fun sendEventToServer(key: String, endpoint: String, context: Application): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents()
 
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
-            val strUrl = "https://api.neuro-id.com/v3/c"
 
-            NIDLog.d("NeuroID", "Url: $strUrl")
-            val url = URL(strUrl)
+            NIDLog.d("NeuroID", "Url: $endpoint")
+            val url = URL(endpoint)
             val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.doInput = true

@@ -487,6 +487,7 @@ class NeuroIdUITest {
         CoroutineScope(Dispatchers.IO).launch {
             val typeResponse = NIDServiceTracker.sendEventToServer(
                 "key_live_vtotrandom_form_mobilesandbox",
+                "https://api.neuro-id.com/v3/c",
                 application
             )
             assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
