@@ -2,6 +2,9 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.Context.SENSOR_SERVICE
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.*
@@ -91,11 +94,11 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityResumed(activity: Activity) {
-        //No operation
+        //NIDSensorHelper.startSensorListener(NIDSensorType.GYROSCOPE)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        //No operation
+        //NIDSensorHelper.stopSensorListener(NIDSensorType.GYROSCOPE)
     }
 
     override fun onActivityStopped(activity: Activity) {
