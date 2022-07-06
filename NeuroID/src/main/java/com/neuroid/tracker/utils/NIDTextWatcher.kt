@@ -10,19 +10,16 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDTextWatcher(
     private val idName: String
-): TextWatcher {
+) : TextWatcher {
+
+    private var lastSize = 0
+
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
         // No op
     }
 
     override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
-        val ts = System.currentTimeMillis()
         var typeEvent = ""
-
-        val attrs = listOf(
-            NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
-            NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
-        )
 
         if (before == 0 && count - before > 1) {
             typeEvent = PASTE
@@ -38,22 +35,31 @@ class NIDTextWatcher(
                 )
         }
 
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = INPUT,
-                    ts = ts,
-                    tg = hashMapOf(
-                        "attr" to attrs.joinToString("|"),
-                        "tgs" to idName,
-                        "etn" to INPUT,
-                        "et" to "text"
-                    )
-                )
-            )
+
     }
 
-    override fun afterTextChanged(p0: Editable?) {
-        // No op
+    override fun afterTextChanged(sequence: Editable?) {
+        val ts = System.currentTimeMillis()
+        val attrs = listOf(
+            NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
+            NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
+        )
+
+        if (lastSize != sequence?.length) {
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = INPUT,
+                        ts = ts,
+                        tg = hashMapOf(
+                            "attr" to attrs.joinToString("|"),
+                            "tgs" to idName,
+                            "etn" to INPUT,
+                            "et" to "text"
+                        )
+                    )
+                )
+        }
+        lastSize = sequence?.length ?: 0
     }
 }

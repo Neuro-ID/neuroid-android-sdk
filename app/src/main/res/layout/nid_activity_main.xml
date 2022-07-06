@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -8,94 +9,131 @@
         android:layout_height="match_parent"
         tools:context=".activities.MainActivity">
 
-        <LinearLayout
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:layout_width="0px"
-            android:layout_height="0px"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="UselessLeaf" />
 
-        <TextView
-            style="@style/NidTextViewTitle"
-            android:id="@+id/textView_label_one"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/nid_main_activity_title"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="20dp"
-            android:textSize="14sp"
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/button_show_activity_no_automatic_events"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textIl_normal_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            app:layout_constraintTop_toBottomOf="@id/textView_label_one"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText_normal_field"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLength="10"
-                android:hint="@string/nid_editText_normal_hint"/>
+                android:layout_height="match_parent">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <LinearLayout
+                    android:layout_width="0px"
+                    android:layout_height="0px"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="UselessLeaf" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textIl_password_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            app:passwordToggleEnabled="true"
-            app:layout_constraintTop_toBottomOf="@id/textIl_normal_field"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+                <TextView
+                    android:id="@+id/textView_label_one"
+                    style="@style/NidTextViewTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/nid_main_activity_title"
+                    android:textSize="14sp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText_password_field"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLength="10"
-                android:inputType="numberPassword"
-                android:hint="@string/nid_editText_password_hint"/>
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textIl_normal_field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/textView_label_one">
 
-        <TextView
-            style="@style/NidTextViewTitle"
-            android:id="@+id/textView_sid_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/nid_main_activity_sid_title"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="20dp"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textIl_password_field"
-            app:layout_constraintBottom_toBottomOf="@id/textView_sid_value"/>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editText_normal_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/nid_editText_normal_hint"
+                        android:maxLength="10" />
 
-        <EditText
-            android:id="@+id/textView_sid_value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="189272372"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="8dp"
-            android:textSize="14sp"
-            android:enabled="false"
-            android:inputType="number"
-            app:layout_constraintStart_toEndOf="@id/textView_sid_title"
-            app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textIl_password_field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/textIl_normal_field"
+                    app:passwordToggleEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editText_password_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/nid_editText_password_hint"
+                        android:inputType="numberPassword"
+                        android:maxLength="10" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textIl_card_field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/textIl_password_field">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editText_card_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/nid_editText_credit_card_hint"
+                        android:inputType="number"
+                        android:maxLength="16" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/textView_sid_title"
+                    style="@style/NidTextViewTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/nid_main_activity_sid_title"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="@id/textView_sid_value"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textIl_card_field" />
+
+                <EditText
+                    android:id="@+id/textView_sid_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:enabled="false"
+                    android:inputType="number"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/textView_sid_title"
+                    app:layout_constraintTop_toBottomOf="@id/textIl_card_field"
+                    tools:text="189272372" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </androidx.core.widget.NestedScrollView>
+
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_show_activity_no_automatic_events"
@@ -106,8 +144,8 @@
             android:text="@string/nid_main_button_show_activity_non_automatic_events"
             android:textAllCaps="false"
             app:layout_constraintBottom_toTopOf="@id/button_show_activity_one_fragment"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_show_activity_one_fragment"
@@ -118,8 +156,8 @@
             android:text="@string/nid_main_button_show_activity_one_fragment"
             android:textAllCaps="false"
             app:layout_constraintBottom_toTopOf="@id/button_show_activity_fragments"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_show_activity_fragments"
@@ -131,8 +169,8 @@
             android:text="@string/nid_main_button_show_activity_fragments"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
