@@ -10,6 +10,7 @@
     <string name="nid_main_button_show_activity_fragments">Show Activity with fragments</string>
     <string name="nid_editText_normal_hint">Normal Input</string>
     <string name="nid_editText_password_hint">Password Input</string>
+    <string name="nid_editText_credit_card_hint">#### #### #### ####</string>
     <string name="nid_second_activity_title">Second Activity</string>
     <string name="nid_second_activity_description">This text belongs to the TextView of the activity, below is the frame that contains the fragment</string>
     <string name="nid_only_one_fragment">This section is a fragment</string>
