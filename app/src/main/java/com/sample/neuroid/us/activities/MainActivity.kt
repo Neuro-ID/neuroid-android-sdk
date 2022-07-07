@@ -1,11 +1,10 @@
 package com.sample.neuroid.us.activities
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
-import android.text.InputFilter
 import android.text.TextWatcher
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.R
@@ -31,10 +30,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, NIDSomeFragmentsActivity::class.java))
             }
 
-            textViewSidValue.setText(NeuroID.getInstance().getSessionId())
+            textViewSidValue.setText( NeuroID.getInstance().getSessionId())
         }
 
-        binding.editTextNormalField.addTextChangedListener(object : TextWatcher {
+        binding.editTextNormalField.addTextChangedListener( object: TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 println("----------------- beforeTextChanged")
             }
@@ -48,35 +47,5 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
-        addCreditCardFormat()
     }
-
-    private fun addCreditCardFormat() {
-        binding.editTextCardField.addTextChangedListener(object : TextWatcher {
-
-            private var current = ""
-            private val nonDigits = Regex("[^\\d]")
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                if (s.toString() != current) {
-                    val userInput = s.toString().replace(nonDigits, "")
-                    if (userInput.length <= 16) {
-                        current = userInput.chunked(4).joinToString(" ")
-                        s?.filters = arrayOfNulls<InputFilter>(0)
-                    }
-                    s?.replace(0, s.length, current, 0, current.length)
-                }
-            }
-
-        })
-    }
-
 }

@@ -15,7 +15,7 @@ class NIDTextWatcher(
     private var lastSize = 0
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        // No op
+        // No operation
     }
 
     override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
