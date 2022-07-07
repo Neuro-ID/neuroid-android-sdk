@@ -3,16 +3,10 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.util.Log
 import com.neuroid.tracker.utils.NIDLog
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-
-enum class NIDSensorType {
-    GYROSCOPE,
-    ACCELEROMETER
-}
 
 object NIDSensorHelper {
     private const val TAG = "NIDSensorHelper"
@@ -45,27 +39,6 @@ object NIDSensorHelper {
     private fun initSensorManager(context: Context) {
         if (sensorManager == null)
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
-
-    fun startSensorListener(type: NIDSensorType) {
-        /* when (type) {
-             NIDSensorType.GYROSCOPE -> sensorManager?.registerListener(
-                 gyroscopeListener,
-                 gyroscopeSensor,
-                 SensorManager.SENSOR_DELAY_NORMAL
-             )
-             else -> NIDLog.i(TAG, "No sensor type:$type")
-         }*/
-
-    }
-
-    fun stopSensorListener(type: NIDSensorType) {
-        /*when (type) {
-            NIDSensorType.GYROSCOPE ->
-                sensorManager?.unregisterListener(gyroscopeListener)
-            else -> NIDLog.i(TAG, "No sensor type:$type")
-        }*/
-
     }
 
     fun getSensorInfo(): Flow<NIDSensors> = callbackFlow {
