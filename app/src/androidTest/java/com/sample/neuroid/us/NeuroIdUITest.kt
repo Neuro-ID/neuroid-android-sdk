@@ -450,7 +450,7 @@ class NeuroIdUITest {
         Thread.sleep(500)
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
         val events = getDataStoreInstance().getAllEvents()
-        val event = validateEventCount(events, eventType, 2)
+        val event = validateEventCount(events, eventType, 0)
         NIDLog.d("----> UITest", "----> validateChangeScreenOrientation - Event: [$event]")
         assertThat(event).matches(NID_STRUCT_WINDOW_ORIENTATION_CHANGE)
     }
@@ -487,6 +487,7 @@ class NeuroIdUITest {
         CoroutineScope(Dispatchers.IO).launch {
             val typeResponse = NIDServiceTracker.sendEventToServer(
                 "key_live_vtotrandom_form_mobilesandbox",
+                "https://api.neuro-id.com/v3/c",
                 application
             )
             assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()

@@ -3,7 +3,9 @@ package com.neuroid.tracker.events
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.children
 import androidx.core.view.forEach
+import com.facebook.react.views.text.ReactTextView
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
@@ -66,7 +68,7 @@ private fun registerComponent(view: View, guid: String) {
             et = "ReactEditText"
         }
         is ReactViewGroup -> {
-            if (view.isFocusable) {
+            if (view.hasOnClickListeners() && view.children.count() == 1 && view.children.firstOrNull() is ReactTextView) {
                 et = "ReactButton"
             }
         }
@@ -110,18 +112,15 @@ private fun registerComponent(view: View, guid: String) {
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
 
-    if (view is EditText) {
-        val textWatcher = NIDTextWatcher(idName)
-        view.removeTextChangedListener(textWatcher)
-        view.addTextChangedListener(textWatcher)
-
-        val actionCallback = view.customSelectionActionModeCallback
-        if (actionCallback !is NIDContextMenuCallbacks) {
-            view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
-        }
-    }
-
     when (view) {
+        is EditText -> {
+            val actionCallback = view.customSelectionActionModeCallback
+            if (actionCallback !is NIDContextMenuCallbacks) {
+                view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+                val textWatcher = NIDTextWatcher(idName)
+                view.addTextChangedListener(textWatcher)
+            }
+        }
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
