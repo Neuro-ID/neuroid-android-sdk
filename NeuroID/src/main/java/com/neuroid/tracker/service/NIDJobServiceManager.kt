@@ -2,19 +2,11 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.callbacks.NIDGyroscopeListener
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.utils.NIDLog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import java.util.concurrent.TimeUnit
 
 object NIDJobServiceManager {
-
-    private const val TAG = "NIDJobServiceManager"
 
     private var jobCaptureEvents: Job? = null
     private var jobCaptureSensor: Job? = null
@@ -60,18 +52,8 @@ object NIDJobServiceManager {
     private fun createJobSensor(): Job {
         return CoroutineScope(Dispatchers.IO).launch {
             NIDSensorHelper.getSensorInfo()
-                .conflate()
                 .collect {
-                    NIDLog.d(
-                        TAG,
-                        "Gyroscope axisX: ${it.gyroscopeData.axisX} axisY: ${it.gyroscopeData.axisY} axisZ: ${it.gyroscopeData.axisZ}"
-                    )
-                    NIDLog.d(
-                        TAG,
-                        "Accelerometer axisX: ${it.accelerometer.axisX} axisY: ${it.accelerometer.axisY} axisZ: ${it.accelerometer.axisZ}"
-                    )
                     NeuroID.getInstance().nidSensors = it
-                    delay(1000)
                 }
         }
     }

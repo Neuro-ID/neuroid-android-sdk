@@ -42,7 +42,7 @@ object NIDSensorHelper {
     }
 
     fun getSensorInfo(): Flow<NIDSensors> = callbackFlow {
-        val listener = NIDGyroscopeListener {
+        val listener = NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> nidSensors.gyroscopeData =
                     nidSensors.gyroscopeData.copy(

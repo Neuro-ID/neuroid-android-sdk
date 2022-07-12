@@ -3,15 +3,9 @@ package com.neuroid.tracker.callbacks
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
-import com.neuroid.tracker.utils.NIDLog
 
-
-class NIDGyroscopeListener(val callback: (data: AxisData) -> Unit) :
+class NIDSensorGenListener(val callback: (data: AxisData) -> Unit) :
     SensorEventListener {
-
-    companion object {
-        private const val TAG = "NIDGyroscopeListener"
-    }
 
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
@@ -26,7 +20,7 @@ class NIDGyroscopeListener(val callback: (data: AxisData) -> Unit) :
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        NIDLog.d(TAG, "onAccuracyChanged")
+        // No op
     }
 }
 
