@@ -14,6 +14,7 @@ object NIDSensorHelper {
     private var gyroscopeSensor: Sensor? = null
     private var accelerometerSensor: Sensor? = null
     private val nidSensors: NIDSensors = NIDSensors()
+    private var listener: NIDSensorGenListener? = null
 
     fun initSensorHelper(context: Context) {
         initSensorManager(context)
@@ -42,7 +43,7 @@ object NIDSensorHelper {
     }
 
     fun getSensorInfo(): Flow<NIDSensors> = callbackFlow {
-        val listener = NIDSensorGenListener {
+        listener = NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> nidSensors.gyroscopeData =
                     nidSensors.gyroscopeData.copy(
@@ -57,8 +58,11 @@ object NIDSensorHelper {
                         axisZ = it.axisZ
                     )
             }
+
             trySend(nidSensors)
         }
+
+
         gyroscopeSensor?.let {
             sensorManager?.registerListener(listener, it, 10_000, 10_000)
         }
@@ -67,6 +71,19 @@ object NIDSensorHelper {
         }
         awaitClose {
             sensorManager?.unregisterListener(listener)
+        }
+    }
+
+    fun stopSensors() {
+        sensorManager?.unregisterListener(listener)
+    }
+
+    fun restartSensors() {
+        gyroscopeSensor?.let {
+            sensorManager?.registerListener(listener, it, 10_000, 10_000)
+        }
+        accelerometerSensor?.let {
+            sensorManager?.registerListener(listener, it, 10_000, 10_000)
         }
     }
 
@@ -90,9 +107,9 @@ data class NIDSensors(
 data class NIDSensorData(
     val name: String,
     var status: NIDSensorStatus = NIDSensorStatus.UNAVAILABLE,
-    var axisX: Float = 0f,
-    var axisY: Float = 0f,
-    var axisZ: Float = 0f
+    var axisX: Float? = null,
+    var axisY: Float? = null,
+    var axisZ: Float? = null
 ) {
     override fun equals(other: Any?): Boolean =
         (other is NIDSensorData) &&
