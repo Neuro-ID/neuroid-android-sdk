@@ -4,6 +4,7 @@ import android.os.CountDownTimer
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 object NIDTimerActive {
@@ -13,11 +14,24 @@ object NIDTimerActive {
         }
 
         override fun onFinish() {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             NIDSensorHelper.stopSensors()
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = USER_INACTIVE,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 ))
         }
 

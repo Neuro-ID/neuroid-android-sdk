@@ -2,8 +2,10 @@ package com.neuroid.tracker
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -53,6 +55,9 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         application?.let {
             NIDSharedPrefsDefaults(it).setUserId(userId)
         }
@@ -60,7 +65,17 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = SET_USER_ID,
                 uid = userId,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorModel(
+                    gyroData.axisX,
+                    gyroData.axisY,
+                    gyroData.axisZ
+                ),
+                accel = NIDSensorModel(
+                    accelData.axisX,
+                    accelData.axisY,
+                    accelData.axisZ
+                )
             )
         )
     }
@@ -86,39 +101,91 @@ class NeuroID private constructor(
 
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 )
             )
         }
     }
 
     fun formSubmit() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorModel(
+                    gyroData.axisX,
+                    gyroData.axisY,
+                    gyroData.axisZ
+                ),
+                accel = NIDSensorModel(
+                    accelData.axisX,
+                    accelData.axisY,
+                    accelData.axisZ
+                )
             )
         )
     }
 
     fun formSubmitSuccess() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorModel(
+                    gyroData.axisX,
+                    gyroData.axisY,
+                    gyroData.axisZ
+                ),
+                accel = NIDSensorModel(
+                    accelData.axisX,
+                    accelData.axisY,
+                    accelData.axisZ
+                )
             )
         )
     }
 
     fun formSubmitFailure() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorModel(
+                    gyroData.axisX,
+                    gyroData.axisY,
+                    gyroData.axisZ
+                ),
+                accel = NIDSensorModel(
+                    accelData.axisX,
+                    accelData.axisY,
+                    accelData.axisZ
+                )
             )
         )
     }
@@ -143,6 +210,8 @@ class NeuroID private constructor(
 
     private fun createSession() {
         application?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
 
             getDataStoreInstance().saveEvent(
@@ -167,7 +236,17 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 )
             )
         }
