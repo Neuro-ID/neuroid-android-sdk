@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
@@ -22,11 +23,24 @@ class NIDFragmentCallbacks(
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             NIDServiceTracker.screenName = "AppInit"
             NIDServiceTracker.screenFragName = f::class.java.simpleName
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
 
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_LOAD,
-                    ts = System.currentTimeMillis()))
+                    ts = System.currentTimeMillis(),
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
+                ))
         }
     }
 
@@ -56,11 +70,23 @@ class NIDFragmentCallbacks(
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
 
             getDataStoreInstance()
                 .saveEvent(NIDEventModel(
                     type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 ))
         }
     }

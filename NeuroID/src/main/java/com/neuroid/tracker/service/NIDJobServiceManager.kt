@@ -1,15 +1,12 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 
 object NIDJobServiceManager {
 
     private var jobCaptureEvents: Job? = null
-    private var jobCaptureSensor: Job? = null
 
     @Volatile
     var userActive = true
@@ -23,12 +20,11 @@ object NIDJobServiceManager {
         this.application = application
         jobCaptureEvents = createJobServer()
         NIDSensorHelper.initSensorHelper(application)
-        jobCaptureSensor = createJobSensor()
     }
 
     fun restart() {
+        NIDSensorHelper.restartSensors()
         jobCaptureEvents = createJobServer()
-        jobCaptureSensor = createJobSensor()
     }
 
     private fun createJobServer(): Job {
@@ -49,19 +45,9 @@ object NIDJobServiceManager {
         }
     }
 
-    private fun createJobSensor(): Job {
-        return CoroutineScope(Dispatchers.IO).launch {
-            NIDSensorHelper.getSensorInfo()
-                .collect {
-                    NeuroID.getInstance().nidSensors = it
-                }
-        }
-    }
-
     fun stopJob() {
+        NIDSensorHelper.stopSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = null
-        jobCaptureSensor?.cancel()
-        jobCaptureSensor = null
     }
 }

@@ -9,6 +9,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
@@ -26,6 +27,8 @@ class NIDGlobalEventCallback(
     override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
         val ts = System.currentTimeMillis()
         if (newView != null) {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val idName = newView.getIdOrTag()
 
             if (newView is EditText) {
@@ -36,6 +39,16 @@ class NIDGlobalEventCallback(
                             ts = ts,
                             tg = hashMapOf(
                                 "tgs" to idName
+                            ),
+                            gyro = NIDSensorModel(
+                                gyroData.axisX,
+                                gyroData.axisY,
+                                gyroData.axisZ
+                            ),
+                            accel = NIDSensorModel(
+                                accelData.axisX,
+                                accelData.axisY,
+                                accelData.axisZ
                             )
                         )
                     )
@@ -61,13 +74,27 @@ class NIDGlobalEventCallback(
         if (currentWidth != viewMainContainer.width || currentHeight != viewMainContainer.height) {
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
+
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_RESIZE,
                         w = currentWidth,
                         h = currentHeight,
-                        ts = System.currentTimeMillis()
+                        ts = System.currentTimeMillis(),
+                        gyro = NIDSensorModel(
+                            gyroData.axisX,
+                            gyroData.axisY,
+                            gyroData.axisZ
+                        ),
+                        accel = NIDSensorModel(
+                            accelData.axisX,
+                            accelData.axisY,
+                            accelData.axisZ
+                        )
                     )
                 )
         }
@@ -79,6 +106,9 @@ class NIDGlobalEventCallback(
             NIDAttrItem("v", "S~C~~${actualText.length}").getJson(),
             NIDAttrItem("hash", actualText.getSHA256().take(8)).getJson()
         )
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         getDataStoreInstance()
             .saveEvent(
@@ -93,7 +123,17 @@ class NIDGlobalEventCallback(
                     ts = ts,
                     //sm = "",
                     //pd = "",
-                    v = "S~C~~${actualText.length}"
+                    v = "S~C~~${actualText.length}",
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 )
             )
 
@@ -104,7 +144,17 @@ class NIDGlobalEventCallback(
                     tg = hashMapOf(
                         "tgs" to lastEditText?.getIdOrTag().orEmpty()
                     ),
-                    ts = ts
+                    ts = ts,
+                    gyro = NIDSensorModel(
+                        gyroData.axisX,
+                        gyroData.axisY,
+                        gyroData.axisZ
+                    ),
+                    accel = NIDSensorModel(
+                        accelData.axisX,
+                        accelData.axisY,
+                        accelData.axisZ
+                    )
                 )
             )
     }

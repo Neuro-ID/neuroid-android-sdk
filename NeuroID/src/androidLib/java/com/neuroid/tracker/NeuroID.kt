@@ -2,7 +2,6 @@ package com.neuroid.tracker
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
-import com.neuroid.tracker.callbacks.NIDSensors
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -19,7 +18,6 @@ class NeuroID private constructor(
 ) {
     private var firstTime = true
     private var endpoint = "https://api.neuro-id.com/v3/c"
-    var nidSensors: NIDSensors? = null
 
     @Synchronized
     private fun setupCallbacks() {

@@ -1,13 +1,7 @@
 package com.sample.neuroid.us
 
-import android.view.View
-import android.widget.SeekBar
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.UiController
-import androidx.test.espresso.ViewAction
-import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -89,7 +83,7 @@ class ComponentsTest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(ViewActions.click())
+            .perform(click())
         Thread.sleep(500)
 
         onView(withId(R.id.radioButton_one))
