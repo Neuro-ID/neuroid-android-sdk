@@ -2,7 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
-import com.neuroid.tracker.callbacks.NIDSensors
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -19,7 +19,6 @@ class NeuroID private constructor(
 ) {
     private var firstTime = true
     private var endpoint = "https://api.neuro-id.com/v3/c"
-    var nidSensors: NIDSensors? = null
 
     @Synchronized
     private fun setupCallbacks() {
@@ -55,6 +54,9 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         application?.let {
             NIDSharedPrefsDefaults(it).setUserId(userId)
         }
@@ -62,7 +64,9 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = SET_USER_ID,
                 uid = userId,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -88,39 +92,59 @@ class NeuroID private constructor(
 
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }
     }
 
     fun formSubmit() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
 
     fun formSubmitSuccess() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
 
     fun formSubmitFailure() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -145,6 +169,8 @@ class NeuroID private constructor(
 
     private fun createSession() {
         application?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
 
             getDataStoreInstance().saveEvent(
@@ -169,7 +195,9 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }

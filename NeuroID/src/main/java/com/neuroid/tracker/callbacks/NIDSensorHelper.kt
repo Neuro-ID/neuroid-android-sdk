@@ -3,10 +3,8 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.utils.NIDLog
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 
 object NIDSensorHelper {
     private const val TAG = "NIDSensorHelper"
@@ -35,6 +33,8 @@ object NIDSensorHelper {
             }
             NIDLog.i(TAG, "Sensor:${sensor.name} ${sensor.type}")
         }
+
+        restartSensors()
     }
 
     private fun initSensorManager(context: Context) {
@@ -42,7 +42,11 @@ object NIDSensorHelper {
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
 
-    fun getSensorInfo(): Flow<NIDSensors> = callbackFlow {
+    fun stopSensors() {
+        sensorManager?.unregisterListener(listener)
+    }
+
+    fun restartSensors() {
         listener = NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> nidSensors.gyroscopeData =
@@ -58,27 +62,8 @@ object NIDSensorHelper {
                         axisZ = it.axisZ
                     )
             }
-
-            trySend(nidSensors)
         }
 
-
-        gyroscopeSensor?.let {
-            sensorManager?.registerListener(listener, it, 10_000, 10_000)
-        }
-        accelerometerSensor?.let {
-            sensorManager?.registerListener(listener, it, 10_000, 10_000)
-        }
-        awaitClose {
-            sensorManager?.unregisterListener(listener)
-        }
-    }
-
-    fun stopSensors() {
-        sensorManager?.unregisterListener(listener)
-    }
-
-    fun restartSensors() {
         gyroscopeSensor?.let {
             sensorManager?.registerListener(listener, it, 10_000, 10_000)
         }
@@ -87,6 +72,16 @@ object NIDSensorHelper {
         }
     }
 
+    fun getAccelerometerInfo() = NIDSensorModel(
+        nidSensors.accelerometer.axisX,
+        nidSensors.accelerometer.axisY,
+        nidSensors.accelerometer.axisZ
+    )
+    fun getGyroscopeInfo() = NIDSensorModel(
+        nidSensors.gyroscopeData.axisX,
+        nidSensors.gyroscopeData.axisY,
+        nidSensors.gyroscopeData.axisZ
+    )
 }
 
 enum class NIDSensorStatus {

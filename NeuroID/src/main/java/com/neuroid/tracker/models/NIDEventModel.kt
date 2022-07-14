@@ -8,6 +8,8 @@ data class NIDEventModel(
     val tg: HashMap<String,String>? = null,
     val tgs: String? = null,
     val key: String? = null,
+    val gyro: NIDSensorModel? = null,
+    val accel: NIDSensorModel? = null,
     val v: String? = null,
     val en: String? = null,
     val etn: String? = null,
@@ -117,8 +119,29 @@ data class NIDEventModel(
                 }
             }
             uid?.let { jsonObject.put("uid", it) }
+            gyro?.let {
+                jsonObject.put("gyro", it.getJsonObject())
+            }
+            accel?.let {
+                jsonObject.put("accel", it.getJsonObject())
+            }
         }
 
         return jsonObject.toString()
+    }
+}
+
+data class NIDSensorModel(
+    val x: Float?,
+    val y:Float?,
+    val z:Float?
+) {
+    fun getJsonObject(): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("x", x)
+        jsonObject.put("y", y)
+        jsonObject.put("z", z)
+
+        return jsonObject
     }
 }
