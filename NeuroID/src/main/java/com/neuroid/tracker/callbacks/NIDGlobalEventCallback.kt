@@ -9,7 +9,6 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
@@ -40,16 +39,8 @@ class NIDGlobalEventCallback(
                             tg = hashMapOf(
                                 "tgs" to idName
                             ),
-                            gyro = NIDSensorModel(
-                                gyroData.axisX,
-                                gyroData.axisY,
-                                gyroData.axisZ
-                            ),
-                            accel = NIDSensorModel(
-                                accelData.axisX,
-                                accelData.axisY,
-                                accelData.axisZ
-                            )
+                            gyro = gyroData,
+                            accel = accelData
                         )
                     )
 
@@ -85,16 +76,8 @@ class NIDGlobalEventCallback(
                         w = currentWidth,
                         h = currentHeight,
                         ts = System.currentTimeMillis(),
-                        gyro = NIDSensorModel(
-                            gyroData.axisX,
-                            gyroData.axisY,
-                            gyroData.axisZ
-                        ),
-                        accel = NIDSensorModel(
-                            accelData.axisX,
-                            accelData.axisY,
-                            accelData.axisZ
-                        )
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }
@@ -124,16 +107,8 @@ class NIDGlobalEventCallback(
                     //sm = "",
                     //pd = "",
                     v = "S~C~~${actualText.length}",
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
 
@@ -145,16 +120,8 @@ class NIDGlobalEventCallback(
                         "tgs" to lastEditText?.getIdOrTag().orEmpty()
                     ),
                     ts = ts,
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
     }

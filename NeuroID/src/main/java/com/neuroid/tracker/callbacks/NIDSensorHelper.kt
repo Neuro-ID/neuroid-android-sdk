@@ -3,6 +3,7 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.utils.NIDLog
 
 object NIDSensorHelper {
@@ -71,8 +72,16 @@ object NIDSensorHelper {
         }
     }
 
-    fun getAccelerometerInfo() = nidSensors.accelerometer
-    fun getGyroscopeInfo() = nidSensors.gyroscopeData
+    fun getAccelerometerInfo() = NIDSensorModel(
+        nidSensors.accelerometer.axisX,
+        nidSensors.accelerometer.axisY,
+        nidSensors.accelerometer.axisZ
+    )
+    fun getGyroscopeInfo() = NIDSensorModel(
+        nidSensors.gyroscopeData.axisX,
+        nidSensors.gyroscopeData.axisY,
+        nidSensors.gyroscopeData.axisZ
+    )
 }
 
 enum class NIDSensorStatus {

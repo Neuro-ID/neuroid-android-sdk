@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.hasFragments
@@ -50,16 +49,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                     tg = hashMapOf(
                         "orientation" to strOrientation
                     ),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 ))
             auxOrientation = orientation
         }
@@ -68,16 +59,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             .saveEvent(NIDEventModel(
                 type = WINDOW_LOAD,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             ))
     }
 
@@ -93,16 +76,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 .saveEvent(NIDEventModel(
                     type = WINDOW_FOCUS,
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 ))
         }
         activitiesStarted++
@@ -145,16 +120,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 .saveEvent(NIDEventModel(
                     type = WINDOW_BLUR,
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 ))
         }
     }
@@ -173,16 +140,8 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             .saveEvent(NIDEventModel(
                 type = WINDOW_UNLOAD,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             ))
     }
 }

@@ -9,7 +9,6 @@ import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
@@ -103,16 +102,8 @@ private fun registerComponent(view: View, guid: String) {
                         "attr" to attrs
                     ),
                     url = urlView,
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
     }
@@ -155,16 +146,8 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis(),
-                                gyro = NIDSensorModel(
-                                    gyroData.axisX,
-                                    gyroData.axisY,
-                                    gyroData.axisZ
-                                ),
-                                accel = NIDSensorModel(
-                                    accelData.axisX,
-                                    accelData.axisY,
-                                    accelData.axisZ
-                                )
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -190,16 +173,8 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis(),
-                                gyro = NIDSensorModel(
-                                    gyroData.axisX,
-                                    gyroData.axisY,
-                                    gyroData.axisZ
-                                ),
-                                accel = NIDSensorModel(
-                                    accelData.axisX,
-                                    accelData.axisY,
-                                    accelData.axisZ
-                                )
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }

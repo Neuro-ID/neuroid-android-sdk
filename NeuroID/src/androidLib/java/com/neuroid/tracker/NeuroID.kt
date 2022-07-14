@@ -5,7 +5,6 @@ import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -66,16 +65,8 @@ class NeuroID private constructor(
                 type = SET_USER_ID,
                 uid = userId,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -109,16 +100,8 @@ class NeuroID private constructor(
                     type = eventName,
                     tgs = tgs,
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }
@@ -132,16 +115,8 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -154,16 +129,8 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -176,16 +143,8 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
                 ts = System.currentTimeMillis(),
-                gyro = NIDSensorModel(
-                    gyroData.axisX,
-                    gyroData.axisY,
-                    gyroData.axisZ
-                ),
-                accel = NIDSensorModel(
-                    accelData.axisX,
-                    accelData.axisY,
-                    accelData.axisZ
-                )
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -237,16 +196,8 @@ class NeuroID private constructor(
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }

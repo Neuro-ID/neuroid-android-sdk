@@ -7,7 +7,6 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDTextWatcher(
@@ -35,16 +34,8 @@ class NIDTextWatcher(
                     NIDEventModel(
                         type = typeEvent,
                         ts = System.currentTimeMillis(),
-                        gyro = NIDSensorModel(
-                            gyroData.axisX,
-                            gyroData.axisY,
-                            gyroData.axisZ
-                        ),
-                        accel = NIDSensorModel(
-                            accelData.axisX,
-                            accelData.axisY,
-                            accelData.axisZ
-                        )
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }
@@ -73,16 +64,8 @@ class NIDTextWatcher(
                             "etn" to INPUT,
                             "et" to "text"
                         ),
-                        gyro = NIDSensorModel(
-                            gyroData.axisX,
-                            gyroData.axisY,
-                            gyroData.axisZ
-                        ),
-                        accel = NIDSensorModel(
-                            accelData.axisX,
-                            accelData.axisY,
-                            accelData.axisZ
-                        )
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }

@@ -11,7 +11,6 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
@@ -63,16 +62,8 @@ class NIDTouchEventManager(
                                         "tgs" to nameView,
                                         "sender" to nameView
                                     ),
-                                    gyro = NIDSensorModel(
-                                        gyroData.axisX,
-                                        gyroData.axisY,
-                                        gyroData.axisZ
-                                    ),
-                                    accel = NIDSensorModel(
-                                        accelData.axisX,
-                                        accelData.axisY,
-                                        accelData.axisZ
-                                    )
+                                    gyro = gyroData,
+                                    accel = accelData
                                 )
                             )
 
@@ -85,16 +76,8 @@ class NIDTouchEventManager(
                                         tg = hashMapOf(
                                             "tgs" to lastViewName
                                         ),
-                                        gyro = NIDSensorModel(
-                                            gyroData.axisX,
-                                            gyroData.axisY,
-                                            gyroData.axisZ
-                                        ),
-                                        accel = NIDSensorModel(
-                                            accelData.axisX,
-                                            accelData.axisY,
-                                            accelData.axisZ
-                                        )
+                                        gyro = gyroData,
+                                        accel = accelData
                                     )
                                 )
                         }
@@ -108,16 +91,8 @@ class NIDTouchEventManager(
                                 x = it.x,
                                 y = it.y,
                                 ts = timeMills,
-                                gyro = NIDSensorModel(
-                                    gyroData.axisX,
-                                    gyroData.axisY,
-                                    gyroData.axisZ
-                                ),
-                                accel = NIDSensorModel(
-                                    accelData.axisX,
-                                    accelData.axisY,
-                                    accelData.axisZ
-                                )
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -133,16 +108,8 @@ class NIDTouchEventManager(
                                         tg = hashMapOf(
                                             "tgs" to lastViewName
                                         ),
-                                        gyro = NIDSensorModel(
-                                            gyroData.axisX,
-                                            gyroData.axisY,
-                                            gyroData.axisZ
-                                        ),
-                                        accel = NIDSensorModel(
-                                            accelData.axisX,
-                                            accelData.axisY,
-                                            accelData.axisZ
-                                        )
+                                        gyro = gyroData,
+                                        accel = accelData
                                     )
                                 )
                         }
@@ -157,16 +124,8 @@ class NIDTouchEventManager(
                                     x = it.x,
                                     y = it.y,
                                     ts = timeMills,
-                                    gyro = NIDSensorModel(
-                                        gyroData.axisX,
-                                        gyroData.axisY,
-                                        gyroData.axisZ
-                                    ),
-                                    accel = NIDSensorModel(
-                                        accelData.axisX,
-                                        accelData.axisY,
-                                        accelData.axisZ
-                                    )
+                                    gyro = gyroData,
+                                    accel = accelData
                                 )
                             )
                     }
@@ -240,16 +199,8 @@ class NIDTouchEventManager(
                                     "etn" to INPUT
                                 ),
                                 ts = timeMills,
-                                gyro = NIDSensorModel(
-                                    gyroData.axisX,
-                                    gyroData.axisY,
-                                    gyroData.axisZ
-                                ),
-                                accel = NIDSensorModel(
-                                    accelData.axisX,
-                                    accelData.axisY,
-                                    accelData.axisZ
-                                )
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -265,16 +216,8 @@ class NIDTouchEventManager(
                                 ),
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis(),
-                                gyro = NIDSensorModel(
-                                    gyroData.axisX,
-                                    gyroData.axisY,
-                                    gyroData.axisZ
-                                ),
-                                accel = NIDSensorModel(
-                                    accelData.axisX,
-                                    accelData.axisY,
-                                    accelData.axisZ
-                                )
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }

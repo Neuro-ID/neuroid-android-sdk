@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 
@@ -30,16 +29,8 @@ class NIDFragmentCallbacks(
                 .saveEvent(NIDEventModel(
                     type = WINDOW_LOAD,
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 ))
         }
     }
@@ -77,16 +68,8 @@ class NIDFragmentCallbacks(
                 .saveEvent(NIDEventModel(
                     type = WINDOW_UNLOAD,
                     ts = System.currentTimeMillis(),
-                    gyro = NIDSensorModel(
-                        gyroData.axisX,
-                        gyroData.axisY,
-                        gyroData.axisZ
-                    ),
-                    accel = NIDSensorModel(
-                        accelData.axisX,
-                        accelData.axisY,
-                        accelData.axisZ
-                    )
+                    gyro = gyroData,
+                    accel = accelData
                 ))
         }
     }
