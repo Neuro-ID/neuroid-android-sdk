@@ -1,14 +1,9 @@
 package com.sample.neuroid.us
 
-import android.view.View
-import android.widget.SeekBar
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.UiController
-import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -21,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.junit.*
 import org.junit.runner.RunWith
@@ -59,7 +55,7 @@ class ComponentsTest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01ValidateCheckBox() {
+    fun test01ValidateCheckBox() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -74,7 +70,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"CHECKBOX_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateClickControlViews - Event: $event")
         Truth.assertThat(event).matches(NID_STRUCT_CHECKBOX_CHANGE)
     }
@@ -83,7 +79,7 @@ class ComponentsTest {
      * Validate RADIO_CHANGE when the user click on it
      */
     @Test
-    fun test02ValidateRadioChange() {
+    fun test02ValidateRadioChange() = runBlockingTest{
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -107,7 +103,7 @@ class ComponentsTest {
      * Validate SWITCH_CHANGE when the user click on it
      */
     @Test
-    fun test03ValidateSwitch() {
+    fun test03ValidateSwitch() = runBlockingTest{
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -135,7 +131,7 @@ class ComponentsTest {
      * Validate TOGGLE_CHANGE when the user click on it
      */
     @Test
-    fun test04ValidateToggle() {
+    fun test04ValidateToggle() = runBlockingTest{
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -163,7 +159,7 @@ class ComponentsTest {
      * Validate RATING_BAR_CHANGE when the user click on it
      */
     @Test
-    fun test05ValidateRatingBar() {
+    fun test05ValidateRatingBar() = runBlockingTest{
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -190,7 +186,7 @@ class ComponentsTest {
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
      */
     @Test
-    fun test06ValidateSliderChange() {
+    fun test06ValidateSliderChange() = runBlockingTest{
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -218,19 +214,6 @@ class ComponentsTest {
 
 
         Truth.assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
-    }
-
-
-    private fun validateEventCount(
-        eventList: List<String>,
-        eventType: String,
-        maxEventsCount: Int = 1
-    ): String {
-        val events = eventList.filter { it.contains(eventType) }
-        if (maxEventsCount > 0) {
-            Assert.assertEquals(maxEventsCount, events.size)
-        }
-        return events.first()
     }
 
 }

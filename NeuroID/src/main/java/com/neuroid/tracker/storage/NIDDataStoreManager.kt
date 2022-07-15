@@ -13,16 +13,14 @@ import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.utils.NIDTimerActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
 import kotlin.random.Random
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
-    fun getAllEvents(): List<String>
+    suspend fun getAllEvents(): Set<String>
     fun addViewIdExclude(id: String)
     fun getNIDPreferences(): Flow<NIDPreferences>
     suspend fun clearEvents()
@@ -89,24 +87,9 @@ class NIDDataStoreManagerImpl(private val context: Context) : NIDDataStoreManage
         }
     }
 
-    override fun getAllEvents(): List<String> {
-        sharedLock.acquire()
-        val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
-
-        sharedPref?.let {
-            with(it.edit()) {
-                putString(NID_STRING_EVENTS, "")
-                apply()
-            }
-        }
-
-        sharedLock.release()
-
-        return if (lastEvents.isEmpty()) {
-            listOf()
-        } else {
-            lastEvents.split("|")
-        }
+    override suspend fun getAllEvents(): Set<String> {
+        return context.dataStore.data.first().toPreferences()[NID_STRING_EVENTS_V2]
+            ?: emptySet()
     }
 
     override fun addViewIdExclude(id: String) {
