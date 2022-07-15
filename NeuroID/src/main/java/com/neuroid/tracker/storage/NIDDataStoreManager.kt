@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.security.crypto.MasterKey
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.events.WINDOW_BLUR
@@ -32,10 +31,6 @@ interface NIDDataStoreManager {
     suspend fun setUserId(userId: String)
 }
 
-/*fun initDataStoreCtx(context: Context) {
-    NIDDataStoreManagerImp.init(context)
-}
-*/
 fun getDataStoreInstance(): NIDDataStoreManager {
     return NeuroID.getInstance().nidDataStoreManager
 }
@@ -64,13 +59,9 @@ class NIDDataStoreManagerImpl(private val context: Context) : NIDDataStoreManage
 
     private var nidPreferences = NIDPreferences("", "", "", "", "", emptySet())
 
-    fun init() {
+    init {
         nidTimerActive.initTimer()
     }
-
-    /*private fun getKeyAlias(context: Context) = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()*/
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {

@@ -1,11 +1,11 @@
 package com.neuroid.tracker.storage
 
-import com.google.gson.Gson
 import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.NIDLog
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.*
-import kotlin.random.Random
 
 data class NIDPreferences(
     val sessionId: String,
@@ -40,12 +40,14 @@ data class NIDPreferences(
     }
 
     fun getJsonEvents(): String {
-        val result = Gson().toJson(events)
-            .replace("\"url\":\"\"", "\"url\":\"${NIDServiceTracker.screenActivityName}\"")
-            .replace("\\/", "/")
-
+        val array = JSONArray()
+        events.forEach {
+            array.put(JSONObject(it))
+        }
+        val result = array.toString()
         NIDLog.d("NeuroID", "Events: $result")
-        return result.encodeToBase64()
+        return result.replace("\"url\":\"\"", "\"url\":\"${NIDServiceTracker.screenActivityName}\"")
+            .replace("\\/", "/").encodeToBase64()
     }
 
 }
