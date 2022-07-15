@@ -13,20 +13,14 @@ import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.google.common.truth.Truth.assertThat
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import org.junit.*
-import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
@@ -40,6 +34,7 @@ class NeuroIdUITest {
 
     @ExperimentalCoroutinesApi
     private val testDispatcher = TestCoroutineDispatcher()
+    private val testScope = TestCoroutineScope(testDispatcher)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -59,6 +54,9 @@ class NeuroIdUITest {
     @ExperimentalCoroutinesApi
     @After
     fun resetDispatchers() {
+        testScope.launch {
+            NeuroID.getInstance().nidDataStoreManager.clearEvents()
+        }
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
     }

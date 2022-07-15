@@ -169,9 +169,5 @@ class NeuroID private constructor(
         }
     }
 
-    suspend fun getAllEvents(): Set<String> {
-        val events = nidDataStoreManager.getAllEvents()
-        nidDataStoreManager.clearEvents()
-        return events
-    }
+    suspend fun getAllEvents(): Set<String> = nidDataStoreManager.getAllEvents()
 }

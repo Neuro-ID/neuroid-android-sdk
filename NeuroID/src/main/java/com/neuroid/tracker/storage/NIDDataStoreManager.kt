@@ -1,7 +1,7 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
@@ -13,9 +13,11 @@ import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.utils.NIDTimerActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.util.concurrent.Semaphore
 import kotlin.random.Random
 
 interface NIDDataStoreManager {
@@ -45,8 +47,6 @@ class NIDDataStoreManagerImpl(private val context: Context) : NIDDataStoreManage
     }
 
 
-    private var sharedPref: SharedPreferences? = null
-    private val sharedLock = Semaphore(1)
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
         WINDOW_BLUR //Block screen
@@ -121,6 +121,9 @@ class NIDDataStoreManagerImpl(private val context: Context) : NIDDataStoreManage
 
     override suspend fun clearEvents() {
         context.dataStore.edit { preferences ->
+            preferences[NID_STRING_EVENTS_V2]?.forEach {
+                Log.i("StoreManager", "Clean:" + it)
+            }
             preferences[NID_STRING_EVENTS_V2] = emptySet()
         }
     }

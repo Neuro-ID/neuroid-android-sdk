@@ -14,10 +14,8 @@ import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.*
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -28,6 +26,7 @@ import org.junit.runners.MethodSorters
 class ComponentsTest {
     @ExperimentalCoroutinesApi
     private val testDispatcher = TestCoroutineDispatcher()
+    private val testScope = TestCoroutineScope(testDispatcher)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -39,7 +38,7 @@ class ComponentsTest {
      */
     @ExperimentalCoroutinesApi
     @Before
-    fun stopSendEventsToServer() {
+    fun stopSendEventsToServer() = runBlockingTest {
         Dispatchers.setMain(testDispatcher)
         NeuroID.getInstance().stop()
     }
@@ -47,6 +46,9 @@ class ComponentsTest {
     @ExperimentalCoroutinesApi
     @After
     fun resetDispatchers() {
+        testScope.launch {
+            NeuroID.getInstance().nidDataStoreManager.clearEvents()
+        }
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
     }
@@ -79,7 +81,7 @@ class ComponentsTest {
      * Validate RADIO_CHANGE when the user click on it
      */
     @Test
-    fun test02ValidateRadioChange() = runBlockingTest{
+    fun test02ValidateRadioChange() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -94,7 +96,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"RADIO_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         Truth.assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
     }
@@ -103,7 +105,7 @@ class ComponentsTest {
      * Validate SWITCH_CHANGE when the user click on it
      */
     @Test
-    fun test03ValidateSwitch() = runBlockingTest{
+    fun test03ValidateSwitch() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -122,7 +124,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"SWITCH_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         Truth.assertThat(event).matches(NID_STRUCT_SWITCH_CHANGE)
     }
@@ -131,7 +133,7 @@ class ComponentsTest {
      * Validate TOGGLE_CHANGE when the user click on it
      */
     @Test
-    fun test04ValidateToggle() = runBlockingTest{
+    fun test04ValidateToggle() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -150,7 +152,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"TOGGLE_BUTTON_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
         Truth.assertThat(event).matches(NID_STRUCT_TOGGLE_CHANGE)
     }
@@ -159,7 +161,7 @@ class ComponentsTest {
      * Validate RATING_BAR_CHANGE when the user click on it
      */
     @Test
-    fun test05ValidateRatingBar() = runBlockingTest{
+    fun test05ValidateRatingBar() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
@@ -178,7 +180,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"RATING_BAR_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         Truth.assertThat(event).matches(NID_STRUCT_RATING_CHANGE)
     }
 
@@ -186,7 +188,7 @@ class ComponentsTest {
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
      */
     @Test
-    fun test06ValidateSliderChange() = runBlockingTest{
+    fun test06ValidateSliderChange() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         Thread.sleep(500) //Wait a half second for create the MainActivity View
 
@@ -200,7 +202,7 @@ class ComponentsTest {
         )
 
         Thread.sleep(1000)
-        getDataStoreInstance().getAllEvents()
+        NeuroID.getInstance().getAllEvents()
 
         onView(withId(R.id.seekBar_one)).perform(
             swipeRight()
@@ -209,7 +211,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"SLIDER_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
+        val event = validateEventCount(NeuroID.getInstance().getAllEvents(), eventType)
         NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
 
 

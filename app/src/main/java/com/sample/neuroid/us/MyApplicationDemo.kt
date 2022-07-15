@@ -14,7 +14,6 @@ class MyApplicationDemo : MultiDexApplication() {
             ThreadPolicy.Builder()
                 .detectAll()
                 .penaltyLog()
-                .penaltyDeath()
                 .build()
         )
         StrictMode.setVmPolicy(
@@ -22,7 +21,6 @@ class MyApplicationDemo : MultiDexApplication() {
                 .detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects()
                 .penaltyLog()
-                .penaltyDeath()
                 .build()
         )
         val neuroId = NeuroID.Builder(

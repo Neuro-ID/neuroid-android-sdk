@@ -89,6 +89,7 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
     reactNativeLibImplementation("com.facebook.react:react-native:+")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 }
 
 task androidSourcesJar(type: Jar) {
