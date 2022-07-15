@@ -1,8 +1,8 @@
 package com.sample.neuroid.us.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.R
@@ -20,6 +20,7 @@ class NIDCustomEventsActivity : AppCompatActivity() {
         binding.apply {
             buttonSendCustomEvent.setOnClickListener {
                 NeuroID.getInstance().captureEvent(
+                    activity = this@NIDCustomEventsActivity,
                     eventName = "CUSTOM_EVENT",
                     tgs = "buttonSendCustomEvent"
                 )

@@ -1,7 +1,14 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
-import kotlinx.coroutines.*
+import com.neuroid.tracker.NeuroID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 object NIDJobServiceManager {
     private var jobCaptureEvents: Job? = null
@@ -25,20 +32,17 @@ object NIDJobServiceManager {
 
     private fun createJobServer(): Job {
         val timeMills = 5000L
-
         return CoroutineScope(Dispatchers.IO).launch {
-            while (userActive) {
-                delay(timeMills)
-
-                application?.let {
+            NeuroID.getInstance().nidDataStoreManager.getNIDPreferences().filter { nidPreferences ->
+                nidPreferences.events.isNotEmpty()
+            }.debounce(timeMills)
+                .collect {
                     val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
                     if (response.second) {
                         userActive = false
                     }
-                } ?: run {
-                    userActive = false
+                    NeuroID.getInstance().nidDataStoreManager.clearEvents()
                 }
-            }
         }
     }
 

@@ -5,11 +5,13 @@ import android.view.Menu
 import android.view.MenuItem
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDContextMenuCallbacks(
+    private val nidDataStoreManager: NIDDataStoreManager,
     actionCallBack: ActionMode.Callback?
-): ActionMode.Callback {
+) : ActionMode.Callback {
     private val wrapper = actionCallBack
 
     override fun onCreateActionMode(action: ActionMode?, menu: Menu?): Boolean {
@@ -34,7 +36,7 @@ class NIDContextMenuCallbacks(
     }
 
     private fun saveEvent(option: Int) {
-        val type = when(option) {
+        val type = when (option) {
             android.R.id.paste -> PASTE
             android.R.id.copy -> COPY
             android.R.id.cut -> CUT
@@ -42,7 +44,7 @@ class NIDContextMenuCallbacks(
         }
 
         if (type.isNotEmpty()) {
-            getDataStoreInstance()
+            nidDataStoreManager
                 .saveEvent(
                     NIDEventModel(
                         type = type,

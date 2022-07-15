@@ -9,10 +9,12 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDGlobalEventCallback(
+    private val nidDataStoreManager: NIDDataStoreManager,
     private val windowCallback: Window.Callback,
     private val eventManager: NIDTouchEventManager,
     private val viewMainContainer: View
@@ -29,7 +31,7 @@ class NIDGlobalEventCallback(
             val idName = newView.getIdOrTag()
 
             if (newView is EditText) {
-                getDataStoreInstance()
+                nidDataStoreManager
                     .saveEvent(
                         NIDEventModel(
                             type = FOCUS,
@@ -61,7 +63,7 @@ class NIDGlobalEventCallback(
         if (currentWidth != viewMainContainer.width || currentHeight != viewMainContainer.height) {
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
-            getDataStoreInstance()
+            nidDataStoreManager
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_RESIZE,
@@ -80,7 +82,7 @@ class NIDGlobalEventCallback(
             NIDAttrItem("hash", actualText.getSHA256().take(8)).getJson()
         )
 
-        getDataStoreInstance()
+        nidDataStoreManager
             .saveEvent(
                 NIDEventModel(
                     type = TEXT_CHANGE,
@@ -97,7 +99,7 @@ class NIDGlobalEventCallback(
                 )
             )
 
-        getDataStoreInstance()
+        nidDataStoreManager
             .saveEvent(
                 NIDEventModel(
                     type = BLUR,

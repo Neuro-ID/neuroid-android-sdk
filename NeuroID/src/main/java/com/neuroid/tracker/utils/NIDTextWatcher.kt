@@ -6,9 +6,11 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDTextWatcher(
+    private val nidDataStoreManager: NIDDataStoreManager,
     private val idName: String
 ) : TextWatcher {
 
@@ -26,7 +28,7 @@ class NIDTextWatcher(
         }
 
         if (typeEvent.isNotEmpty()) {
-            getDataStoreInstance()
+            nidDataStoreManager
                 .saveEvent(
                     NIDEventModel(
                         type = typeEvent,
@@ -46,7 +48,7 @@ class NIDTextWatcher(
         )
 
         if (lastSize != sequence?.length) {
-            getDataStoreInstance()
+            nidDataStoreManager
                 .saveEvent(
                     NIDEventModel(
                         type = INPUT,

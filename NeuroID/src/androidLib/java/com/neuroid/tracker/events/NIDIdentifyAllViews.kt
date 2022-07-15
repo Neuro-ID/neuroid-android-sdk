@@ -9,12 +9,14 @@ import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
 fun identifyAllViews(
+    nidDataStoreManager: NIDDataStoreManager,
     viewParent: ViewGroup,
     guid: String,
     registerTarget: Boolean = true,
@@ -22,18 +24,18 @@ fun identifyAllViews(
 ) {
     viewParent.forEach {
         if (registerTarget) {
-            registerComponent(it, guid)
+            registerComponent(nidDataStoreManager, it, guid)
         }
         if (registerListeners) {
-            registerListeners(it)
+            registerListeners(nidDataStoreManager, it)
         }
         if (it is ViewGroup) {
-            identifyAllViews(it, guid, registerTarget, registerListeners)
+            identifyAllViews(nidDataStoreManager, it, guid, registerTarget, registerListeners)
         }
     }
 }
 
-private fun registerComponent(view: View, guid: String) {
+private fun registerComponent(nidDataStoreManager: NIDDataStoreManager, view: View, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
@@ -83,7 +85,7 @@ private fun registerComponent(view: View, guid: String) {
                 "\"v\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
                 "}"
 
-        getDataStoreInstance()
+        nidDataStoreManager
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
@@ -104,16 +106,17 @@ private fun registerComponent(view: View, guid: String) {
     }
 }
 
-private fun registerListeners(view: View) {
+private fun registerListeners(nidDataStoreManager: NIDDataStoreManager, view: View) {
     val idName = view.getIdOrTag()
 
     if (view is EditText) {
-        val textWatcher = NIDTextWatcher(idName)
+        val textWatcher = NIDTextWatcher(nidDataStoreManager, idName)
         view.addTextChangedListener(textWatcher)
 
         val actionCallback = view.customSelectionActionModeCallback
         if (actionCallback !is NIDContextMenuCallbacks) {
-            view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+            view.customSelectionActionModeCallback =
+                NIDContextMenuCallbacks(nidDataStoreManager, actionCallback)
         }
     }
 
@@ -129,7 +132,7 @@ private fun registerListeners(view: View) {
                     p3: Long
                 ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    nidDataStoreManager
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
@@ -154,7 +157,7 @@ private fun registerListeners(view: View) {
             view.onItemClickListener =
                 AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
                     lastListener?.onItemClick(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    nidDataStoreManager
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,

@@ -484,14 +484,14 @@ class NeuroIdUITest {
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
 
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             val typeResponse = NIDServiceTracker.sendEventToServer(
                 "key_live_vtotrandom_form_mobilesandbox",
                 "https://api.neuro-id.com/v3/c",
                 application
             )
             assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
-        }
+        }*/
     }
 
     private fun validateEventCount(

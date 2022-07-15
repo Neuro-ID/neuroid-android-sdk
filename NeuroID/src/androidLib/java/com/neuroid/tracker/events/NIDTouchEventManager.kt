@@ -10,11 +10,13 @@ import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDTouchEventManager(
+    private val nidDataStoreManager: NIDDataStoreManager,
     private val viewParent: ViewGroup
 ) {
     private var lastView: View? = null
@@ -49,7 +51,7 @@ class NIDTouchEventManager(
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
-                        getDataStoreInstance()
+                        nidDataStoreManager
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_START,
@@ -63,7 +65,7 @@ class NIDTouchEventManager(
                             )
 
                         if (typeOfView == 2) {
-                            getDataStoreInstance()
+                            nidDataStoreManager
                                 .saveEvent(
                                     NIDEventModel(
                                         type = FOCUS,
@@ -77,7 +79,7 @@ class NIDTouchEventManager(
                     }
                 }
                 ACTION_MOVE -> {
-                    getDataStoreInstance()
+                    nidDataStoreManager
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
@@ -91,7 +93,7 @@ class NIDTouchEventManager(
                     if (lastTypeOfView > 0) {
 
                         if (lastTypeOfView == 2) {
-                            getDataStoreInstance()
+                            nidDataStoreManager
                                 .saveEvent(
                                     NIDEventModel(
                                         type = BLUR,
@@ -106,7 +108,7 @@ class NIDTouchEventManager(
                         lastTypeOfView = 0
                         lastViewName = ""
 
-                        getDataStoreInstance()
+                        nidDataStoreManager
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
@@ -175,7 +177,7 @@ class NIDTouchEventManager(
                 }
 
                 if (type.isNotEmpty()) {
-                    getDataStoreInstance()
+                    nidDataStoreManager
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
@@ -189,7 +191,7 @@ class NIDTouchEventManager(
                 }
             } else {
                 if (lastView is SeekBar) {
-                    getDataStoreInstance()
+                    nidDataStoreManager
                         .saveEvent(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
