@@ -27,9 +27,13 @@ object NIDServiceTracker {
     @set:Synchronized
     var screenFragName = ""
 
-    fun sendEventToServer(key: String, endpoint: String, context: Application): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents()
-
+    suspend fun sendEventToServer(
+        key: String,
+        endpoint: String,
+        context: Application
+    ): Pair<Int, Boolean> {
+        val listEvents = getDataStoreInstance().getAllEvents().sorted()
+        getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
 
@@ -84,7 +88,7 @@ object NIDServiceTracker {
         }
     }
 
-    private fun getContentForm(context: Application, events: String, key: String): String {
+    private suspend fun getContentForm(context: Application, events: String, key: String): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
         val hashMapParams = hashMapOf(
             "key" to key,

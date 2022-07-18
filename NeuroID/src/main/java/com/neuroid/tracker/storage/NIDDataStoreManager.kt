@@ -1,20 +1,24 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.utils.NIDTimerActive
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
-    fun getAllEvents(): List<String>
+    suspend fun getAllEvents(): Set<String>
     fun addViewIdExclude(id: String)
+    suspend fun clearEvents()
 }
 
 fun initDataStoreCtx(context: Context) {
@@ -25,7 +29,7 @@ fun getDataStoreInstance(): NIDDataStoreManager {
     return NIDDataStoreManagerImp
 }
 
-private object NIDDataStoreManagerImp: NIDDataStoreManager {
+private object NIDDataStoreManagerImp : NIDDataStoreManager {
     private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
     private const val NID_STRING_EVENTS = "NID_STRING_EVENTS"
     private var sharedPref: SharedPreferences? = null
@@ -37,13 +41,9 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     private val listIdsExcluded = arrayListOf<String>()
 
     fun init(context: Context) {
-        sharedPref = EncryptedSharedPreferences.create(
-            context,
-            NID_SHARED_PREF_FILE,
-            getKeyAlias(context),
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        CoroutineScope(Dispatchers.IO).launch {
+            sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
+        }
     }
 
     private fun getKeyAlias(context: Context) = MasterKey.Builder(context)
@@ -52,55 +52,36 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
-        if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs")}) {
-            val strEvent = event.getOwnJson()
+        CoroutineScope(Dispatchers.IO).launch {
+            if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
+                val strEvent = event.getOwnJson()
 
-            if (NIDJobServiceManager.userActive.not()) {
-                NIDJobServiceManager.userActive = true
-                NIDJobServiceManager.restart()
-            }
-
-            sharedLock.acquire()
-            if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-                NIDTimerActive.restartTimerActive()
-            }
-
-            val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
-            val newStringEvents = if (lastEvents.isEmpty()) {
-                strEvent
-            } else {
-                "$lastEvents|$strEvent"
-            }
-
-            sharedPref?.let {
-                with (it.edit()) {
-                    putString(NID_STRING_EVENTS, newStringEvents)
-                    apply()
+                if (NIDJobServiceManager.userActive.not()) {
+                    NIDJobServiceManager.userActive = true
+                    NIDJobServiceManager.restart()
                 }
-            }
 
-            sharedLock.release()
+                sharedLock.acquire()
+                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
+                    NIDTimerActive.restartTimerActive()
+                }
+                val lastEvents = getStringSet(NID_STRING_EVENTS)
+                val newEvents = LinkedHashSet<String>()
+                newEvents.addAll(lastEvents)
+                newEvents.add(strEvent)
+                putStringSet(NID_STRING_EVENTS, newEvents)
+
+                sharedLock.release()
+            }
         }
     }
 
-    override fun getAllEvents(): List<String> {
+    override suspend fun getAllEvents(): Set<String> {
         sharedLock.acquire()
-        val lastEvents = sharedPref?.getString(NID_STRING_EVENTS, "").orEmpty()
-
-        sharedPref?.let {
-            with (it.edit()) {
-                putString(NID_STRING_EVENTS, "")
-                apply()
-            }
-        }
-
+        val lastEvents = getStringSet(NID_STRING_EVENTS, emptySet())
+        clearEvents()
         sharedLock.release()
-
-        return if (lastEvents.isEmpty()) {
-            listOf()
-        } else {
-            lastEvents.split("|")
-        }
+        return lastEvents
     }
 
     override fun addViewIdExclude(id: String) {
@@ -108,4 +89,22 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
             listIdsExcluded.add(id)
         }
     }
+
+    override suspend fun clearEvents() {
+        putStringSet(NID_STRING_EVENTS, emptySet())
+    }
+
+    private suspend fun putStringSet(key: String, stringSet: Set<String>) {
+        sharedPref?.let {
+            with(it.edit()) {
+                putStringSet(key, stringSet)
+                apply()
+            }
+        }
+    }
+
+    private suspend fun getStringSet(key: String, default: Set<String> = emptySet()): Set<String> {
+        return sharedPref?.getStringSet(key, emptySet()) ?: emptySet()
+    }
+
 }
