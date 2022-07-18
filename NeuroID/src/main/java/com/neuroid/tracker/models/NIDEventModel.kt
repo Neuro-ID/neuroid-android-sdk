@@ -1,7 +1,5 @@
 package com.neuroid.tracker.models
 
-import com.neuroid.tracker.events.CREATE_SESSION
-import com.neuroid.tracker.events.SET_USER_ID
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -125,11 +123,6 @@ data class NIDEventModel(
     }
 
     override fun compareTo(other: NIDEventModel): Int {
-        return when (type) {
-            CREATE_SESSION -> 1
-            SET_USER_ID -> 1
-            else -> ts.compareTo(other.ts)
-        }
-
+        return ts.compareTo(other.ts)
     }
 }

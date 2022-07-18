@@ -7,6 +7,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
+import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -32,7 +33,10 @@ object NIDServiceTracker {
         endpoint: String,
         context: Application
     ): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents().sorted()
+        val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
+            val event = JSONObject(it)
+            event.getLong("ts")
+        }
         getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
