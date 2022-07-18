@@ -7,6 +7,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
+import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -27,9 +28,16 @@ object NIDServiceTracker {
     @set:Synchronized
     var screenFragName = ""
 
-    fun sendEventToServer(key: String, endpoint: String, context: Application): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents()
-
+    suspend fun sendEventToServer(
+        key: String,
+        endpoint: String,
+        context: Application
+    ): Pair<Int, Boolean> {
+        val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
+            val event = JSONObject(it)
+            event.getLong("ts")
+        }
+        getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
 
@@ -84,7 +92,7 @@ object NIDServiceTracker {
         }
     }
 
-    private fun getContentForm(context: Application, events: String, key: String): String {
+    private suspend fun getContentForm(context: Application, events: String, key: String): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
         val hashMapParams = hashMapOf(
             "key" to key,

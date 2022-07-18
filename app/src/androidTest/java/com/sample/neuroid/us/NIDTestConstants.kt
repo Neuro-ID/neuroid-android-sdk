@@ -1,5 +1,7 @@
 package com.sample.neuroid.us
 
+import org.junit.Assert
+
 const val NID_STRUCT_CREATE_SESSION = "\\{\"type\":\"CREATE_SESSION\",\"ts\":\\d{13,},\"f\":\"(.*?)\",\"sid\":\"(.*?)\",\"cid\":\"(.*?)\",\"did\":\"(.*?)\",\"iid\":\"(.*?)\",\"loc\":\"(.*?)\",\"ua\":\"(.*?)\",\"tzo\":(.*?),\"lng\":\"(.*?)\",\"ce\":true,\"je\":true,\"ol\":true,\"p\":\"Android\",\"dnt\":false,\"url\":\"(.*?)\",\"ns\":\"nid\",\"jsl\":\\[\\],\"jsv\":\"(.*?)\"\\}"
 const val NID_STRUCT_USER_ID = "\\{\"type\":\"SET_USER_ID\",\"ts\":(.*?),\"uid\":\"(.*?)\"\\}"
 const val NID_STRUCT_REGISTER_TARGET = "\\{\"type\":\"REGISTER_TARGET\",\"tg\":\\{\"attr\":\\[\\{\"n\":\"guid\",\"v\":\"(.*?)\"\\},\\{\"n\":\"screenHierarchy\",\"v\":\"(.*?)\"\\}\\]\\},\"tgs\":\"(.*?)\",\"v\":\"S~C~~\\d{1,}\",\"en\":\"(.*?)\",\"et\":\"(.*?)\",\"eid\":\"(.*?)\",\"ts\":\\d{13,},\"url\":\"(.*?)\"\\}"
@@ -28,3 +30,16 @@ const val NID_STRUCT_USER_INACTIVE = "\\{\"type\":\"USER_INACTIVE\",\"ts\":\\d{1
 const val NID_STRUCT_SWITCH_CHANGE = "\\{\"type\":\"SWITCH_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,}\\}"
 const val NID_STRUCT_TOGGLE_CHANGE = "\\{\"type\":\"TOGGLE_BUTTON_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,}\\}"
 const val NID_STRUCT_RATING_CHANGE = "\\{\"type\":\"RATING_BAR_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,}\\}"
+
+
+fun validateEventCount(
+    eventList: Set<String>,
+    eventType: String,
+    maxEventsCount: Int = 1
+): String {
+    val events = eventList.filter { it.contains(eventType) }
+    if (maxEventsCount > 0) {
+        Assert.assertEquals(maxEventsCount, events.size)
+    }
+    return events.first()
+}

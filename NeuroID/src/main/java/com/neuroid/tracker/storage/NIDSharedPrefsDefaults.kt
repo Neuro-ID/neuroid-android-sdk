@@ -2,13 +2,17 @@ package com.neuroid.tracker.storage
 
 import android.app.Application
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(
     context: Application
 ) {
-    private var sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
+    private var sharedPref =
+        context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
     private var sequenceId = 1
 
     fun createRequestId(): String {
@@ -20,27 +24,8 @@ class NIDSharedPrefsDefaults(
         return String.format("%02x", rawId)
     }
 
-    fun getSessionID(): String {
-        val savedSid = sharedPref?.getString(NID_SID, "").orEmpty()
-
-        if (savedSid.isNotEmpty() && !isSessionExpired()) {
-            return savedSid
-        } else {
-            var sid = ""
-
-            repeat((1..16).count()) {
-                sid += "${(0..9).random()}"
-            }
-
-            sharedPref?.let {
-                with(it.edit()) {
-                    putString(NID_SID, sid)
-                    apply()
-                }
-            }
-
-            return sid
-        }
+    suspend fun getSessionID(): String {
+        return getString(NID_SID)
     }
 
     fun getNewSessionID(): String {
@@ -49,55 +34,16 @@ class NIDSharedPrefsDefaults(
         repeat((1..16).count()) {
             sid += "${(0..9).random()}"
         }
-
-        sharedPref?.let {
-            with(it.edit()) {
-                putString(NID_SID, sid)
-                apply()
-            }
-        }
+        putString(NID_SID, sid)
 
         return sid
     }
 
-    private fun isSessionExpired(): Boolean {
-        var timeToExpired = sharedPref?.getLong(NID_TIME_TO_EXPIRE, 0L) ?: 0L
-        val actualTime = System.currentTimeMillis()
-
-        if (timeToExpired == 0L) {
-            timeToExpired = setTimeToExpire()
-        }
-
-        if(actualTime > timeToExpired) {
-            setTimeToExpire()
-        }
-
-        return actualTime > timeToExpired
-    }
-
-    private fun setTimeToExpire(): Long {
-        val timeToExpired = System.currentTimeMillis() + 1800000
-        sharedPref?.let {
-            with(it.edit()) {
-                putLong(NID_TIME_TO_EXPIRE, timeToExpired)
-                apply()
-            }
-        }
-
-        return timeToExpired
-    }
-
-    fun getClientId(): String {
-        var cid = sharedPref?.getString(NID_CID, "").orEmpty()
+    suspend fun getClientId(): String {
+        var cid = getString(NID_CID)
         return if (cid == "") {
             cid = getID()
-            sharedPref?.let {
-                with(it.edit()) {
-                    putString(NID_CID, cid)
-                    apply()
-                }
-            }
-
+            putString(NID_CID, cid)
             cid
         } else {
             cid
@@ -105,32 +51,22 @@ class NIDSharedPrefsDefaults(
     }
 
     fun setUserId(userId: String) {
-        sharedPref?.let {
-            with(it.edit()) {
-                putString(NID_UID, userId)
-                apply()
-            }
-        }
+        putString(NID_UID, userId)
     }
 
     // Must be set to null string
-    fun getUserId(): String {
-        val uid = sharedPref?.getString(NID_UID, "null") ?: ""
+    suspend fun getUserId(): String {
+        val uid = getString(NID_UID, "null")
 
         return uid.ifBlank { "null" }
     }
 
-    fun getDeviceId(): String {
-        var deviceId = sharedPref?.getString(NID_DID, "").orEmpty()
+    suspend fun getDeviceId(): String {
+        var deviceId = getString(NID_DID)
 
         return if (deviceId == "") {
             deviceId = getID()
-            sharedPref?.let {
-                with(it.edit()) {
-                    putString(NID_DID, deviceId)
-                    apply()
-                }
-            }
+            putString(NID_DID, deviceId)
 
             deviceId
         } else {
@@ -138,18 +74,12 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getIntermediateId(): String {
-        var iid = sharedPref?.getString(NID_IID, "").orEmpty()
+    suspend fun getIntermediateId(): String {
+        var iid = getString(NID_IID, "")
 
         return if (iid == "") {
             iid = getID()
-            sharedPref?.let {
-                with(it.edit()) {
-                    putString(NID_IID, iid)
-                    apply()
-                }
-            }
-
+            putString(NID_IID, iid)
             iid
         } else {
             iid
@@ -179,6 +109,21 @@ class NIDSharedPrefsDefaults(
         val numRnd = Random.nextDouble() * Int.MAX_VALUE
 
         return "$timeNow.$numRnd"
+    }
+
+    private fun putString(key: String, value: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            sharedPref?.let {
+                with(it.edit()) {
+                    putString(key, value)
+                    apply()
+                }
+            }
+        }
+    }
+
+    private suspend fun getString(key: String, default: String = ""): String {
+        return sharedPref?.getString(key, "") ?: default
     }
 
     companion object {
