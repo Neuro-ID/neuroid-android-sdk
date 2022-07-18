@@ -5,20 +5,22 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.callbacks.*
+import com.neuroid.tracker.callbacks.NIDFragmentCallbacks
+import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import java.util.*
 
-fun registerLaterLifecycleFragments(activity: Activity) {
+fun registerLaterLifecycleFragments(nidDataStoreManager: NIDDataStoreManager, activity: Activity) {
     NIDServiceTracker.screenActivityName = activity::class.java.name
 
     val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-    fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+    fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(nidDataStoreManager), true)
 
-    registerWindowListeners(activity)
+    registerWindowListeners(nidDataStoreManager, activity)
 }
 
-fun registerWindowListeners(activity: Activity) {
+fun registerWindowListeners(nidDataStoreManager: NIDDataStoreManager, activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     )
@@ -27,6 +29,7 @@ fun registerWindowListeners(activity: Activity) {
 
     if (callBack !is NIDGlobalEventCallback) {
         val nidGlobalEventCallback = NIDGlobalEventCallback(
+            nidDataStoreManager,
             callBack,
             NIDTouchEventManager(viewMainContainer as ViewGroup),
             viewMainContainer
@@ -41,6 +44,7 @@ fun registerWindowListeners(activity: Activity) {
 }
 
 fun registerTargetFromScreen(
+    nidDataStoreManager: NIDDataStoreManager,
     activity: Activity,
     registerTarget: Boolean,
     registerListeners: Boolean
@@ -53,6 +57,12 @@ fun registerTargetFromScreen(
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
+        identifyAllViews(
+            nidDataStoreManager,
+            viewMainContainer,
+            guid,
+            registerTarget,
+            registerListeners
+        )
     }, 300)
 }

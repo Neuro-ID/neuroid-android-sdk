@@ -11,12 +11,14 @@ import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 
 fun identifyAllViews(
+    nidDataStoreManager: NIDDataStoreManager,
     viewParent: ViewGroup,
     guid: String,
     registerTarget: Boolean,
@@ -24,22 +26,22 @@ fun identifyAllViews(
 ) {
     viewParent.forEach {
         if (registerTarget) {
-            registerComponent(it, guid)
+            registerComponent(nidDataStoreManager, it, guid)
         }
         if (registerListeners) {
-            registerListeners(it)
+            registerListeners(nidDataStoreManager, it)
         }
         if (it is ViewGroup) {
-            identifyAllViews(it, guid, registerTarget, registerListeners)
+            identifyAllViews(nidDataStoreManager, it, guid, registerTarget, registerListeners)
         }
     }
 }
 
-private fun registerComponent(view: View, guid: String) {
+private fun registerComponent(nidDataStoreManager: NIDDataStoreManager, view: View, guid: String) {
     val idName = view.getIdOrTag()
     var et = ""
 
-    when(view) {
+    when (view) {
         is EditText -> {
             et = "Edittext"
         }
@@ -89,43 +91,50 @@ private fun registerComponent(view: View, guid: String) {
                 "\"v\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
                 "}"
 
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = REGISTER_TARGET,
-                    et = et + "::" + view.javaClass.simpleName,
-                    etn = "INPUT",
-                    ec = NIDServiceTracker.screenName,
-                    eid = idName,
-                    tgs = idName,
-                    en = idName,
-                    v = "S~C~~0",
-                    ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "attr" to attrs
-                    ),
-                    url = urlView
-                ))
+
+        nidDataStoreManager.saveEvent(
+            NIDEventModel(
+                type = REGISTER_TARGET,
+                et = et + "::" + view.javaClass.simpleName,
+                etn = "INPUT",
+                ec = NIDServiceTracker.screenName,
+                eid = idName,
+                tgs = idName,
+                en = idName,
+                v = "S~C~~0",
+                ts = System.currentTimeMillis(),
+                tg = hashMapOf(
+                    "attr" to attrs
+                ),
+                url = urlView
+            )
+        )
     }
 }
 
-private fun registerListeners(view: View) {
+private fun registerListeners(nidDataStoreManager: NIDDataStoreManager, view: View) {
     val idName = view.getIdOrTag()
 
     when (view) {
         is EditText -> {
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
-                val textWatcher = NIDTextWatcher(idName)
+                view.customSelectionActionModeCallback =
+                    NIDContextMenuCallbacks(nidDataStoreManager, actionCallback)
+                val textWatcher = NIDTextWatcher(nidDataStoreManager, idName)
                 view.addTextChangedListener(textWatcher)
             }
         }
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
-            view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
+            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    adapter: AdapterView<*>?,
+                    viewList: View?,
+                    position: Int,
+                    p3: Long
+                ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
                     getDataStoreInstance()
                         .saveEvent(
@@ -137,7 +146,8 @@ private fun registerListeners(view: View) {
                                     "et" to "text"
                                 ),
                                 ts = System.currentTimeMillis()
-                            ))
+                            )
+                        )
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -148,20 +158,22 @@ private fun registerListeners(view: View) {
         is AutoCompleteTextView -> {
             val lastListener = view.onItemClickListener
             view.onItemClickListener = null
-            view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener.onItemClick(adapter, viewList, position, p3)
-                getDataStoreInstance()
-                    .saveEvent(
-                        NIDEventModel(
-                            type = SELECT_CHANGE,
-                            tg = hashMapOf(
-                                "tgs" to idName,
-                                "etn" to "INPUT",
-                                "et" to "text"
-                            ),
-                            ts = System.currentTimeMillis()
-                        ))
-            }
+            view.onItemClickListener =
+                AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+                    lastListener.onItemClick(adapter, viewList, position, p3)
+                    getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = SELECT_CHANGE,
+                                tg = hashMapOf(
+                                    "tgs" to idName,
+                                    "etn" to "INPUT",
+                                    "et" to "text"
+                                ),
+                                ts = System.currentTimeMillis()
+                            )
+                        )
+                }
         }
 
     }

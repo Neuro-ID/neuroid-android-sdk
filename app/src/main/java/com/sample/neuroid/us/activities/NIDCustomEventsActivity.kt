@@ -20,7 +20,6 @@ class NIDCustomEventsActivity : AppCompatActivity() {
         binding.apply {
             buttonSendCustomEvent.setOnClickListener {
                 NeuroID.getInstance().captureEvent(
-                    activity = this@NIDCustomEventsActivity,
                     eventName = "CUSTOM_EVENT",
                     tgs = "buttonSendCustomEvent"
                 )

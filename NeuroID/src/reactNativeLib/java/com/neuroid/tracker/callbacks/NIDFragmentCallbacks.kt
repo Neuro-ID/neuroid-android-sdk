@@ -8,10 +8,12 @@ import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 
-class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
-    private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+class NIDFragmentCallbacks(private val nidDataStoreManager: NIDDataStoreManager) :
+    FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
     private var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
@@ -35,16 +37,20 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
             if (listFragment.contains(fragName)) {
                 val index = listFragment.indexOf(fragName)
-                if (index != listFragment.size -1) {
+                if (index != listFragment.size - 1) {
                     listFragment.removeLast()
-                    registerTargetFromScreen(f.requireActivity(),
+                    registerTargetFromScreen(
+                        nidDataStoreManager,
+                        f.requireActivity(),
                         registerTarget = true,
                         registerListeners = false
                     )
                 }
             } else {
                 listFragment.add(fragName)
-                registerTargetFromScreen(f.requireActivity(),
+                registerTargetFromScreen(
+                    nidDataStoreManager,
+                    f.requireActivity(),
                     registerTarget = true,
                     registerListeners = true
                 )

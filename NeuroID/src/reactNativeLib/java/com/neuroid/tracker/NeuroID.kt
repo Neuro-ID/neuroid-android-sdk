@@ -7,31 +7,30 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.storage.*
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NeuroID private constructor(
-    private var application: Application?,
+    private var application: Application,
     private var clientKey: String
 ) {
     private var firstTime = true
     private var endpoint = "https://api.neuro-id.com/v3/c"
+    var nidDataStoreManager: NIDDataStoreManager = NIDDataStoreManagerImpl(application)
 
     @Synchronized
     private fun setupCallbacks() {
         if (firstTime) {
             firstTime = false
-            application?.let {
-                initDataStoreCtx(it.applicationContext)
-            }
         }
     }
 
     data class Builder(
-        var application: Application? = null,
+        var application: Application,
         var clientKey: String = ""
     ) {
         fun build() =
@@ -52,8 +51,8 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
-        application?.let {
-            NIDSharedPrefsDefaults(it).setUserId(userId)
+        CoroutineScope(Dispatchers.IO).launch {
+            nidDataStoreManager.setUserId(userId)
         }
         getDataStoreInstance().saveEvent(
             NIDEventModel(
@@ -69,34 +68,25 @@ class NeuroID private constructor(
     }
 
     fun excludeViewByResourceID(id: String) {
-        application?.let {
-            getDataStoreInstance().addViewIdExclude(id)
-        }
+        getDataStoreInstance().addViewIdExclude(id)
     }
 
     fun getSessionId(): String {
-        var sid = ""
-        application?.let {
-            sid = NIDSharedPrefsDefaults(it).getSessionID()
-        }
-
-        return sid
+        return nidDataStoreManager.getSessionId()
     }
 
     fun captureEvent(eventName: String, tgs: String) {
-        application?.applicationContext?.let {
-            getDataStoreInstance().saveEvent(
-                NIDEventModel(
-                    type = eventName,
-                    tgs = tgs,
-                    ts = System.currentTimeMillis()
-                )
+        nidDataStoreManager.saveEvent(
+            NIDEventModel(
+                type = eventName,
+                tgs = tgs,
+                ts = System.currentTimeMillis()
             )
-        }
+        )
     }
 
     fun formSubmit() {
-        getDataStoreInstance().saveEvent(
+        nidDataStoreManager.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis()
@@ -105,7 +95,7 @@ class NeuroID private constructor(
     }
 
     fun formSubmitSuccess() {
-        getDataStoreInstance().saveEvent(
+        nidDataStoreManager.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
                 ts = System.currentTimeMillis()
@@ -114,7 +104,7 @@ class NeuroID private constructor(
     }
 
     fun formSubmitFailure() {
-        getDataStoreInstance().saveEvent(
+        nidDataStoreManager.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
                 ts = System.currentTimeMillis()
@@ -128,55 +118,56 @@ class NeuroID private constructor(
     }
 
     fun start() {
-        getDataStoreInstance().getAllEvents() // Clean Events ?
-        createSession()
-        application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+        CoroutineScope(Dispatchers.IO).launch {
+            nidDataStoreManager.clearEvents() // Clean Events ?
         }
+        createSession()
+        NIDJobServiceManager.startJob(application, clientKey, endpoint)
     }
 
     fun stop() {
         NIDJobServiceManager.stopJob()
     }
 
-    fun registerAllViewsForCallerActivity(activity: Activity) {
-        NIDTimerActive.initTimer()
+    fun registerAllViewsForCallerActivity(
+        activity: Activity
+    ) {
         activity.application.registerActivityLifecycleCallbacks(
             NIDActivityCallbacks(
+                nidDataStoreManager,
                 activity::class.java.name,
                 activity.resources.configuration.orientation
             )
         )
-        registerLaterLifecycleFragments(activity)
+        registerLaterLifecycleFragments(nidDataStoreManager, activity)
     }
 
     private fun createSession() {
-        application?.let {
-            val sharedDefaults = NIDSharedPrefsDefaults(it)
-
-            getDataStoreInstance().saveEvent(
+        CoroutineScope(Dispatchers.IO).launch {
+            val nidPreferences: NIDPreferences = nidDataStoreManager.createSession()
+            nidDataStoreManager.saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
-                    sid = sharedDefaults.getNewSessionID(),
+                    sid = nidPreferences.sessionId,
                     lsid = "null",
-                    cid = sharedDefaults.getClientId(),
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
+                    cid = nidPreferences.clientId,
+                    did = nidPreferences.deviceId,
+                    iid = nidPreferences.intermediateId,
+                    loc = nidPreferences.locale,
+                    ua = nidPreferences.userAgent,
+                    tzo = nidPreferences.timeZone,
+                    lng = nidPreferences.language,
                     ce = true,
                     je = true,
                     ol = true,
-                    p = sharedDefaults.getPlatform(),
+                    p = nidPreferences.plataform,
                     jsl = listOf(),
                     dnt = false,
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
                 )
             )
         }
