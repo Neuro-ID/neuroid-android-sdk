@@ -32,8 +32,8 @@ object NIDServiceTracker {
         endpoint: String,
         context: Application
     ): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents()
-
+        val listEvents = getDataStoreInstance().getAllEvents().sorted()
+        getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
 
