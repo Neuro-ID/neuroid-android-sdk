@@ -104,7 +104,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     private suspend fun getStringSet(key: String, default: Set<String> = emptySet()): Set<String> {
-        return sharedPref?.getStringSet(key, emptySet()) ?: emptySet()
+        return sharedPref?.getStringSet(key, default) ?: default
     }
 
 }
