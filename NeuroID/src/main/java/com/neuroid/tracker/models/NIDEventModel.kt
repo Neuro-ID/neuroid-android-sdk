@@ -5,7 +5,7 @@ import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
-    val tg: HashMap<String,String>? = null,
+    val tg: HashMap<String, String>? = null,
     val tgs: String? = null,
     val key: String? = null,
     val v: String? = null,
@@ -43,7 +43,7 @@ data class NIDEventModel(
     val jsl: List<String>? = null,
     val jsv: String? = null,
     val uid: String? = null
-) {
+) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
@@ -120,5 +120,9 @@ data class NIDEventModel(
         }
 
         return jsonObject.toString()
+    }
+
+    override fun compareTo(other: NIDEventModel): Int {
+        return ts.compareTo(other.ts)
     }
 }
