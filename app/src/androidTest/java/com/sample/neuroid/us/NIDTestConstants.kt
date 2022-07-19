@@ -28,3 +28,16 @@ const val NID_STRUCT_USER_INACTIVE = "\\{\"type\":\"USER_INACTIVE\",\"ts\":\\d{1
 const val NID_STRUCT_SWITCH_CHANGE = "\\{\"type\":\"SWITCH_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,},\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
 const val NID_STRUCT_TOGGLE_CHANGE = "\\{\"type\":\"TOGGLE_BUTTON_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,},\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
 const val NID_STRUCT_RATING_CHANGE = "\\{\"type\":\"RATING_BAR_CHANGE\",\"tg\":\\{\"tgs\":\"(.*?)\",\"etn\":\"(.*?)\"\\},\"ts\":\\d{13,},\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
+
+
+fun validateEventCount(
+    eventList: Set<String>,
+    eventType: String,
+    maxEventsCount: Int = 1
+): String {
+    val events = eventList.filter { it.contains(eventType) }
+    if (maxEventsCount > 0) {
+        Assert.assertEquals(maxEventsCount, events.size)
+    }
+    return events.first()
+}
