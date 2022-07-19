@@ -1,5 +1,7 @@
 package com.sample.neuroid.us
 
+import org.junit.Assert
+
 const val NID_STRUCT_CREATE_SESSION = "\\{\"type\":\"CREATE_SESSION\",\"ts\":\\d{13,},\"f\":\"(.*?)\",\"sid\":\"(.*?)\",\"cid\":\"(.*?)\",\"did\":\"(.*?)\",\"iid\":\"(.*?)\",\"loc\":\"(.*?)\",\"ua\":\"(.*?)\",\"tzo\":(.*?),\"lng\":\"(.*?)\",\"ce\":true,\"je\":true,\"ol\":true,\"p\":\"Android\",\"dnt\":false,\"url\":\"(.*?)\",\"ns\":\"nid\",\"jsl\":\\[\\],\"jsv\":\"(.*?)\",\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
 const val NID_STRUCT_USER_ID = "\\{\"type\":\"SET_USER_ID\",\"ts\":(.*?),\"uid\":\"(.*?)\",\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
 const val NID_STRUCT_REGISTER_TARGET = "\\{\"type\":\"REGISTER_TARGET\",\"tg\":\\{\"attr\":\\[\\{\"n\":\"guid\",\"v\":\"(.*?)\"\\},\\{\"n\":\"screenHierarchy\",\"v\":\"(.*?)\"\\}\\]\\},\"tgs\":\"(.*?)\",\"v\":\"S~C~~\\d{1,}\",\"en\":\"(.*?)\",\"et\":\"(.*?)\",\"eid\":\"(.*?)\",\"ts\":\\d{13,},\"url\":\"(.*?)\",\"gyro\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\},\"accel\":\\{\"x\":(.*?),\"y\":(.*?),\"z\":(.*?)\\}\\}"
