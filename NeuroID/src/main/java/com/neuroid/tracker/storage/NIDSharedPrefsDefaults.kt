@@ -42,7 +42,7 @@ class NIDSharedPrefsDefaults(
     suspend fun getClientId(): String {
         var cid = getString(NID_CID)
         return if (cid == "") {
-            cid = getID()
+            cid = UUID.randomUUID().toString()
             putString(NID_CID, cid)
             cid
         } else {
@@ -55,10 +55,10 @@ class NIDSharedPrefsDefaults(
     }
 
     // Must be set to null string
-    suspend fun getUserId(): String {
-        val uid = getString(NID_UID, "null")
+    suspend fun getUserId(): String? {
+        val uid = getString(NID_UID)
 
-        return uid.ifBlank { "null" }
+        return uid.ifBlank { null }
     }
 
     suspend fun getDeviceId(): String {
@@ -133,6 +133,6 @@ class NIDSharedPrefsDefaults(
         private const val NID_CID = "NID_CID_KEY"
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
-        private const val NID_TIME_TO_EXPIRE = "NID_TIME_TO_EXPIRE_KEY"
+        private const val NID_CLIENT_ID = "NID_CLIENT_ID"
     }
 }

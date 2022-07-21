@@ -18,7 +18,9 @@ import kotlinx.coroutines.launch
 
 class NeuroID private constructor(
     private var application: Application?,
-    private var clientKey: String
+    private var clientKey: String,
+    private var environment: String,
+    private var siteId: String
 ) {
     private var firstTime = true
     private var endpoint = "https://api.neuro-id.com/v3/c"
@@ -38,10 +40,12 @@ class NeuroID private constructor(
 
     data class Builder(
         var application: Application? = null,
-        var clientKey: String = ""
+        var clientKey: String = "",
+        private var environment: String = "PRODUCTION",
+        private var siteId: String = ""
     ) {
         fun build() =
-            NeuroID(application, clientKey)
+            NeuroID(application, clientKey, environment, siteId)
     }
 
     companion object {
@@ -159,7 +163,7 @@ class NeuroID private constructor(
             createSession()
         }
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+            NIDJobServiceManager.startJob(it, clientKey, endpoint, environment, siteId)
         }
     }
 

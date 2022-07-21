@@ -24,7 +24,9 @@ class MyApplicationDemo : MultiDexApplication() {
         )
         val neuroId = NeuroID.Builder(
             this,
-            "key_live_suj4CX90v0un2k1ufGrbItT5"
+            "key_live_suj4CX90v0un2k1ufGrbItT5",
+            "TEST",
+            "form_x"
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
         NeuroID.getInstance().start()
