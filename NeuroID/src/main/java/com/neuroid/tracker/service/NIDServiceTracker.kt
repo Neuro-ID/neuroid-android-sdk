@@ -38,7 +38,6 @@ object NIDServiceTracker {
             val event = JSONObject(it)
             event.getLong("ts")
         }
-        getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
 
@@ -54,7 +53,7 @@ object NIDServiceTracker {
                 "Content-Type",
                 "application/json"
             )
-            conn.setRequestProperty("Authorization", "Basic $key")
+            conn.setRequestProperty("site_key", key)
 
             val listJson = listEvents.map {
                 JSONObject(it)
@@ -62,7 +61,7 @@ object NIDServiceTracker {
 
             val jsonListEvents = JSONArray(listJson)
 
-            val data = getContentJson(context, jsonListEvents, key, environment, siteId)
+            val data = getContentJson(context, jsonListEvents, environment, siteId)
                 .replace("\\/", "/")
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
             NIDLog.d("NeuroID", "payload Json:: $data")
@@ -99,23 +98,16 @@ object NIDServiceTracker {
     private suspend fun getContentJson(
         context: Application,
         events: JSONArray,
-        key: String,
         environment: String,
         siteId: String,
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
         val jsonBody = JSONObject().apply {
-            put("key", key)
-            put("id" , sharedDefaults.createRequestId())
             put("siteId" , siteId)
             put("sid" , sharedDefaults.getSessionID())
             put("clientId" , sharedDefaults.getClientId())
-            put("aid" , "null")
-            put("did" , sharedDefaults.getDeviceId())
             put("identityId" , sharedDefaults.getUserId())
-            put("pid" , sharedDefaults.getPageId())
-            put("iid" , sharedDefaults.getIntermediateId())
             put("pageTag" , screenActivityName)
             put("url" , screenActivityName)
             put("sdkVersion" , NIDVersion.getSDKVersion())

@@ -23,7 +23,7 @@ class NeuroID private constructor(
     private var siteId: String
 ) {
     private var firstTime = true
-    private var endpoint = "https://api.neuro-id.com/v3/c"
+    private var endpoint = "https://receiver.neuro-dev.com/c"
     private var sessionID = ""
 
     @Synchronized
@@ -31,6 +31,11 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
+                endpoint = when (environment) {
+                    "PRODUCTION" -> "https:/receiver.neuroid.cloud/c"
+                    else -> "https://receiver.neuro-dev.com/c"
+                }
+
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
                 NIDTimerActive.initTimer()
