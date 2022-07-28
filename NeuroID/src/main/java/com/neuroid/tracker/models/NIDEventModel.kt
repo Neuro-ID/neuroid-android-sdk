@@ -142,9 +142,9 @@ data class NIDSensorModel(
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()
-        jsonObject.put("x", x)
-        jsonObject.put("y", y)
-        jsonObject.put("z", z)
+        jsonObject.put("x", x ?: JSONObject.NULL)
+        jsonObject.put("y", y ?: JSONObject.NULL)
+        jsonObject.put("z", z ?: JSONObject.NULL)
 
         return jsonObject
     }

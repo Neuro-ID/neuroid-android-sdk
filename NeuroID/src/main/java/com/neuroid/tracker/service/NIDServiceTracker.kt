@@ -2,18 +2,17 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.events.USER_INACTIVE
-import com.neuroid.tracker.extensions.encodeToBase64
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
 
 object NIDServiceTracker {
     @get:Synchronized
@@ -31,13 +30,14 @@ object NIDServiceTracker {
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
+        environment: String,
+        siteId: String,
         context: Application
     ): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
         }
-        getDataStoreInstance().clearEvents()
         if (listEvents.isEmpty().not()) {
             // Allow for override of this URL in config
 
@@ -51,17 +51,20 @@ object NIDServiceTracker {
             conn.connectTimeout = 5000
             conn.setRequestProperty(
                 "Content-Type",
-                "application/x-www-form-urlencoded;charset=UTF-8"
+                "application/json"
             )
-            conn.setRequestProperty("Authorization", "Basic $key")
+            conn.setRequestProperty("site_key", key)
 
-            val listJson = "[${listEvents.joinToString(",")}]"
-                .replace("\"url\":\"\"", "\"url\":\"$screenActivityName\"")
+            val listJson = listEvents.map {
+                JSONObject(it)
+            }
+
+            val jsonListEvents = JSONArray(listJson)
+
+            val data = getContentJson(context, jsonListEvents, environment, siteId)
                 .replace("\\/", "/")
-
-            val data = getContentForm(context, listJson.encodeToBase64(), key)
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
-            NIDLog.d("NeuroID", "Events: $listJson")
+            NIDLog.d("NeuroID", "payload Json:: $data")
 
             try {
                 val os: OutputStream = conn.outputStream
@@ -92,31 +95,27 @@ object NIDServiceTracker {
         }
     }
 
-    private suspend fun getContentForm(context: Application, events: String, key: String): String {
+    private suspend fun getContentJson(
+        context: Application,
+        events: JSONArray,
+        environment: String,
+        siteId: String,
+    ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
-        val hashMapParams = hashMapOf(
-            "key" to key,
-            "id" to sharedDefaults.createRequestId(),
-            "siteId" to "undefined",
-            "sid" to sharedDefaults.getSessionID(),
-            "cid" to sharedDefaults.getClientId(),
-            "aid" to "null",
-            "did" to sharedDefaults.getDeviceId(),
-            "uid" to sharedDefaults.getUserId(),
-            "pid" to sharedDefaults.getPageId(),
-            "iid" to sharedDefaults.getIntermediateId(),
-            "url" to screenActivityName,
-            "jsv" to NIDVersion.getSDKVersion(),
-            "events" to events
-        )
 
-        NIDLog.d("NeuroId", "---- Params Form ----")
-        val dataForm = hashMapParams.map {
-            NIDLog.d("NeuroId", "${it.key}: ${it.value}")
-            "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
-        }.joinToString("&")
+        val jsonBody = JSONObject().apply {
+            put("siteId" , siteId)
+            put("sid" , sharedDefaults.getSessionID())
+            put("clientId" , sharedDefaults.getClientId())
+            put("identityId" , sharedDefaults.getUserId())
+            put("pageTag" , screenActivityName)
+            put("url" , screenActivityName)
+            put("sdkVersion" , NIDVersion.getSDKVersion())
+            put("environment", environment)
+            put("jsonEvents" , events)
+        }
 
-        return dataForm
+        return jsonBody.toString()
     }
 
     const val NID_OK_SERVICE = 0x01
