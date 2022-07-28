@@ -1,4 +1,4 @@
-name: Publishing NeuroID SDK
+name: Publishing NeuroID SDK (Staging)
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ env:
   GIT_HASH: ${{github.sha}}
 jobs:
   publish:
-    name: Release NeuroID SDK
+    name: Release NeuroID SDK (Staging)
     runs-on: ubuntu-latest
 
     steps:
@@ -61,19 +61,7 @@ jobs:
           destination_folder: 'app/libs/'
           user_email: 'robot@neuro-id.com'
           user_name: 'robot'
-          destination_branch: 'master'
+          destination_branch: 'develop'
           commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Push SDK on ReactNative Project
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
-          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'android/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
-          destination_branch: 'main'
-          commit_message: ${{ github.event.head_commit.message }}
 
