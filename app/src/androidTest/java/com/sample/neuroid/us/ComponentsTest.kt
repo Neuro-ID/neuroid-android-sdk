@@ -87,7 +87,7 @@ class ComponentsTest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(ViewActions.click())
+            .perform(click())
         Thread.sleep(500)
 
         onView(withId(R.id.radioButton_one))
