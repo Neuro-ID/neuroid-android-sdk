@@ -21,8 +21,10 @@ class NeuroID private constructor(
     private var clientKey: String
 ) {
     private var firstTime = true
-    private var endpoint = "https://api.neuro-id.com/v3/c"
+    private var endpoint = "https://receiver.neuro-dev.com/c"
     private var sessionId = ""
+    private var environment = ""
+    private var siteId = ""
 
     @Synchronized
     private fun setupCallbacks() {
@@ -70,6 +72,19 @@ class NeuroID private constructor(
 
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen
+    }
+
+    fun configureWithOptions(clientKey: String, endpoint: String) {
+        this.endpoint = endpoint
+        this.clientKey = clientKey
+    }
+
+    fun setEnvironment(environment: String) {
+        this.environment = environment
+    }
+
+    fun setSiteId(siteId: String) {
+        this.siteId = siteId
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -121,18 +136,13 @@ class NeuroID private constructor(
         )
     }
 
-    fun configureWithOptions(clientKey: String, endpoint: String) {
-        this.endpoint = endpoint
-        this.clientKey = clientKey
-    }
-
     fun start() {
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
         }
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+            NIDJobServiceManager.startJob(it, clientKey, endpoint, environment, siteId)
         }
     }
 
