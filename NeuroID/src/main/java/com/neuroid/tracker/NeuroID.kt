@@ -23,7 +23,7 @@ class NeuroID private constructor(
     private var siteId: String
 ) {
     private var firstTime = true
-    private var endpoint = "https://receiver.neuro-dev.com/c"
+    private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
 
     @Synchronized
@@ -32,8 +32,8 @@ class NeuroID private constructor(
             firstTime = false
             application?.let {
                 endpoint = when (environment) {
-                    "PRODUCTION" -> "https:/receiver.neuroid.cloud/c"
-                    else -> "https://receiver.neuro-dev.com/c"
+                    ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
+                    else -> ENDPOINT_DEVELOPMENT
                 }
 
                 initDataStoreCtx(it.applicationContext)
@@ -46,7 +46,7 @@ class NeuroID private constructor(
     data class Builder(
         var application: Application? = null,
         var clientKey: String = "",
-        private var environment: String = "PRODUCTION",
+        private var environment: String = ENVIRONMENT_PRODUCTION,
         private var siteId: String = ""
     ) {
         fun build() =
@@ -54,6 +54,11 @@ class NeuroID private constructor(
     }
 
     companion object {
+
+        private const val ENVIRONMENT_PRODUCTION = "PRODUCTION"
+        private const val ENDPOINT_PRODUCTION = "https:/receiver.neuroid.cloud/c"
+        private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
+
         private lateinit var singleton: NeuroID
 
         @JvmStatic
