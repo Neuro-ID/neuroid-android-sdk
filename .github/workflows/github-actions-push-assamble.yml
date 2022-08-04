@@ -64,4 +64,15 @@ jobs:
           destination_branch: 'develop'
           commit_message: ${{ github.event.head_commit.message }}
 
-
+      - name: Push SDK on ReactNative Project
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
+          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
+          destination_folder: 'android/libs/'
+          user_email: 'robot@neuro-id.com'
+          user_name: 'robot'
+          destination_branch: 'develop'
+          commit_message: ${{ github.event.head_commit.message }}
