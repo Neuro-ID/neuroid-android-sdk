@@ -29,8 +29,8 @@ class MyApplicationDemo : MultiDexApplication() {
             "form_x"
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
-        NeuroID.getInstance().start()
+        NeuroID.getInstance()?.start()
         val rnds = (0..10000).random().toString()
-        NeuroID.getInstance().setUserID(rnds)
+        NeuroID.getInstance()?.setUserID(rnds)
     }
 }
