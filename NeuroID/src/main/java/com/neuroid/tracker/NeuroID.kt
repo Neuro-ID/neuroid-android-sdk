@@ -59,16 +59,17 @@ class NeuroID private constructor(
         private const val ENDPOINT_PRODUCTION = "https:/receiver.neuroid.cloud/c"
         private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
-        private lateinit var singleton: NeuroID
+        private var singleton: NeuroID? = null
 
         @JvmStatic
         fun setNeuroIdInstance(neuroId: NeuroID) {
-            singleton = neuroId
-            singleton.setupCallbacks()
+            if (singleton == null) {
+                singleton = neuroId
+                singleton?.setupCallbacks()
+            }
         }
 
-        @JvmStatic
-        fun getInstance() = singleton
+        fun getInstance(): NeuroID? = singleton
     }
 
     fun setUserID(userId: String) {
