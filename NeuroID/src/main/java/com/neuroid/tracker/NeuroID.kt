@@ -18,9 +18,7 @@ import kotlinx.coroutines.launch
 
 class NeuroID private constructor(
     private var application: Application?,
-    private var clientKey: String,
-    private var environment: String,
-    private var siteId: String
+    private var clientKey: String
 ) {
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
@@ -31,10 +29,6 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
-                endpoint = when (environment) {
-                    ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
-                    else -> ENDPOINT_DEVELOPMENT
-                }
 
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
@@ -45,12 +39,10 @@ class NeuroID private constructor(
 
     data class Builder(
         var application: Application? = null,
-        var clientKey: String = "",
-        private var environment: String = ENVIRONMENT_PRODUCTION,
-        private var siteId: String = ""
+        var clientKey: String = ""
     ) {
         fun build() =
-            NeuroID(application, clientKey, environment, siteId)
+            NeuroID(application, clientKey)
     }
 
     companion object {
@@ -98,6 +90,18 @@ class NeuroID private constructor(
         application?.let {
             getDataStoreInstance().addViewIdExclude(id)
         }
+    }
+
+    fun setEnvironment(environment: String) {
+        NIDServiceTracker.environment = environment
+        endpoint = when (environment) {
+            ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
+            else -> ENDPOINT_DEVELOPMENT
+        }
+    }
+
+    fun setSiteId(siteId: String) {
+        NIDServiceTracker.siteId = siteId
     }
 
     fun getSessionId(): String {
@@ -174,7 +178,7 @@ class NeuroID private constructor(
             createSession()
         }
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint, environment, siteId)
+            NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
     }
 

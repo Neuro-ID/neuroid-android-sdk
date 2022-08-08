@@ -13,21 +13,15 @@ object NIDJobServiceManager {
     private var clientKey = ""
     private var application: Application? = null
     private var endpoint: String = ""
-    private var environment: String = ""
-    private var siteId: String = ""
 
     fun startJob(
         application: Application,
         clientKey: String,
-        endpoint: String,
-        environment: String = "",
-        siteId: String = ""
+        endpoint: String
     ) {
         this.clientKey = clientKey
         this.endpoint = endpoint
         this.application = application
-        this.environment = environment
-        this.siteId = siteId
         jobCaptureEvents = createJobServer()
         NIDSensorHelper.initSensorHelper(application)
     }
@@ -44,7 +38,7 @@ object NIDJobServiceManager {
                 delay(timeMills)
 
                 application?.let {
-                    val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, environment, siteId, it)
+                    val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
                     if (response.second) {
                         userActive = false
                     }

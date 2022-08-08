@@ -27,11 +27,12 @@ object NIDServiceTracker {
     @set:Synchronized
     var screenFragName = ""
 
+    var environment = ""
+    var siteId = ""
+
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
-        environment: String,
-        siteId: String,
         context: Application
     ): Pair<Int, Boolean> {
         val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
@@ -61,7 +62,7 @@ object NIDServiceTracker {
 
             val jsonListEvents = JSONArray(listJson)
 
-            val data = getContentJson(context, jsonListEvents, environment, siteId)
+            val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
             NIDLog.d("NeuroID", "payload Json:: $data")
@@ -97,9 +98,7 @@ object NIDServiceTracker {
 
     private suspend fun getContentJson(
         context: Application,
-        events: JSONArray,
-        environment: String,
-        siteId: String,
+        events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
