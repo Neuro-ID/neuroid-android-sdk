@@ -10,13 +10,10 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.hasFragments
 
-class NIDActivityCallbacks(
-    firstActivityName: String,
-    orientation: Int
-): ActivityLifecycleCallbacks {
-    private var auxOrientation = orientation
+class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
+    private var auxOrientation = -1
     private var activitiesStarted = 1
-    private var listActivities = arrayListOf(firstActivityName)
+    private var listActivities = ArrayList<String>()
     private var wasChanged = false
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
@@ -31,7 +28,7 @@ class NIDActivityCallbacks(
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation
 
-        if(existActivity.not())  {
+        if (existActivity.not()) {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         }
@@ -44,21 +41,25 @@ class NIDActivityCallbacks(
             }
 
             getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_ORIENTATION_CHANGE,
-                    ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "orientation" to strOrientation
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_ORIENTATION_CHANGE,
+                        ts = System.currentTimeMillis(),
+                        tg = hashMapOf(
+                            "orientation" to strOrientation
+                        )
                     )
-                ))
+                )
             auxOrientation = orientation
         }
 
         getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_LOAD,
-                ts = System.currentTimeMillis()
-            ))
+            .saveEvent(
+                NIDEventModel(
+                    type = WINDOW_LOAD,
+                    ts = System.currentTimeMillis()
+                )
+            )
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -66,10 +67,12 @@ class NIDActivityCallbacks(
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
             getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_FOCUS,
-                    ts = System.currentTimeMillis()
-                ))
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_FOCUS,
+                        ts = System.currentTimeMillis()
+                    )
+                )
         }
         activitiesStarted++
 
@@ -105,10 +108,12 @@ class NIDActivityCallbacks(
         activitiesStarted--
         if (activitiesStarted == 0) {
             getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_BLUR,
-                    ts = System.currentTimeMillis()
-                ))
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_BLUR,
+                        ts = System.currentTimeMillis()
+                    )
+                )
         }
     }
 
@@ -120,9 +125,11 @@ class NIDActivityCallbacks(
         val currentActivityName = activity::class.java.name
         listActivities.remove(currentActivityName)
         getDataStoreInstance()
-            .saveEvent(NIDEventModel(
-                type = WINDOW_UNLOAD,
-                ts = System.currentTimeMillis()
-            ))
+            .saveEvent(
+                NIDEventModel(
+                    type = WINDOW_UNLOAD,
+                    ts = System.currentTimeMillis()
+                )
+            )
     }
 }
