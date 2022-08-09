@@ -1,6 +1,5 @@
 package com.neuroid.tracker
 
-import android.app.Activity
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.*
@@ -22,7 +21,7 @@ class NeuroID private constructor(
 ) {
     private var firstTime = true
     private var endpoint = "https://api.neuro-id.com/v3/c"
-    private var sessionId = ""
+    private var sessionID = ""
 
     @Synchronized
     private fun setupCallbacks() {
@@ -30,6 +29,8 @@ class NeuroID private constructor(
             firstTime = false
             application?.let {
                 initDataStoreCtx(it.applicationContext)
+                it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+                NIDTimerActive.initTimer()
             }
         }
     }
@@ -79,7 +80,7 @@ class NeuroID private constructor(
     }
 
     fun getSessionId(): String {
-        return sessionId
+        return sessionID
     }
 
     fun captureEvent(eventName: String, tgs: String) {
@@ -140,26 +141,16 @@ class NeuroID private constructor(
         NIDJobServiceManager.stopJob()
     }
 
-    fun registerAllViewsForCallerActivity(activity: Activity) {
-        NIDTimerActive.initTimer()
-        activity.application.registerActivityLifecycleCallbacks(
-            NIDActivityCallbacks(
-                activity::class.java.name,
-                activity.resources.configuration.orientation
-            )
-        )
-        registerLaterLifecycleFragments(activity)
-    }
 
     private suspend fun createSession() {
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
-            sessionId = sharedDefaults.getNewSessionID()
+            sessionID = sharedDefaults.getNewSessionID()
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
-                    sid = sessionId,
+                    sid = sessionID,
                     lsid = "null",
                     cid = sharedDefaults.getClientId(),
                     did = sharedDefaults.getDeviceId(),
