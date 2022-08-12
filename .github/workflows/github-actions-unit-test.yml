@@ -9,6 +9,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  updateSchema:
+    name: Retrieve new Schema.json
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          path: neuroid-android-sdk
+          
+      - name: Checkout schema
+        uses: actions/checkout@v3  
+        with:
+          repository: Neuro-ID/nid-event-schema
+          token: ${{ secrets.SCHEMA_PAT }}
+          path: schema
+          
+      - name: Update Internal Library
+        run: |
+            ls neuroid-android-sdk/
+            ls schema/
+            cp schema/src/schema.json neuroid-android-sdk/NeuroID/
+            
   test:
     name: SDK Test
     runs-on: macos-latest
