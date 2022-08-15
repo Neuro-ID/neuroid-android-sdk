@@ -1,6 +1,5 @@
 package com.neuroid.tracker.storage
 
-import android.app.Application
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +8,7 @@ import java.util.*
 import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(
-    context: Application
+    context: Context
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
@@ -84,7 +83,7 @@ class NIDSharedPrefsDefaults(
         return String.format("%02x", rawId)
     }
 
-    fun getHexRandomID() : String = List(12) {
+    fun getHexRandomID(): String = List(12) {
         (('a'..'f') + ('0'..'9')).random()
     }.joinToString("")
 

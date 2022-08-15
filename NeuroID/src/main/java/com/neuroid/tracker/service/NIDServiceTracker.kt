@@ -1,6 +1,7 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
+import android.content.Context
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -97,26 +98,26 @@ object NIDServiceTracker {
         }
     }
 
-    private suspend fun getContentJson(
-        context: Application,
+    suspend fun getContentJson(
+        context: Context,
         events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
         rndmId = rndmId.ifBlank { sharedDefaults.getHexRandomID() }
 
         val jsonBody = JSONObject().apply {
-            put("siteId" , siteId)
-            put("userId" , sharedDefaults.getSessionID())
-            put("clientId" , sharedDefaults.getClientId())
-            put("identityId" , sharedDefaults.getUserId())
-            put("pageTag" , screenActivityName)
-            put("pageId" , rndmId)
-            put("tabId" , rndmId)
-            put("responseId" , sharedDefaults.generateUniqueHexId())
-            put("url" , screenActivityName)
-            put("jsVersion" , NIDVersion.getSDKVersion())
+            put("siteId", siteId)
+            put("userId", sharedDefaults.getSessionID())
+            put("clientId", sharedDefaults.getClientId())
+            put("identityId", sharedDefaults.getUserId())
+            put("pageTag", screenActivityName)
+            put("pageId", rndmId)
+            put("tabId", rndmId)
+            put("responseId", sharedDefaults.generateUniqueHexId())
+            put("url", screenActivityName)
+            put("jsVersion", NIDVersion.getSDKVersion())
             put("environment", environment)
-            put("jsonEvents" , events)
+            put("jsonEvents", events)
         }
 
         return jsonBody.toString()
