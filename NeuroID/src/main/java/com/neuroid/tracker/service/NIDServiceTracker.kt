@@ -29,6 +29,7 @@ object NIDServiceTracker {
 
     var environment = ""
     var siteId = ""
+    var rndmId = ""
 
     suspend fun sendEventToServer(
         key: String,
@@ -101,15 +102,19 @@ object NIDServiceTracker {
         events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
+        rndmId = rndmId.ifBlank { sharedDefaults.getHexRandomID() }
 
         val jsonBody = JSONObject().apply {
             put("siteId" , siteId)
-            put("sid" , sharedDefaults.getSessionID())
+            put("userId" , sharedDefaults.getSessionID())
             put("clientId" , sharedDefaults.getClientId())
             put("identityId" , sharedDefaults.getUserId())
             put("pageTag" , screenActivityName)
+            put("pageId" , rndmId)
+            put("tabId" , rndmId)
+            put("responseId" , sharedDefaults.generateUniqueHexId())
             put("url" , screenActivityName)
-            put("sdkVersion" , NIDVersion.getSDKVersion())
+            put("jsVersion" , NIDVersion.getSDKVersion())
             put("environment", environment)
             put("jsonEvents" , events)
         }

@@ -13,16 +13,6 @@ class NIDSharedPrefsDefaults(
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
-    private var sequenceId = 1
-
-    fun createRequestId(): String {
-        val epoch = 1488084578518
-        val now = System.currentTimeMillis()
-        val rawId = (now - epoch) * 1024 + sequenceId
-        sequenceId += 1
-
-        return String.format("%02x", rawId)
-    }
 
     suspend fun getSessionID(): String {
         return getString(NID_SID)
@@ -86,13 +76,17 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getPageId(): String {
+    fun generateUniqueHexId(): String {
         val x = 1
         val now = System.currentTimeMillis()
         val rawId = (now - 1488084578518) * 1024 + (x + 1)
 
         return String.format("%02x", rawId)
     }
+
+    fun getHexRandomID() : String = List(12) {
+        (('a'..'f') + ('0'..'9')).random()
+    }.joinToString("")
 
     fun getLocale(): String = Locale.getDefault().toString()
 
@@ -133,6 +127,5 @@ class NIDSharedPrefsDefaults(
         private const val NID_CID = "NID_CID_KEY"
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
-        private const val NID_CLIENT_ID = "NID_CLIENT_ID"
     }
 }
