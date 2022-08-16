@@ -1,6 +1,7 @@
 package com.sample.neuroid.us
 
 import android.content.Context
+import android.util.Log
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.ViewMatchers
@@ -92,7 +93,7 @@ class SchemaTest {
             println("${it.error} - ${it.instanceLocation}")
         }*/
         validate(
-            "{\"siteId\":\"form_dream102\",\"userId\":\"0202017141606955\",\"clientId\":\"1660072094642.2.1098140681224856E9\",\"identityId\":\"1715\",\"pageTag\":\"com.sample.neuroid.us.activities.NIDOnlyOneFragActivity\",\"pageId\":\"771f8ff6d021\",\"tabId\":\"771f8ff6d021\",\"responseId\":\"a0ab0523f402\",\"url\":\"com.sample.neuroid.us.activities.NIDOnlyOneFragActivity\",\"jsVersion\":\"4.android-1.5.0\",\"environment\":\"TEST\",\"jsonEvents\":[]}"
+            json
         )
     }
 
@@ -118,7 +119,8 @@ class SchemaTest {
             }
 
             override fun combinedSchemaMismatch(event: CombinedSchemaMismatchEvent?) {
-                Assert.fail(event.toString())
+                //Assert.fail(event.toString())
+                Log.e("Fail", event?.toJSON(true, true).toString())
                 super.combinedSchemaMismatch(event)
             }
 
@@ -133,7 +135,7 @@ class SchemaTest {
             }
 
             override fun ifSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Assert.fail(event.toString())
+                Log.e("Fail", event?.toJSON(true, true).toString())
                 super.ifSchemaMismatch(event)
             }
 
@@ -143,7 +145,7 @@ class SchemaTest {
             }
 
             override fun thenSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Assert.fail(event.toString())
+                Log.e("Fail", event?.toJSON(true, true).toString())
                 super.thenSchemaMismatch(event)
             }
 
@@ -153,7 +155,7 @@ class SchemaTest {
             }
 
             override fun elseSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Assert.fail(event.toString())
+                Log.e("Fail", event?.toJSON(true, true).toString())
                 super.elseSchemaMismatch(event)
             }
         }).build()
