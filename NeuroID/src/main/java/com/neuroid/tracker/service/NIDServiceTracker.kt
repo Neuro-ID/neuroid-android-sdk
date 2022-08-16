@@ -2,6 +2,7 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import android.content.Context
+import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -61,7 +62,7 @@ object NIDServiceTracker {
 
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(it.replace("\"url\":\"\"", "\"url\":\"android://$firstScreenName\""))
+                    JSONObject(it.replace("\"url\":\"\"", "\"url\":\"$ANDROID_URI$firstScreenName\""))
                 } else {
                     JSONObject(it)
                 }
@@ -119,7 +120,7 @@ object NIDServiceTracker {
             put("pageId", rndmId)
             put("tabId", rndmId)
             put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", "android://$screenActivityName")
+            put("url", "$ANDROID_URI$screenActivityName")
             put("jsVersion", NIDVersion.getSDKVersion())
             put("environment", environment)
             put("jsonEvents", events)

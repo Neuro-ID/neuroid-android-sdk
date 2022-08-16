@@ -185,7 +185,7 @@
         "url": {
           "type": "string",
           "format": "uri",
-          "qt-uri-protocols": ["https", "http"]
+          "qt-uri-protocols": ["https", "http", "ios", "android"]
         },
         "is": {
           "type": "integer"
@@ -274,10 +274,10 @@
           "type": "string"
         },
         "x": {
-          "type": "integer"
+          "type": "number"
         },
         "y": {
-          "type": "integer"
+          "type": "number"
         },
         "z": {
           "type": "number"
@@ -480,6 +480,12 @@
           "type": "string"
         },
         "et": {
+          "type": "string"
+        },
+        "sender": {
+          "type": "string"
+        },
+        "orientation": {
           "type": "string"
         },
         "url": {

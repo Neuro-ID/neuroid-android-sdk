@@ -121,8 +121,6 @@ class NIDTouchEventManager(
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
-                                    x = it.x,
-                                    y = it.y,
                                     ts = timeMills,
                                     gyro = gyroData,
                                     accel = accelData

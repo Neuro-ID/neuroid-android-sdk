@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -92,7 +93,11 @@ class SchemaTest {
 
     private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
         val listJson = listEvents.map {
-            JSONObject(it)
+            if (it.contains("\"CREATE_SESSION\"")) {
+                JSONObject(it.replace("\"url\":\"\"", "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""))
+            } else {
+                JSONObject(it)
+            }
         }
 
         val jsonListEvents = JSONArray(listJson)
