@@ -7,7 +7,6 @@ import android.widget.EditText
 import androidx.annotation.RequiresApi
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
-import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
@@ -85,10 +84,10 @@ class NIDGlobalEventCallback(
 
     private fun registerTextChangeEvent(actualText: String) {
         val ts = System.currentTimeMillis()
-        val attrs = listOf(
-            NIDAttrItem("v", "S~C~~${actualText.length}").getJson(),
-            NIDAttrItem("hash", actualText.getSHA256().take(8)).getJson()
-        )
+        val attrs = "{" +
+                    "\"v\":\"S~C~~${actualText.length}\"," +
+                    "\"hash\":\"${actualText.getSHA256().take(8)}\"" +
+                    "}"
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -98,7 +97,7 @@ class NIDGlobalEventCallback(
                 NIDEventModel(
                     type = TEXT_CHANGE,
                     tg = hashMapOf(
-                        "attr" to attrs.joinToString("|"),
+                        "attr" to attrs,
                         "tgs" to lastEditText?.getIdOrTag().orEmpty(),
                         "etn" to lastEditText?.getIdOrTag().orEmpty(),
                         "et" to "text"

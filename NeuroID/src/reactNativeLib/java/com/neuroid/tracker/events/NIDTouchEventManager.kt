@@ -61,9 +61,10 @@ class NIDTouchEventManager(
                                     type = TOUCH_START,
                                     ts = timeMills,
                                     tg = hashMapOf(
-                                        "etn" to nameView,
-                                        "tgs" to nameView,
-                                        "sender" to nameView
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     )
                                 )
                             )
@@ -87,9 +88,13 @@ class NIDTouchEventManager(
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
-                                x = it.x,
-                                y = it.y,
-                                ts = timeMills
+                                ts = timeMills,
+                                tg = hashMapOf(
+                                    "tgs" to ""
+                                ),
+                                touches = listOf(
+                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                )
                             )
                         )
                 }
@@ -116,9 +121,13 @@ class NIDTouchEventManager(
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
-                                    x = it.x,
-                                    y = it.y,
-                                    ts = timeMills
+                                    ts = timeMills,
+                                    tg = hashMapOf(
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    )
                                 )
                             )
                     }

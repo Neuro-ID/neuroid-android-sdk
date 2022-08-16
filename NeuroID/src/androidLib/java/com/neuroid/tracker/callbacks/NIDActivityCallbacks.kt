@@ -23,6 +23,9 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
         val existActivity = listActivities.contains(currentActivityName)
 
         NIDServiceTracker.screenActivityName = currentActivityName
+        if (NIDServiceTracker.firstScreenName.isBlank()) {
+            NIDServiceTracker.firstScreenName = currentActivityName
+        }
         NIDServiceTracker.screenFragName = ""
         NIDServiceTracker.screenName = "AppInit"
         wasChanged = auxOrientation != orientation

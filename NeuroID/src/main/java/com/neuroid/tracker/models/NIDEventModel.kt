@@ -7,6 +7,7 @@ data class NIDEventModel(
     val type: String,
     val tg: HashMap<String, String>? = null,
     val tgs: String? = null,
+    val touches: List<String>? = null,
     val key: String? = null,
     val gyro: NIDSensorModel? = null,
     val accel: NIDSensorModel? = null,
@@ -54,13 +55,8 @@ data class NIDEventModel(
                 val childJson = JSONObject()
                 it.forEach { (key, value) ->
                     if (key == "attr") {
-                        val attrs = value.split("|")
-                        val jsonAttrs = JSONArray()
-                        attrs.forEach { attr ->
-                            val jsonAttr = JSONObject(attr)
-                            jsonAttrs.put(jsonAttr)
-                        }
-                        childJson.put(key, jsonAttrs)
+                        val attrs = JSONObject(value)
+                        childJson.put(key, attrs)
                     } else {
                         childJson.put(key, value)
                     }
@@ -68,6 +64,13 @@ data class NIDEventModel(
                 jsonObject.put("tg", childJson)
             }
             tgs?.let { jsonObject.put("tgs", it) }
+            touches?.let {
+                val array = JSONArray()
+                it.forEach { item ->
+                    array.put(JSONObject(item))
+                }
+                jsonObject.put("touches", array)
+            }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             en?.let { jsonObject.put("en", it) }
