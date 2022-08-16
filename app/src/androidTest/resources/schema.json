@@ -533,7 +533,7 @@
     },
     "Etn": {
       "type": "string",
-      "title": "etn"
+      "title": "Etn"
     },
     "Key": {
       "type": "string",

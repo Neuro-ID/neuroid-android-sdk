@@ -18,11 +18,7 @@ class NIDSharedPrefsDefaults(
     }
 
     fun getNewSessionID(): String {
-        var sid = ""
-
-        repeat((1..16).count()) {
-            sid += "${(0..9).random()}"
-        }
+        val sid = UUID.randomUUID().toString()
         putString(NID_SID, sid)
 
         return sid

@@ -80,7 +80,7 @@ private fun registerComponent(view: View, guid: String) {
         } else {
             "/${NIDServiceTracker.screenFragName}"
         }
-        val urlView = NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+        val urlView = "android://" + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
         val attrs = "{" +
                 "\"guid\":\"$guid\"," +
                 "\"screenHierarchy\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +

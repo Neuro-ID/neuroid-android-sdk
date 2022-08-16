@@ -31,6 +31,7 @@ object NIDServiceTracker {
     var environment = ""
     var siteId = ""
     var rndmId = ""
+    var firstScreenName = ""
 
     suspend fun sendEventToServer(
         key: String,
@@ -59,7 +60,11 @@ object NIDServiceTracker {
             conn.setRequestProperty("site_key", key)
 
             val listJson = listEvents.map {
-                JSONObject(it)
+                if (it.contains("\"CREATE_SESSION\"")) {
+                    JSONObject(it.replace("\"url\":\"\"", "\"url\":\"android://$firstScreenName\""))
+                } else {
+                    JSONObject(it)
+                }
             }
 
             val jsonListEvents = JSONArray(listJson)
@@ -114,7 +119,7 @@ object NIDServiceTracker {
             put("pageId", rndmId)
             put("tabId", rndmId)
             put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", screenActivityName)
+            put("url", "android://$screenActivityName")
             put("jsVersion", NIDVersion.getSDKVersion())
             put("environment", environment)
             put("jsonEvents", events)
