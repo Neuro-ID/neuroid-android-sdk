@@ -58,9 +58,10 @@ class NIDTouchEventManager(
                                     type = TOUCH_START,
                                     ts = timeMills,
                                     tg = hashMapOf(
-                                        "etn" to nameView,
-                                        "tgs" to nameView,
-                                        "sender" to nameView
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
@@ -89,6 +90,12 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
                                 ts = timeMills,
+                                tg = hashMapOf(
+                                    "tgs" to ""
+                                ),
+                                touches = listOf(
+                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                ),
                                 gyro = gyroData,
                                 accel = accelData
                             )
@@ -120,6 +127,12 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_END,
                                     ts = timeMills,
+                                    tg = hashMapOf(
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    ),
                                     gyro = gyroData,
                                     accel = accelData
                                 )
