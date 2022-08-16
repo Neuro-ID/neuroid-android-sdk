@@ -5,7 +5,6 @@ import android.text.TextWatcher
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
-import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
@@ -47,10 +46,10 @@ class NIDTextWatcher(
         val ts = System.currentTimeMillis()
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-        val attrs = listOf(
-            NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
-            NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
-        )
+        val attrs = "{" +
+                    "\"v\":\"S~C~~${sequence?.length ?: 0}\"," +
+                    "\"hash\":\"${sequence.toString().getSHA256().take(8)}\"" +
+                    "}"
 
         if (lastSize != sequence?.length) {
             getDataStoreInstance()
@@ -59,7 +58,7 @@ class NIDTextWatcher(
                         type = INPUT,
                         ts = ts,
                         tg = hashMapOf(
-                            "attr" to attrs.joinToString("|"),
+                            "attr" to attrs,
                             "tgs" to idName,
                             "etn" to INPUT,
                             "et" to "text"

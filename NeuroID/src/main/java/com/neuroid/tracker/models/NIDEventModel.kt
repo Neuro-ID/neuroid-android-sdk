@@ -54,13 +54,8 @@ data class NIDEventModel(
                 val childJson = JSONObject()
                 it.forEach { (key, value) ->
                     if (key == "attr") {
-                        val attrs = value.split("|")
-                        val jsonAttrs = JSONArray()
-                        attrs.forEach { attr ->
-                            val jsonAttr = JSONObject(attr)
-                            jsonAttrs.put(jsonAttr)
-                        }
-                        childJson.put(key, jsonAttrs)
+                        val attrs = JSONObject(value)
+                        childJson.put(key, attrs)
                     } else {
                         childJson.put(key, value)
                     }

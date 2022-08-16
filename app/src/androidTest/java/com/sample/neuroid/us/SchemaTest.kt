@@ -86,15 +86,8 @@ class SchemaTest {
         val events = getDataStoreInstance().getAllEvents()
         val json =
             getJsonData(context = getInstrumentation().targetContext.applicationContext, events)
-        /*val jsonSchema = readFileWithoutNewLineFromResources("schema.json").replace(" ", "")
-        val schema = JSONSchema.parse(jsonSchema)
-        val output = schema.validateBasic(json)
-        output.errors?.forEach {
-            println("${it.error} - ${it.instanceLocation}")
-        }*/
-        validate(
-            json
-        )
+
+        validate(json)
     }
 
     private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
