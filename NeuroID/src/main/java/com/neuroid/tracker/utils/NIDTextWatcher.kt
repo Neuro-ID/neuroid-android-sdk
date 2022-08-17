@@ -2,9 +2,9 @@ package com.neuroid.tracker.utils
 
 import android.text.Editable
 import android.text.TextWatcher
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
-import com.neuroid.tracker.models.NIDAttrItem
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
@@ -20,6 +20,8 @@ class NIDTextWatcher(
 
     override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
         var typeEvent = ""
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         if (before == 0 && count - before > 1) {
             typeEvent = PASTE
@@ -31,6 +33,8 @@ class NIDTextWatcher(
                     NIDEventModel(
                         type = typeEvent,
                         ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }
@@ -40,10 +44,12 @@ class NIDTextWatcher(
 
     override fun afterTextChanged(sequence: Editable?) {
         val ts = System.currentTimeMillis()
-        val attrs = listOf(
-            NIDAttrItem("v", "S~C~~${sequence?.length ?: 0}").getJson(),
-            NIDAttrItem("hash", sequence.toString().getSHA256().take(8)).getJson()
-        )
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        val attrs = "{" +
+                    "\"v\":\"S~C~~${sequence?.length ?: 0}\"," +
+                    "\"hash\":\"${sequence.toString().getSHA256().take(8)}\"" +
+                    "}"
 
         if (lastSize != sequence?.length) {
             getDataStoreInstance()
@@ -52,11 +58,13 @@ class NIDTextWatcher(
                         type = INPUT,
                         ts = ts,
                         tg = hashMapOf(
-                            "attr" to attrs.joinToString("|"),
+                            "attr" to attrs,
                             "tgs" to idName,
                             "etn" to INPUT,
                             "et" to "text"
-                        )
+                        ),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }

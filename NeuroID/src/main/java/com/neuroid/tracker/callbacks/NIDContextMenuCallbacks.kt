@@ -34,6 +34,9 @@ class NIDContextMenuCallbacks(
     }
 
     private fun saveEvent(option: Int) {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         val type = when(option) {
             android.R.id.paste -> PASTE
             android.R.id.copy -> COPY
@@ -47,6 +50,8 @@ class NIDContextMenuCallbacks(
                     NIDEventModel(
                         type = type,
                         ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }

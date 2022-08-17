@@ -50,7 +50,7 @@ class NeuroIdUITest {
     @Before
     fun stopSendEventsToServer() {
         Dispatchers.setMain(testDispatcher)
-        NeuroID.getInstance().stop()
+        NeuroID.getInstance()?.stop()
     }
 
     @ExperimentalCoroutinesApi
@@ -69,8 +69,8 @@ class NeuroIdUITest {
     @Test
     fun test01ValidateCreateSession() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance().stop()
-        NeuroID.getInstance().start()
+        NeuroID.getInstance()?.stop()
+        NeuroID.getInstance()?.start()
         Thread.sleep(500)
 
         val eventType = "\"type\":\"CREATE_SESSION\""
@@ -105,7 +105,7 @@ class NeuroIdUITest {
     @Test
     fun test03ValidateSetUserId() = runBlockingTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance().setUserID("UUID1234")
+        NeuroID.getInstance()?.setUserID("UUID1234")
         Thread.sleep(500)
 
         val eventType = "\"type\":\"SET_USER_ID\""

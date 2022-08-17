@@ -9,6 +9,7 @@ import android.widget.*
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -25,6 +26,8 @@ class NIDTouchEventManager(
         return motionEvent?.let {
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
             val nameView = currentView?.getIdOrTag() ?: "main_view"
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
 
             detectChangesOnView(currentView, timeMills, motionEvent.action)
 
@@ -55,10 +58,13 @@ class NIDTouchEventManager(
                                     type = TOUCH_START,
                                     ts = timeMills,
                                     tg = hashMapOf(
-                                        "etn" to nameView,
-                                        "tgs" to nameView,
-                                        "sender" to nameView
-                                    )
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    ),
+                                    gyro = gyroData,
+                                    accel = accelData
                                 )
                             )
 
@@ -70,7 +76,9 @@ class NIDTouchEventManager(
                                         ts = timeMills,
                                         tg = hashMapOf(
                                             "tgs" to lastViewName
-                                        )
+                                        ),
+                                        gyro = gyroData,
+                                        accel = accelData
                                     )
                                 )
                         }
@@ -81,9 +89,15 @@ class NIDTouchEventManager(
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
-                                x = it.x,
-                                y = it.y,
-                                ts = timeMills
+                                ts = timeMills,
+                                tg = hashMapOf(
+                                    "tgs" to ""
+                                ),
+                                touches = listOf(
+                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                ),
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -98,7 +112,9 @@ class NIDTouchEventManager(
                                         ts = timeMills,
                                         tg = hashMapOf(
                                             "tgs" to lastViewName
-                                        )
+                                        ),
+                                        gyro = gyroData,
+                                        accel = accelData
                                     )
                                 )
                         }
@@ -110,9 +126,15 @@ class NIDTouchEventManager(
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
-                                    x = it.x,
-                                    y = it.y,
-                                    ts = timeMills
+                                    ts = timeMills,
+                                    tg = hashMapOf(
+                                        "tgs" to ""
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    ),
+                                    gyro = gyroData,
+                                    accel = accelData
                                 )
                             )
                     }
@@ -139,6 +161,8 @@ class NIDTouchEventManager(
     private fun detectChangesOnView(currentView: View?, timeMills: Long, action: Int) {
         var type = ""
         val nameView = currentView?.getIdOrTag().orEmpty()
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         if (action == ACTION_UP) {
             if (lastView == currentView) {
@@ -183,7 +207,9 @@ class NIDTouchEventManager(
                                     "tgs" to nameView,
                                     "etn" to INPUT
                                 ),
-                                ts = timeMills
+                                ts = timeMills,
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -198,7 +224,9 @@ class NIDTouchEventManager(
                                     "etn" to INPUT
                                 ),
                                 v = ((lastView as SeekBar).progress).toString(),
-                                ts = System.currentTimeMillis()
+                                ts = System.currentTimeMillis(),
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }

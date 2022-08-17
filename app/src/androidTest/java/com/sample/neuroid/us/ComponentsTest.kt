@@ -1,7 +1,6 @@
 package com.sample.neuroid.us
 
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -40,7 +39,7 @@ class ComponentsTest {
     @Before
     fun stopSendEventsToServer() = runBlockingTest {
         Dispatchers.setMain(testDispatcher)
-        NeuroID.getInstance().stop()
+        NeuroID.getInstance()?.stop()
     }
 
     @ExperimentalCoroutinesApi
@@ -87,7 +86,7 @@ class ComponentsTest {
         Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(ViewActions.click())
+            .perform(click())
         Thread.sleep(500)
 
         onView(withId(R.id.radioButton_one))

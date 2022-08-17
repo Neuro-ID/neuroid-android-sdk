@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -20,7 +21,7 @@ class NeuroID private constructor(
     private var clientKey: String
 ) {
     private var firstTime = true
-    private var endpoint = "https://api.neuro-id.com/v3/c"
+    private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
 
     @Synchronized
@@ -28,6 +29,7 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
+
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
                 NIDTimerActive.initTimer()
@@ -44,19 +46,28 @@ class NeuroID private constructor(
     }
 
     companion object {
-        private lateinit var singleton: NeuroID
+
+        private const val ENVIRONMENT_PRODUCTION = "PRODUCTION"
+        private const val ENDPOINT_PRODUCTION = "https:/receiver.neuroid.cloud/c"
+        private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
+
+        private var singleton: NeuroID? = null
 
         @JvmStatic
         fun setNeuroIdInstance(neuroId: NeuroID) {
-            singleton = neuroId
-            singleton.setupCallbacks()
+            if (singleton == null) {
+                singleton = neuroId
+                singleton?.setupCallbacks()
+            }
         }
 
-        @JvmStatic
-        fun getInstance() = singleton
+        fun getInstance(): NeuroID? = singleton
     }
 
     fun setUserID(userId: String) {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         application?.let {
             NIDSharedPrefsDefaults(it).setUserId(userId)
         }
@@ -64,7 +75,9 @@ class NeuroID private constructor(
             NIDEventModel(
                 type = SET_USER_ID,
                 uid = userId,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -79,45 +92,77 @@ class NeuroID private constructor(
         }
     }
 
+    fun setEnvironment(environment: String) {
+        NIDServiceTracker.environment = environment
+        endpoint = when (environment) {
+            ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
+            else -> ENDPOINT_DEVELOPMENT
+        }
+    }
+
+    fun setSiteId(siteId: String) {
+        NIDServiceTracker.siteId = siteId
+    }
+
     fun getSessionId(): String {
         return sessionID
     }
 
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }
     }
 
     fun formSubmit() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
 
     fun formSubmitSuccess() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
 
     fun formSubmitFailure() {
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance().saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis()
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
             )
         )
     }
@@ -144,6 +189,8 @@ class NeuroID private constructor(
 
     private suspend fun createSession() {
         application?.let {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
             getDataStoreInstance().saveEvent(
@@ -168,9 +215,13 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
         }
     }
+
+
 }

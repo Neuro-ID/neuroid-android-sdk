@@ -7,6 +7,7 @@ import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -35,6 +36,8 @@ fun identifyAllViews(
 
 private fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
 
     when (view) {
@@ -73,14 +76,11 @@ private fun registerComponent(view: View, guid: String) {
         } else {
             "/${NIDServiceTracker.screenFragName}"
         }
-        val urlView = NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+        val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
 
         val attrs = "{" +
-                "\"n\":\"guid\"," +
-                "\"v\":\"$guid\"" +
-                "}|{" +
-                "\"n\":\"screenHierarchy\"," +
-                "\"v\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
+                "\"guid\":\"$guid\"," +
+                "\"screenHierarchy\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
                 "}"
 
         getDataStoreInstance()
@@ -98,7 +98,9 @@ private fun registerComponent(view: View, guid: String) {
                     tg = hashMapOf(
                         "attr" to attrs
                     ),
-                    url = urlView
+                    url = urlView,
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
     }
@@ -106,6 +108,8 @@ private fun registerComponent(view: View, guid: String) {
 
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
 
     if (view is EditText) {
         val textWatcher = NIDTextWatcher(idName)
@@ -138,7 +142,9 @@ private fun registerListeners(view: View) {
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
-                                ts = System.currentTimeMillis()
+                                ts = System.currentTimeMillis(),
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }
@@ -163,7 +169,9 @@ private fun registerListeners(view: View) {
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
-                                ts = System.currentTimeMillis()
+                                ts = System.currentTimeMillis(),
+                                gyro = gyroData,
+                                accel = accelData
                             )
                         )
                 }

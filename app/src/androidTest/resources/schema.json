@@ -1,0 +1,553 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "properties": {
+    "responseId": {
+      "type": "string"
+    },
+    "identityId": {
+      "type": ["string", "null"],
+      "format": "valid-id"
+    },
+    "clientId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tabId": {
+      "type": "string"
+    },
+    "userId": {
+      "type": ["string", "null"],
+      "format": "valid-id"
+    },
+    "pageId": {
+      "type": ["string", "null"]
+    },
+    "pageTag": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "jsVersion": {
+      "type": "string"
+    },
+    "siteId": {
+      "type": "string"
+    },
+    "jsonEvents": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Events"
+      }
+    },
+    "environment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "responseId",
+    "clientId",
+    "tabId",
+    "userId",
+    "pageId",
+    "pageTag",
+    "url",
+    "jsVersion",
+    "jsonEvents",
+    "environment",
+    "siteId"
+  ],
+  "additionalProperties": true,
+  "definitions": {
+    "Events": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "integer"
+        },
+        "nidId": {
+          "type": "string"
+        },
+        "attrs": {
+          "type": "array"
+        },
+        "aid": {
+          "type": "string"
+        },
+        "ta": {
+          "type": "null"
+        },
+        "n": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sl": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "target": {
+          "type": "null"
+        },
+        "pts": {
+          "type": "null"
+        },
+        "f": {
+          "type": "string"
+        },
+        "siteId": {
+          "type": "null"
+        },
+        "sid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "cid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "did": {
+          "type": "string"
+        },
+        "iid": {
+          "type": "string"
+        },
+        "lsid": {
+          "type": "null"
+        },
+        "loc": {
+          "type": "string"
+        },
+        "ua": {
+          "type": "string"
+        },
+        "tzo": {
+          "type": "integer"
+        },
+        "lng": {
+          "type": "string"
+        },
+        "ce": {
+          "type": "boolean"
+        },
+        "ol": {
+          "type": "boolean"
+        },
+        "p": {
+          "type": "string"
+        },
+        "je": {
+          "type": "boolean"
+        },
+        "sh": {
+          "type": "integer"
+        },
+        "sw": {
+          "type": "integer"
+        },
+        "ah": {
+          "type": "integer"
+        },
+        "aw": {
+          "type": "integer"
+        },
+        "cd": {
+          "type": "integer"
+        },
+        "pd": {
+          "type": "number"
+        },
+        "jsl": {
+          "type": "array",
+          "items": {}
+        },
+        "dnt": {
+          "type": "boolean"
+        },
+        "tch": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "qt-uri-protocols": ["https", "http", "ios", "android"]
+        },
+        "is": {
+          "type": "integer"
+        },
+        "ns": {
+          "type": "string"
+        },
+        "jsv": {
+          "type": "string"
+        },
+        "accel": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "z": {
+              "type" : "number"
+            }
+          }
+        },
+        "gyro": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "z": {
+              "type" : "number"
+            }
+          }
+        },
+        "pid": {
+          "type": "string"
+        },
+        "t": {
+          "type": "string"
+        },
+        "tg": {
+          "$ref": "#/definitions/Tg"
+        },
+        "tgs": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        },
+        "eid": {
+          "$ref": "#/definitions/Eid"
+        },
+        "ec": {
+          "type": "string"
+        },
+        "etn": {
+          "$ref": "#/definitions/Etn"
+        },
+        "et": {
+          "$ref": "#/definitions/Et"
+        },
+        "ef": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "v": {
+          "$ref": "#/definitions/V"
+        },
+        "key": {
+          "$ref": "#/definitions/Key"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "a": {
+          "type": "number"
+        },
+        "b": {
+          "type": "number"
+        },
+        "g": {
+          "type": "number"
+        },
+        "deltaX": {
+          "type": "number"
+        },
+        "deltaY": {
+          "type": "number"
+        },
+        "deltaZ": {
+          "type": "number"
+        },
+        "deltaMode": {
+          "type": "number"
+        },
+        "gx": {
+          "type": "number"
+        },
+        "gy": {
+          "type": "number"
+        },
+        "gz": {
+          "type": "number"
+        },
+        "tbid": {
+          "type": "string"
+        },
+        "ptbid": {
+          "type": "string"
+        },
+        "o": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "m": {
+          "type": "string"
+        },
+        "w": {
+          "type": "integer"
+        },
+        "h": {
+          "type": "integer"
+        },
+        "kc": {
+          "type": "string"
+        },
+        "rts": {
+          "type": "string"
+        },
+        "ak": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ck": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ic": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lcn": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mk": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rpt": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sk": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "touches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Touch"
+          }
+        },
+        "notRealClick": {
+          "type": "null"
+        },
+        "changeValueRaw": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "changeValueLength": {
+          "type": "null"
+        },
+        "target_type": {
+          "type": "null"
+        },
+        "v_actual": {
+          "type": "null"
+        },
+        "sm": {
+          "type": "number"
+        },
+        "multiClick": {
+          "type": "null"
+        },
+        "clickNumber": {
+          "type": "null"
+        },
+        "clickDelays": {
+          "type": "null"
+        },
+        "uid": {
+          "$ref": "#/definitions/Uid"
+        }
+      },
+      "if": {
+        "properties": {
+          "type": ["MOUSE_MOVE", "MOUSE_UP"]
+        }
+      },
+      "then": {
+        "required": ["ts", "type"]
+      },
+      "else": {
+        "required": ["ts", "type", "tgs"]
+      },
+      "title": "Events"
+    },
+    "Tg": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tgs": {
+          "type": "string"
+        },
+        "etn": {
+          "type": "string"
+        },
+        "et": {
+          "type": "string"
+        },
+        "sender": {
+          "type": "string"
+        },
+        "orientation": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "attr": {
+          "type": "object",
+          "items": {}
+        }
+      },
+      "title": "Tg"
+    },
+    "Touch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tid": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": ["tid", "x", "y"],
+      "title": "Touch"
+    },
+    "V": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/Uid"
+        }
+      ],
+      "title": "V"
+    },
+    "Eid": {
+      "type": "string",
+      "title": "Eid"
+    },
+    "Et": {
+      "type": "string",
+      "title": "Et"
+    },
+    "Etn": {
+      "type": "string",
+      "title": "Etn"
+    },
+    "Key": {
+      "type": "string",
+      "title": "Key"
+    },
+    "Uid": {
+      "type": "string",
+      "title": "Uid"
+    }
+  }
+}
