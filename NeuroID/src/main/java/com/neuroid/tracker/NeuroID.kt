@@ -1,6 +1,7 @@
 package com.neuroid.tracker
 
 import android.app.Application
+import android.util.Log
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -10,6 +11,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +25,15 @@ class NeuroID private constructor(
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
+
+    private var metaData: NIDMetaData? = null
+
+    init {
+        application?.let {
+            metaData = NIDMetaData(it.applicationContext)
+            Log.i("Metadata", metaData.toString())
+        }
+    }
 
     @Synchronized
     private fun setupCallbacks() {
