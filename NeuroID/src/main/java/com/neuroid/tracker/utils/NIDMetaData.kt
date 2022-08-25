@@ -22,6 +22,7 @@ class NIDMetaData(context: Context) {
     var carrier = ""
     var totalMemory: Double = (-1).toDouble()
     var batteryLevel = -1
+    val isRooted: Boolean get() = RootHelper().isRooted()
 
     init {
         displayResolution = getScreenResolution(context)
@@ -69,6 +70,7 @@ class NIDMetaData(context: Context) {
         jsonObject.put("carrier", carrier)
         jsonObject.put("totalMemory", totalMemory)
         jsonObject.put("batteryLevel", batteryLevel)
+        jsonObject.put("isRooted", isRooted)
         return jsonObject
     }
 
