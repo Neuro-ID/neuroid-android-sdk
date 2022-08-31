@@ -11,24 +11,25 @@ import org.json.JSONObject
 
 
 class NIDMetaData(context: Context) {
-    val brand = Build.BRAND
-    var device = Build.DEVICE
-    var display = Build.DISPLAY
-    var manufacturer = Build.MANUFACTURER
-    var model = Build.MODEL
-    var product = Build.PRODUCT
-    var osVersion = "OS:${Build.VERSION.SDK_INT ?: ""}"
-    var displayResolution = ""
-    var carrier = ""
-    var totalMemory: Double = (-1).toDouble()
-    var batteryLevel = -1
-    val isRooted: Boolean get() = RootHelper().isRooted()
+    private val brand = Build.BRAND
+    private var device = Build.DEVICE
+    private var display = Build.DISPLAY
+    private var manufacturer = Build.MANUFACTURER
+    private var model = Build.MODEL
+    private var product = Build.PRODUCT
+    private var osVersion = "OS:${Build.VERSION.SDK_INT ?: ""}"
+    private var displayResolution = ""
+    private var carrier = ""
+    private var totalMemory: Double = (-1).toDouble()
+    private var batteryLevel = -1
+    private val isRooted: Boolean
 
     init {
         displayResolution = getScreenResolution(context)
         carrier = getCarrierName(context)
         totalMemory = getMemory(context)
         batteryLevel = getBatteryLevel(context)
+        isRooted = RootHelper().isRooted(context)
     }
 
     private fun getScreenResolution(context: Context): String {

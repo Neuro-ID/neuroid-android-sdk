@@ -1,5 +1,7 @@
 package com.neuroid.tracker.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import java.io.BufferedReader
 import java.io.File
@@ -26,11 +28,56 @@ class RootHelper {
             "/data/",
             "/dev/"
         )
+        val knownRootAppsPackages = listOf(
+            "com.noshufou.android.su",
+            "com.noshufou.android.su.elite",
+            "eu.chainfire.supersu",
+            "com.koushikdutta.superuser",
+            "com.thirdparty.superuser",
+            "com.yellowes.su",
+            "com.topjohnwu.magisk",
+            "com.kingroot.kinguser",
+            "com.kingo.root",
+            "com.smedialink.oneclickroot",
+            "com.zhiqupk.root.global",
+            "com.alephzain.framaroot"
+        )
+        val knownDangerousAppsPackages = listOf(
+            "com.koushikdutta.rommanager",
+            "com.koushikdutta.rommanager.license",
+            "com.dimonvideo.luckypatcher",
+            "com.chelpus.lackypatch",
+            "com.ramdroid.appquarantine",
+            "com.ramdroid.appquarantinepro",
+            "com.android.vending.billing.InAppBillingService.COIN",
+            "com.android.vending.billing.InAppBillingService.LUCK",
+            "com.chelpus.luckypatcher",
+            "com.blackmartalpha",
+            "org.blackmart.market",
+            "com.allinone.free",
+            "com.repodroid.app",
+            "org.creeplays.hack",
+            "com.baseappfull.fwd",
+            "com.zmapp",
+            "com.dv.marketmod.installer",
+            "org.mobilism.android",
+            "com.android.wp.net.log",
+            "com.android.camera.update",
+            "cc.madkite.freedom",
+            "com.solohsu.android.edxp.manager",
+            "org.meowcat.edxposed.manager",
+            "com.xmodgame",
+            "com.cih.game_cih",
+            "com.charles.lpoqasert",
+            "catch_.me_.if_.you_.can_"
+        )
     }
 
 
-    fun isRooted(): Boolean {
-        return checkForBinary(BINARY_SU) || detectTestKeys() || checkForBinary(BINARY_BUSYBOX) || checkSuExists()
+    fun isRooted(context: Context): Boolean {
+        return detectRootManagementApps(context) || detectPotentiallyDangerousApps(context) ||
+                checkForBinary(BINARY_SU) || detectTestKeys() ||
+                checkForBinary(BINARY_BUSYBOX) || checkSuExists() || checkForMagiskBinary()
     }
 
 
@@ -84,4 +131,43 @@ class RootHelper {
         }
     }
 
+
+    private fun detectRootManagementApps(
+        context: Context,
+        additionalRootManagementApps: List<String> = emptyList()
+    ): Boolean {
+
+        val packages = ArrayList<String>()
+        packages.addAll(knownRootAppsPackages)
+        packages.addAll(additionalRootManagementApps)
+        return isAnyPackageFromListInstalled(context, packages)
+    }
+
+    private fun isAnyPackageFromListInstalled(context: Context, packages: List<String>): Boolean {
+        var result = false
+        val pm: PackageManager = context.packageManager
+        for (packageName in packages) {
+            try {
+                // Root app detected
+                pm.getPackageInfo(packageName, 0)
+                result = true
+            } catch (e: PackageManager.NameNotFoundException) {
+                // Exception thrown, package is not installed into the system
+            }
+        }
+        return result
+    }
+
+    private fun detectPotentiallyDangerousApps(
+        context: Context,
+        additionalDangerousApps: List<String> = emptyList()
+    ): Boolean {
+
+        val packages = ArrayList<String>()
+        packages.addAll(knownDangerousAppsPackages)
+        packages.addAll(additionalDangerousApps)
+        return isAnyPackageFromListInstalled(context, packages)
+    }
+
+    private fun checkForMagiskBinary() = checkForBinary("magisk")
 }
