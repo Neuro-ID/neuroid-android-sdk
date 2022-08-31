@@ -17,19 +17,19 @@ class NIDMetaData(context: Context) {
     private var manufacturer = Build.MANUFACTURER
     private var model = Build.MODEL
     private var product = Build.PRODUCT
-    private var osVersion = "OS:${Build.VERSION.SDK_INT ?: ""}"
+    private var osVersion = "${Build.VERSION.SDK_INT ?: ""}"
     private var displayResolution = ""
     private var carrier = ""
     private var totalMemory: Double = (-1).toDouble()
     private var batteryLevel = -1
-    private val isRooted: Boolean
+    private val isJailBreak: Boolean
 
     init {
         displayResolution = getScreenResolution(context)
         carrier = getCarrierName(context)
         totalMemory = getMemory(context)
         batteryLevel = getBatteryLevel(context)
-        isRooted = RootHelper().isRooted(context)
+        isJailBreak = RootHelper().isRooted(context)
     }
 
     private fun getScreenResolution(context: Context): String {
@@ -71,7 +71,7 @@ class NIDMetaData(context: Context) {
         jsonObject.put("carrier", carrier)
         jsonObject.put("totalMemory", totalMemory)
         jsonObject.put("batteryLevel", batteryLevel)
-        jsonObject.put("isRooted", isRooted)
+        jsonObject.put("isJailBreak", isJailBreak)
         return jsonObject
     }
 
