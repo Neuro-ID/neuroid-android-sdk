@@ -180,7 +180,8 @@ class RootHelper {
                 || Build.FINGERPRINT.startsWith("generic")
                 || Build.FINGERPRINT.startsWith("unknown")
                 || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Emulator", true)
+                || Build.DEVICE.contains("Emulator", true)
                 || Build.MODEL.contains("Android SDK built for x86")
                 || Build.BOARD == "QC_Reference_Phone" && !Build.MANUFACTURER.equals(
             "Xiaomi",
