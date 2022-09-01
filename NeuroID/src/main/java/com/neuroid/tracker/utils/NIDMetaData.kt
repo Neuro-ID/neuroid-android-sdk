@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.BATTERY_SERVICE
+import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
@@ -23,6 +24,9 @@ class NIDMetaData(context: Context) {
     private var totalMemory: Double = (-1).toDouble()
     private var batteryLevel = -1
     private val isJailBreak: Boolean
+    private var isWifiOn: Boolean?
+    private val isSimulator: Boolean
+
 
     init {
         displayResolution = getScreenResolution(context)
@@ -30,6 +34,8 @@ class NIDMetaData(context: Context) {
         totalMemory = getMemory(context)
         batteryLevel = getBatteryLevel(context)
         isJailBreak = RootHelper().isRooted(context)
+        isWifiOn = getWifiStatus(context)
+        isSimulator = RootHelper().isProbablyEmulator()
     }
 
     private fun getScreenResolution(context: Context): String {
@@ -58,6 +64,16 @@ class NIDMetaData(context: Context) {
         return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
     }
 
+    private fun getWifiStatus(context: Context): Boolean? {
+        return try {
+            val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            wifiManager.isWifiEnabled
+        } catch (ex: Exception) {
+            //No Wifi Permissions
+            null
+        }
+    }
+
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("brand", brand)
@@ -72,6 +88,8 @@ class NIDMetaData(context: Context) {
         jsonObject.put("totalMemory", totalMemory)
         jsonObject.put("batteryLevel", batteryLevel)
         jsonObject.put("isJailBreak", isJailBreak)
+        jsonObject.put("isWifiOn", isWifiOn)
+        jsonObject.put("isSimulator", isSimulator)
         return jsonObject
     }
 
