@@ -14,6 +14,8 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
+import org.json.JSONArray
+import org.json.JSONObject
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -79,14 +81,18 @@ private fun registerComponent(view: View, guid: String) {
         val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
 
         val attrs = "{" +
-                "\"guid\":\"$guid\"," +
-                "\"screenHierarchy\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
-                "}"
+                "\"guid\":\"$guid\"}"
+
+        val idJson = JSONObject().put("n", "guid").put("v", guid)
+        val classJson = JSONObject().put("n", "screenHierarchy")
+            .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
+        val attrJson = JSONArray().put(idJson).put(classJson)
 
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
+                    attrs = attrJson,
                     et = et + "::" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,
