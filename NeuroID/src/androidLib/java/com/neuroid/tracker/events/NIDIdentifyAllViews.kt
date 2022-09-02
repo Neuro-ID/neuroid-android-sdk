@@ -94,6 +94,7 @@ private fun registerComponent(view: View, guid: String) {
                     tgs = idName,
                     en = idName,
                     v = "S~C~~0",
+                    hv = "",
                     ts = System.currentTimeMillis(),
                     tg = hashMapOf(
                         "attr" to attrs
