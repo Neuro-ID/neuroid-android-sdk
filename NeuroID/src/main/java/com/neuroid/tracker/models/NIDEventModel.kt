@@ -12,6 +12,7 @@ data class NIDEventModel(
     val gyro: NIDSensorModel? = null,
     val accel: NIDSensorModel? = null,
     val v: String? = null,
+    val hv: String? = null,
     val en: String? = null,
     val etn: String? = null,
     val ec: String? = null,
@@ -73,6 +74,7 @@ data class NIDEventModel(
             }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
+            hv?.let { jsonObject.put("hv", it) }
             en?.let { jsonObject.put("en", it) }
             etn?.let { jsonObject.put("etn", it) }
             ec?.let { jsonObject.put("ec", it) }
@@ -140,8 +142,8 @@ data class NIDEventModel(
 
 data class NIDSensorModel(
     val x: Float?,
-    val y:Float?,
-    val z:Float?
+    val y: Float?,
+    val z: Float?
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()
