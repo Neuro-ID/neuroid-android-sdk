@@ -23,6 +23,7 @@ class NeuroID private constructor(
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
+    private var clientID = ""
 
     @Synchronized
     private fun setupCallbacks() {
@@ -108,10 +109,8 @@ class NeuroID private constructor(
         return sessionID
     }
 
-    suspend fun getClientId(): String {
-        return application?.let {
-            NIDSharedPrefsDefaults(it).getClientId()
-        } ?: ""
+    fun getClientId(): String {
+        return clientID
     }
 
     fun captureEvent(eventName: String, tgs: String) {
@@ -200,13 +199,14 @@ class NeuroID private constructor(
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
+            sessionID = sharedDefaults.getClientId()
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
-                    cid = sharedDefaults.getClientId(),
+                    cid = clientID,
                     did = sharedDefaults.getDeviceId(),
                     iid = sharedDefaults.getIntermediateId(),
                     loc = sharedDefaults.getLocale(),
