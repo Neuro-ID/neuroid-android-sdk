@@ -52,19 +52,19 @@ class NIDTouchEventManager(
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
-                        getDataStoreInstance()
+                        /*getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_START,
                                     ts = timeMills,
-                                    tgs = "",
+                                    tgs = nameView,
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
                                 )
-                            )
+                            )*/
 
                         if (typeOfView == 2) {
                             getDataStoreInstance()
@@ -81,19 +81,19 @@ class NIDTouchEventManager(
                     }
                 }
                 ACTION_MOVE -> {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
                                 ts = timeMills,
-                                tgs = "",
+                                tgs = nameView,
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                 ),
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
                 ACTION_UP -> {
                     if (lastTypeOfView > 0) {
@@ -114,19 +114,19 @@ class NIDTouchEventManager(
                         lastTypeOfView = 0
                         lastViewName = ""
 
-                        getDataStoreInstance()
+                        /*getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
                                     ts = timeMills,
-                                    tgs = "",
+                                    tgs = nameView,
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
                                 )
-                            )
+                            )*/
                     }
                 }
             }

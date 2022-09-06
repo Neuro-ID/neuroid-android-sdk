@@ -55,7 +55,7 @@ class NIDTouchEventManager(
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
-                        getDataStoreInstance()
+                        /*getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_START,
@@ -65,7 +65,7 @@ class NIDTouchEventManager(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     )
                                 )
-                            )
+                            )*/
 
                         if (typeOfView == 2) {
                             getDataStoreInstance()
@@ -80,7 +80,7 @@ class NIDTouchEventManager(
                     }
                 }
                 ACTION_MOVE -> {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
@@ -90,7 +90,7 @@ class NIDTouchEventManager(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                 )
                             )
-                        )
+                        )*/
                 }
                 ACTION_UP -> {
                     if (lastTypeOfView > 0) {
@@ -109,7 +109,7 @@ class NIDTouchEventManager(
                         lastTypeOfView = 0
                         lastViewName = ""
 
-                        getDataStoreInstance()
+                        /*getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
                                     type = TOUCH_END,
@@ -119,7 +119,7 @@ class NIDTouchEventManager(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     )
                                 )
-                            )
+                            )*/
                     }
                 }
             }
