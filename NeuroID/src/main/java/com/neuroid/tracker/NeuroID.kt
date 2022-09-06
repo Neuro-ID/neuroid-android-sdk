@@ -108,6 +108,12 @@ class NeuroID private constructor(
         return sessionID
     }
 
+    suspend fun getClientId(): String {
+        return application?.let {
+            NIDSharedPrefsDefaults(it).getClientId()
+        } ?: ""
+    }
+
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
