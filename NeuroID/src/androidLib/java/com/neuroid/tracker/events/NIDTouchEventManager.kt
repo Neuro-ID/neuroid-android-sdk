@@ -57,9 +57,7 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_START,
                                     ts = timeMills,
-                                    tg = hashMapOf(
-                                        "tgs" to ""
-                                    ),
+                                    tgs = "",
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
@@ -74,9 +72,7 @@ class NIDTouchEventManager(
                                     NIDEventModel(
                                         type = FOCUS,
                                         ts = timeMills,
-                                        tg = hashMapOf(
-                                            "tgs" to lastViewName
-                                        ),
+                                        tgs = lastViewName,
                                         gyro = gyroData,
                                         accel = accelData
                                     )
@@ -90,9 +86,7 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
                                 ts = timeMills,
-                                tg = hashMapOf(
-                                    "tgs" to ""
-                                ),
+                                tgs = "",
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                 ),
@@ -110,9 +104,7 @@ class NIDTouchEventManager(
                                     NIDEventModel(
                                         type = BLUR,
                                         ts = timeMills,
-                                        tg = hashMapOf(
-                                            "tgs" to lastViewName
-                                        ),
+                                        tgs = lastViewName,
                                         gyro = gyroData,
                                         accel = accelData
                                     )
@@ -127,9 +119,7 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_END,
                                     ts = timeMills,
-                                    tg = hashMapOf(
-                                        "tgs" to ""
-                                    ),
+                                    tgs = "",
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
@@ -204,9 +194,9 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = type,
                                 tg = hashMapOf(
-                                    "tgs" to nameView,
                                     "etn" to INPUT
                                 ),
+                                tgs = nameView,
                                 ts = timeMills,
                                 gyro = gyroData,
                                 accel = accelData
@@ -220,9 +210,9 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to nameView,
                                     "etn" to INPUT
                                 ),
+                                tgs = nameView,
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis(),
                                 gyro = gyroData,

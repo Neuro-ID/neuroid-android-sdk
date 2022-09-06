@@ -35,9 +35,7 @@ class NIDGlobalEventCallback(
                         NIDEventModel(
                             type = FOCUS,
                             ts = ts,
-                            tg = hashMapOf(
-                                "tgs" to idName
-                            ),
+                            tgs = idName,
                             gyro = gyroData,
                             accel = accelData
                         )
@@ -84,11 +82,6 @@ class NIDGlobalEventCallback(
 
     private fun registerTextChangeEvent(actualText: String) {
         val ts = System.currentTimeMillis()
-        val attrs = "{" +
-                "\"v\":\"S~C~~${actualText.length}\"," +
-                "\"hash\":\"${actualText.getSHA256().take(8)}\"" +
-                "}"
-
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -97,11 +90,10 @@ class NIDGlobalEventCallback(
                 NIDEventModel(
                     type = TEXT_CHANGE,
                     tg = hashMapOf(
-                        "attr" to attrs,
-                        "tgs" to lastEditText?.getIdOrTag().orEmpty(),
                         "etn" to lastEditText?.getIdOrTag().orEmpty(),
                         "et" to "text"
                     ),
+                    tgs = lastEditText?.getIdOrTag().orEmpty(),
                     ts = ts,
                     //sm = "",
                     //pd = "",
@@ -116,9 +108,7 @@ class NIDGlobalEventCallback(
             .saveEvent(
                 NIDEventModel(
                     type = BLUR,
-                    tg = hashMapOf(
-                        "tgs" to lastEditText?.getIdOrTag().orEmpty()
-                    ),
+                    tgs = lastEditText?.getIdOrTag().orEmpty(),
                     ts = ts,
                     gyro = gyroData,
                     accel = accelData
