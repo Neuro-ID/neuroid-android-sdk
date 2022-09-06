@@ -57,9 +57,13 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_START,
                                     ts = timeMills,
-                                    tgs = "",
+                                    tgs = nameView,
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    ),
+                                    tg = hashMapOf(
+                                        "etn" to nameView,
+                                        "sender" to nameView
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
@@ -86,7 +90,11 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
                                 ts = timeMills,
-                                tgs = "",
+                                tgs = nameView,
+                                tg = hashMapOf(
+                                    "etn" to nameView,
+                                    "sender" to nameView
+                                ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                 ),
@@ -119,7 +127,11 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_END,
                                     ts = timeMills,
-                                    tgs = "",
+                                    tgs = nameView,
+                                    tg = hashMapOf(
+                                        "etn" to nameView,
+                                        "sender" to nameView
+                                    ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
