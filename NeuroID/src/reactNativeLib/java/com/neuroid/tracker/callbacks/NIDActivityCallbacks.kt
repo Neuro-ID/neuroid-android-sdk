@@ -28,6 +28,9 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation
 
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         if (existActivity.not()) {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
@@ -47,7 +50,9 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                         ts = System.currentTimeMillis(),
                         tg = hashMapOf(
                             "orientation" to strOrientation
-                        )
+                        ),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
             auxOrientation = orientation
@@ -57,7 +62,9 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             .saveEvent(
                 NIDEventModel(
                     type = WINDOW_LOAD,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
     }
@@ -66,11 +73,16 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         var cameBackFromBehind = false
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_FOCUS,
-                        ts = System.currentTimeMillis()
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }
@@ -107,11 +119,16 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     override fun onActivityStopped(activity: Activity) {
         activitiesStarted--
         if (activitiesStarted == 0) {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_BLUR,
-                        ts = System.currentTimeMillis()
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }
@@ -124,11 +141,16 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     override fun onActivityDestroyed(activity: Activity) {
         val currentActivityName = activity::class.java.name
         listActivities.remove(currentActivityName)
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis()
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
                 )
             )
     }

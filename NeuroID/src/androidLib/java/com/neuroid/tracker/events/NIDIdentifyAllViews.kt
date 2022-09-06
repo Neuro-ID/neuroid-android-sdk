@@ -134,7 +134,7 @@ private fun registerListeners(view: View) {
                     p3: Long
                 ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
@@ -147,7 +147,7 @@ private fun registerListeners(view: View) {
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -161,7 +161,7 @@ private fun registerListeners(view: View) {
             view.onItemClickListener =
                 AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
                     lastListener?.onItemClick(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
@@ -174,7 +174,7 @@ private fun registerListeners(view: View) {
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
         }
     }
