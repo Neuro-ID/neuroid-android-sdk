@@ -490,10 +490,6 @@
         },
         "url": {
           "type": "string"
-        },
-        "attr": {
-          "type": "object",
-          "items": {}
         }
       },
       "title": "Tg"

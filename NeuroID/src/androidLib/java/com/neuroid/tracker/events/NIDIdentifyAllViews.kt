@@ -80,9 +80,6 @@ private fun registerComponent(view: View, guid: String) {
         }
         val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
 
-        val attrs = "{" +
-                "\"guid\":\"$guid\"}"
-
         val idJson = JSONObject().put("n", "guid").put("v", guid)
         val classJson = JSONObject().put("n", "screenHierarchy")
             .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
@@ -102,9 +99,6 @@ private fun registerComponent(view: View, guid: String) {
                     v = "S~C~~0",
                     hv = "",
                     ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "attr" to attrs
-                    ),
                     url = urlView,
                     gyro = gyroData,
                     accel = accelData
@@ -145,10 +139,10 @@ private fun registerListeners(view: View) {
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to idName,
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
+                                tgs = idName,
                                 ts = System.currentTimeMillis(),
                                 gyro = gyroData,
                                 accel = accelData
@@ -172,10 +166,10 @@ private fun registerListeners(view: View) {
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to idName,
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
+                                tgs = idName,
                                 ts = System.currentTimeMillis(),
                                 gyro = gyroData,
                                 accel = accelData

@@ -47,10 +47,6 @@ class NIDTextWatcher(
         val ts = System.currentTimeMillis()
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-        val attrs = "{" +
-                    "\"v\":\"S~C~~${sequence?.length ?: 0}\"," +
-                    "\"hash\":\"${sequence.toString().getSHA256().take(8)}\"" +
-                    "}"
 
         if (lastSize != sequence?.length) {
             getDataStoreInstance()
@@ -59,11 +55,10 @@ class NIDTextWatcher(
                         type = INPUT,
                         ts = ts,
                         tg = hashMapOf(
-                            "attr" to attrs,
-                            "tgs" to idName,
                             "etn" to INPUT,
                             "et" to "text"
                         ),
+                        tgs = idName,
                         v = "S~C~~${sequence?.length}",
                         hv = sequence?.toString()?.getSHA256()?.take(8),
                         gyro = gyroData,

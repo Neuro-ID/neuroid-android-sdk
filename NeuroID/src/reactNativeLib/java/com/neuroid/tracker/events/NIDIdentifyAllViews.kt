@@ -104,9 +104,6 @@ private fun registerComponent(view: View, guid: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "attr" to attrs
-                    ),
                     url = urlView
                 ))
     }
@@ -135,10 +132,10 @@ private fun registerListeners(view: View) {
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to idName,
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
+                                tgs = idName,
                                 ts = System.currentTimeMillis()
                             ))
                 }
@@ -158,10 +155,10 @@ private fun registerListeners(view: View) {
                         NIDEventModel(
                             type = SELECT_CHANGE,
                             tg = hashMapOf(
-                                "tgs" to idName,
                                 "etn" to "INPUT",
                                 "et" to "text"
                             ),
+                            tgs = idName,
                             ts = System.currentTimeMillis()
                         ))
             }
