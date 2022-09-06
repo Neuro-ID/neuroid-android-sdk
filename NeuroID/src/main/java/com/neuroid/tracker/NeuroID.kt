@@ -199,7 +199,7 @@ class NeuroID private constructor(
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
-            sessionID = sharedDefaults.getClientId()
+            clientID = sharedDefaults.getClientId()
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
