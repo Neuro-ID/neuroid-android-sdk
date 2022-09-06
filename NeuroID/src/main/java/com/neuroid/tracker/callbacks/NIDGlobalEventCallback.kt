@@ -85,9 +85,9 @@ class NIDGlobalEventCallback(
     private fun registerTextChangeEvent(actualText: String) {
         val ts = System.currentTimeMillis()
         val attrs = "{" +
-                    "\"v\":\"S~C~~${actualText.length}\"," +
-                    "\"hash\":\"${actualText.getSHA256().take(8)}\"" +
-                    "}"
+                "\"v\":\"S~C~~${actualText.length}\"," +
+                "\"hash\":\"${actualText.getSHA256().take(8)}\"" +
+                "}"
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -106,6 +106,7 @@ class NIDGlobalEventCallback(
                     //sm = "",
                     //pd = "",
                     v = "S~C~~${actualText.length}",
+                    hv = actualText.getSHA256().take(8),
                     gyro = gyroData,
                     accel = accelData
                 )

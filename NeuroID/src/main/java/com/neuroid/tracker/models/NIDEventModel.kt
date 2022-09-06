@@ -5,6 +5,7 @@ import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
+    val attrs: JSONArray? = null,
     val tg: HashMap<String, String>? = null,
     val tgs: String? = null,
     val touches: List<String>? = null,
@@ -12,6 +13,7 @@ data class NIDEventModel(
     val gyro: NIDSensorModel? = null,
     val accel: NIDSensorModel? = null,
     val v: String? = null,
+    val hv: String? = null,
     val en: String? = null,
     val etn: String? = null,
     val ec: String? = null,
@@ -63,6 +65,7 @@ data class NIDEventModel(
                 }
                 jsonObject.put("tg", childJson)
             }
+            attrs?.let { jsonObject.put("attrs", it) }
             tgs?.let { jsonObject.put("tgs", it) }
             touches?.let {
                 val array = JSONArray()
@@ -73,6 +76,7 @@ data class NIDEventModel(
             }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
+            hv?.let { jsonObject.put("hv", it) }
             en?.let { jsonObject.put("en", it) }
             etn?.let { jsonObject.put("etn", it) }
             ec?.let { jsonObject.put("ec", it) }
@@ -140,8 +144,8 @@ data class NIDEventModel(
 
 data class NIDSensorModel(
     val x: Float?,
-    val y:Float?,
-    val z:Float?
+    val y: Float?,
+    val z: Float?
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()
