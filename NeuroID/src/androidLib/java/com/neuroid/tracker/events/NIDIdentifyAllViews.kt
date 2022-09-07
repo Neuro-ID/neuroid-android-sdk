@@ -139,8 +139,9 @@ private fun registerListeners(view: View) {
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "etn" to "INPUT",
-                                    "et" to "text"
+                                    "etn" to view.javaClass.simpleName,
+                                    "tgs" to idName,
+                                    "sender" to view.javaClass.simpleName
                                 ),
                                 tgs = idName,
                                 ts = System.currentTimeMillis(),

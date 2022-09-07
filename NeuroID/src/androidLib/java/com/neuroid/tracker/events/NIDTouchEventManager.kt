@@ -62,8 +62,9 @@ class NIDTouchEventManager(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
                                     ),
                                     tg = hashMapOf(
-                                        "etn" to nameView,
-                                        "sender" to nameView
+                                        "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                        "tgs" to nameView,
+                                        "sender" to currentView?.javaClass?.simpleName.orEmpty()
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
@@ -92,8 +93,9 @@ class NIDTouchEventManager(
                                 ts = timeMills,
                                 tgs = nameView,
                                 tg = hashMapOf(
-                                    "etn" to nameView,
-                                    "sender" to nameView
+                                    "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                    "tgs" to nameView,
+                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
                                 ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
@@ -129,8 +131,9 @@ class NIDTouchEventManager(
                                     ts = timeMills,
                                     tgs = nameView,
                                     tg = hashMapOf(
-                                        "etn" to nameView,
-                                        "sender" to nameView
+                                        "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                        "tgs" to nameView,
+                                        "sender" to currentView?.javaClass?.simpleName.orEmpty()
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
@@ -201,28 +204,32 @@ class NIDTouchEventManager(
                 }
 
                 if (type.isNotEmpty()) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
                                 tg = hashMapOf(
-                                    "etn" to INPUT
+                                    "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                    "tgs" to nameView,
+                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
                                 ),
                                 tgs = nameView,
                                 ts = timeMills,
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
             } else {
                 if (lastView is SeekBar) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
                                 tg = hashMapOf(
-                                    "etn" to INPUT
+                                    "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                    "tgs" to nameView,
+                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
                                 ),
                                 tgs = nameView,
                                 v = ((lastView as SeekBar).progress).toString(),
@@ -230,7 +237,7 @@ class NIDTouchEventManager(
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
             }
             lastView = null

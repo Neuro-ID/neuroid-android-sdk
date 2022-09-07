@@ -119,7 +119,8 @@ class NIDSharedPrefsDefaults(
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
         private const val NID_UID = "NID_UID_KEY"
         private const val NID_SID = "NID_SID_KEY"
-        private const val NID_CID = "NID_CID_KEY"
+        private const val NID_CID_OLD = "NID_CID_KEY"
+        private const val NID_CID = "NID_CID_GUID_KEY"
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
     }
