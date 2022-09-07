@@ -13,7 +13,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
-import com.neuroid.tracker.service.NIDJobServiceManager
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -113,8 +112,6 @@ class NIDTouchEventManager(
                                         tgs = lastViewName
                                     )
                                 )
-
-                            NIDJobServiceManager.sendEventsNow()
                         }
 
                         lastTypeOfView = 0

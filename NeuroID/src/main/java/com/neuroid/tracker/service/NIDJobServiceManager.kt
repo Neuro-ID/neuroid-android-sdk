@@ -32,33 +32,22 @@ object NIDJobServiceManager {
     }
 
     private fun createJobServer(): Job {
-        val timeMills = 5000L
         return CoroutineScope(Dispatchers.IO).launch {
             while (userActive) {
-                delay(timeMills)
-                application?.let {
-                    val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
-                    if (response.second) {
-                        userActive = false
-                    }
-                } ?: run {
-                    userActive = false
-                }
+                delay(5000L)
+                sendEventsNow()
             }
         }
     }
 
-    fun sendEventsNow() {
-        CoroutineScope(Dispatchers.Unconfined).launch {
-            application?.let {
-                delay(400L)
-                val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
-                if (response.second) {
-                    userActive = false
-                }
-            } ?: run {
+    suspend fun sendEventsNow() {
+        application?.let {
+            val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
+            if (response.second) {
                 userActive = false
             }
+        } ?: run {
+            userActive = false
         }
     }
 
