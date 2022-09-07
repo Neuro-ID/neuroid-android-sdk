@@ -183,7 +183,7 @@ class NIDTouchEventManager(
                 }
 
                 if (type.isNotEmpty()) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
@@ -193,11 +193,11 @@ class NIDTouchEventManager(
                                 tgs = nameView,
                                 ts = timeMills
                             )
-                        )
+                        )*/
                 }
             } else {
                 if (lastView is SeekBar) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
@@ -208,7 +208,7 @@ class NIDTouchEventManager(
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis()
                             )
-                        )
+                        )*/
                 }
             }
             lastView = null
