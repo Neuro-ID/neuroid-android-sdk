@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.getIdOrTag
 
@@ -114,6 +115,8 @@ class NIDGlobalEventCallback(
                     accel = accelData
                 )
             )
+
+        NIDJobServiceManager.sendEventsNow()
     }
 
     //WindowCallback

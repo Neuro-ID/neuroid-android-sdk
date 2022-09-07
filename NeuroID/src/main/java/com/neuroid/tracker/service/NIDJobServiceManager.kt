@@ -36,7 +36,6 @@ object NIDJobServiceManager {
         return CoroutineScope(Dispatchers.IO).launch {
             while (userActive) {
                 delay(timeMills)
-
                 application?.let {
                     val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
                     if (response.second) {
@@ -45,6 +44,20 @@ object NIDJobServiceManager {
                 } ?: run {
                     userActive = false
                 }
+            }
+        }
+    }
+
+    fun sendEventsNow() {
+        CoroutineScope(Dispatchers.Unconfined).launch {
+            application?.let {
+                delay(400L)
+                val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
+                if (response.second) {
+                    userActive = false
+                }
+            } ?: run {
+                userActive = false
             }
         }
     }

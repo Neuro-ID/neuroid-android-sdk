@@ -11,6 +11,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
@@ -119,6 +120,7 @@ class NIDTouchEventManager(
                                         accel = accelData
                                     )
                                 )
+                            NIDJobServiceManager.sendEventsNow()
                         }
 
                         lastTypeOfView = 0
