@@ -6,7 +6,7 @@ import org.json.JSONObject
 data class NIDEventModel(
     val type: String,
     val attrs: JSONArray? = null,
-    val tg: HashMap<String, String>? = null,
+    val tg: Map<String, Any>? = null,
     val tgs: String? = null,
     val touches: List<String>? = null,
     val key: String? = null,
@@ -54,11 +54,7 @@ data class NIDEventModel(
         jsonObject.put("type", this.type)
         this.apply {
             tg?.let {
-                val childJson = JSONObject()
-                it.forEach { (key, value) ->
-                    childJson.put(key, value)
-                }
-                jsonObject.put("tg", childJson)
+                jsonObject.put("tg", JSONObject(it))
             }
             attrs?.let { jsonObject.put("attrs", it) }
             tgs?.let { jsonObject.put("tgs", it) }

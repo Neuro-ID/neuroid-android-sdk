@@ -9,6 +9,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDGlobalEventCallback(
@@ -30,10 +31,14 @@ class NIDGlobalEventCallback(
             val idName = newView.getIdOrTag()
 
             if (newView is EditText) {
+                val text = newView.text.toString()
                 getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
                             type = FOCUS,
+                            tg = hashMapOf(
+                                "attr" to getAttrJson(text),
+                            ),
                             ts = ts,
                             tgs = idName,
                             gyro = gyroData,
@@ -90,6 +95,7 @@ class NIDGlobalEventCallback(
                 NIDEventModel(
                     type = TEXT_CHANGE,
                     tg = hashMapOf(
+                        "attr" to getAttrJson(actualText),
                         "etn" to lastEditText?.getIdOrTag().orEmpty(),
                         "et" to "text"
                     ),
@@ -109,6 +115,9 @@ class NIDGlobalEventCallback(
                 NIDEventModel(
                     type = BLUR,
                     tgs = lastEditText?.getIdOrTag().orEmpty(),
+                    tg = hashMapOf(
+                        "attr" to getAttrJson(actualText),
+                    ),
                     ts = ts,
                     gyro = gyroData,
                     accel = accelData

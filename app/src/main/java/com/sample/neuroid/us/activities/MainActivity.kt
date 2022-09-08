@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
+            textViewCidValue.setText(NeuroID.getInstance()?.getClientId())
         }
 
         binding.editTextNormalField.addTextChangedListener(object : TextWatcher {

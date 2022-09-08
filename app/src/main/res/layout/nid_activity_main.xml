@@ -98,6 +98,31 @@
             app:layout_constraintStart_toEndOf="@id/textView_sid_title"
             app:layout_constraintTop_toBottomOf="@id/textIl_password_field" />
 
+        <TextView
+            style="@style/NidTextViewTitle"
+            android:id="@+id/textView_cid_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nid_main_activity_sid_title"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="20dp"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView_sid_title"
+            app:layout_constraintBottom_toBottomOf="@id/textView_cid_value"/>
+
+        <TextView
+            android:id="@+id/textView_cid_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="189272372"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:textSize="14sp"
+            android:inputType="number"
+            app:layout_constraintStart_toEndOf="@id/textView_cid_title"
+            app:layout_constraintTop_toBottomOf="@id/textView_sid_value" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_show_activity_no_automatic_events"
             android:layout_width="0dp"
