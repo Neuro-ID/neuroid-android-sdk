@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
 class NIDTextWatcher(
     private val idName: String
@@ -34,6 +35,9 @@ class NIDTextWatcher(
                     NIDEventModel(
                         type = typeEvent,
                         ts = System.currentTimeMillis(),
+                        tg = hashMapOf(
+                            "attr" to getAttrJson(sequence.toString()),
+                        ),
                         gyro = gyroData,
                         accel = accelData
                     )
@@ -48,6 +52,7 @@ class NIDTextWatcher(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+
         if (lastSize != sequence?.length) {
             getDataStoreInstance()
                 .saveEvent(
@@ -55,6 +60,7 @@ class NIDTextWatcher(
                         type = INPUT,
                         ts = ts,
                         tg = hashMapOf(
+                            "attr" to getAttrJson(sequence.toString()),
                             "etn" to INPUT,
                             "et" to "text"
                         ),
