@@ -113,6 +113,10 @@ class NeuroID private constructor(
         return clientID
     }
 
+    fun isStopped(): Boolean {
+        return NIDJobServiceManager.isStopped()
+    }
+
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -172,8 +176,9 @@ class NeuroID private constructor(
         )
     }
 
-    fun configureWithOptions(clientKey: String, endpoint: String) {
-        this.endpoint = endpoint
+    fun configureWithOptions(clientKey: String, endpoint: String?) {
+        if(endpoint != null)
+            this.endpoint = endpoint
         this.clientKey = clientKey
         NIDServiceTracker.rndmId = ""
     }

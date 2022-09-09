@@ -14,7 +14,7 @@ object NIDJobServiceManager {
     private var application: Application? = null
     private var endpoint: String = ""
 
-    fun startJob(
+    @Synchronized fun startJob(
         application: Application,
         clientKey: String,
         endpoint: String
@@ -26,14 +26,19 @@ object NIDJobServiceManager {
         NIDSensorHelper.initSensorHelper(application)
     }
 
-    fun restart() {
+    @Synchronized fun restart() {
         NIDSensorHelper.restartSensors()
+        jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()
+    }
+
+    @Synchronized fun isStopped(): Boolean {
+        return jobCaptureEvents?.isActive != true
     }
 
     private fun createJobServer(): Job {
         return CoroutineScope(Dispatchers.IO).launch {
-            while (userActive) {
+            while (userActive && isActive) {
                 delay(5000L)
                 sendEventsNow()
             }
@@ -51,7 +56,7 @@ object NIDJobServiceManager {
         }
     }
 
-    fun stopJob() {
+    @Synchronized fun stopJob() {
         NIDSensorHelper.stopSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = null
