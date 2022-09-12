@@ -84,7 +84,7 @@ class NeuroID private constructor(
     }
 
     fun setScreenName(screen: String) {
-        NIDServiceTracker.screenName = screen
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(),"%20")
     }
 
     fun excludeViewByResourceID(id: String) {
