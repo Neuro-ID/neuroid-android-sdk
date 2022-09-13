@@ -24,7 +24,6 @@ class NeuroID private constructor(
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
     private var clientID = ""
-    private var started = false
 
     @Synchronized
     private fun setupCallbacks() {
@@ -180,7 +179,6 @@ class NeuroID private constructor(
     }
 
     fun start() {
-        started = true
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
@@ -191,11 +189,10 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        started = false
         NIDJobServiceManager.stopJob()
     }
 
-    fun isStopped() = !started
+    fun isStopped() = NIDJobServiceManager.isStopped()
 
     private suspend fun createSession() {
         application?.let {
