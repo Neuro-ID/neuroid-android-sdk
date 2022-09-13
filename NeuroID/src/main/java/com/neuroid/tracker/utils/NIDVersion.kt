@@ -4,7 +4,7 @@ import com.neuroid.tracker.BuildConfig
 
 object NIDVersion {
     fun getSDKVersion(): String {
-        return "4.android-" + BuildConfig.VERSION_NAME
+        return "5.android-" + BuildConfig.VERSION_NAME
     }
 
     fun getInternalCurrentVersion(): String {
