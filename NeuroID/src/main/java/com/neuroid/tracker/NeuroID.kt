@@ -173,7 +173,7 @@ class NeuroID private constructor(
     }
 
     fun configureWithOptions(clientKey: String, endpoint: String?) {
-        this.endpoint = endpoint ?: ENVIRONMENT_PRODUCTION
+        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
         this.clientKey = clientKey
         NIDServiceTracker.rndmId = ""
     }
