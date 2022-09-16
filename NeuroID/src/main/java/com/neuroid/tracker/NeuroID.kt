@@ -24,7 +24,6 @@ class NeuroID private constructor(
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
     private var clientID = ""
-    private var started = false
 
     @Synchronized
     private fun setupCallbacks() {
@@ -50,7 +49,7 @@ class NeuroID private constructor(
     companion object {
 
         private const val ENVIRONMENT_PRODUCTION = "LIVE"
-        private const val ENDPOINT_PRODUCTION = "https:/receiver.neuroid.cloud/c"
+        private const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
         private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
         private var singleton: NeuroID? = null
@@ -174,13 +173,12 @@ class NeuroID private constructor(
     }
 
     fun configureWithOptions(clientKey: String, endpoint: String?) {
-        this.endpoint = endpoint ?: ENVIRONMENT_PRODUCTION
+        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
         this.clientKey = clientKey
         NIDServiceTracker.rndmId = ""
     }
 
     fun start() {
-        started = true
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
@@ -191,11 +189,10 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        started = false
         NIDJobServiceManager.stopJob()
     }
 
-    fun isStopped() = !started
+    fun isStopped() = NIDJobServiceManager.isStopped()
 
     private suspend fun createSession() {
         application?.let {
