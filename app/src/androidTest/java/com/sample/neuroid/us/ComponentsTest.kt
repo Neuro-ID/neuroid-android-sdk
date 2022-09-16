@@ -6,7 +6,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.google.common.truth.Truth
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -71,9 +70,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"CHECKBOX_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateClickControlViews - Event: $event")
-        Truth.assertThat(event).matches(NID_STRUCT_CHECKBOX_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
     /**
@@ -95,9 +92,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"RADIO_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
-        Truth.assertThat(event).matches(NID_STRUCT_RADIO_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
     /**
@@ -123,9 +118,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"SWITCH_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
-        Truth.assertThat(event).matches(NID_STRUCT_SWITCH_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
     /**
@@ -151,9 +144,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"TOGGLE_BUTTON_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateRadioChange - Event: $event")
-        Truth.assertThat(event).matches(NID_STRUCT_TOGGLE_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
     /**
@@ -179,8 +170,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"RATING_BAR_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        Truth.assertThat(event).matches(NID_STRUCT_RATING_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
     /**
@@ -210,11 +200,7 @@ class ComponentsTest {
         Thread.sleep(500)
 
         val eventType = "\"type\":\"SLIDER_CHANGE\""
-        val event = validateEventCount(getDataStoreInstance().getAllEvents(), eventType)
-        NIDLog.d("----> UITest", "----> validateSliderChange - Event: [$event]")
-
-
-        Truth.assertThat(event).matches(NID_STRUCT_SLIDER_CHANGE)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
 

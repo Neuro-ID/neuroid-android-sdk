@@ -49,7 +49,7 @@ class NeuroID private constructor(
     companion object {
 
         private const val ENVIRONMENT_PRODUCTION = "LIVE"
-        private const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
+        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
         private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
         private var singleton: NeuroID? = null

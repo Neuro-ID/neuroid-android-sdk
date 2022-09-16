@@ -7,6 +7,7 @@ import kotlinx.coroutines.*
 object NIDJobServiceManager {
 
     private var jobCaptureEvents: Job? = null
+    var isSendEventsNowEnabled = true
 
     @Volatile
     var userActive = true
@@ -44,13 +45,15 @@ object NIDJobServiceManager {
     }
 
     suspend fun sendEventsNow() {
-        application?.let {
-            val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
-            if (response.second) {
+        if (isSendEventsNowEnabled) {
+            application?.let {
+                val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
+                if (response.second) {
+                    userActive = false
+                }
+            } ?: run {
                 userActive = false
             }
-        } ?: run {
-            userActive = false
         }
     }
 

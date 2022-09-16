@@ -27,7 +27,7 @@ class MyApplicationDemo : MultiDexApplication() {
             "key_live_suj4CX90v0un2k1ufGrbItT5"
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
-        NeuroID.getInstance()?.setEnvironment("TEST")
+        NeuroID.getInstance()?.setEnvironment("LIVE")
         NeuroID.getInstance()?.setSiteId("form_dream102")
         val rnds = (0..10000).random().toString()
         NeuroID.getInstance()?.setUserID(rnds)
