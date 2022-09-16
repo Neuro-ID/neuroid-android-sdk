@@ -37,9 +37,11 @@ object NIDServiceTracker {
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
-        context: Application
+        context: Application,
+        events: Set<String>? = null
     ): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
+
+        val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
         }

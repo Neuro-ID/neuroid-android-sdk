@@ -21,7 +21,7 @@ class NIDSchema {
     suspend fun validateEvents(
         eventList: Set<String>,
         eventType: String = "",
-        maxEventsCount: Int = 1
+        maxEventsCount: Int = 1,
     ) {
         val events: Set<String>
         if (eventType.isNotEmpty()) {
@@ -41,6 +41,18 @@ class NIDSchema {
                 events
             )
         validateSchema(json)
+
+        /*
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        CoroutineScope(Dispatchers.IO).launch {
+            val typeResponse = NIDServiceTracker.sendEventToServer(
+                "key_live_vtotrandom_form_mobilesandbox",
+                NeuroID.ENDPOINT_PRODUCTION,
+                application,
+                events
+            )
+            Truth.assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
+        }*/
     }
 
     private fun validateSchema(json: String) {
