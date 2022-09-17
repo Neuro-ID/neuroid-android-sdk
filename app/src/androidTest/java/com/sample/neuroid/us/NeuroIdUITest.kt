@@ -118,7 +118,7 @@ class NeuroIdUITest {
 
         onView(withId(R.id.button_show_activity_no_automatic_events))
             .perform(click())
-        delay(400)
+        delay(1000)
 
         onView(withId(R.id.button_send_form_success))
             .perform(click())
