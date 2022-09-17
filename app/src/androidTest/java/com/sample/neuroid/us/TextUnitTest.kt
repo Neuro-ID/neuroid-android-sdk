@@ -11,10 +11,8 @@ import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
+import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -22,10 +20,8 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 @LargeTest
+@ExperimentalCoroutinesApi
 class TextUnitTest {
-    @ExperimentalCoroutinesApi
-    private val testDispatcher = TestCoroutineDispatcher()
-    private val testScope = TestCoroutineScope(testDispatcher)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -37,32 +33,27 @@ class TextUnitTest {
      */
     @ExperimentalCoroutinesApi
     @Before
-    fun stopSendEventsToServer() {
-        Dispatchers.setMain(testDispatcher)
+    fun stopSendEventsToServer() = runTest {
         NeuroID.getInstance()?.stop()
         NIDJobServiceManager.isSendEventsNowEnabled = false
     }
 
     @ExperimentalCoroutinesApi
     @After
-    fun resetDispatchers() {
-        testScope.launch {
-            getDataStoreInstance().clearEvents()
-        }
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
+    fun resetDispatchers() = runTest {
+        getDataStoreInstance().clearEvents()
     }
 
     /**
      * Validate FOCUS when the user click on editText
      */
     @Test
-    fun test01ValidateFocusOnEditText() = runBlockingTest {
+    fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        Thread.sleep(500)
+        delay(500)
 
         val eventType = "\"type\":\"FOCUS\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
@@ -72,17 +63,17 @@ class TextUnitTest {
      * Validate BLUR when the user change the focus
      */
     @Test
-    fun test02ValidateBlurOnEditText() = runBlockingTest {
+    fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        Thread.sleep(600)
+        delay(600)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_password_field))
             .perform(ViewActions.click())
-        Thread.sleep(600)
+        delay(600)
 
         val eventType = "\"type\":\"BLUR\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
@@ -92,13 +83,13 @@ class TextUnitTest {
      * Validate INPUT when the user type on editText
      */
     @Test
-    fun test03ValidateInputText() = runBlockingTest {
+    fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
-        Thread.sleep(500)
+        delay(500)
 
         val eventType = "\"type\":\"INPUT\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, text.length)
@@ -108,17 +99,17 @@ class TextUnitTest {
      * Validate TEXT_CHANGE when the user type on editText and change focus
      */
     @Test
-    fun test04ValidateTypeTextOnEditText() = runBlockingTest {
+    fun test04ValidateTypeTextOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText("Some text"))
-        Thread.sleep(500)
+        delay(500)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_password_field))
             .perform(ViewActions.click())
-        Thread.sleep(500)
+        delay(500)
 
         val eventType = "\"type\":\"TEXT_CHANGE\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
