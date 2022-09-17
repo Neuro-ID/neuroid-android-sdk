@@ -324,7 +324,6 @@ class NeuroIdUITest {
      * Validate the sending of data to the server correctly, if the return code of the server is
      * NID_OK_SERVICE the sending was successful
      */
-    @ExperimentalCoroutinesApi
     @Test
     fun test22ValidateSendDataToService() = runTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
