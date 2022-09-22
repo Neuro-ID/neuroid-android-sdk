@@ -1,26 +1,20 @@
 package com.sample.neuroid.us
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.swipeDown
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
-import com.google.common.truth.Truth.assertThat
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
@@ -318,29 +312,6 @@ class NeuroIdUITest {
         delay(35_000) // +1 second to wait write data
         val eventType = "\"type\":\"USER_INACTIVE\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
-     * Validate the sending of data to the server correctly, if the return code of the server is
-     * NID_OK_SERVICE the sending was successful
-     */
-    @Test
-    fun test22ValidateSendDataToService() = runTest {
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        //Add some events:
-        onView(withId(R.id.editText_normal_field))
-            .perform(typeText("Some text"))
-        onView(withId(R.id.button_show_activity_one_fragment))
-            .perform(click())
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val typeResponse = NIDServiceTracker.sendEventToServer(
-                "key_live_vtotrandom_form_mobilesandbox",
-                NeuroID.ENDPOINT_PRODUCTION,
-                application
-            )
-            assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
-        }
     }
 
 }

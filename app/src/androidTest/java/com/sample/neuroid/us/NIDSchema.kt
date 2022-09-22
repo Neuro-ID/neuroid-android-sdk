@@ -1,8 +1,11 @@
 package com.sample.neuroid.us
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.service.NIDServiceTracker
 import org.everit.json.schema.Validator
@@ -11,6 +14,8 @@ import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -27,9 +32,9 @@ class NIDSchema {
         if (eventType.isNotEmpty()) {
             events = eventList.filter { it.contains(eventType) }.toSet()
             if (maxEventsCount > 0) {
-                Assert.assertEquals(maxEventsCount, events.size)
+                assertEquals(maxEventsCount, events.size)
             } else {
-                Assert.assertTrue(events.isNotEmpty())
+                assertTrue(events.isNotEmpty())
             }
         } else {
             events = eventList
@@ -42,17 +47,16 @@ class NIDSchema {
             )
         validateSchema(json)
 
-        /*
         val application = ApplicationProvider.getApplicationContext<Application>()
-        CoroutineScope(Dispatchers.IO).launch {
-            val typeResponse = NIDServiceTracker.sendEventToServer(
-                "key_live_vtotrandom_form_mobilesandbox",
-                NeuroID.ENDPOINT_PRODUCTION,
-                application,
-                events
-            )
-            Truth.assertThat(typeResponse.first == NIDServiceTracker.NID_OK_SERVICE).isTrue()
-        }*/
+        val typeResponse = NIDServiceTracker.sendEventToServer(
+            "key_live_suj4CX90v0un2k1ufGrbItT5",
+            NeuroID.ENDPOINT_PRODUCTION,
+            application,
+            events
+        )
+
+        assertEquals(json, 200, typeResponse.first)
+
     }
 
     private fun validateSchema(json: String) {

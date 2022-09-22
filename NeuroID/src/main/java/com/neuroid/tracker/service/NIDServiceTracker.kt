@@ -95,10 +95,10 @@ object NIDServiceTracker {
 
                 return if (code == 200) {
                     NIDLog.d("NeuroID", "Http response code: $code")
-                    Pair(NID_OK_SERVICE, stopLoopService)
+                    Pair(code, stopLoopService)
                 } else {
                     NIDLog.e("NeuroID", "Error service: $message Code:$code")
-                    Pair(NID_ERROR_SERVICE, stopLoopService)
+                    Pair(code, stopLoopService)
                 }
             } catch (ex: Exception) {
                 NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
