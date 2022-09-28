@@ -34,6 +34,10 @@ object NIDServiceTracker {
     var rndmId = ""
     var firstScreenName = ""
 
+    fun createTabId() {
+
+    }
+
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
