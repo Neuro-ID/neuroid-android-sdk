@@ -189,6 +189,8 @@ class NeuroID private constructor(
     }
 
     fun start() {
+        NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
@@ -236,7 +238,9 @@ class NeuroID private constructor(
                     jsv = NIDVersion.getSDKVersion(),
                     ts = timestamp,
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat()
                 )
             )
         }
