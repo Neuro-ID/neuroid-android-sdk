@@ -34,10 +34,6 @@ object NIDServiceTracker {
     var rndmId = ""
     var firstScreenName = ""
 
-    fun createTabId() {
-
-    }
-
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
@@ -113,7 +109,6 @@ object NIDServiceTracker {
         events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
-        rndmId = rndmId.ifBlank { sharedDefaults.getHexRandomID() }
 
         val jsonBody = JSONObject().apply {
             put("siteId", siteId)
