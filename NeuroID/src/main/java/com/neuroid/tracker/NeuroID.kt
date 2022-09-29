@@ -206,7 +206,6 @@ class NeuroID private constructor(
 
     private suspend fun createSession() {
         timestamp = System.currentTimeMillis()
-
         application?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
