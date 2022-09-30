@@ -46,12 +46,12 @@ private fun registerComponent(view: View, guid: String) {
         is EditText -> {
             et = "Edittext"
         }
-        is CheckBox, is AppCompatCheckBox -> {
+        /*is CheckBox, is AppCompatCheckBox -> {
             et = "CheckBox"
         }
         is RadioButton -> {
             et = "RadioButton"
-        }
+        }*/
         is ToggleButton -> {
             et = "ToggleButton"
         }
@@ -90,6 +90,7 @@ private fun registerComponent(view: View, guid: String) {
                 NIDEventModel(
                     type = REGISTER_TARGET,
                     attrs = attrJson,
+                    tg = mapOf("attr" to attrJson),
                     et = et + "::" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,

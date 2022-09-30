@@ -24,6 +24,7 @@ class NeuroID private constructor(
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
     private var clientID = ""
+    private var timestamp: Long = 0L
 
     @Synchronized
     private fun setupCallbacks() {
@@ -101,9 +102,14 @@ class NeuroID private constructor(
         }
     }
 
+    fun getEnvironment(): String = NIDServiceTracker.environment
+
     fun setSiteId(siteId: String) {
         NIDServiceTracker.siteId = siteId
     }
+
+    fun getSiteId(): String =
+        NIDServiceTracker.siteId
 
     fun getSessionId(): String {
         return sessionID
@@ -112,6 +118,10 @@ class NeuroID private constructor(
     fun getClientId(): String {
         return clientID
     }
+
+    fun getTabId(): String = NIDServiceTracker.rndmId
+
+    fun getFirstTS(): Long = timestamp
 
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
@@ -179,6 +189,8 @@ class NeuroID private constructor(
     }
 
     fun start() {
+        NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
@@ -195,6 +207,7 @@ class NeuroID private constructor(
     fun isStopped() = NIDJobServiceManager.isStopped()
 
     private suspend fun createSession() {
+        timestamp = System.currentTimeMillis()
         application?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -223,9 +236,11 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis(),
+                    ts = timestamp,
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat()
                 )
             )
         }
