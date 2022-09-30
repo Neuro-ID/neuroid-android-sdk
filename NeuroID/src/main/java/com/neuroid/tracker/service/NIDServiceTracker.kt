@@ -112,7 +112,7 @@ object NIDServiceTracker {
 
         val jsonBody = JSONObject().apply {
             put("siteId", siteId)
-            put("userId", sharedDefaults.getSessionID())
+            put("userId", sharedDefaults.getUserId())
             put("clientId", sharedDefaults.getClientId())
             put("identityId", sharedDefaults.getUserId())
             put("pageTag", screenActivityName)
