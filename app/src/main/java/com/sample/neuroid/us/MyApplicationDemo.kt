@@ -5,8 +5,16 @@ import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
+import com.sample.neuroid.us.domain.config.ConfigHelper
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
+@HiltAndroidApp
 class MyApplicationDemo : MultiDexApplication() {
+
+    @Inject
+    lateinit var configHelper: ConfigHelper
+
     override fun onCreate() {
         super.onCreate()
         StrictMode.setThreadPolicy(
@@ -28,9 +36,8 @@ class MyApplicationDemo : MultiDexApplication() {
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
         NeuroID.getInstance()?.setEnvironment("LIVE")
-        NeuroID.getInstance()?.setSiteId("form_dream102")
-        val rnds = (0..10000).random().toString()
-        NeuroID.getInstance()?.setUserID(rnds)
+        NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.start()
+        NeuroID.getInstance()?.setUserID(configHelper.userId)
     }
 }

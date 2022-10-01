@@ -10,8 +10,6 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,12 +37,12 @@ class SandBoxTest {
      */
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
+        //NeuroID.getInstance()?.stop()
     }
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        //getDataStoreInstance().clearEvents()
     }
 
     /**
@@ -53,16 +51,40 @@ class SandBoxTest {
     @Test
     fun test01ValidateCheckBox() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
+        delay(12000)
         val firstNameField = onView(withId(R.id.firstName))
-        val lastNameNameField = onView(withId(R.id.lastName))
+        val lastNameField = onView(withId(R.id.lastName))
+        val emailField = onView(withId(R.id.email))
+        val cityField = onView(withId(R.id.city))
+        val homeZipCodeField = onView(withId(R.id.homeZipCode))
+        val phoneNumberField = onView(withId(R.id.phoneNumber))
+        val employerlblField = onView(withId(R.id.employerlbl))
+        val buttonContinue = onView(withId(R.id.buttonContinue))
         firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
-        delay(500)
-        lastNameNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
-        delay(500)
+        delay(1000)
+        lastNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
+        delay(1000)
         firstNameField.perform(clearText())
-        delay(500)
-        lastNameNameField.perform(clearText())
+        delay(1000)
+        lastNameField.perform(clearText())
+        delay(1000)
+        firstNameField.perform(typeText("Alejandro"), closeSoftKeyboard())
+        delay(1000)
+        lastNameField.perform(typeText("Bautista"), closeSoftKeyboard())
+        delay(1000)
+        emailField.perform(typeText("asdad@gmail.com"), closeSoftKeyboard())
+        delay(1000)
+        cityField.perform(typeText("Mexico City"), closeSoftKeyboard())
+        delay(1000)
+        homeZipCodeField.perform(typeText("55340"), closeSoftKeyboard())
+        delay(1000)
+        phoneNumberField.perform(typeText("56565656"), closeSoftKeyboard())
+        delay(1000)
+        employerlblField.perform(typeText("54523"), closeSoftKeyboard())
+
+        delay(15000)
+        buttonContinue.perform(click())
+        delay(15000)
     }
 
 
