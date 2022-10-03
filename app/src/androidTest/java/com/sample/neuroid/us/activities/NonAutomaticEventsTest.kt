@@ -21,7 +21,7 @@ import org.junit.runners.MethodSorters
 /**
  * Neuro ID: 26 UI Test
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 @LargeTest
