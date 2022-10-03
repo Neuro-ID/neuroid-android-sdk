@@ -203,7 +203,7 @@ class NIDTouchEventManager(
                     }
                 }
 
-                if (type.isNotEmpty()) {
+               /* if (type.isNotEmpty()) {
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
@@ -219,9 +219,9 @@ class NIDTouchEventManager(
                                 accel = accelData
                             )
                         )
-                }
+                }*/
             } else {
-                if (lastView is SeekBar) {
+                /*if (lastView is SeekBar) {
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
@@ -238,7 +238,7 @@ class NIDTouchEventManager(
                                 accel = accelData
                             )
                         )
-                }
+                }*/
             }
             lastView = null
         } else if (action == ACTION_DOWN) {

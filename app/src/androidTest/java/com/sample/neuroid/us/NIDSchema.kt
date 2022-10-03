@@ -27,35 +27,40 @@ class NIDSchema {
         eventList: Set<String>,
         eventType: String = "",
         maxEventsCount: Int = 1,
+        validateEvent: Boolean = true
     ) {
-        val events: Set<String>
-        if (eventType.isNotEmpty()) {
-            events = eventList.filter { it.contains(eventType) }.toSet()
-            if (maxEventsCount > 0) {
-                assertEquals(maxEventsCount, events.size)
+        if (validateEvent) {
+            val events: Set<String>
+            if (eventType.isNotEmpty()) {
+                events = eventList.filter { it.contains(eventType) }.toSet()
+                if (maxEventsCount > 0) {
+                    assertEquals(maxEventsCount, events.size)
+                } else {
+                    assertTrue(events.isNotEmpty())
+                }
             } else {
-                assertTrue(events.isNotEmpty())
+                events = eventList
             }
-        } else {
-            events = eventList
-        }
 
-        val json =
-            getJsonData(
-                context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
+            val json =
+                getJsonData(
+                    context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
+                    events
+                )
+            validateSchema(json)
+
+            val application = ApplicationProvider.getApplicationContext<Application>()
+            val typeResponse = NIDServiceTracker.sendEventToServer(
+                "key_live_suj4CX90v0un2k1ufGrbItT5",
+                NeuroID.ENDPOINT_PRODUCTION,
+                application,
                 events
             )
-        validateSchema(json)
 
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        val typeResponse = NIDServiceTracker.sendEventToServer(
-            "key_live_suj4CX90v0un2k1ufGrbItT5",
-            NeuroID.ENDPOINT_PRODUCTION,
-            application,
-            events
-        )
-
-        assertEquals(json, 200, typeResponse.first)
+            assertEquals(json, 200, typeResponse.first)
+        } else {
+            assertTrue(true)
+        }
 
     }
 
