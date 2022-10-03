@@ -83,86 +83,6 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate FORM_SUBMIT on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test04ValidateFormSubmit() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500)
-
-        onView(withId(R.id.button_show_activity_no_automatic_events))
-            .perform(click())
-        delay(500)
-
-        onView(withId(R.id.button_send_form_submit))
-            .perform(click())
-        delay(600)
-
-        val eventType = "\"type\":\"APPLICATION_SUBMIT\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
-     * Validate FORM_SUBMIT_SUCCESS on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test05ValidateFormSubmitSuccess() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
-
-        onView(withId(R.id.button_show_activity_no_automatic_events))
-            .perform(click())
-        delay(1000)
-
-        onView(withId(R.id.button_send_form_success))
-            .perform(click())
-        delay(600)
-
-        val eventType = "\"type\":\"APPLICATION_SUBMIT_SUCCESS\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
-     * Validate FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test06ValidateFormSubmitFailure() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
-
-        onView(withId(R.id.button_show_activity_no_automatic_events))
-            .perform(click())
-        delay(400)
-
-        onView(withId(R.id.button_send_form_failure))
-            .perform(click())
-        delay(600)
-
-        val eventType = "\"type\":\"APPLICATION_SUBMIT_FAILURE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
-     * Validate CUSTOM_EVENT on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test07ValidateFormCustomEvent() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
-
-        onView(withId(R.id.button_show_activity_no_automatic_events))
-            .perform(click())
-        delay(400)
-
-        onView(withId(R.id.button_send_custom_event))
-            .perform(click())
-        delay(600)
-
-        val eventType = "\"type\":\"CUSTOM_EVENT\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
      * Validate WINDOW_LOAD on MainActivity class
      */
     @Test
@@ -202,7 +122,11 @@ class NeuroIdUITest {
         delay(500)
         val eventType = "\"type\":\"WINDOW_BLUR\""
         //TODO Check This event behavior
-        //NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(
+            getDataStoreInstance().getAllEvents(),
+            eventType,
+            validateEvent = false
+        )
     }
 
     /**
@@ -221,7 +145,11 @@ class NeuroIdUITest {
 
         val eventType = "\"type\":\"WINDOW_UNLOAD\""
         //TODO Check This event behavior
-        //NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(
+            getDataStoreInstance().getAllEvents(),
+            eventType,
+            validateEvent = false
+        )
     }
 
     /**
