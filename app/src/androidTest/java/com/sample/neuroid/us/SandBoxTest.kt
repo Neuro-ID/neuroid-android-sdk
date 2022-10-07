@@ -49,7 +49,7 @@ class SandBoxTest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01ValidateCheckBox() = runTest {
+    fun test01RiskyScore() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(12000)
         val firstNameField = onView(withId(R.id.firstName))
@@ -60,19 +60,23 @@ class SandBoxTest {
         val phoneNumberField = onView(withId(R.id.phoneNumber))
         val employerlblField = onView(withId(R.id.employerlbl))
         val buttonContinue = onView(withId(R.id.buttonContinue))
+        firstNameField.perform(click())
         firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
         delay(1000)
+        lastNameField.perform(click())
         lastNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
         delay(1000)
         firstNameField.perform(clearText())
         delay(1000)
         lastNameField.perform(clearText())
         delay(1000)
-        firstNameField.perform(typeText("Alejandro"), closeSoftKeyboard())
+        firstNameField.perform(click())
+        firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
         delay(1000)
-        lastNameField.perform(typeText("Bautista"), closeSoftKeyboard())
+        lastNameField.perform(click())
+        lastNameField.perform(replaceText("Bautista"), closeSoftKeyboard())
         delay(1000)
-        emailField.perform(typeText("asdad@gmail.com"), closeSoftKeyboard())
+        emailField.perform(replaceText("asdad@gmail.com"), closeSoftKeyboard())
         delay(1000)
         cityField.perform(typeText("Mexico City"), closeSoftKeyboard())
         delay(1000)
