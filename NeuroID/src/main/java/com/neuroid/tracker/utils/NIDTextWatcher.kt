@@ -38,6 +38,7 @@ class NIDTextWatcher(
                         tg = hashMapOf(
                             "attr" to getAttrJson(sequence.toString()),
                         ),
+                        tgs = idName,
                         gyro = gyroData,
                         accel = accelData
                     )

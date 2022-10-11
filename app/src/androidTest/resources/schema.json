@@ -200,13 +200,13 @@
           "type": "object",
           "properties": {
             "x": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "y": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "z": {
-              "type" : "number"
+              "type" : ["number", "null"]
             }
           }
         },
@@ -214,13 +214,13 @@
           "type": "object",
           "properties": {
             "x": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "y": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "z": {
-              "type" : "number"
+              "type" : ["number", "null"]
             }
           }
         },
@@ -273,11 +273,14 @@
         "hash": {
           "type": "string"
         },
+        "hv": {
+          "type": "string"
+        },
         "x": {
-          "type": "number"
+          "type": "integer"
         },
         "y": {
-          "type": "number"
+          "type": "integer"
         },
         "z": {
           "type": "number"
@@ -454,20 +457,286 @@
         },
         "uid": {
           "$ref": "#/definitions/Uid"
+        },
+        "ct": {
+          "type": "string"
         }
       },
       "if": {
         "properties": {
-          "type": ["MOUSE_MOVE", "MOUSE_UP"]
+          "type": {
+            "pattern": "STATE_CHANGE"
+          }
         }
       },
-      "then": {
-        "required": ["ts", "type"]
-      },
+      "then": {"required": ["type","ts","pid"] },
       "else": {
-        "required": ["ts", "type", "tgs"]
-      },
-      "title": "Events"
+        "if": {
+          "properties": {
+            "type": {
+              "pattern": "SET_APPLICATION_ID"
+            }
+          }
+        },
+        "then": {
+          "required": ["type","ts","aid"]
+        },
+        "else": {
+          "if": {
+            "properties": {
+              "type": {
+                "pattern": "/^APPLICATION_SUBMIT/|SET_CHECKPOINT|PAGE_SUBMIT"
+              }
+            }
+          },
+          "then": {
+            "required": ["type","ts","n"]
+          },
+          "else": {
+            "if": {
+              "properties": {
+                "type": {
+                  "pattern": "TAG"
+                }
+              }
+            },
+            "then": {
+              "required": ["type","ts","tag"]
+            },
+            "else": {
+              "if": {
+                "properties": {
+                  "type": {
+                    "pattern": "SET_VARIABLE"
+                  }
+                }
+              },
+              "then": {
+                "required": ["type","ts","key","v"]
+              },
+              "else": {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "pattern": "SET_USER_ID"
+                    }
+                  }
+                },
+                "then": {
+                  "required": ["type","ts","uid"]
+                },
+                "else": {
+                  "if": {
+                    "properties": {
+                      "type": {
+                        "pattern": "WINDOW_SCROLL"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": ["type","ts","x","y"]
+                  },
+                  "else": {
+                    "if": {
+                      "properties": {
+                        "type": {
+                          "pattern": "INPUT|RADIO_CHANGE|CHECKBOX_CHANGE|INPUT_CHANGE"
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": ["type","ts","tg","v"]
+                    },
+                    "else": {
+                      "if": {
+                        "properties": {
+                          "type": {
+                            "pattern": "WINDOW_RESIZE"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": ["type","ts","w","h"]
+                      },
+                      "else": {
+                        "if": {
+                          "properties": {
+                            "type": {
+                              "pattern": "MOUSE_MOVE|MOUSE_DOWN|MOUSE_UP|CLICK"
+                            }
+                          }
+                        },
+                        "then": {
+                          "required": ["type","ts","tg","x","y"]
+                        },
+                        "else": {
+                          "if": {
+                            "properties": {
+                              "type": {
+                                "pattern": "KEY_DOWN|KEY_UP"
+                              }
+                            }
+                          },
+                          "then": {
+                            "required": ["type","ts","tg","kc"]
+                          },
+                          "else": {
+                            "if": {
+                              "properties": {
+                                "type": {
+                                  "pattern": "TEXT_CHANGE"
+                                }
+                              }
+                            },
+                            "then": {
+                              "required": ["type","ts","tg","pd","sm","v"]
+                            },
+                            "else": {
+                              "if": {
+                                "properties": {
+                                  "type": {
+                                    "pattern": "TOUCH_START|TOUCH_END|TOUCH_MOVE"
+                                  }
+                                }
+                              },
+                              "then": {
+                                "required": ["type","ts","tg","touches"]
+                              },
+                              "else": {
+                                "if": {
+                                  "properties": {
+                                    "type": {
+                                      "pattern": "SET_CUSTOM_EVENT"
+                                    }
+                                  }
+                                },
+                                "then": {
+                                  "required": ["type","ts","props","n"]
+                                },
+                                "else": {
+                                  "if": {
+                                    "properties": {
+                                      "type": {
+                                        "pattern": "LOG"
+                                      }
+                                    }
+                                  },
+                                  "then": {
+                                    "required": ["type","ts","level","m"]
+                                  },
+                                  "else": {
+                                    "if": {
+                                      "properties": {
+                                        "type": {
+                                          "pattern": "PASTE|^/FOCUS/|^/BLUR/|COPY|CUT|SCROLL|FORM_SUBMIT_SUCCESS|FORM_SUBMIT|FORM_SUBMIT_FAILURE|INVALID|MOUSE_ENTER|MOUSE_LEAVE"
+                                        }
+                                      }
+                                    },
+                                    "then": {
+                                      "required": ["type","ts","tg"]
+                                    },
+                                    "else":{
+                                      "if": {
+                                        "properties": {
+                                          "type": {
+                                            "pattern": "WINDOW_ORIENTATION_CHANGE"
+                                          }
+                                        }
+                                      },
+                                      "then": {
+                                        "required": ["type","ts","o"]
+                                      },
+                                      "else": {
+                                        "if": {
+                                          "properties": {
+                                            "type": {
+                                              "pattern": "DEVICE_MOTION"
+                                            }
+                                          }
+                                        },
+                                        "then": {
+                                          "required": ["type","ts","x", "y", "z", "gx", "gy", "gz", "a", "b", "g"]
+                                        },
+                                        "else": {
+                                          "if": {
+                                            "properties": {
+                                              "type": {
+                                                "pattern": "DEVICE_ORIENTATION"
+                                              }
+                                            }
+                                          },
+                                          "then": {
+                                            "required": ["type","ts","a", "b", "g"]
+                                          },
+                                          "else": {
+                                            "if": {
+                                              "properties": {
+                                                "type": {
+                                                  "pattern": "DUPLICATED_TAB"
+                                                }
+                                              }
+                                            },
+                                            "then": {
+                                              "required": ["type","ts","ptbid","tbid"]
+                                            },
+                                            "else": {
+                                              "if": {
+                                                "properties": {
+                                                  "type": {
+                                                    "pattern": "CHANGE|SELECT_CHANGE|SLIDER_CHANGE|SLIDER_SET_MAX|SLIDER_SET_MIN|REGISTER_TARGET|DEREGISTER_TARGET"
+                                                  }
+                                                }
+                                              },
+                                              "then": {
+                                                "required": ["type","ts","v"]
+                                              },
+                                              "else": {
+                                                "if": {
+                                                  "properties": {
+                                                    "type": {
+                                                      "pattern": "TOUCH_CANCEL"
+                                                    }
+                                                  }
+                                                },
+                                                "then": {
+                                                  "required": ["type","ts","touches"]
+                                                },
+                                                "else": {
+                                                  "if": {
+                                                    "properties": {
+                                                      "type": {
+                                                        "pattern": "CLOSE_SESSION"
+                                                      }
+                                                    }
+                                                  },
+                                                  "then": {
+                                                    "required": ["type","ts","ct"]
+                                                  },
+                                                  "else": {
+                                                    "required": ["type","ts"]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Tg": {
       "type": "object",
@@ -490,6 +759,9 @@
         },
         "url": {
           "type": "string"
+        },
+        "attr": {
+          "type": "array"
         }
       },
       "title": "Tg"

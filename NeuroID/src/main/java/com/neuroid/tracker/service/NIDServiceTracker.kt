@@ -37,9 +37,11 @@ object NIDServiceTracker {
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
-        context: Application
+        context: Application,
+        events: Set<String>? = null
     ): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
+
+        val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
         }
@@ -62,7 +64,12 @@ object NIDServiceTracker {
 
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(it.replace("\"url\":\"\"", "\"url\":\"$ANDROID_URI$firstScreenName\""))
+                    JSONObject(
+                        it.replace(
+                            "\"url\":\"\"",
+                            "\"url\":\"$ANDROID_URI$firstScreenName\""
+                        )
+                    )
                 } else {
                     JSONObject(it)
                 }
@@ -86,12 +93,12 @@ object NIDServiceTracker {
                 val code = conn.responseCode
                 val message = conn.responseMessage
 
-                return if (code in 200..299) {
+                return if (code == 200) {
                     NIDLog.d("NeuroID", "Http response code: $code")
-                    Pair(NID_OK_SERVICE, stopLoopService)
+                    Pair(code, stopLoopService)
                 } else {
-                    NIDLog.e("NeuroID", "Error service: $message")
-                    Pair(NID_ERROR_SERVICE, stopLoopService)
+                    NIDLog.e("NeuroID", "Error service: $message Code:$code")
+                    Pair(code, stopLoopService)
                 }
             } catch (ex: Exception) {
                 NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
