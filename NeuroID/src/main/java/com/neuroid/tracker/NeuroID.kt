@@ -24,6 +24,7 @@ class NeuroID private constructor(
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
     private var clientID = ""
+    private var userID = ""
     private var timestamp: Long = 0L
 
     @Synchronized
@@ -67,6 +68,7 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
+        userID = userId
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -83,6 +85,8 @@ class NeuroID private constructor(
             )
         )
     }
+
+    fun getUserId() = userID
 
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(),"%20")
