@@ -49,9 +49,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 .saveEvent(NIDEventModel(
                     type = WINDOW_ORIENTATION_CHANGE,
                     ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "orientation" to strOrientation
-                    ),
+                    o = "CHANGED",
                     gyro = gyroData,
                     accel = accelData
                 ))

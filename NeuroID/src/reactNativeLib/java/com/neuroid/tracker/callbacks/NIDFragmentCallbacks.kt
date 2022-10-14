@@ -17,12 +17,16 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             NIDServiceTracker.screenFragName = f::class.java.simpleName
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
 
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_LOAD,
-                        ts = System.currentTimeMillis()
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
 
@@ -79,11 +83,15 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_UNLOAD,
-                        ts = System.currentTimeMillis()
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData
                     )
                 )
         }

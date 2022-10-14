@@ -37,9 +37,11 @@ object NIDServiceTracker {
     suspend fun sendEventToServer(
         key: String,
         endpoint: String,
-        context: Application
+        context: Application,
+        events: Set<String>? = null
     ): Pair<Int, Boolean> {
-        val listEvents = getDataStoreInstance().getAllEvents().sortedBy {
+
+        val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
         }
@@ -62,7 +64,12 @@ object NIDServiceTracker {
 
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(it.replace("\"url\":\"\"", "\"url\":\"$ANDROID_URI$firstScreenName\""))
+                    JSONObject(
+                        it.replace(
+                            "\"url\":\"\"",
+                            "\"url\":\"$ANDROID_URI$firstScreenName\""
+                        )
+                    )
                 } else {
                     JSONObject(it)
                 }
@@ -86,12 +93,12 @@ object NIDServiceTracker {
                 val code = conn.responseCode
                 val message = conn.responseMessage
 
-                return if (code in 200..299) {
+                return if (code == 200) {
                     NIDLog.d("NeuroID", "Http response code: $code")
-                    Pair(NID_OK_SERVICE, stopLoopService)
+                    Pair(code, stopLoopService)
                 } else {
-                    NIDLog.e("NeuroID", "Error service: $message")
-                    Pair(NID_ERROR_SERVICE, stopLoopService)
+                    NIDLog.e("NeuroID", "Error service: $message Code:$code")
+                    Pair(code, stopLoopService)
                 }
             } catch (ex: Exception) {
                 NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
@@ -109,11 +116,10 @@ object NIDServiceTracker {
         events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
-        rndmId = rndmId.ifBlank { sharedDefaults.getHexRandomID() }
 
         val jsonBody = JSONObject().apply {
             put("siteId", siteId)
-            put("userId", sharedDefaults.getSessionID())
+            put("userId", sharedDefaults.getUserId())
             put("clientId", sharedDefaults.getClientId())
             put("identityId", sharedDefaults.getUserId())
             put("pageTag", screenActivityName)
@@ -121,7 +127,8 @@ object NIDServiceTracker {
             put("tabId", rndmId)
             put("responseId", sharedDefaults.generateUniqueHexId())
             put("url", "$ANDROID_URI$screenActivityName")
-            put("jsVersion", NIDVersion.getSDKVersion())
+            put("jsVersion", "5.0.0")
+            put("sdkVersion", NIDVersion.getSDKVersion())
             put("environment", environment)
             put("jsonEvents", events)
         }

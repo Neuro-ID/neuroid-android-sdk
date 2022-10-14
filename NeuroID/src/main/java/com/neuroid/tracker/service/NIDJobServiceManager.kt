@@ -7,6 +7,7 @@ import kotlinx.coroutines.*
 object NIDJobServiceManager {
 
     private var jobCaptureEvents: Job? = null
+    var isSendEventsNowEnabled = true
 
     @Volatile
     var userActive = true
@@ -14,6 +15,7 @@ object NIDJobServiceManager {
     private var application: Application? = null
     private var endpoint: String = ""
 
+    @Synchronized
     fun startJob(
         application: Application,
         clientKey: String,
@@ -26,32 +28,44 @@ object NIDJobServiceManager {
         NIDSensorHelper.initSensorHelper(application)
     }
 
+    @Synchronized
     fun restart() {
         NIDSensorHelper.restartSensors()
+        jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()
     }
 
     private fun createJobServer(): Job {
-        val timeMills = 5000L
         return CoroutineScope(Dispatchers.IO).launch {
-            while (userActive) {
-                delay(timeMills)
-
-                application?.let {
-                    val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
-                    if (response.second) {
-                        userActive = false
-                    }
-                } ?: run {
-                    userActive = false
-                }
+            while (userActive && isActive) {
+                delay(5000L)
+                sendEventsNow()
             }
         }
     }
 
+    suspend fun sendEventsNow() {
+        if (isSendEventsNowEnabled) {
+            application?.let {
+                val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
+                if (response.second) {
+                    userActive = false
+                }
+            } ?: run {
+                userActive = false
+            }
+        }
+    }
+
+    @Synchronized
     fun stopJob() {
         NIDSensorHelper.stopSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = null
+    }
+
+    @Synchronized
+    fun isStopped(): Boolean {
+        return jobCaptureEvents?.isActive != true
     }
 }

@@ -25,6 +25,9 @@ class NeuroID private constructor(
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
+    private var clientID = ""
+    private var userID = ""
+    private var timestamp: Long = 0L
 
     private var metaData: NIDMetaData? = null
 
@@ -58,8 +61,8 @@ class NeuroID private constructor(
 
     companion object {
 
-        private const val ENVIRONMENT_PRODUCTION = "PRODUCTION"
-        private const val ENDPOINT_PRODUCTION = "https:/receiver.neuroid.cloud/c"
+        private const val ENVIRONMENT_PRODUCTION = "LIVE"
+        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
         private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
         private var singleton: NeuroID? = null
@@ -76,6 +79,7 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
+        userID = userId
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -93,8 +97,10 @@ class NeuroID private constructor(
         )
     }
 
+    fun getUserId() = userID
+
     fun setScreenName(screen: String) {
-        NIDServiceTracker.screenName = screen
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(),"%20")
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -111,13 +117,26 @@ class NeuroID private constructor(
         }
     }
 
+    fun getEnvironment(): String = NIDServiceTracker.environment
+
     fun setSiteId(siteId: String) {
         NIDServiceTracker.siteId = siteId
     }
 
+    fun getSiteId(): String =
+        NIDServiceTracker.siteId
+
     fun getSessionId(): String {
         return sessionID
     }
+
+    fun getClientId(): String {
+        return clientID
+    }
+
+    fun getTabId(): String = NIDServiceTracker.rndmId
+
+    fun getFirstTS(): Long = timestamp
 
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
@@ -178,12 +197,15 @@ class NeuroID private constructor(
         )
     }
 
-    fun configureWithOptions(clientKey: String, endpoint: String) {
-        this.endpoint = endpoint
+    fun configureWithOptions(clientKey: String, endpoint: String?) {
+        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
         this.clientKey = clientKey
+        NIDServiceTracker.rndmId = ""
     }
 
     fun start() {
+        NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
@@ -197,20 +219,23 @@ class NeuroID private constructor(
         NIDJobServiceManager.stopJob()
     }
 
+    fun isStopped() = NIDJobServiceManager.isStopped()
 
     private suspend fun createSession() {
+        timestamp = System.currentTimeMillis()
         application?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
+            clientID = sharedDefaults.getClientId()
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
-                    cid = sharedDefaults.getClientId(),
+                    cid = clientID,
                     did = sharedDefaults.getDeviceId(),
                     iid = sharedDefaults.getIntermediateId(),
                     loc = sharedDefaults.getLocale(),
@@ -226,9 +251,11 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = System.currentTimeMillis(),
+                    ts = timestamp,
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat()
                 )
             )
         }

@@ -5,25 +5,29 @@ import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
-    val tg: HashMap<String, String>? = null,
+    val attrs: JSONArray? = null,
+    val tg: Map<String, Any>? = null,
     val tgs: String? = null,
     val touches: List<String>? = null,
     val key: String? = null,
     val gyro: NIDSensorModel? = null,
     val accel: NIDSensorModel? = null,
     val v: String? = null,
+    val hv: String? = null,
     val en: String? = null,
     val etn: String? = null,
     val ec: String? = null,
     val et: String? = null,
     var eid: String? = null,
     val ts: Long,
-    val sm: String? = null,
-    val pd: String? = null,
+    val sm: Int? = null,
+    val pd: Int? = null,
     val x: Float? = null,
     val y: Float? = null,
     val w: Int? = null,
     val h: Int? = null,
+    val sw: Float? = null,
+    val sh: Float? = null,
     val f: String? = null,
     val lsid: String? = null,
     val sid: String? = null,
@@ -45,24 +49,17 @@ data class NIDEventModel(
     val ns: String? = null,
     val jsl: List<String>? = null,
     val jsv: String? = null,
-    val uid: String? = null
+    val uid: String? = null,
+    val o: String? = null,
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
         this.apply {
             tg?.let {
-                val childJson = JSONObject()
-                it.forEach { (key, value) ->
-                    if (key == "attr") {
-                        val attrs = JSONObject(value)
-                        childJson.put(key, attrs)
-                    } else {
-                        childJson.put(key, value)
-                    }
-                }
-                jsonObject.put("tg", childJson)
+                jsonObject.put("tg", JSONObject(it))
             }
+            attrs?.let { jsonObject.put("attrs", it) }
             tgs?.let { jsonObject.put("tgs", it) }
             touches?.let {
                 val array = JSONArray()
@@ -73,6 +70,7 @@ data class NIDEventModel(
             }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
+            hv?.let { jsonObject.put("hv", it) }
             en?.let { jsonObject.put("en", it) }
             etn?.let { jsonObject.put("etn", it) }
             ec?.let { jsonObject.put("ec", it) }
@@ -85,6 +83,8 @@ data class NIDEventModel(
             y?.let { jsonObject.put("y", it) }
             w?.let { jsonObject.put("w", it) }
             h?.let { jsonObject.put("h", it) }
+            sw?.let { jsonObject.put("sw", it) }
+            sh?.let { jsonObject.put("sh", it) }
             f?.let { jsonObject.put("f", it) }
             lsid?.let {
                 if (it == "null") {
@@ -105,6 +105,7 @@ data class NIDEventModel(
             ce?.let { jsonObject.put("ce", it) }
             je?.let { jsonObject.put("je", it) }
             ol?.let { jsonObject.put("ol", it) }
+            o?.let { jsonObject.put("o", it) }
             p?.let { jsonObject.put("p", it) }
             dnt?.let { jsonObject.put("dnt", it) }
             tch?.let { jsonObject.put("tch", it) }
@@ -140,8 +141,8 @@ data class NIDEventModel(
 
 data class NIDSensorModel(
     val x: Float?,
-    val y:Float?,
-    val z:Float?
+    val y: Float?,
+    val z: Float?
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()

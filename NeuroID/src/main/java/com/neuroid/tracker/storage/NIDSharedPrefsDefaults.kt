@@ -1,6 +1,7 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
+import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,10 +80,6 @@ class NIDSharedPrefsDefaults(
         return String.format("%02x", rawId)
     }
 
-    fun getHexRandomID(): String = List(12) {
-        (('a'..'f') + ('0'..'9')).random()
-    }.joinToString("")
-
     fun getLocale(): String = Locale.getDefault().toString()
 
     fun getLanguage(): String = Locale.getDefault().language
@@ -119,8 +116,20 @@ class NIDSharedPrefsDefaults(
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
         private const val NID_UID = "NID_UID_KEY"
         private const val NID_SID = "NID_SID_KEY"
-        private const val NID_CID = "NID_CID_KEY"
+        private const val NID_CID_OLD = "NID_CID_KEY"
+        private const val NID_CID = "NID_CID_GUID_KEY"
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
+
+        fun getHexRandomID(): String = List(12) {
+            (('a'..'f') + ('0'..'9')).random()
+        }.joinToString("")
+
+        fun getDisplayWidth() =
+            Resources.getSystem().displayMetrics.widthPixels
+
+        fun getDisplayHeight() =
+            Resources.getSystem().displayMetrics.heightPixels
+
     }
 }

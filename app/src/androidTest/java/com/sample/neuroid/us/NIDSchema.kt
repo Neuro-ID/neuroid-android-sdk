@@ -1,112 +1,70 @@
 package com.sample.neuroid.us
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.action.ViewActions
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.NIDLog
-import com.sample.neuroid.us.activities.MainActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.*
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.*
-import org.junit.runner.RunWith
-import org.junit.runners.MethodSorters
+import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 
+class NIDSchema {
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(AndroidJUnit4::class)
-@LargeTest
-class SchemaTest {
-    @ExperimentalCoroutinesApi
-    private val testDispatcher = TestCoroutineDispatcher()
-    private val testScope = TestCoroutineScope(testDispatcher)
-
-    @get:Rule
-    var activityRule: ActivityScenarioRule<MainActivity> =
-        ActivityScenarioRule(MainActivity::class.java)
-
-    /**
-     * The sending of events to the server is stopped so that they are not eliminated from
-     * the SharedPreferences and can be obtained one by one
-     */
-    @ExperimentalCoroutinesApi
-    @Before
-    fun stopSendEventsToServer() = runBlockingTest {
-        Dispatchers.setMain(testDispatcher)
-        NeuroID.getInstance()?.stop()
-    }
-
-    @ExperimentalCoroutinesApi
-    @After
-    fun resetDispatchers() {
-        testScope.launch {
-            getDataStoreInstance().clearEvents()
-        }
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-    }
-
-    /**
-     * Validate CHECKBOX_CHANGE when the user click on it
-     */
-    @Test
-    fun test01ValidateSchema() = runBlockingTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        Thread.sleep(500) // When you go to the next test, the activity is destroyed and recreated
-
-        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_one_fragment))
-            .perform(ViewActions.click())
-        Thread.sleep(500)
-
-        Espresso.onView(ViewMatchers.withId(R.id.check_one))
-            .perform(ViewActions.click())
-
-        Thread.sleep(500)
-
-        val events = getDataStoreInstance().getAllEvents()
-        val json =
-            getJsonData(context = getInstrumentation().targetContext.applicationContext, events)
-
-        validate(json)
-    }
-
-    private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
-        val listJson = listEvents.map {
-            if (it.contains("\"CREATE_SESSION\"")) {
-                JSONObject(it.replace("\"url\":\"\"", "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""))
+    suspend fun validateEvents(
+        eventList: Set<String>,
+        eventType: String = "",
+        maxEventsCount: Int = 1,
+        validateEvent: Boolean = true
+    ) {
+        if (validateEvent) {
+            val events: Set<String>
+            if (eventType.isNotEmpty()) {
+                events = eventList.filter { it.contains(eventType) }.toSet()
+                if (maxEventsCount > 0) {
+                    assertEquals(maxEventsCount, events.size)
+                } else {
+                    assertTrue(events.isNotEmpty())
+                }
             } else {
-                JSONObject(it)
+                events = eventList
             }
+
+            val json =
+                getJsonData(
+                    context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
+                    events
+                )
+            validateSchema(json)
+
+            val application = ApplicationProvider.getApplicationContext<Application>()
+            val typeResponse = NIDServiceTracker.sendEventToServer(
+                "key_live_suj4CX90v0un2k1ufGrbItT5",
+                NeuroID.ENDPOINT_PRODUCTION,
+                application,
+                events
+            )
+
+            assertEquals(json, 200, typeResponse.first)
+        } else {
+            assertTrue(true)
         }
 
-        val jsonListEvents = JSONArray(listJson)
-
-        return NIDServiceTracker.getContentJson(context, jsonListEvents)
-            .replace("\\/", "/")
     }
 
-    private fun validate(json: String) {
+    private fun validateSchema(json: String) {
         val rawSchema = JSONObject(readFileWithoutNewLineFromResources("schema.json"))
         val schema =
             SchemaLoader.builder().schemaJson(rawSchema).draftV6Support().build().load().build()
@@ -160,9 +118,8 @@ class SchemaTest {
         validator.performValidation(schema, JSONObject(json))
     }
 
-
     @Throws(IOException::class)
-    fun readFileWithoutNewLineFromResources(fileName: String): String {
+    private fun readFileWithoutNewLineFromResources(fileName: String): String {
         var inputStream: InputStream? = null
         try {
             inputStream = getInputStreamFromResource(fileName)
@@ -182,4 +139,24 @@ class SchemaTest {
 
     private fun getInputStreamFromResource(fileName: String) =
         javaClass.classLoader?.getResourceAsStream(fileName)
+
+    private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
+        val listJson = listEvents.map {
+            if (it.contains("\"CREATE_SESSION\"")) {
+                JSONObject(
+                    it.replace(
+                        "\"url\":\"\"",
+                        "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
+                    )
+                )
+            } else {
+                JSONObject(it)
+            }
+        }
+
+        val jsonListEvents = JSONArray(listJson)
+
+        return NIDServiceTracker.getContentJson(context, jsonListEvents)
+            .replace("\\/", "/")
+    }
 }

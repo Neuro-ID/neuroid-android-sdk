@@ -22,6 +22,6 @@ class NIDOnlyOneFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        NeuroID.getInstance()?.setScreenName("NID_ONLY_ONE_FRAGMENT_PAGE")
+        NeuroID.getInstance()?.setScreenName("NID ONLY ONE FRAGMENT PAGE")
     }
 }

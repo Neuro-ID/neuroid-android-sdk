@@ -14,6 +14,8 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
+import org.json.JSONArray
+import org.json.JSONObject
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -44,12 +46,12 @@ private fun registerComponent(view: View, guid: String) {
         is EditText -> {
             et = "Edittext"
         }
-        is CheckBox, is AppCompatCheckBox -> {
+        /*is CheckBox, is AppCompatCheckBox -> {
             et = "CheckBox"
         }
         is RadioButton -> {
             et = "RadioButton"
-        }
+        }*/
         is ToggleButton -> {
             et = "ToggleButton"
         }
@@ -78,15 +80,17 @@ private fun registerComponent(view: View, guid: String) {
         }
         val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
 
-        val attrs = "{" +
-                "\"guid\":\"$guid\"," +
-                "\"screenHierarchy\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
-                "}"
+        val idJson = JSONObject().put("n", "guid").put("v", guid)
+        val classJson = JSONObject().put("n", "screenHierarchy")
+            .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
+        val attrJson = JSONArray().put(idJson).put(classJson)
 
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
+                    attrs = attrJson,
+                    tg = mapOf("attr" to attrJson),
                     et = et + "::" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,
@@ -94,10 +98,8 @@ private fun registerComponent(view: View, guid: String) {
                     tgs = idName,
                     en = idName,
                     v = "S~C~~0",
+                    hv = "",
                     ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "attr" to attrs
-                    ),
                     url = urlView,
                     gyro = gyroData,
                     accel = accelData
@@ -133,20 +135,21 @@ private fun registerListeners(view: View) {
                     p3: Long
                 ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
+                                    "etn" to view.javaClass.simpleName,
                                     "tgs" to idName,
-                                    "etn" to "INPUT",
-                                    "et" to "text"
+                                    "sender" to view.javaClass.simpleName
                                 ),
+                                tgs = idName,
                                 ts = System.currentTimeMillis(),
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -160,20 +163,20 @@ private fun registerListeners(view: View) {
             view.onItemClickListener =
                 AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
                     lastListener?.onItemClick(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to idName,
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
+                                tgs = idName,
                                 ts = System.currentTimeMillis(),
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )
+                        )*/
                 }
         }
     }

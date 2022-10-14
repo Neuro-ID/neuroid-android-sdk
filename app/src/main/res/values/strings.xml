@@ -8,6 +8,7 @@
     <string name="nid_main_button_show_activity_non_automatic_events">Show Non-automatic events</string>
     <string name="nid_main_button_show_activity_one_fragment">Show Activity with one fragment</string>
     <string name="nid_main_button_show_activity_fragments">Show Activity with fragments</string>
+    <string name="nid_main_button_show_sand_box">Show Sand Box</string>
     <string name="nid_editText_normal_hint">Normal Input</string>
     <string name="nid_editText_password_hint">Password Input</string>
     <string name="nid_editText_credit_card_hint">#### #### #### ####</string>
@@ -65,4 +66,60 @@
     <string name="nid_form_submit_failure_custom_events_activity">Event form submit failure</string>
     <string name="nid_form_custom_tag_events_activity">Event custom</string>
     <string name="nid_custom_events_saved_event_activity">Event saved</string>
+
+
+    <string name="nid_app_demo_session_id">Session ID:</string>
+    <string name="nid_app_demo_client_id">Client ID:</string>
+    <string name="nid_app_demo_subtitle_welcome">Welcome!! You\'re one step away from checking your loan options. $</string>
+    <string name="nid_app_demo_subtitle_description">Checking your loan options does not affect your credit score.</string>
+    <string name="nid_app_demo_first_name">First Name</string>
+    <string name="nid_app_demo_last_name">Last Name</string>
+    <string name="nid_app_demo_date_birth">Date of Birth:</string>
+    <string name="nid_app_demo_select_an_item">Select an item</string>
+    <string name="nid_app_demo_email">Email</string>
+    <string name="nid_app_demo_home_city">Home City</string>
+    <string name="nid_app_demo_home_zip_code">Home Zip Code</string>
+    <string name="nid_app_demo_phone_number">Phone Number</string>
+    <string name="nid_app_demo_employer">Employer</string>
+    <string name="nid_app_demo_employer_address">Employer Address</string>
+    <string name="nid_app_demo_employer_phone_number">Employer Phone Number</string>
+    <string name="nid_app_demo_continue">Continue</string>
+
+    <string-array name="nid_app_array_years">
+        <item>2003</item>
+        <item>2002</item>
+        <item>2001</item>
+        <item>2000</item>
+        <item>1999</item>
+        <item>1998</item>
+        <item>1997</item>
+        <item>1996</item>
+        <item>1995</item>
+        <item>1994</item>
+        <item>1993</item>
+        <item>1992</item>
+        <item>1991</item>
+        <item>1990</item>
+        <item>1989</item>
+        <item>1988</item>
+        <item>1987</item>
+        <item>1986</item>
+        <item>1985</item>
+        <item>1984</item>
+    </string-array>
+
+    <string-array name="nid_app_array_months">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
 </resources>

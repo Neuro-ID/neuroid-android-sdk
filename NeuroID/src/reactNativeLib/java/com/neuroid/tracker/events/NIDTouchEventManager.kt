@@ -60,8 +60,10 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_START,
                                     ts = timeMills,
+                                    tgs = nameView,
                                     tg = hashMapOf(
-                                        "tgs" to ""
+                                        "etn" to nameView,
+                                        "sender" to nameView
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
@@ -75,9 +77,7 @@ class NIDTouchEventManager(
                                     NIDEventModel(
                                         type = FOCUS,
                                         ts = timeMills,
-                                        tg = hashMapOf(
-                                            "tgs" to lastViewName
-                                        )
+                                        tgs = lastViewName
                                     )
                                 )
                         }
@@ -89,8 +89,10 @@ class NIDTouchEventManager(
                             NIDEventModel(
                                 type = TOUCH_MOVE,
                                 ts = timeMills,
+                                tgs = nameView,
                                 tg = hashMapOf(
-                                    "tgs" to ""
+                                    "etn" to nameView,
+                                    "sender" to nameView
                                 ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
@@ -107,9 +109,7 @@ class NIDTouchEventManager(
                                     NIDEventModel(
                                         type = BLUR,
                                         ts = timeMills,
-                                        tg = hashMapOf(
-                                            "tgs" to lastViewName
-                                        )
+                                        tgs = lastViewName
                                     )
                                 )
                         }
@@ -122,8 +122,10 @@ class NIDTouchEventManager(
                                 NIDEventModel(
                                     type = TOUCH_END,
                                     ts = timeMills,
+                                    tgs = nameView,
                                     tg = hashMapOf(
-                                        "tgs" to ""
+                                        "etn" to nameView,
+                                        "sender" to nameView
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
@@ -181,32 +183,32 @@ class NIDTouchEventManager(
                 }
 
                 if (type.isNotEmpty()) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
                                 tg = hashMapOf(
-                                    "tgs" to nameView,
                                     "etn" to INPUT
                                 ),
+                                tgs = nameView,
                                 ts = timeMills
                             )
-                        )
+                        )*/
                 }
             } else {
                 if (lastView is SeekBar) {
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to nameView,
                                     "etn" to INPUT
                                 ),
+                                tgs = nameView,
                                 v = ((lastView as SeekBar).progress).toString(),
                                 ts = System.currentTimeMillis()
                             )
-                        )
+                        )*/
                 }
             }
             lastView = null

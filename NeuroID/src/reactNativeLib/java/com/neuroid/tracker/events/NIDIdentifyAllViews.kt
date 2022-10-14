@@ -9,12 +9,15 @@ import com.facebook.react.views.text.ReactTextView
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
+import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
+import org.json.JSONArray
+import org.json.JSONObject
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -37,6 +40,8 @@ fun identifyAllViews(
 
 private fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
 
     when(view) {
@@ -81,15 +86,17 @@ private fun registerComponent(view: View, guid: String) {
             "/${NIDServiceTracker.screenFragName}"
         }
         val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
-        val attrs = "{" +
-                "\"guid\":\"$guid\"," +
-                "\"screenHierarchy\":\"${view.getParents()}${NIDServiceTracker.screenName}\"" +
-                "}"
+
+        val idJson = JSONObject().put("n", "guid").put("v", guid)
+        val classJson = JSONObject().put("n", "screenHierarchy")
+            .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
+        val attrJson = JSONArray().put(idJson).put(classJson)
 
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = REGISTER_TARGET,
+                    attrs = attrJson,
                     et = et + "::" + view.javaClass.simpleName,
                     etn = "INPUT",
                     ec = NIDServiceTracker.screenName,
@@ -98,16 +105,17 @@ private fun registerComponent(view: View, guid: String) {
                     en = idName,
                     v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    tg = hashMapOf(
-                        "attr" to attrs
-                    ),
-                    url = urlView
+                    url = urlView,
+                    gyro = gyroData,
+                    accel = accelData
                 ))
     }
 }
 
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
 
     when (view) {
         is EditText -> {
@@ -124,17 +132,19 @@ private fun registerListeners(view: View) {
             view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    getDataStoreInstance()
+                    /*getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
                                 tg = hashMapOf(
-                                    "tgs" to idName,
                                     "etn" to "INPUT",
                                     "et" to "text"
                                 ),
-                                ts = System.currentTimeMillis()
-                            ))
+                                tgs = idName,
+                                ts = System.currentTimeMillis(),
+                                gyro = gyroData,
+                                accel = accelData
+                            ))*/
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -147,17 +157,19 @@ private fun registerListeners(view: View) {
             view.onItemClickListener = null
             view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
                 lastListener.onItemClick(adapter, viewList, position, p3)
-                getDataStoreInstance()
+                /*getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
                             type = SELECT_CHANGE,
                             tg = hashMapOf(
-                                "tgs" to idName,
                                 "etn" to "INPUT",
                                 "et" to "text"
                             ),
-                            ts = System.currentTimeMillis()
-                        ))
+                            tgs = idName,
+                            ts = System.currentTimeMillis(),
+                            gyro = gyroData,
+                            accel = accelData
+                        ))*/
             }
         }
 

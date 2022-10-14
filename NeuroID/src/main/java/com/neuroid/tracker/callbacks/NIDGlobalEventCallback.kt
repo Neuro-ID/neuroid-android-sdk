@@ -9,6 +9,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.getIdOrTag
 
 class NIDGlobalEventCallback(
@@ -30,14 +31,16 @@ class NIDGlobalEventCallback(
             val idName = newView.getIdOrTag()
 
             if (newView is EditText) {
+                val text = newView.text.toString()
                 getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
                             type = FOCUS,
-                            ts = ts,
                             tg = hashMapOf(
-                                "tgs" to idName
+                                "attr" to getAttrJson(text),
                             ),
+                            ts = ts,
+                            tgs = idName,
                             gyro = gyroData,
                             accel = accelData
                         )
@@ -84,11 +87,6 @@ class NIDGlobalEventCallback(
 
     private fun registerTextChangeEvent(actualText: String) {
         val ts = System.currentTimeMillis()
-        val attrs = "{" +
-                    "\"v\":\"S~C~~${actualText.length}\"," +
-                    "\"hash\":\"${actualText.getSHA256().take(8)}\"" +
-                    "}"
-
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -97,15 +95,16 @@ class NIDGlobalEventCallback(
                 NIDEventModel(
                     type = TEXT_CHANGE,
                     tg = hashMapOf(
-                        "attr" to attrs,
-                        "tgs" to lastEditText?.getIdOrTag().orEmpty(),
+                        "attr" to getAttrJson(actualText),
                         "etn" to lastEditText?.getIdOrTag().orEmpty(),
                         "et" to "text"
                     ),
+                    tgs = lastEditText?.getIdOrTag().orEmpty(),
                     ts = ts,
-                    //sm = "",
-                    //pd = "",
+                    sm = 0,
+                    pd = 0,
                     v = "S~C~~${actualText.length}",
+                    hv = actualText.getSHA256().take(8),
                     gyro = gyroData,
                     accel = accelData
                 )
@@ -115,8 +114,9 @@ class NIDGlobalEventCallback(
             .saveEvent(
                 NIDEventModel(
                     type = BLUR,
+                    tgs = lastEditText?.getIdOrTag().orEmpty(),
                     tg = hashMapOf(
-                        "tgs" to lastEditText?.getIdOrTag().orEmpty()
+                        "attr" to getAttrJson(actualText),
                     ),
                     ts = ts,
                     gyro = gyroData,
