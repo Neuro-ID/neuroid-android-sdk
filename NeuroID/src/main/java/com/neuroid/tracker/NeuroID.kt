@@ -109,10 +109,6 @@ class NeuroID private constructor(
 
     fun setEnvironment(environment: String) {
         NIDServiceTracker.environment = environment
-        endpoint = when (environment) {
-            ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
-            else -> ENDPOINT_DEVELOPMENT
-        }
     }
 
     fun getEnvironment(): String = NIDServiceTracker.environment
