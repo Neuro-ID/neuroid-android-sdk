@@ -62,7 +62,7 @@
   "definitions": {
     "Events": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "type": {
           "type": "string"
@@ -183,9 +183,7 @@
           "type": "boolean"
         },
         "url": {
-          "type": "string",
-          "format": "uri",
-          "qt-uri-protocols": ["https", "http", "ios", "android"]
+          "type": "string"
         },
         "is": {
           "type": "integer"
@@ -319,7 +317,14 @@
           "type": "string"
         },
         "ptbid": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "o": {
           "type": "string"
@@ -644,7 +649,7 @@
                                         }
                                       },
                                       "then": {
-                                        "required": ["type","ts","o"]
+                                        "required": ["type","ts"]
                                       },
                                       "else": {
                                         "if": {
@@ -713,7 +718,19 @@
                                                     "required": ["type","ts","ct"]
                                                   },
                                                   "else": {
-                                                    "required": ["type","ts"]
+                                                    "if": {
+                                                      "properties": {
+                                                        "type": {
+                                                          "pattern": "CREATE_SESSION"
+                                                        }
+                                                      }
+                                                    },
+                                                    "then": {
+                                                      "required": ["type","ts","sh","sw"]
+                                                    },
+                                                    "else": {
+                                                      "required": ["type","ts"]
+                                                    }
                                                   }
                                                 }
                                               }

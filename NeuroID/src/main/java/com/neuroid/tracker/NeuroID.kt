@@ -10,6 +10,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +27,14 @@ class NeuroID private constructor(
     private var clientID = ""
     private var userID = ""
     private var timestamp: Long = 0L
+
+    private var metaData: NIDMetaData? = null
+
+    init {
+        application?.let {
+            metaData = NIDMetaData(it.applicationContext)
+        }
+    }
 
     @Synchronized
     private fun setupCallbacks() {
@@ -89,7 +98,7 @@ class NeuroID private constructor(
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(),"%20")
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -100,10 +109,6 @@ class NeuroID private constructor(
 
     fun setEnvironment(environment: String) {
         NIDServiceTracker.environment = environment
-        endpoint = when (environment) {
-            ENVIRONMENT_PRODUCTION -> ENDPOINT_PRODUCTION
-            else -> ENDPOINT_DEVELOPMENT
-        }
     }
 
     fun getEnvironment(): String = NIDServiceTracker.environment
@@ -244,7 +249,8 @@ class NeuroID private constructor(
                     gyro = gyroData,
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat()
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData?.toJson()
                 )
             )
         }

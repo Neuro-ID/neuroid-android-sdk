@@ -86,7 +86,7 @@ class NeuroIdUITest {
      * Validate WINDOW_LOAD on MainActivity class
      */
     @Test
-    fun test08ValidateLifecycleStart() = runTest {
+    fun test04ValidateLifecycleStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) //Wait a half second for create the MainActivity View
@@ -98,7 +98,7 @@ class NeuroIdUITest {
      * Validate WINDOW_FOCUS on MainActivity class
      */
     @Test
-    fun test09ValidateLifecycleResume() = runTest {
+    fun test05ValidateLifecycleResume() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) //Wait a half second for create the MainActivity View
@@ -111,7 +111,7 @@ class NeuroIdUITest {
      * Validate WINDOW_BLUR on MainActivity class
      */
     @Test
-    fun test10ValidateLifecyclePause() = runTest {
+    fun test06ValidateLifecyclePause() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500)
@@ -133,7 +133,7 @@ class NeuroIdUITest {
      * Validate WINDOW_UNLOAD on MainActivity class
      */
     @Test
-    fun test11ValidateLifecycleStop() = runTest {
+    fun test07ValidateLifecycleStop() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500)
@@ -156,7 +156,7 @@ class NeuroIdUITest {
      * Validate TOUCH_START when the user click on screen
      */
     @Test
-    fun test12ValidateTouchStart() = runTest {
+    fun test08ValidateTouchStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -172,7 +172,7 @@ class NeuroIdUITest {
      * Validate TOUCH_END when the user up finger on screen
      */
     @Test
-    fun test13ValidateTouchEnd() = runTest {
+    fun test09ValidateTouchEnd() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -188,7 +188,7 @@ class NeuroIdUITest {
      * Validate TOUCH_MOVE when the user scroll on screen
      */
     @Test
-    fun test14ValidateSwipeScreen() = runTest {
+    fun test10ValidateSwipeScreen() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.layout_main))
@@ -203,7 +203,7 @@ class NeuroIdUITest {
      * Validate WINDOW_RESIZE when the user click on editText
      */
     @Test
-    fun test15ValidateWindowsResize() = runTest {
+    fun test11ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
@@ -211,14 +211,14 @@ class NeuroIdUITest {
         delay(1000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
     }
 
     /**
      * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
      */
     @Test
-    fun test20ValidateChangeScreenOrientation() = runTest {
+    fun test12ValidateChangeScreenOrientation() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         val device = UiDevice.getInstance(getInstrumentation())
 
@@ -235,11 +235,15 @@ class NeuroIdUITest {
      * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
      */
     @Test
-    fun test21ValidateUserIsInactive() = runTest {
+    fun test13ValidateUserIsInactive() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(35_000) // +1 second to wait write data
         val eventType = "\"type\":\"USER_INACTIVE\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
+
+
+
+
 
 }
