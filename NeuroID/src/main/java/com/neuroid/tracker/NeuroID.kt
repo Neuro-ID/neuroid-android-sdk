@@ -1,7 +1,6 @@
 package com.neuroid.tracker
 
 import android.app.Application
-import android.util.Log
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -34,7 +33,6 @@ class NeuroID private constructor(
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
-            Log.i("Metadata", metaData.toString())
         }
     }
 
@@ -100,7 +98,7 @@ class NeuroID private constructor(
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(),"%20")
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -255,7 +253,8 @@ class NeuroID private constructor(
                     gyro = gyroData,
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat()
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData?.toJson()
                 )
             )
         }
