@@ -203,8 +203,8 @@ class NIDTouchEventManager(
                     }
                 }
 
-                if (type.isNotEmpty()) {
-                    /*getDataStoreInstance()
+               /* if (type.isNotEmpty()) {
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = type,
@@ -218,11 +218,11 @@ class NIDTouchEventManager(
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )*/
-                }
+                        )
+                }*/
             } else {
-                if (lastView is SeekBar) {
-                    /*getDataStoreInstance()
+                /*if (lastView is SeekBar) {
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SLIDER_CHANGE,
@@ -237,8 +237,8 @@ class NIDTouchEventManager(
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )*/
-                }
+                        )
+                }*/
             }
             lastView = null
         } else if (action == ACTION_DOWN) {

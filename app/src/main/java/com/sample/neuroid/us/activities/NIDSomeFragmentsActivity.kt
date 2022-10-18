@@ -12,7 +12,7 @@ import com.sample.neuroid.us.fragments.NIDFirstFragmentDirections
 import com.sample.neuroid.us.fragments.NIDSecondFragmentDirections
 import com.sample.neuroid.us.interfaces.NIDNavigateFragsListener
 
-class NIDSomeFragmentsActivity:
+class NIDSomeFragmentsActivity :
     AppCompatActivity(),
     NIDNavigateFragsListener {
     private fun currentNavController(): NavController = findNavController(R.id.navHostFragmentTwo)
@@ -43,7 +43,7 @@ class NIDSomeFragmentsActivity:
     }
 
     override fun goToNextScreen(option: Int) {
-        when(option) {
+        when (option) {
             NID_GO_TO_SECOND_FRAG -> {
                 currentNavController().navigate(NIDFirstFragmentDirections.actionToFragmentTwo())
                 supportActionBar?.setTitle(R.string.nid_fragment_two_title)

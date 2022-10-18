@@ -25,9 +25,9 @@ class NIDSharedPrefsDefaults(
         return sid
     }
 
-    suspend fun getClientId(): String {
+    suspend fun getClientId(reset: Boolean = false): String {
         var cid = getString(NID_CID)
-        return if (cid == "") {
+        return if (cid == "" || reset) {
             cid = UUID.randomUUID().toString()
             putString(NID_CID, cid)
             cid

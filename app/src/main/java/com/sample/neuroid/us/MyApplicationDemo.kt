@@ -5,8 +5,16 @@ import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
+import com.sample.neuroid.us.domain.config.ConfigHelper
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
+@HiltAndroidApp
 class MyApplicationDemo : MultiDexApplication() {
+
+    @Inject
+    lateinit var configHelper: ConfigHelper
+
     override fun onCreate() {
         super.onCreate()
         StrictMode.setThreadPolicy(
@@ -24,13 +32,12 @@ class MyApplicationDemo : MultiDexApplication() {
         )
         val neuroId = NeuroID.Builder(
             this,
-            "key_live_dNoyQAlq8w1c0mCeHKl5Sejl"
+            "key_live_suj4CX90v0un2k1ufGrbItT5"
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
-        NeuroID.getInstance()?.setEnvironment("TEST")
-        NeuroID.getInstance()?.setSiteId("form_picks709")
-        val rnds = (0..10000).random().toString()
-        NeuroID.getInstance()?.setUserID(rnds)
+        NeuroID.getInstance()?.setEnvironment("LIVE")
+        NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.start()
+        NeuroID.getInstance()?.setUserID(configHelper.userId)
     }
 }

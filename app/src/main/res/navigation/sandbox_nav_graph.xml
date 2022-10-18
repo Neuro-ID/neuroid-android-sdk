@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sandbox_nav_graph"
+    app:startDestination="@id/sandboxFragment">
+
+    <fragment
+        android:id="@+id/sandboxFragment"
+        android:name="com.sample.neuroid.us.activities.sandbox.SandBoxFragment"
+        tools:layout="@layout/sandbox_fragment">
+        <action
+            android:id="@+id/action_to_score_fragment"
+            app:destination="@id/scoreFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scoreFragment"
+        android:name="com.sample.neuroid.us.activities.sandbox.ScoreFragment"
+        tools:layout="@layout/score_fragment" />
+
+</navigation>
