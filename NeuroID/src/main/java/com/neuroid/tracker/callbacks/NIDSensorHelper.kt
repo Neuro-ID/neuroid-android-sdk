@@ -12,7 +12,7 @@ object NIDSensorHelper {
     private var gyroscopeSensor: Sensor? = null
     private var accelerometerSensor: Sensor? = null
     private val firstValuesGyro = NIDSensorData("Gyroscope")
-    private val firstValuesAccel = NIDSensorData("Gyroscope")
+    private val firstValuesAccel = NIDSensorData("Accelerometer")
     private val nidSensors: NIDSensors = NIDSensors()
     private var listener: NIDSensorGenListener? = null
 
