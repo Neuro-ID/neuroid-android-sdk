@@ -58,10 +58,7 @@ class NeuroID private constructor(
     }
 
     companion object {
-
-        private const val ENVIRONMENT_PRODUCTION = "LIVE"
         const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
-        private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
         private var singleton: NeuroID? = null
 
@@ -213,6 +210,13 @@ class NeuroID private constructor(
         NIDJobServiceManager.stopJob()
     }
 
+    fun resetClientId() {
+        application?.let {
+            val sharedDefaults = NIDSharedPrefsDefaults(it)
+            clientID = sharedDefaults.resetClientId()
+        }
+    }
+
     fun isStopped() = NIDJobServiceManager.isStopped()
 
     private suspend fun createSession() {
@@ -222,7 +226,7 @@ class NeuroID private constructor(
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
-            clientID = sharedDefaults.getClientId(true)
+            clientID = sharedDefaults.getClientId()
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
