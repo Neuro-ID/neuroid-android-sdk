@@ -1,0 +1,17 @@
+name: Unit Test
+on:
+  pull_request:
+    branches:
+      - master_test
+    types:
+      - closed
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Title of PR
+        run: echo The Title of your PR is ${{ github.event.pull_request.title }}
+
+
