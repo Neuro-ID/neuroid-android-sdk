@@ -22,7 +22,7 @@ jobs:
           run: echo The Title of your PR is ${{ github.event.pull_request.title }}
 
         - name: Update Version
-          run: ./version_update.sh "${{ github.event.pull_request.title }}"
+          run: ./version_update.sh '${{ github.event.pull_request.title }}'
 
         - name: Update Internal Library
           run: |
