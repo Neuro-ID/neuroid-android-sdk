@@ -14,12 +14,14 @@ jobs:
     steps:
         - name: checkout
           uses: actions/checkout@v3
+          with:
+              ref: ${{github.head_ref}}
 
         - name: Grant Permission for Gradlew to Execute
           run: chmod +x version_update.sh
 
         - name: Print Title of PR
-          run: echo The Title of your PR is ${{ github.event.pull_request.title }}
+          run: echo The Title of your PR is ${{ github.event.pull_request.title }} nd Branch is ${{github.head_ref}}
 
         - name: Update Version
           run: ./version_update.sh '${{ github.event.pull_request.title }}'
