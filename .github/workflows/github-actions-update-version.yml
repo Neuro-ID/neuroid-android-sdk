@@ -1,0 +1,31 @@
+name: Update Version
+on:
+  pull_request:
+    branches:
+      - master_test
+    types:
+      - opened
+
+jobs:
+  update_version:
+    name: Update
+    runs-on: ubuntu-latest
+    steps:
+        - name: checkout
+          uses: actions/checkout@v3
+          with:
+              ref: ${{github.head_ref}}
+
+        - name: Grant Permission for Gradlew to Execute
+          run: chmod +x version_update.sh
+
+        - name: Update Version
+          run: ./version_update.sh '${{ github.event.pull_request.title }}'
+
+        - name: Update Internal Library
+          run: |
+              git config --global user.email "robot@neuro-id.com"
+              git config --global user.name "robot"
+              git add version.properties
+              git commit -m "updating version"
+              git push
