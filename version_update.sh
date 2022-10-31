@@ -1,8 +1,5 @@
 #!/bin/sh
-PR_TITLE=$1
-echo "Title: ${PR_TITLE}"
-version=$(echo "$PR_TITLE" | sed 's/\([[A-Z]*-[0-9]*] v\)//g')
-version=$(echo "${version}" | cut -d " " -f 1)
+version=$1
 echo "Version: ${version}"
 VERSION_MAJOR=$(echo "${version}" | cut -d "." -f 1)
 VERSION_MINOR=$(echo "${version}" | cut -d "." -f 2)
