@@ -19,7 +19,8 @@ jobs:
       - name: Print Title of PR
         id: read_property
         run: |
-          ./read_version.sh 'VERSION_MAJOR VERSION_MINOR VERSION_PATCH'
+          ./read_version.sh SDK_VERSION 
+          echo Version
 
       - name: Properties
         run: echo ${{steps.read_property.outputs.VERSION_MAJOR}}
