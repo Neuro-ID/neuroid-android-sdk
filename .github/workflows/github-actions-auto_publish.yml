@@ -1,17 +1,24 @@
 name: Unit Test
 on:
-  pull_request:
+  push:
     branches:
       - master_test
-    types:
-      - closed
+    paths:
+      - version.properties
 
 jobs:
-  if_merged:
+  create_tag:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - name: Grant Permission for Gradlew to Execute
+        run: chmod +x read_version.sh
       - name: Print Title of PR
-        run: echo The Title of your PR is ${{ github.event.pull_request.title }}
+        id: read_property
+        run: |
+          ./read_version.sh 'VERSION_MAJOR VERSION_MINOR VERSION_PATCH'
+      - name: Properties
+        run: echo ${{steps.read_property.outputs.VERSION_MAJOR}}
+            
 
 
