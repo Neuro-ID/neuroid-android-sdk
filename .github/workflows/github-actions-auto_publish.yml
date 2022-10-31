@@ -20,10 +20,11 @@ jobs:
         id: read_property
         run: |
           ./read_version.sh SDK_VERSION 
-          echo Version
+          echo Version ${{read_property.SDK_VERSION}}
 
       - name: Properties
-        run: echo ${{steps.read_property.outputs.VERSION_MAJOR}}
+        run: |
+          echo ${{steps.read_property.outputs.SDK_VERSION}}
             
 
 
