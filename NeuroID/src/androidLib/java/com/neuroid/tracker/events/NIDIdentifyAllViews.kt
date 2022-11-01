@@ -1,9 +1,10 @@
 package com.neuroid.tracker.events
 
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.OnHierarchyChangeListener
 import android.widget.*
-import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
@@ -32,6 +33,21 @@ fun identifyAllViews(
         }
         if (it is ViewGroup) {
             identifyAllViews(it, guid, registerTarget, registerListeners)
+            it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
+                override fun onChildViewAdded(parent: View?, child: View?) {
+                    child?.let { view ->
+                        if (view is ViewGroup) {
+                            identifyAllViews(view, guid, registerTarget, registerListeners)
+                        } else {
+                            registerComponent(it, guid)
+                        }
+                    }
+                }
+
+                override fun onChildViewRemoved(parent: View?, child: View?) {
+                    Log.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                }
+            })
         }
     }
 }

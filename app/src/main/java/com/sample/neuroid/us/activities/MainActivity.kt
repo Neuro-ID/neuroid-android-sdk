@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
             buttonShowSandBox.setOnClickListener {
                 startActivity(Intent(this@MainActivity, SandBoxActivity::class.java))
             }
+            buttonShowDynamic.setOnClickListener {
+                startActivity(Intent(this@MainActivity, DynamicActivity::class.java))
+            }
         }
 
         binding.editTextNormalField.addTextChangedListener(object : TextWatcher {
