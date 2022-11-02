@@ -11,6 +11,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -58,10 +59,7 @@ class NeuroID private constructor(
     }
 
     companion object {
-
-        private const val ENVIRONMENT_PRODUCTION = "LIVE"
         const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
-        private const val ENDPOINT_DEVELOPMENT = "https://receiver.neuro-dev.com/c"
 
         private var singleton: NeuroID? = null
 
@@ -199,6 +197,7 @@ class NeuroID private constructor(
 
     fun start() {
         NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+        NIDSingletonIDs.updateSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
@@ -211,6 +210,13 @@ class NeuroID private constructor(
 
     fun stop() {
         NIDJobServiceManager.stopJob()
+    }
+
+    fun resetClientId() {
+        application?.let {
+            val sharedDefaults = NIDSharedPrefsDefaults(it)
+            clientID = sharedDefaults.resetClientId()
+        }
     }
 
     fun isStopped() = NIDJobServiceManager.isStopped()

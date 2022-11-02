@@ -5,7 +5,7 @@ import android.text.TextWatcher
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.PASTE
-import com.neuroid.tracker.extensions.getSHA256
+import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
@@ -67,7 +67,7 @@ class NIDTextWatcher(
                         ),
                         tgs = idName,
                         v = "S~C~~${sequence?.length}",
-                        hv = sequence?.toString()?.getSHA256()?.take(8),
+                        hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
                         gyro = gyroData,
                         accel = accelData
                     )

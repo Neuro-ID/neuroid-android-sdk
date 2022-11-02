@@ -41,6 +41,10 @@
             android:name=".activities.sandbox.SandBoxActivity"
             android:exported="false"
             android:theme="@style/Theme.NeuroIdAndroidExample" />
+        <activity
+            android:name=".activities.DynamicActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NeuroIdAndroidExample" />
     </application>
 
 </manifest>
