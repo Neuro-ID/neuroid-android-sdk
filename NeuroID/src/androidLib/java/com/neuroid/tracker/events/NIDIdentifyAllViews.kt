@@ -39,7 +39,8 @@ fun identifyAllViews(
                         if (view is ViewGroup) {
                             identifyAllViews(view, guid, registerTarget, registerListeners)
                         } else {
-                            registerComponent(it, guid)
+                            registerComponent(view, guid)
+                            registerListeners(view)
                         }
                     }
                 }
