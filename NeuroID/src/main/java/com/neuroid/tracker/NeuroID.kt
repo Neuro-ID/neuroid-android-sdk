@@ -11,6 +11,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -196,6 +197,7 @@ class NeuroID private constructor(
 
     fun start() {
         NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+        NIDSingletonIDs.updateSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
