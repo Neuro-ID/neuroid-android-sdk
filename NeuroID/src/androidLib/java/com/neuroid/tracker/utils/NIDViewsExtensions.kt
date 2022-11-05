@@ -10,7 +10,7 @@ fun View?.getIdOrTag(): String {
         "no_id"
     } else {
         if (this.id == View.NO_ID) {
-            if(this.tag == null) {
+            if (this.tag == null) {
                 this.getRandomId()
             } else {
                 this.tag.toString()
@@ -26,7 +26,7 @@ fun View?.getIdOrTag(): String {
 }
 
 fun View.getRandomId(): String {
-    val viewCoordinates = "${this.x}_${this.y}".replace(".","")
+    val viewCoordinates = "${this.x}_${this.y}".replace(".", "")
 
     return "${this.javaClass.simpleName}_$viewCoordinates"
 }
@@ -36,6 +36,9 @@ fun View.getParents(): String {
 }
 
 private fun getParentsOfView(layers: Int, view: View): String {
+    if (view.parent == null) {
+        throw Error("Before registerTarget add the view to his parent")
+    }
     val childView = view.parent as View
     return if (layers == 3 || childView.id == android.R.id.content) "" else {
         "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
