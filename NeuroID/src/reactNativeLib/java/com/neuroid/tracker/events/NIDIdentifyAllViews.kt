@@ -1,5 +1,6 @@
 package com.neuroid.tracker.events
 
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -19,6 +20,25 @@ import com.neuroid.tracker.utils.getParents
 import org.json.JSONArray
 import org.json.JSONObject
 
+fun identifyView(
+    view: View,
+    guid: String,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true
+) {
+    when (view) {
+        is ViewGroup -> identifyAllViews(view, guid, registerTarget, registerListeners)
+        else -> {
+            if (registerTarget) {
+                registerComponent(view, guid)
+            }
+            if (registerListeners) {
+                registerListeners(view)
+            }
+        }
+    }
+}
+
 fun identifyAllViews(
     viewParent: ViewGroup,
     guid: String,
@@ -34,6 +54,17 @@ fun identifyAllViews(
         }
         if (it is ViewGroup) {
             identifyAllViews(it, guid, registerTarget, registerListeners)
+            it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+                override fun onChildViewAdded(parent: View?, child: View?) {
+                    child?.let { view ->
+                        identifyView(view, guid, registerTarget, registerListeners)
+                    }
+                }
+
+                override fun onChildViewRemoved(parent: View?, child: View?) {
+                    Log.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                }
+            })
         }
     }
 }
@@ -44,7 +75,7 @@ private fun registerComponent(view: View, guid: String) {
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
 
-    when(view) {
+    when (view) {
         is EditText -> {
             et = "Edittext"
         }
@@ -108,7 +139,8 @@ private fun registerComponent(view: View, guid: String) {
                     url = urlView,
                     gyro = gyroData,
                     accel = accelData
-                ))
+                )
+            )
     }
 }
 
@@ -129,8 +161,13 @@ private fun registerListeners(view: View) {
         is Spinner -> {
             val lastListener = view.onItemSelectedListener
             view.onItemSelectedListener = null
-            view.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapter: AdapterView<*>?, viewList: View?, position: Int, p3: Long) {
+            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    adapter: AdapterView<*>?,
+                    viewList: View?,
+                    position: Int,
+                    p3: Long
+                ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
                     /*getDataStoreInstance()
                         .saveEvent(
@@ -155,22 +192,23 @@ private fun registerListeners(view: View) {
         is AutoCompleteTextView -> {
             val lastListener = view.onItemClickListener
             view.onItemClickListener = null
-            view.onItemClickListener = AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                lastListener.onItemClick(adapter, viewList, position, p3)
-                /*getDataStoreInstance()
-                    .saveEvent(
-                        NIDEventModel(
-                            type = SELECT_CHANGE,
-                            tg = hashMapOf(
-                                "etn" to "INPUT",
-                                "et" to "text"
-                            ),
-                            tgs = idName,
-                            ts = System.currentTimeMillis(),
-                            gyro = gyroData,
-                            accel = accelData
-                        ))*/
-            }
+            view.onItemClickListener =
+                AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+                    lastListener.onItemClick(adapter, viewList, position, p3)
+                    /*getDataStoreInstance()
+                        .saveEvent(
+                            NIDEventModel(
+                                type = SELECT_CHANGE,
+                                tg = hashMapOf(
+                                    "etn" to "INPUT",
+                                    "et" to "text"
+                                ),
+                                tgs = idName,
+                                ts = System.currentTimeMillis(),
+                                gyro = gyroData,
+                                accel = accelData
+                            ))*/
+                }
         }
 
     }
