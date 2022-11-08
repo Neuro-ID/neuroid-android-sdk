@@ -2,7 +2,12 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.delay
 
 object NIDJobServiceManager {
 
