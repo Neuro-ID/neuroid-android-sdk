@@ -1,9 +1,16 @@
 package com.neuroid.tracker
 
+import android.app.Activity
 import android.app.Application
+import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FORM_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -11,8 +18,10 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -196,6 +205,7 @@ class NeuroID private constructor(
 
     fun start() {
         NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+        NIDSingletonIDs.updateSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
@@ -218,6 +228,10 @@ class NeuroID private constructor(
     }
 
     fun isStopped() = NIDJobServiceManager.isStopped()
+
+    fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
+        identifyView(view, activity.getGUID(), true, addListener)
+    }
 
     private suspend fun createSession() {
         timestamp = System.currentTimeMillis()

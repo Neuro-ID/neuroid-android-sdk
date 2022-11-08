@@ -6,7 +6,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
 import com.neuroid.tracker.events.*
-import com.neuroid.tracker.extensions.getSHA256
+import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
@@ -104,7 +104,7 @@ class NIDGlobalEventCallback(
                     sm = 0,
                     pd = 0,
                     v = "S~C~~${actualText.length}",
-                    hv = actualText.getSHA256().take(8),
+                    hv = actualText.getSHA256withSalt().take(8),
                     gyro = gyroData,
                     accel = accelData
                 )
