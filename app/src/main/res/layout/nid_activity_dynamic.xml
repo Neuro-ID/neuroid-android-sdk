@@ -23,6 +23,14 @@
                 android:layout_gravity="center_horizontal"
                 android:text="Add New View" />
 
+            <Button
+                android:id="@+id/btnAddWithRegisterTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Add New View With RegisterTarget method"
+                android:visibility="gone" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
