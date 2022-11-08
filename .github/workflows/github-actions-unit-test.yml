@@ -4,7 +4,6 @@ on:
     branches:
     - develop
     - master
-    - master_test
 
 concurrency:
   group: ${{ github.head_ref }}

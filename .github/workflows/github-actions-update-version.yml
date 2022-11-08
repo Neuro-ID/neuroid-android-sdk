@@ -1,28 +1,42 @@
-name: Update Version
+name: Auto Update Version
 on:
   pull_request:
     branches:
-      - master_test
+      - master
     types:
       - opened
 
 jobs:
+  versionCheck:
+    name: Pull request version number validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Title
+        run: |
+          v=`echo ${{github.event.pull_request.title}} | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
+          if [ "${{github.event.pull_request.title}}" = "$v" ]; then
+            exit 1;
+          else
+            echo $v;
+          fi
+
   update_version:
     name: Update
     runs-on: ubuntu-latest
+    needs: versionCheck
     steps:
         - name: checkout
           uses: actions/checkout@v3
           with:
               ref: ${{github.head_ref}}
 
-        - name: Grant Permission for Gradlew to Execute
+        - name: Grant Permission
           run: chmod +x version_update.sh
 
-        - name: Update Version
+        - name: Update Version Properties
           run: ./version_update.sh '${{ github.event.pull_request.title }}'
 
-        - name: Update Internal Library
+        - name: Update Version
           run: |
               git config --global user.email "robot@neuro-id.com"
               git config --global user.name "robot"
