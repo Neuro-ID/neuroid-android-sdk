@@ -21,7 +21,7 @@ jobs:
           fi
 
   update_version:
-    name: Update
+    name: Update version
     runs-on: ubuntu-latest
     needs: versionCheck
     steps:
@@ -36,7 +36,7 @@ jobs:
         - name: Update Version Properties
           run: ./version_update.sh '${{ github.event.pull_request.title }}'
 
-        - name: Update Version
+        - name: Commit new Version
           run: |
               git config --global user.email "robot@neuro-id.com"
               git config --global user.name "robot"
