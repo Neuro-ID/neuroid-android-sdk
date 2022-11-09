@@ -1,8 +1,10 @@
 name: Release production SDK
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
+    paths:
+      - version.properties
 
 jobs:
   publish:
@@ -28,11 +30,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Grant Permission for Gradlew to Execute
-        run: chmod +x gradlew
+      - name: Grant Permission for Gradlew and ReadProperties to Execute
+        run: | 
+          chmod +x gradlew
+          chmod +x properties_read.sh
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
+
+      - name: Update Internal Library
+        run: |
+            git config --global user.email "robot@neuro-id.com"
+            git config --global user.name "robot"
+            git tag -a v${{env.GITHUB_SDK_VERSION}} -m "Neuro-ID Android SDK Version: ${{env.GITHUB_SDK_VERSION}}"
+            git push
 
       - name: Create Release ✅
         id: create_release
@@ -40,8 +51,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: v${{env.GITHUB_SDK_VERSION}}
+          release_name: v${{env.GITHUB_SDK_VERSION}}
           draft: false
           prerelease: false
 
@@ -64,29 +75,3 @@ jobs:
           asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar
           asset_name: neuro-id-android-sdk-reactNativeLib-release
           asset_content_type: application/aar
-
-      - name: Push SDK on Sandbox Project
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/androidLib/'
-          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'app/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
-          destination_branch: 'master'
-          commit_message: ${{ github.event.head_commit.message }}
-
-      - name: Push SDK on ReactNative Project
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
-          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'android/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
-          destination_branch: 'main'
-          commit_message: ${{ github.event.head_commit.message }}
