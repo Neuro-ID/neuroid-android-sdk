@@ -5,7 +5,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
-import java.util.*
+import java.util.UUID
 
 fun registerWindowListeners(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(

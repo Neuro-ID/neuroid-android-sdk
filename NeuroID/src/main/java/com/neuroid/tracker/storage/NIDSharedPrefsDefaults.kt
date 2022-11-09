@@ -5,7 +5,8 @@ import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.UUID
+import java.util.Locale
 import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(

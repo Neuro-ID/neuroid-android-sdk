@@ -1,6 +1,6 @@
 package com.sample.neuroid.us.domain.config
 
-import java.util.*
+import java.util.Date
 
 class ConfigHelper(
     val userId: String = "${Date().time}",
