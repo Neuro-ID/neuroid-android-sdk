@@ -20,6 +20,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
         binding.apply {
+            textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
+            textViewCidValue.text = NeuroID.getInstance()?.getClientId()
             buttonShowActivityNoAutomaticEvents.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDCustomEventsActivity::class.java))
             }
@@ -29,14 +31,14 @@ class MainActivity : AppCompatActivity() {
             buttonShowActivityFragments.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDSomeFragmentsActivity::class.java))
             }
-
-            textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
-            textViewCidValue.text = NeuroID.getInstance()?.getClientId()
             buttonShowSandBox.setOnClickListener {
                 startActivity(Intent(this@MainActivity, SandBoxActivity::class.java))
             }
             buttonShowDynamic.setOnClickListener {
                 startActivity(Intent(this@MainActivity, DynamicActivity::class.java))
+            }
+            buttonCloseSession.setOnClickListener {
+                NeuroID.getInstance()?.closeSession()
             }
         }
 

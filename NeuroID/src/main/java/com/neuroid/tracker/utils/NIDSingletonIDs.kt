@@ -1,6 +1,6 @@
 package com.neuroid.tracker.utils
 
-import java.util.*
+import java.util.UUID
 
 object NIDSingletonIDs {
     private var saltId = ""

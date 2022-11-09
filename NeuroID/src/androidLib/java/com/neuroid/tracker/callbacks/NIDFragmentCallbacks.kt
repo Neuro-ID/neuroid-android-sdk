@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.WINDOW_LOAD
+import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.events.registerTargetFromScreen
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance

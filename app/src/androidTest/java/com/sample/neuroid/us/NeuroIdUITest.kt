@@ -242,8 +242,4 @@ class NeuroIdUITest {
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
 
-
-
-
-
 }

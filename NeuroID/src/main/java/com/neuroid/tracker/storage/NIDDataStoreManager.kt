@@ -5,6 +5,7 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.models.NIDEventModel
@@ -67,7 +68,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
             }
 
             when (event.type) {
-                BLUR -> NIDJobServiceManager.sendEventsNow()
+                BLUR, CLOSE_SESSION -> NIDJobServiceManager.sendEventsNow()
             }
         }
     }
