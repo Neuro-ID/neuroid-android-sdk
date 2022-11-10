@@ -3,6 +3,7 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.os.Build
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.utils.NIDLog
 
@@ -84,11 +85,13 @@ object NIDSensorHelper {
             }
         }
 
-        gyroscopeSensor?.let {
-            sensorManager?.registerListener(listener, it, 10_000, 10_000)
-        }
-        accelerometerSensor?.let {
-            sensorManager?.registerListener(listener, it, 10_000, 10_000)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            gyroscopeSensor?.let {
+                sensorManager?.registerListener(listener, it, 10_000, 10_000)
+            }
+            accelerometerSensor?.let {
+                sensorManager?.registerListener(listener, it, 10_000, 10_000)
+            }
         }
     }
 
@@ -105,8 +108,6 @@ object NIDSensorHelper {
 
     val valuesGyro: NIDSensorData get() = firstValuesGyro
     val valuesAccel: NIDSensorData get() = firstValuesAccel
-    val isSensorGyroAvailable: Boolean get() = firstValuesGyro.status == NIDSensorStatus.AVAILABLE
-    val isSensorAccelAvailable: Boolean get() = firstValuesAccel.status == NIDSensorStatus.AVAILABLE
 }
 
 enum class NIDSensorStatus {
