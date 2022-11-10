@@ -11,6 +11,7 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
@@ -36,6 +37,7 @@ class NeuroIdUITest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NeuroID.getInstance()?.stop()
+        NIDJobServiceManager.isSendEventsNowEnabled = false
     }
 
     @After
@@ -185,10 +187,26 @@ class NeuroIdUITest {
     }
 
     /**
+     * Validate TOUCH_END when the user up finger on screen
+     */
+    @Test
+    fun test10ValidateCloseSession() = runTest {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_close_session))
+            .perform(click())
+        delay(2000)
+
+        val eventType = "\"type\":\"CLOSE_SESSION\""
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+    }
+
+    /**
      * Validate TOUCH_MOVE when the user scroll on screen
      */
     @Test
-    fun test10ValidateSwipeScreen() = runTest {
+    fun test11ValidateSwipeScreen() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.layout_main))
@@ -203,7 +221,7 @@ class NeuroIdUITest {
      * Validate WINDOW_RESIZE when the user click on editText
      */
     @Test
-    fun test11ValidateWindowsResize() = runTest {
+    fun test12ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.editText_normal_field))
@@ -218,7 +236,7 @@ class NeuroIdUITest {
      * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
      */
     @Test
-    fun test12ValidateChangeScreenOrientation() = runTest {
+    fun test13ValidateChangeScreenOrientation() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         val device = UiDevice.getInstance(getInstrumentation())
 
@@ -235,7 +253,7 @@ class NeuroIdUITest {
      * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
      */
     @Test
-    fun test13ValidateUserIsInactive() = runTest {
+    fun test14ValidateUserIsInactive() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(35_000) // +1 second to wait write data
         val eventType = "\"type\":\"USER_INACTIVE\""
