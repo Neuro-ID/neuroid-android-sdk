@@ -56,7 +56,7 @@ class TextUnitTest {
         delay(500)
 
         val eventType = "\"type\":\"FOCUS\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
     }
 
     /**
