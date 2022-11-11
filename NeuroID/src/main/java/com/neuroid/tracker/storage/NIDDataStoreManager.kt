@@ -3,6 +3,7 @@ package com.neuroid.tracker.storage
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import android.util.Log
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -77,6 +78,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
 
     override suspend fun getAllEvents(): Set<String> {
         val lastEvents = getStringSet(NID_STRING_EVENTS, emptySet())
+        Log.i("ClearEvents","SomeOneClear get events")
         clearEvents()
 
         return lastEvents.map {
@@ -97,6 +99,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     override suspend fun clearEvents() {
+        Log.i("ClearEvents","SomeOneClear the events")
         putStringSet(NID_STRING_EVENTS, emptySet())
     }
 

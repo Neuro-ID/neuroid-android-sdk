@@ -38,10 +38,6 @@ class NonAutomaticEventsTest {
         NeuroID.getInstance()?.stop()
     }
 
-    @After
-    fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
-    }
 
     /**
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class

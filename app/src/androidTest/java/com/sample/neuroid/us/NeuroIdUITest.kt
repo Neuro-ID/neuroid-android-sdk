@@ -8,8 +8,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import androidx.test.uiautomator.UiDevice
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -232,32 +230,6 @@ class NeuroIdUITest {
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
     }
 
-    /**
-     * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
-     */
-    @Test
-    fun test13ValidateChangeScreenOrientation() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        val device = UiDevice.getInstance(getInstrumentation())
 
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
-        device.setOrientationRight()
-        delay(500)
-        device.setOrientationNatural()
-        delay(500)
-        val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
-    }
-
-    /**
-     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
-     */
-    @Test
-    fun test14ValidateUserIsInactive() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(35_000) // +1 second to wait write data
-        val eventType = "\"type\":\"USER_INACTIVE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
 
 }

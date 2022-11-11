@@ -35,7 +35,7 @@ class NIDSchema {
                 events = eventList.filter { it.contains(eventType) }.toSet()
                 if (maxEventsCount > 0) {
                     assertEquals(
-                        eventList.toList().joinToString { "," }.ifEmpty { "No Events" },
+                        eventList.toList().joinToString(",").ifEmpty { "No Events" },
                         maxEventsCount,
                         events.size
                     )
