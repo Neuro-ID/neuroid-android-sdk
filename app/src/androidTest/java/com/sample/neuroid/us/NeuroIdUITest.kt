@@ -185,22 +185,6 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate TOUCH_END when the user up finger on screen
-     */
-    @Test
-    fun test10ValidateCloseSession() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
-        onView(withId(R.id.button_close_session))
-            .perform(click())
-        delay(2000)
-
-        val eventType = "\"type\":\"CLOSE_SESSION\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
-
-    /**
      * Validate TOUCH_MOVE when the user scroll on screen
      */
     @Test
@@ -229,7 +213,6 @@ class NeuroIdUITest {
         val eventType = "\"type\":\"WINDOW_RESIZE\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
     }
-
 
 
 }

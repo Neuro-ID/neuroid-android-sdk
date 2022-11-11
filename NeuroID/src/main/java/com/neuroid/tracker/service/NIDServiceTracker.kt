@@ -2,7 +2,6 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -41,9 +40,6 @@ object NIDServiceTracker {
         context: Application,
         events: Set<String>? = null
     ): Pair<Int, Boolean> {
-        if(events == null){
-            Log.i("ClearEvents","Events is Null And Send to server")
-        }
         val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
