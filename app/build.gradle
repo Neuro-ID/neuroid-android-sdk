@@ -17,8 +17,9 @@ android {
 
     defaultConfig {
         applicationId "com.sample.neuroid.us"
-        minSdk 21
+        minSdk 16
         targetSdk 31
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
 
@@ -99,7 +100,6 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.5.2"
 
     implementation project(':NeuroID')
-    implementation "androidx.security:security-crypto:1.1.0-alpha03"
     debugImplementation 'com.github.erosb:everit-json-schema:1.14.1'
 
     implementation("com.google.dagger:hilt-android:2.38.1")
