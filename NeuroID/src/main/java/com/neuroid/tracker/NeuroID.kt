@@ -5,12 +5,12 @@ import android.app.Application
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.SET_USER_ID
-import com.neuroid.tracker.events.FORM_SUBMIT
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FORM_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -222,14 +222,16 @@ class NeuroID private constructor(
     }
 
     fun closeSession() {
-        getDataStoreInstance().saveEvent(
-            NIDEventModel(
-                type = CLOSE_SESSION,
-                ct = "SDK_EVENT",
-                ts = System.currentTimeMillis()
+        if (!isStopped()) {
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = CLOSE_SESSION,
+                    ct = "SDK_EVENT",
+                    ts = System.currentTimeMillis()
+                )
             )
-        )
-        stop()
+            stop()
+        }
     }
 
     fun resetClientId() {

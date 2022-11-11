@@ -2,12 +2,12 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 object NIDJobServiceManager {
 
@@ -50,7 +50,7 @@ object NIDJobServiceManager {
     }
 
     suspend fun sendEventsNow() {
-        if (isSendEventsNowEnabled) {
+        if (isSendEventsNowEnabled && !isStopped()) {
             application?.let {
                 val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
                 if (response.second) {
