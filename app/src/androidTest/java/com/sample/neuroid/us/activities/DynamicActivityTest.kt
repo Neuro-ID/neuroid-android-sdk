@@ -14,7 +14,6 @@ import com.sample.neuroid.us.R
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -36,11 +35,6 @@ class DynamicActivityTest {
         NeuroID.getInstance()?.stop()
     }
 
-    @After
-    fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
-    }
-
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
@@ -54,6 +48,7 @@ class DynamicActivityTest {
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
         delay(2000)
         getDataStoreInstance().clearEvents()
+        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())
         delay(2000)
