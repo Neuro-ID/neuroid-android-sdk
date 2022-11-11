@@ -78,7 +78,7 @@ data class NIDEventModel(
             ec?.let { jsonObject.put("ec", it) }
             et?.let { jsonObject.put("et", it) }
             eid?.let { jsonObject.put("eid", it) }
-            ct?.let { jsonObject.put("eid", it) }
+            ct?.let { jsonObject.put("ct", it) }
             jsonObject.put("ts", ts)
             sm?.let { jsonObject.put("sm", it) }
             pd?.let { jsonObject.put("pd", it) }
