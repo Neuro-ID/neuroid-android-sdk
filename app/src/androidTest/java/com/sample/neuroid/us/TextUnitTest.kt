@@ -38,12 +38,6 @@ class TextUnitTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
     }
 
-    @ExperimentalCoroutinesApi
-    @After
-    fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
-    }
-
     /**
      * Validate FOCUS when the user click on editText
      */
@@ -51,6 +45,7 @@ class TextUnitTest {
     fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
         delay(500)
@@ -66,7 +61,7 @@ class TextUnitTest {
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-
+        getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
         delay(600)
@@ -86,6 +81,7 @@ class TextUnitTest {
     fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        getDataStoreInstance().clearEvents()
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
@@ -102,7 +98,7 @@ class TextUnitTest {
     fun test04ValidateTypeTextOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-
+        getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText("Some text"))
         delay(500)

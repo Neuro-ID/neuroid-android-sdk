@@ -95,9 +95,10 @@ class NonAutomaticEventsTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) //Wait a half second for create the MainActivity View
         getDataStoreInstance().clearEvents()
+        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.button_send_custom_event))
             .perform(ViewActions.click())
-        delay(600)
+        delay(1000)
 
         val eventType = "\"type\":\"CUSTOM_EVENT\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
