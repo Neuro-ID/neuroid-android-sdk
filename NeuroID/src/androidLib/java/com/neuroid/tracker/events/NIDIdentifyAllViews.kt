@@ -4,7 +4,16 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.RatingBar
+import android.widget.SeekBar
+import android.widget.Spinner
+import android.widget.Switch
+import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
@@ -17,6 +26,25 @@ import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
 import org.json.JSONArray
 import org.json.JSONObject
+
+fun identifyView(
+    view: View,
+    guid: String,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true
+) {
+    when (view) {
+        is ViewGroup -> identifyAllViews(view, guid, registerTarget, registerListeners)
+        else -> {
+            if (registerTarget) {
+                registerComponent(view, guid)
+            }
+            if (registerListeners) {
+                registerListeners(view)
+            }
+        }
+    }
+}
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -36,12 +64,7 @@ fun identifyAllViews(
             it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
                 override fun onChildViewAdded(parent: View?, child: View?) {
                     child?.let { view ->
-                        if (view is ViewGroup) {
-                            identifyAllViews(view, guid, registerTarget, registerListeners)
-                        } else {
-                            registerComponent(view, guid)
-                            registerListeners(view)
-                        }
+                        identifyView(view, guid, registerTarget, registerListeners)
                     }
                 }
 

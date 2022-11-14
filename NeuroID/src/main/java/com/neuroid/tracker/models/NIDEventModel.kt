@@ -19,6 +19,7 @@ data class NIDEventModel(
     val ec: String? = null,
     val et: String? = null,
     var eid: String? = null,
+    val ct: String? = null,
     val ts: Long,
     val sm: Int? = null,
     val pd: Int? = null,
@@ -77,6 +78,7 @@ data class NIDEventModel(
             ec?.let { jsonObject.put("ec", it) }
             et?.let { jsonObject.put("et", it) }
             eid?.let { jsonObject.put("eid", it) }
+            ct?.let { jsonObject.put("ct", it) }
             jsonObject.put("ts", ts)
             sm?.let { jsonObject.put("sm", it) }
             pd?.let { jsonObject.put("pd", it) }

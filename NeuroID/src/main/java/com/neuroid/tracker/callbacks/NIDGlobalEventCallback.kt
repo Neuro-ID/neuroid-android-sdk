@@ -1,11 +1,24 @@
 package com.neuroid.tracker.callbacks
 
 import android.os.Build
-import android.view.*
+import android.view.Window
+import android.view.View
+import android.view.ViewTreeObserver
+import android.view.KeyEvent
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.Menu
+import android.view.WindowManager
+import android.view.ActionMode
+import android.view.SearchEvent
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.NIDTouchEventManager
+import com.neuroid.tracker.events.FOCUS
+import com.neuroid.tracker.events.WINDOW_RESIZE
+import com.neuroid.tracker.events.TEXT_CHANGE
+import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance

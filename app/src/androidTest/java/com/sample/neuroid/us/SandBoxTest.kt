@@ -10,6 +10,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +39,7 @@ class SandBoxTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         //NeuroID.getInstance()?.stop()
+        NeuroID.getInstance()?.resetClientId()
     }
 
     @After
@@ -85,7 +87,6 @@ class SandBoxTest {
         phoneNumberField.perform(typeText("56565656"), closeSoftKeyboard())
         delay(1000)
         employerlblField.perform(typeText("54523"), closeSoftKeyboard())
-
         delay(15000)
         buttonContinue.perform(click())
         delay(15000)

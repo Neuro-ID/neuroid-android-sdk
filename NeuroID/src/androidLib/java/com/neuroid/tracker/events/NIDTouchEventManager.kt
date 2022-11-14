@@ -2,10 +2,21 @@ package com.neuroid.tracker.events
 
 import android.util.Log
 import android.view.MotionEvent
-import android.view.MotionEvent.*
+import android.view.MotionEvent.ACTION_DOWN
+import android.view.MotionEvent.ACTION_MOVE
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.EditText
+import android.widget.CheckBox
+import android.widget.RadioButton
+import android.widget.ToggleButton
+import android.widget.Switch
+import android.widget.ImageButton
+import android.widget.SeekBar
+import android.widget.Spinner
+import android.widget.RatingBar
+import android.widget.Button
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children

@@ -27,8 +27,9 @@ android {
     compileSdk 31
 
     defaultConfig {
-        minSdk 21
+        minSdk 16
         targetSdk 31
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -83,10 +84,10 @@ dependencies {
     testImplementation "androidx.test:core-ktx:1.4.0"
     testImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     testImplementation 'com.google.truth:truth:0.43'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     implementation("androidx.lifecycle:lifecycle-process:2.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
-    implementation("androidx.security:security-crypto:1.1.0-alpha03")
     reactNativeLibImplementation("com.facebook.react:react-native:+")
 }
 

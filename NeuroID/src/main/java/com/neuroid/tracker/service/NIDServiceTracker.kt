@@ -40,7 +40,6 @@ object NIDServiceTracker {
         context: Application,
         events: Set<String>? = null
     ): Pair<Int, Boolean> {
-
         val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")

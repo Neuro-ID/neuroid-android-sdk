@@ -3,7 +3,9 @@ package com.neuroid.tracker.callbacks
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.PASTE
+import com.neuroid.tracker.events.COPY
+import com.neuroid.tracker.events.CUT
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
