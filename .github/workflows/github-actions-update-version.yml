@@ -15,7 +15,7 @@ jobs:
         run: |
           v=`echo ${{github.event.pull_request.title}} | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
           if [ "${{github.event.pull_request.title}}" = "$v" ]; then
-            exit 1;
+            exit 0;
           else
             echo $v;
           fi
