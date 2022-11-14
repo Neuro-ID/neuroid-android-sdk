@@ -33,8 +33,8 @@ jobs:
       - name: Grant Permission for Gradlew and ReadProperties to Execute
         run: | 
           chmod +x gradlew
-          chmod +x read_version.sh
-          ./read_version.sh
+          chmod +x properties_read.sh
+          ./properties_read.sh
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
