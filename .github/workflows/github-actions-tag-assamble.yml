@@ -34,11 +34,12 @@ jobs:
         run: | 
           chmod +x gradlew
           chmod +x read_version.sh
+          ./read_version.sh
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Update Internal Library
+      - name: Create TAG
         run: |
             git config --global user.email "robot@neuro-id.com"
             git config --global user.name "robot"
