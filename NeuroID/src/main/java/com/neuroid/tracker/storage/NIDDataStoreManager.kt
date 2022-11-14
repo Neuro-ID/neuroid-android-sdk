@@ -68,8 +68,11 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
             }
 
             when (event.type) {
-                BLUR, CLOSE_SESSION -> {
+                BLUR -> {
                     NIDJobServiceManager.sendEventsNow()
+                }
+                CLOSE_SESSION -> {
+                    NIDJobServiceManager.sendEventsNow(true)
                 }
             }
         }
