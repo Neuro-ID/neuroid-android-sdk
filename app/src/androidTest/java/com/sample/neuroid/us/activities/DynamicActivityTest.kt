@@ -52,7 +52,7 @@ class DynamicActivityTest {
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())
         delay(2000)
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
         delay(2000)
     }
 }
