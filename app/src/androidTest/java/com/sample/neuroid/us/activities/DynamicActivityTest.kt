@@ -45,7 +45,7 @@ class DynamicActivityTest {
         delay(2000)
 
         val eventType = "\"type\":\"REGISTER_TARGET\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
         delay(2000)
         getDataStoreInstance().clearEvents()
         delay(500)
