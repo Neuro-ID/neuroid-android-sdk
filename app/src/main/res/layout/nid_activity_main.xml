@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/layout_main"
@@ -9,67 +9,18 @@
         android:layout_height="match_parent"
         tools:context=".activities.MainActivity">
 
-        <LinearLayout
-            android:layout_width="0px"
-            android:layout_height="0px"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="UselessLeaf" />
-
         <TextView
             android:id="@+id/textView_label_one"
             style="@style/NidTextViewTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="8dp"
             android:text="@string/nid_main_activity_title"
             android:textSize="14sp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textIl_normal_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="20dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_label_one">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText_normal_field"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/nid_editText_normal_hint"
-                android:maxLength="10" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textIl_password_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textIl_normal_field"
-            app:passwordToggleEnabled="true">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText_password_field"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/nid_editText_password_hint"
-                android:inputType="numberPassword"
-                android:maxLength="10" />
-
-        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/textView_sid_title"
@@ -77,24 +28,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="8dp"
             android:text="@string/nid_main_activity_sid_title"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@id/textView_sid_value"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textIl_password_field" />
+            app:layout_constraintTop_toBottomOf="@+id/textView_label_one" />
 
         <EditText
             android:id="@+id/textView_sid_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:enabled="false"
             android:inputType="number"
             android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@id/textView_sid_title"
-            app:layout_constraintTop_toBottomOf="@id/textIl_password_field"
+            app:layout_constraintTop_toBottomOf="@id/textView_label_one"
             tools:text="189272372" />
 
         <TextView
@@ -103,19 +56,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="8dp"
-            android:text="@string/nid_main_activity_sid_title"
+            android:text="@string/nid_main_activity_cid_title"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@id/textView_cid_value"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView_sid_title" />
 
-        <TextView
+        <EditText
             android:id="@+id/textView_cid_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
+            android:enabled="false"
             android:inputType="number"
             android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@id/textView_cid_title"
@@ -126,6 +82,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -134,8 +92,6 @@
                 android:id="@+id/button_show_activity_no_automatic_events"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:text="@string/nid_main_button_show_activity_non_automatic_events"
                 android:textAllCaps="false" />
 
@@ -143,8 +99,6 @@
                 android:id="@+id/button_show_activity_one_fragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:text="@string/nid_main_button_show_activity_one_fragment"
                 android:textAllCaps="false" />
 
@@ -152,8 +106,6 @@
                 android:id="@+id/button_show_activity_fragments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:text="@string/nid_main_button_show_activity_fragments"
                 android:textAllCaps="false" />
 
@@ -161,8 +113,6 @@
                 android:id="@+id/button_show_sand_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:text="@string/nid_main_button_show_sand_box"
                 android:textAllCaps="false" />
 
@@ -170,8 +120,6 @@
                 android:id="@+id/button_show_dynamic"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:text="Show Dynamic Activity"
                 android:textAllCaps="false" />
 
@@ -179,8 +127,6 @@
                 android:id="@+id/button_close_session"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 android:text="Close session"
                 android:textAllCaps="false" />

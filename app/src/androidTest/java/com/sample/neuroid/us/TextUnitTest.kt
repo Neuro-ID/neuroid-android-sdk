@@ -46,6 +46,9 @@ class TextUnitTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         getDataStoreInstance().clearEvents()
+        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
+            .perform(ViewActions.click())
+        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
         delay(500)
@@ -61,7 +64,10 @@ class TextUnitTest {
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
+            .perform(ViewActions.click())
         getDataStoreInstance().clearEvents()
+        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
         delay(600)
@@ -82,6 +88,12 @@ class TextUnitTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         getDataStoreInstance().clearEvents()
+        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
+            .perform(ViewActions.click())
+        delay(500)
+        Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
+            .perform(ViewActions.click())
+        delay(500)
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
@@ -99,6 +111,12 @@ class TextUnitTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         getDataStoreInstance().clearEvents()
+        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
+            .perform(ViewActions.click())
+        delay(500)
+        Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
+            .perform(ViewActions.click())
+        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText("Some text"))
         delay(500)
