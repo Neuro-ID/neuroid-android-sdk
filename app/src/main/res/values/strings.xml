@@ -5,6 +5,7 @@
     <string name="nid_app_name">Neuro ID Example</string>
     <string name="nid_main_activity_title">Main Activity</string>
     <string name="nid_main_activity_sid_title">SID:</string>
+    <string name="nid_main_activity_cid_title">CID:</string>
     <string name="nid_main_button_show_activity_non_automatic_events">Show Non-automatic events</string>
     <string name="nid_main_button_show_activity_one_fragment">Show Activity with one fragment</string>
     <string name="nid_main_button_show_activity_fragments">Show Activity with fragments</string>
