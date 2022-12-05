@@ -76,6 +76,8 @@ class NeuroIdUITest {
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
+        getDataStoreInstance().clearEvents()
+        delay(500)
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
         val eventType = "\"type\":\"SET_USER_ID\""
