@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: "Slack Notification"
-      - uses: slackapi/slack-github-action@v1.21.0
+        uses: slackapi/slack-github-action@v1.21.0
         with:
           payload: |
             {
