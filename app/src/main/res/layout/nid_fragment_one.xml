@@ -25,14 +25,32 @@
                     android:id="@+id/textIl_normal_field"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editText_normal_field"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/nid_editText_normal_hint"
+                        android:maxLength="10" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textIl_password_field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_margin="20dp">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editText_normal_field_fragment_one"
+                        android:id="@+id/editText_password_field"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxLength="10"
-                        android:hint="@string/nid_editText_normal_hint"/>
+                        android:hint="@string/nid_editText_password_hint"
+                        android:inputType="numberPassword"
+                        android:maxLength="10" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -42,6 +60,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginLeft="20dp"
                     android:text="@string/nid_fragment_one_spinner" />
 
                 <Spinner
@@ -60,6 +79,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"
+                    android:layout_marginLeft="20dp"
                     android:text="@string/nid_fragment_one_autocomplete_box" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -75,6 +95,8 @@
                         android:id="@+id/autoCompleteText_color"
                         android:paddingStart="10dp"
                         android:paddingEnd="0dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="0dp"
                         android:paddingTop="22dp"
                         android:focusable="false"
                         android:focusableInTouchMode="false"

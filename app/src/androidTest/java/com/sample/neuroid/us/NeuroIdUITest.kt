@@ -76,6 +76,8 @@ class NeuroIdUITest {
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
+        getDataStoreInstance().clearEvents()
+        delay(500)
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
         val eventType = "\"type\":\"SET_USER_ID\""
@@ -160,6 +162,10 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_show_activity_fragments))
+            .perform(click())
+        delay(500)
+        getDataStoreInstance().clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(500)
@@ -176,6 +182,10 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_show_activity_fragments))
+            .perform(click())
+        delay(500)
+        getDataStoreInstance().clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(500)
@@ -206,6 +216,9 @@ class NeuroIdUITest {
     fun test12ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_show_activity_fragments))
+            .perform(click())
+        delay(500)
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(1000)

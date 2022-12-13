@@ -2,8 +2,6 @@ package com.sample.neuroid.us.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
@@ -21,7 +19,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.apply {
             textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
-            textViewCidValue.text = NeuroID.getInstance()?.getClientId()
+            textViewCidValue.setText(NeuroID.getInstance()?.getClientId())
             buttonShowActivityNoAutomaticEvents.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDCustomEventsActivity::class.java))
             }
@@ -41,20 +39,5 @@ class MainActivity : AppCompatActivity() {
                 NeuroID.getInstance()?.closeSession()
             }
         }
-
-        binding.editTextNormalField.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                println("----------------- beforeTextChanged")
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                println("----------------- onTextChanged")
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-                println("----------------- afterTextChanged")
-            }
-
-        })
     }
 }
