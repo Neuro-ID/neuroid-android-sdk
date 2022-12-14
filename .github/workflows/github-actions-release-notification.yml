@@ -2,7 +2,7 @@ name: After Release SDK Version
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   after-release:
