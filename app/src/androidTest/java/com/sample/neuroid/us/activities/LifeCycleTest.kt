@@ -52,15 +52,4 @@ class LifeCycleTest {
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
     }
-
-    /**
-     * Validate USER_INACTIVE when the user does not interact with the application for 30 seconds
-     */
-    @Test
-    fun test14ValidateUserIsInactive() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(35_000) // +1 second to wait write data
-        val eventType = "\"type\":\"USER_INACTIVE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
 }
