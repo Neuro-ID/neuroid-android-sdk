@@ -15,7 +15,7 @@ class NIDSharedPrefsDefaults(
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
 
-    suspend fun getSessionID(): String {
+    fun getSessionID(): String {
         return getString(NID_SID)
     }
 
@@ -26,7 +26,7 @@ class NIDSharedPrefsDefaults(
         return sid
     }
 
-    suspend fun getClientId(): String {
+    fun getClientId(): String {
         var cid = getString(NID_CID)
         return if (cid == "") {
             cid = UUID.randomUUID().toString()
@@ -49,13 +49,13 @@ class NIDSharedPrefsDefaults(
     }
 
     // Must be set to null string
-    suspend fun getUserId(): String? {
+    fun getUserId(): String? {
         val uid = getString(NID_UID)
 
         return uid.ifBlank { null }
     }
 
-    suspend fun getDeviceId(): String {
+    fun getDeviceId(): String {
         var deviceId = getString(NID_DID)
 
         return if (deviceId == "") {
@@ -68,7 +68,7 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    suspend fun getIntermediateId(): String {
+    fun getIntermediateId(): String {
         var iid = getString(NID_IID, "")
 
         return if (iid == "") {
@@ -116,7 +116,7 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    private suspend fun getString(key: String, default: String = ""): String {
+    private fun getString(key: String, default: String = ""): String {
         return sharedPref?.getString(key, "") ?: default
     }
 

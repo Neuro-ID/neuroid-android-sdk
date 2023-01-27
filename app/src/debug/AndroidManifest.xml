@@ -13,6 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NeuroIdAndroidExample"
         tools:ignore="DataExtractionRules,UnusedAttribute">
+
+        <activity
+            android:name=".activities.NIDPayloadJsonActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NeuroIdAndroidExample" />
     </application>
 
 </manifest>

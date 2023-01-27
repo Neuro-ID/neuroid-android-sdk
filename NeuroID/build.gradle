@@ -24,7 +24,8 @@ group = 'com.neuroid'
 version = versionName
 
 android {
-    compileSdk 31
+
+    compileSdkVersion 31
 
     defaultConfig {
         minSdk 16
@@ -37,7 +38,6 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            debuggable true
             jniDebuggable true
             buildConfigField "String", "VERSION_NAME", "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""

@@ -17,13 +17,9 @@ object NIDTimerActive {
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
             NIDSensorHelper.stopSensors()
-            getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = USER_INACTIVE,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                ))
+            // USER_INACTIVE code would go here.
+            // we cancel timer when there is any event. If the timer finishes, it means no event
+
         }
 
     }
