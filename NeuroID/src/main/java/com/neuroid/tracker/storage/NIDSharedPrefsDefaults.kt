@@ -5,7 +5,6 @@ import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import java.util.UUID
 import java.util.Locale
 import kotlin.random.Random
@@ -50,10 +49,10 @@ class NIDSharedPrefsDefaults(
     }
 
     // Must be set to null string
-    suspend fun getUserId(): Any? {
+    suspend fun getUserId(): String? {
         val uid = getString(NID_UID)
 
-        return uid.ifBlank { JSONObject.NULL }
+        return uid.ifBlank { null }
     }
 
     suspend fun getDeviceId(): String {
