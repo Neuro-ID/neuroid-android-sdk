@@ -17,6 +17,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
+import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
 
