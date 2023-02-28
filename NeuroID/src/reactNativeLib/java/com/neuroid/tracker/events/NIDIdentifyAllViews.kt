@@ -45,6 +45,8 @@ fun identifyAllViews(
     registerTarget: Boolean,
     registerListeners: Boolean
 ) {
+    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+
     viewParent.forEach {
         if (registerTarget) {
             registerComponent(it, guid)
@@ -55,6 +57,8 @@ fun identifyAllViews(
         if (it is ViewGroup) {
             identifyAllViews(it, guid, registerTarget, registerListeners)
             it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+                NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
+
                 override fun onChildViewAdded(parent: View?, child: View?) {
                     child?.let { view ->
                         identifyView(view, guid, registerTarget, registerListeners)
@@ -74,6 +78,8 @@ private fun registerComponent(view: View, guid: String) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
+
+    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
 
     when (view) {
         is EditText -> {
@@ -109,6 +115,9 @@ private fun registerComponent(view: View, guid: String) {
             }
         }
     }
+
+
+    NIDLog.d("NIDDebug et at registerComponent", "${et}")
 
     if (et.isNotEmpty()) {
         val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {

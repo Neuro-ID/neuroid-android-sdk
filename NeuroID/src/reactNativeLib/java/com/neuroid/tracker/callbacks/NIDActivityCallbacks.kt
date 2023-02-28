@@ -95,11 +95,17 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         if (existActivity) {
             if (hasFragments.not() && cameBackFromBehind.not()) {
                 registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+            } else {
+                NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
+
             }
         } else {
             listActivities.add(currentActivityName)
             if (hasFragments.not()) {
                 registerTargetFromScreen(activity, wasChanged.not(), true)
+            } else
+            {
+                NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
             }
             wasChanged = false
             registerWindowListeners(activity)

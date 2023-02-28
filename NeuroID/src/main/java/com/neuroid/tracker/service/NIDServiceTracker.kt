@@ -79,7 +79,7 @@ object NIDServiceTracker {
             val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
-            NIDLog.d("NeuroID", "payload Json:: $data")
+            NIDLog.d("NeuroID", "payload Json::: $data")
 
             try {
                 val os: OutputStream = conn.outputStream
