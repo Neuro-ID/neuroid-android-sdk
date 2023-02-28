@@ -57,9 +57,10 @@ fun identifyAllViews(
         if (it is ViewGroup) {
             identifyAllViews(it, guid, registerTarget, registerListeners)
             it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-                NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
 
                 override fun onChildViewAdded(parent: View?, child: View?) {
+                    NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
+
                     child?.let { view ->
                         identifyView(view, guid, registerTarget, registerListeners)
                     }
