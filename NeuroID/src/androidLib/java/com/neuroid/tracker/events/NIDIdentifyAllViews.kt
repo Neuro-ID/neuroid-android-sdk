@@ -83,7 +83,7 @@ fun identifyAllViews(
 }
 
 private fun registerComponent(view: View, guid: String) {
-    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class}")
+    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
 
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()

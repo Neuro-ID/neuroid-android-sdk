@@ -11,6 +11,7 @@ import com.neuroid.tracker.events.registerTargetFromScreen
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 
 class NIDFragmentCallbacks(
     isChangeOrientation: Boolean
@@ -47,9 +48,13 @@ class NIDFragmentCallbacks(
         v: View,
         savedInstanceState: Bundle?
     ) {
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
+
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
             _isChangeOrientation = false
+        } else {
+            NIDLog.d("Neuro ID", "NIDDebug Fragment blacklisted ${f::class.java.simpleName}");
         }
     }
 
