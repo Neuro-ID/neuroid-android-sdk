@@ -9,6 +9,8 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
+
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
