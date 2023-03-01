@@ -73,6 +73,8 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         savedInstanceState: Bundle?
     ) {
         //No operation
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentCreated");
+
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
