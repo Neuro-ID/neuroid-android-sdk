@@ -69,7 +69,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
     override fun onActivityStarted(activity: Activity) {
         var cameBackFromBehind = false
-
+        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
             val gyroData = NIDSensorHelper.getGyroscopeInfo()

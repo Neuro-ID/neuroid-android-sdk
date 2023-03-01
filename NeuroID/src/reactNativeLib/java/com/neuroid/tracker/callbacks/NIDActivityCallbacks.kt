@@ -19,6 +19,8 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var wasChanged = false
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+        NIDLog.d("Neuro ID", "NIDDebug onActivityCreated");
+
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
         val existActivity = listActivities.contains(currentActivityName)
@@ -34,6 +36,8 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         if (existActivity.not()) {
+            NIDLog.d("Neuro ID", "NIDDebug onActivityStarted existActivity.not()");
+
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
         }
@@ -70,6 +74,8 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityStarted(activity: Activity) {
+        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
+
         var cameBackFromBehind = false
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
