@@ -14,16 +14,15 @@ import android.view.SearchEvent
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
-import com.neuroid.tracker.events.NIDTouchEventManager
-import com.neuroid.tracker.events.FOCUS
-import com.neuroid.tracker.events.WINDOW_RESIZE
-import com.neuroid.tracker.events.TEXT_CHANGE
-import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
+import java.util.*
 
 class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
@@ -45,6 +44,23 @@ class NIDGlobalEventCallback(
 
             if (newView is EditText) {
                 val text = newView.text.toString()
+
+                // If focus change is EditText, do a check to see if we have registered this Field yet
+                if (! NIDServiceTracker.registeredViews.contains(newView.getIdOrTag())) {
+                    NIDLog.d(
+                        "NIDDebug",
+                        "Late registration: registeringView ${newView.javaClass.simpleName}"
+                    )
+                    val hashCodeAct = newView.javaClass.name.hashCode();
+                    val guid =
+                        UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+                    registerComponent(newView, guid)
+                } else {
+                    NIDLog.d(
+                        "NIDDebug",
+                        "view already registered: registeringView ${newView.javaClass.simpleName} tag: ${newView.getIdOrTag()}"
+                    )
+                }
                 getDataStoreInstance()
                     .saveEvent(
                         NIDEventModel(
