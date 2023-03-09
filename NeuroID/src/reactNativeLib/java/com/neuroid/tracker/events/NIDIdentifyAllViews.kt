@@ -75,7 +75,7 @@ fun identifyAllViews(
     }
 }
 
-private fun registerComponent(view: View, guid: String) {
+fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
