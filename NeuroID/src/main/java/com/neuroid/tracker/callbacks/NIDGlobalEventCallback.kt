@@ -55,6 +55,7 @@ class NIDGlobalEventCallback(
                     val guid =
                         UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
                     registerComponent(newView, guid)
+                    NIDServiceTracker.registeredViews.add(newView.getIdOrTag());
                 } else {
                     NIDLog.d(
                         "NIDDebug",
