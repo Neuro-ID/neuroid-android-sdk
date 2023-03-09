@@ -82,6 +82,8 @@ fun registerComponent(view: View, guid: String) {
     var et = ""
 
     NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
+    NIDServiceTracker.registeredViews.add(view.getIdOrTag());
+
 
     when (view) {
         is EditText -> {
