@@ -9,12 +9,16 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
+
 
 class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
     private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
     private var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentAttached ${f::class.java.simpleName}");
+
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             NIDServiceTracker.screenFragName = f::class.java.simpleName
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -58,6 +62,8 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
         // No Operation
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
+
     }
 
     override fun onFragmentViewCreated(
@@ -67,6 +73,8 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         savedInstanceState: Bundle?
     ) {
         //No operation
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentCreated");
+
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {

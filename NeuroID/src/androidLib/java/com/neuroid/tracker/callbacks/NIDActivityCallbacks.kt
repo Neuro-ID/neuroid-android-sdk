@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_FOCUS
@@ -14,6 +15,7 @@ import com.neuroid.tracker.events.registerWindowListeners
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.hasFragments
 
 class NIDActivityCallbacks: ActivityLifecycleCallbacks {
@@ -67,7 +69,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
     override fun onActivityStarted(activity: Activity) {
         var cameBackFromBehind = false
-
+        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -93,10 +95,16 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             if (hasFragments.not() && cameBackFromBehind.not()) {
                 registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
             }
+            else {
+                NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
+            }
         } else {
             listActivities.add(currentActivityName)
             if (hasFragments.not()) {
                 registerTargetFromScreen(activity, wasChanged.not())
+            } else
+            {
+                NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
             }
             wasChanged = false
             registerWindowListeners(activity)

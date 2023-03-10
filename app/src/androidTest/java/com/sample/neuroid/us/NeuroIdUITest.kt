@@ -228,4 +228,28 @@ class NeuroIdUITest {
     }
 
 
+
+    /**
+     * Validate on TOUCH_START that the input is registered
+     */
+    @Test
+    fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        delay(500) // When you go to the next test, the activity is destroyed and recreated
+        onView(withId(R.id.button_show_activity_fragments))
+            .perform(click())
+        delay(500)
+        onView(withId(R.id.editText_normal_field))
+            .perform(click())
+        delay(1000)
+
+        val eventType = "\"type\":\"REGISTER_TARGET\""
+        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+    }
+
+
+
+
+
+
 }

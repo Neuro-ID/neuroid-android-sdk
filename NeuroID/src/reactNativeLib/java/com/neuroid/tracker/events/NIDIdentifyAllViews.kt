@@ -17,6 +17,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
+import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -45,6 +46,8 @@ fun identifyAllViews(
     registerTarget: Boolean,
     registerListeners: Boolean
 ) {
+    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+
     viewParent.forEach {
         if (registerTarget) {
             registerComponent(it, guid)
@@ -55,7 +58,10 @@ fun identifyAllViews(
         if (it is ViewGroup) {
             identifyAllViews(it, guid, registerTarget, registerListeners)
             it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+
                 override fun onChildViewAdded(parent: View?, child: View?) {
+                    NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
+
                     child?.let { view ->
                         identifyView(view, guid, registerTarget, registerListeners)
                     }
@@ -69,11 +75,13 @@ fun identifyAllViews(
     }
 }
 
-private fun registerComponent(view: View, guid: String) {
+fun registerComponent(view: View, guid: String) {
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
+
+    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
 
     when (view) {
         is EditText -> {
@@ -109,6 +117,9 @@ private fun registerComponent(view: View, guid: String) {
             }
         }
     }
+
+
+    NIDLog.d("NIDDebug et at registerComponent", "${et}")
 
     if (et.isNotEmpty()) {
         val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {

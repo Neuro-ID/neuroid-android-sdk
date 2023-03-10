@@ -34,6 +34,7 @@ fun registerTargetFromScreen(
     registerTarget: Boolean = true,
     registerListeners: Boolean = true
 ) {
+    // DEBUG are we actually fetching all view containers
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     ) as ViewGroup
