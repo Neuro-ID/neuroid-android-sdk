@@ -29,6 +29,8 @@ object NIDServiceTracker {
     @set:Synchronized
     var screenFragName = ""
 
+    var registeredViews: MutableSet<String> = mutableSetOf()
+
     var environment = ""
     var siteId = ""
     var rndmId = ""

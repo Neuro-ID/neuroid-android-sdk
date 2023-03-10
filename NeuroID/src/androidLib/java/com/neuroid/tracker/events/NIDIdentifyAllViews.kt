@@ -82,7 +82,7 @@ fun identifyAllViews(
     }
 }
 
-private fun registerComponent(view: View, guid: String) {
+fun registerComponent(view: View, guid: String) {
     NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
 
     val idName = view.getIdOrTag()
