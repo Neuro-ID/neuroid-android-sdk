@@ -82,7 +82,7 @@ fun identifyAllViews(
     }
 }
 
-fun registerComponent(view: View, guid: String) {
+fun registerComponent(view: View, guid: String, rts: String?=null) {
     NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
 
     val idName = view.getIdOrTag()
@@ -154,7 +154,8 @@ fun registerComponent(view: View, guid: String) {
                     ts = System.currentTimeMillis(),
                     url = urlView,
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    rts = rts
                 )
             )
     }
