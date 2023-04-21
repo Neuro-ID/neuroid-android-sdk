@@ -75,7 +75,7 @@ fun identifyAllViews(
     }
 }
 
-fun registerComponent(view: View, guid: String) {
+fun registerComponent(view: View, guid: String, rts: String?=null) {
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -149,7 +149,8 @@ fun registerComponent(view: View, guid: String) {
                     ts = System.currentTimeMillis(),
                     url = urlView,
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    rts = rts
                 )
             )
     }
