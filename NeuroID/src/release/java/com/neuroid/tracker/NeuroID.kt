@@ -144,6 +144,10 @@ class NeuroID private constructor(
         return forceStart
     }
 
+    fun setForceStart() {
+        this.forceStart = true
+    }
+
     fun getTabId(): String = NIDServiceTracker.rndmId
 
     fun getFirstTS(): Long = timestamp
