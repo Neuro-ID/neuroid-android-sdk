@@ -39,6 +39,9 @@ class NeuroID private constructor(
     private var userID = ""
     private var timestamp: Long = 0L
 
+    private var forceStart: Boolean? = null
+
+
     private var metaData: NIDMetaData? = null
 
     init {
@@ -136,6 +139,9 @@ class NeuroID private constructor(
         return clientID
     }
 
+    fun getForceStart(): Boolean? {
+        return forceStart
+    }
     fun getTabId(): String = NIDServiceTracker.rndmId
 
     fun getFirstTS(): Long = timestamp

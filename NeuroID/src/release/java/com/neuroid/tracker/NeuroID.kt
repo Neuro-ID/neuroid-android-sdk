@@ -40,6 +40,8 @@ class NeuroID private constructor(
 
     private var metaData: NIDMetaData? = null
 
+    private var forceStart: Boolean? = null
+
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
@@ -104,6 +106,9 @@ class NeuroID private constructor(
 
     fun getUserId() = userID
 
+    fun forceRun() {
+       this.forceStart = true
+    }
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
     }
@@ -133,6 +138,10 @@ class NeuroID private constructor(
 
     fun getClientId(): String {
         return clientID
+    }
+
+    fun getForceStart(): Boolean? {
+        return forceStart
     }
 
     fun getTabId(): String = NIDServiceTracker.rndmId
