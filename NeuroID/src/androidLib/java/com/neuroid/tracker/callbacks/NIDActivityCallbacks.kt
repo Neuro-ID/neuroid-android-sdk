@@ -70,7 +70,7 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
      * Option for customers to force start with Activity
      */
     public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
     }
 
     override fun onActivityStarted(activity: Activity) {
