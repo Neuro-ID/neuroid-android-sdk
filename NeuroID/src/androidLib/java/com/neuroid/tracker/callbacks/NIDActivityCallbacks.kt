@@ -23,7 +23,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var activitiesStarted = 0
     private var listActivities = ArrayList<String>()
     private var wasChanged = false
-
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
@@ -65,6 +64,13 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
                 gyro = gyroData,
                 accel = accelData
             ))
+    }
+
+    /**
+     * Option for customers to force start with Activity
+     */
+    public fun forceStart(activity: Activity) {
+        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
     }
 
     override fun onActivityStarted(activity: Activity) {

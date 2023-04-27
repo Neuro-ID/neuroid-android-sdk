@@ -73,6 +73,10 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             )
     }
 
+    public fun forceStart(activity: Activity) {
+        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+    }
+
     override fun onActivityStarted(activity: Activity) {
         NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
 
