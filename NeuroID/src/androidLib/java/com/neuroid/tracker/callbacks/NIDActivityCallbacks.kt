@@ -23,7 +23,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var activitiesStarted = 0
     private var listActivities = ArrayList<String>()
     private var wasChanged = false
-
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
@@ -90,6 +89,12 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
         val hasFragments = fragManager?.hasFragments() ?: false
+
+        // In case we do a force start
+        if (NeuroID.getInstance()?.getForceStart() == true){
+            registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+            return
+        }
 
         if (existActivity) {
             if (hasFragments.not() && cameBackFromBehind.not()) {
