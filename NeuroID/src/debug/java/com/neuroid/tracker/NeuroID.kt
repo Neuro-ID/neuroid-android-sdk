@@ -143,10 +143,10 @@ class NeuroID private constructor(
         return forceStart
     }
 
-    fun setForceStart() {
+    fun setForceStart(activity: Activity) {
         this.forceStart = true
+        NIDActivityCallbacks().forceStart(activity)
     }
-
 
     fun getTabId(): String = NIDServiceTracker.rndmId
 

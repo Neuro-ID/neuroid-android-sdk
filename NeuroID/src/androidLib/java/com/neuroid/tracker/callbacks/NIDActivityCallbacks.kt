@@ -66,6 +66,13 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             ))
     }
 
+    /**
+     * Option for customers to force start with Activity
+     */
+    public fun forceStart(activity: Activity) {
+        registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+    }
+
     override fun onActivityStarted(activity: Activity) {
         var cameBackFromBehind = false
         NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
@@ -89,12 +96,6 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
 
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
         val hasFragments = fragManager?.hasFragments() ?: false
-
-        // In case we do a force start
-        if (NeuroID.getInstance()?.getForceStart() == true){
-            registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
-            return
-        }
 
         if (existActivity) {
             if (hasFragments.not() && cameBackFromBehind.not()) {

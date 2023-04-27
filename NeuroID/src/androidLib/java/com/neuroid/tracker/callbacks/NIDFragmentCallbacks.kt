@@ -53,12 +53,13 @@ class NIDFragmentCallbacks(
     ) {
         NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
 
+        // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
         if (NeuroID.getInstance()?.getForceStart() == true){
             registerTargetFromScreen(f.requireActivity(), true)
             return
         }
-        
+
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
             _isChangeOrientation = false
