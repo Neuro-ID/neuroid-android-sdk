@@ -3,8 +3,10 @@ package com.neuroid.tracker.storage
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
+import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -70,6 +72,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 newEvents.addAll(lastEvents)
                 newEvents.add(strEvent)
                 putStringSet(NID_STRING_EVENTS, newEvents)
+                NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
             }
 
             when (event.type) {
