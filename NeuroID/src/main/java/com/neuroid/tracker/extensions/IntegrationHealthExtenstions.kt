@@ -108,7 +108,7 @@ internal fun NeuroID.generateNIDIntegrationHealthReport(saveIntegrationHealthRep
 
 
 // Public Extensions
-fun NeuroID.printIntegrationHeatlhInstruction() {
+fun NeuroID.printIntegrationHealthInstruction() {
     NIDLog.d(
         "NeuroID",
         "ℹ️ NeuroID Integration Health Instructions:\n" +
@@ -137,6 +137,6 @@ fun NeuroID.setVerifyIntegrationHealth(verify: Boolean) {
     this.verifyIntegrationHealth = verify
 
     if (verify) {
-        printIntegrationHeatlhInstruction()
+        printIntegrationHealthInstruction()
     }
 }

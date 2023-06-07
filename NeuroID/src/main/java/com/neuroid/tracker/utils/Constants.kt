@@ -4,5 +4,7 @@ enum class Constants(val displayName: String) {
     integrationHealthEvents("integrationHealthEvents.json"),
     integrationHealthDevice("integrationHealthDetails.json"),
     integrationHealthFolder("nid"),
-    integrationHealthAssetsFolder("integrationHealth")
+    integrationHealthAssetsFolder("integrationHealth"),
+
+    debugEventTag("NIDDebugEvent")
 }
