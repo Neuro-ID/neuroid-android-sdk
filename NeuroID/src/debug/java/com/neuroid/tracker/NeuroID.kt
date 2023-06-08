@@ -227,7 +227,7 @@ class NeuroID private constructor(
 
     fun start() {
         NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
-        NIDSingletonIDs.updateSalt()
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
@@ -268,6 +268,12 @@ class NeuroID private constructor(
         identifyView(view, activity.getGUID(), true, addListener)
     }
 
+    /**
+     * Provide public access to application context for other intenral NID functions
+     */
+    fun getApplicationContext(): Context? {
+        return this.application?.applicationContext
+    }
     private suspend fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {

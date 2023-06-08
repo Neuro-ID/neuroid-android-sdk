@@ -220,7 +220,7 @@ class NeuroID private constructor(
 
     fun start() {
         NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
-        NIDSingletonIDs.updateSalt()
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             getDataStoreInstance().clearEvents() // Clean Events ?
