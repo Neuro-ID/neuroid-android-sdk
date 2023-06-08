@@ -10,6 +10,8 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
+
+
 class NIDTextWatcher(
     private val idName: String
 ) : TextWatcher {
@@ -21,31 +23,9 @@ class NIDTextWatcher(
     }
 
     override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
-        var typeEvent = ""
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        if (before == 0 && count - before > 1) {
-            typeEvent = PASTE
-        }
-
-        if (typeEvent.isNotEmpty()) {
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = typeEvent,
-                        ts = System.currentTimeMillis(),
-                        tg = hashMapOf(
-                            "attr" to getAttrJson(sequence.toString()),
-                        ),
-                        tgs = idName,
-                        gyro = gyroData,
-                        accel = accelData
-                    )
-                )
-        }
-
-
+        /**
+         * Potentially check for paste here
+         */
     }
 
     override fun afterTextChanged(sequence: Editable?) {
