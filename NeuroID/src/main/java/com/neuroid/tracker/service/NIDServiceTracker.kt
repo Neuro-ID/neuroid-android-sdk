@@ -50,7 +50,7 @@ object NIDServiceTracker {
             // Allow for override of this URL in config
 
             NIDLog.d("NeuroID", "Url: $endpoint")
-            val url = URL(endpoint)
+            val url = URL("${endpoint}/${key}")
             val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.doInput = true
@@ -61,7 +61,6 @@ object NIDServiceTracker {
                 "Content-Type",
                 "application/json"
             )
-            conn.setRequestProperty("site_key", key)
 
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
