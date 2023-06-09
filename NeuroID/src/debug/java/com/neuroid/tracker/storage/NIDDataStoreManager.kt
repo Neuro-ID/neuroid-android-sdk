@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +57,40 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
             if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
+
+                var contextString: String = ""
+                when (event.type) {
+                    SET_USER_ID -> contextString = "uid=${event.uid}"
+                    CREATE_SESSION -> contextString =
+                        "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+                    APPLICATION_SUBMIT -> contextString = ""
+                    TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
+                    "SET_CHECKPOINT" -> contextString = ""
+                    "STATE_CHANGE" -> contextString = event.url ?: ""
+                    KEY_UP -> contextString = "tg=${event.tg}"
+                    KEY_DOWN -> contextString = "tg=${event.tg}"
+                    INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
+                    FOCUS -> contextString = ""
+                    BLUR -> contextString = ""
+                    "CLICK" -> contextString = ""
+                    REGISTER_TARGET -> contextString =
+                        "et=${event.et}, rts=${event.rts}, ec=${event.ec}"
+                    "DEREGISTER_TARGET" -> contextString = ""
+                    TOUCH_START -> contextString = "xy=${event.touches}"
+                    TOUCH_END -> contextString = "xy=${event.touches}"
+                    TOUCH_MOVE -> contextString = "xy=${event.touches}"
+                    CLOSE_SESSION -> contextString = ""
+                    "SET_VARIABLE" -> contextString = event.v ?: ""
+                    CUT -> contextString = ""
+                    COPY -> contextString = ""
+                    PASTE -> contextString = ""
+                    WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
+                    SELECT_CHANGE -> contextString = "tg=${event.tg}"
+
+                    else -> {}
+                }
+
+                NIDLog.d("NIDDebugEvent", "EVENT: ${event.type} - ${event.tgs} - ${contextString}")
 
                 if (NIDJobServiceManager.userActive.not()) {
                     NIDJobServiceManager.userActive = true

@@ -11,7 +11,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 
 class NIDContextMenuCallbacks(
     actionCallBack: ActionMode.Callback?
-): ActionMode.Callback {
+) : ActionMode.Callback {
     private val wrapper = actionCallBack
 
     override fun onCreateActionMode(action: ActionMode?, menu: Menu?): Boolean {
@@ -39,7 +39,7 @@ class NIDContextMenuCallbacks(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val type = when(option) {
+        val type = when (option) {
             android.R.id.paste -> PASTE
             android.R.id.copy -> COPY
             android.R.id.cut -> CUT

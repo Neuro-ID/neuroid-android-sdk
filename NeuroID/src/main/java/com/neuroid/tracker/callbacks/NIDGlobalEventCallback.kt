@@ -36,54 +36,26 @@ class NIDGlobalEventCallback(
     private var currentHeight = 0
 
     override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
-        val ts = System.currentTimeMillis()
         if (newView != null) {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            val idName = newView.getIdOrTag()
-
             if (newView is EditText) {
-                val text = newView.text.toString()
+                registerEditTextViewOnFocusBlur(newView, FOCUS)
 
-                // If focus change is EditText, do a check to see if we have registered this Field yet
-                if (! NIDServiceTracker.registeredViews.contains(newView.getIdOrTag())) {
-                    NIDLog.d(
-                        "NIDDebug",
-                        "Late registration: registeringView ${newView.javaClass.simpleName}"
-                    )
-                    val hashCodeAct = newView.javaClass.name.hashCode();
-                    val guid =
-                        UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-                    registerComponent(newView, guid, "targetInteractionEvent")
-                    NIDServiceTracker.registeredViews.add(newView.getIdOrTag());
-                } else {
-                    NIDLog.d(
-                        "NIDDebug",
-                        "view already registered: registeringView ${newView.javaClass.simpleName} tag: ${newView.getIdOrTag()}"
-                    )
-                }
-                getDataStoreInstance()
-                    .saveEvent(
-                        NIDEventModel(
-                            type = FOCUS,
-                            tg = hashMapOf(
-                                "attr" to getAttrJson(text),
-                            ),
-                            ts = ts,
-                            tgs = idName,
-                            gyro = gyroData,
-                            accel = accelData
-                        )
-                    )
 
-                lastEditText = if (lastEditText == null) {
-                    newView
-                } else {
-                    lastEditText?.let {
-                        registerTextChangeEvent(it.text.toString())
-                    }
-                    null
-                }
+                // REMOVING TEXT_CHANGE EVENT for right now
+//                lastEditText = if (lastEditText == null) {
+//                    newView
+//                } else {
+//                    lastEditText?.let {
+//                        registerTextChangeEvent(it.text.toString())
+//                    }
+//                    null
+//                }
+            }
+        }
+
+        if (oldView != null) {
+            if (oldView is EditText) {
+                registerEditTextViewOnFocusBlur(oldView, BLUR)
             }
         }
     }
@@ -139,20 +111,6 @@ class NIDGlobalEventCallback(
                     accel = accelData
                 )
             )
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = BLUR,
-                    tgs = lastEditText?.getIdOrTag().orEmpty(),
-                    tg = hashMapOf(
-                        "attr" to getAttrJson(actualText),
-                    ),
-                    ts = ts,
-                    gyro = gyroData,
-                    accel = accelData
-                )
-            )
     }
 
     //WindowCallback
@@ -166,13 +124,13 @@ class NIDGlobalEventCallback(
 
     override fun dispatchTouchEvent(motionEvent: MotionEvent?): Boolean {
         val view = eventManager.detectView(motionEvent, System.currentTimeMillis())
-
-        lastEditText?.let {
-            if (lastEditText != view) {
-                registerTextChangeEvent(lastEditText?.text.toString())
-                lastEditText = null
-            }
-        }
+        // REMOVING TEXT_CHANGE EVENT for right now
+//        lastEditText?.let {
+//            if (lastEditText != view) {
+//                registerTextChangeEvent(lastEditText?.text.toString())
+//                lastEditText = null
+//            }
+//        }
         return windowCallback.dispatchTouchEvent(motionEvent)
     }
 
@@ -251,11 +209,70 @@ class NIDGlobalEventCallback(
     }
 
     override fun onActionModeStarted(p0: ActionMode?) {
+//        val menu = p0?.menu
+//        val item = menu?.getItem(0)
+//
+//
+//
+//        NIDLog.d(
+//            "NIDDebugEvent",
+//            "** ACTION MODE START ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
+//        )
         return windowCallback.onActionModeStarted(p0)
     }
 
     override fun onActionModeFinished(p0: ActionMode?) {
+//        val menu = p0?.menu
+//        val item = menu?.getItem(0)
+//
+//
+//        NIDLog.d(
+//            "NIDDebugEvent",
+//            "** ACTION MODE FINISH ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
+//        )
         return windowCallback.onActionModeFinished(p0)
     }
 
+}
+
+private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
+    val ts = System.currentTimeMillis()
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
+    val idName = view.getIdOrTag()
+    val simpleJavaClassName = view.javaClass.simpleName
+
+    val text = view.text.toString()
+
+    // do a check to see if we have registered this Field yet
+    if (!NIDServiceTracker.registeredViews.contains(idName)) {
+        NIDLog.d(
+            "NIDDebug",
+            "Late registration: registeringView $simpleJavaClassName"
+        )
+        val hashCodeAct = view.javaClass.name.hashCode();
+        val guid =
+            UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+        registerComponent(view, guid, "targetInteractionEvent")
+        NIDServiceTracker.registeredViews.add(idName);
+    } else {
+        NIDLog.d(
+            "NIDDebug",
+            "view already registered: registeringView $simpleJavaClassName tag: $idName"
+        )
+    }
+
+    getDataStoreInstance()
+        .saveEvent(
+            NIDEventModel(
+                type = type,
+                tg = hashMapOf(
+                    "attr" to getAttrJson(text),
+                ),
+                ts = ts,
+                tgs = idName,
+                gyro = gyroData,
+                accel = accelData
+            )
+        )
 }

@@ -11,9 +11,9 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
 
-
 class NIDTextWatcher(
-    private val idName: String
+    private val idName: String,
+    val className: String? = ""
 ) : TextWatcher {
 
     private var lastSize = 0
@@ -26,6 +26,11 @@ class NIDTextWatcher(
         /**
          * Potentially check for paste here
          */
+
+//        NIDLog.d(
+//            "NIDDebugEvent",
+//            "**OnTextChange $idName - $className - $sequence - $start - $before - $count"
+//        )
     }
 
     override fun afterTextChanged(sequence: Editable?) {
@@ -33,6 +38,7 @@ class NIDTextWatcher(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+//        NIDLog.d("NIDDebugEvent", "**AfterTextChange $idName - $className")
 
         if (lastSize != sequence?.length) {
             getDataStoreInstance()

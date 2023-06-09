@@ -2,9 +2,7 @@ package com.neuroid.tracker.events
 
 import android.util.Log
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_DOWN
-import android.view.MotionEvent.ACTION_MOVE
-import android.view.MotionEvent.ACTION_UP
+import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -40,6 +38,9 @@ class NIDTouchEventManager(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+            var motionValues = generateMotionEventValues(motionEvent)
+
+
             detectChangesOnView(currentView, timeMills, motionEvent.action)
 
             val typeOfView = when (currentView) {
@@ -52,7 +53,8 @@ class NIDTouchEventManager(
                 is ImageButton,
                 is SeekBar,
                 is Spinner,
-                is RatingBar
+                is RatingBar,
+//                is AutoCompleteTextView
                 -> 1
                 is Button -> 2
                 else -> 0
@@ -69,31 +71,21 @@ class NIDTouchEventManager(
                                     type = TOUCH_START,
                                     ts = timeMills,
                                     tgs = nameView,
-                                    touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                    ),
                                     tg = hashMapOf(
                                         "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                         "tgs" to nameView,
-                                        "sender" to currentView?.javaClass?.simpleName.orEmpty()
+                                        "sender" to currentView?.javaClass?.simpleName.orEmpty(),
+                                        "rawAction" to it.action
+                                    ),
+                                    touches = listOf(
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}, " +
+                                                motionValues +
+                                                "}"
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
                                 )
                             )
-
-                        if (typeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = FOCUS,
-                                        ts = timeMills,
-                                        tgs = lastViewName,
-                                        gyro = gyroData,
-                                        accel = accelData
-                                    )
-                                )
-                        }
                     }
                 }
                 ACTION_MOVE -> {
@@ -106,10 +98,13 @@ class NIDTouchEventManager(
                                 tg = hashMapOf(
                                     "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                     "tgs" to nameView,
-                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
+                                    "sender" to currentView?.javaClass?.simpleName.orEmpty(),
+                                    "rawAction" to it.action
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
+                                            motionValues +
+                                            "}"
                                 ),
                                 gyro = gyroData,
                                 accel = accelData
@@ -118,19 +113,6 @@ class NIDTouchEventManager(
                 }
                 ACTION_UP -> {
                     if (lastTypeOfView > 0) {
-
-                        if (lastTypeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = BLUR,
-                                        ts = timeMills,
-                                        tgs = lastViewName,
-                                        gyro = gyroData,
-                                        accel = accelData
-                                    )
-                                )
-                        }
 
                         lastTypeOfView = 0
                         lastViewName = ""
@@ -144,10 +126,13 @@ class NIDTouchEventManager(
                                     tg = hashMapOf(
                                         "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                         "tgs" to nameView,
-                                        "sender" to currentView?.javaClass?.simpleName.orEmpty()
+                                        "sender" to currentView?.javaClass?.simpleName.orEmpty(),
+                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
+                                                motionValues +
+                                                "}"
                                     ),
                                     gyro = gyroData,
                                     accel = accelData
@@ -214,23 +199,23 @@ class NIDTouchEventManager(
                     }
                 }
 
-               /* if (type.isNotEmpty()) {
-                    getDataStoreInstance()
-                        .saveEvent(
-                            NIDEventModel(
-                                type = type,
-                                tg = hashMapOf(
-                                    "etn" to currentView?.javaClass?.simpleName.orEmpty(),
-                                    "tgs" to nameView,
-                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
-                                ),
-                                tgs = nameView,
-                                ts = timeMills,
-                                gyro = gyroData,
-                                accel = accelData
-                            )
-                        )
-                }*/
+                /* if (type.isNotEmpty()) {
+                     getDataStoreInstance()
+                         .saveEvent(
+                             NIDEventModel(
+                                 type = type,
+                                 tg = hashMapOf(
+                                     "etn" to currentView?.javaClass?.simpleName.orEmpty(),
+                                     "tgs" to nameView,
+                                     "sender" to currentView?.javaClass?.simpleName.orEmpty()
+                                 ),
+                                 tgs = nameView,
+                                 ts = timeMills,
+                                 gyro = gyroData,
+                                 accel = accelData
+                             )
+                         )
+                 }*/
             } else {
                 /*if (lastView is SeekBar) {
                     getDataStoreInstance()
@@ -255,5 +240,102 @@ class NIDTouchEventManager(
         } else if (action == ACTION_DOWN) {
             lastView = currentView
         }
+    }
+
+    private fun generateMotionEventValues(motionEvent: MotionEvent): String {
+        var pointers = generatePointerValues(motionEvent?.pointerCount, motionEvent)
+
+        var yValues = generateYValues(motionEvent)
+        var xValues = generateXValues(motionEvent)
+
+        var size = motionEvent.size
+
+        return "\"pointerCount\":${motionEvent?.pointerCount}," +
+                "${pointers}," +
+
+                "${yValues}," +
+                "${xValues}," +
+
+                "\"pressure\":${motionEvent?.pressure}," +
+                "\"hSize\":${motionEvent.historySize}," +
+                "\"size\":${size}"
+    }
+
+    private fun generatePointerValues(pointerCount: Int, motionEvent: MotionEvent): String {
+        var pointString = "\"pointers\":{"
+        for (i in 0 until pointerCount) {
+            var mProp = MotionEvent.PointerProperties()
+            motionEvent.getPointerProperties(
+                motionEvent.getPointerId(i),
+                mProp,
+            )
+
+            var pHistorySize = motionEvent.getHistorySize()
+
+            pointString += "\"$i\":{ " +
+                    "\"mPropId\":${
+                        mProp.id
+                    }," +
+                    "\"mPropToolType\":${
+                        mProp.toolType
+                    }"
+
+            if (pHistorySize > 0) {
+                var yHistoryString = "["
+                var xHistoryString = "["
+                for (hi in 0 until pHistorySize) {
+                    var hY = motionEvent.getHistoricalY(i, hi)
+                    var hX = motionEvent.getHistoricalX(i, hi)
+
+                    yHistoryString += "$hY,"
+                    xHistoryString += "$hX,"
+
+                    if (i + 1 == pHistorySize) {
+                        yHistoryString = yHistoryString.dropLast(1)
+                        xHistoryString = xHistoryString.dropLast(1)
+                        break
+                    }
+                }
+                yHistoryString += "]"
+                xHistoryString += "]"
+
+                pointString += ",\"historicalY\":${
+                    yHistoryString
+                },"
+                pointString += "\"historicalX\":${
+                    xHistoryString
+                }"
+
+
+            }
+
+            pointString += "},"
+
+            if (i + 1 == pointerCount) {
+                pointString = pointString.dropLast(1)
+                break
+            }
+        }
+
+        pointString += "}"
+        return pointString
+    }
+
+    private fun generateYValues(motionEvent: MotionEvent): String {
+        return "\"yValues\":{" +
+                "\"y\":${motionEvent?.y}," +
+                "\"yP\":${motionEvent?.yPrecision}," +
+                "\"yR\":${motionEvent?.rawY}," +
+                "\"yCalc\":${motionEvent?.rawY * motionEvent?.yPrecision}" +
+                "}"
+    }
+
+    private fun generateXValues(motionEvent: MotionEvent): String {
+        return "\"xValues\":{" +
+                "\"x\":${motionEvent?.x}," +
+                "\"xP\":${motionEvent?.xPrecision}," +
+                "\"xR\":${motionEvent?.rawX}," +
+                "\"xCalc\":${motionEvent?.rawX * motionEvent?.xPrecision}" +
+                "}"
     }
 }

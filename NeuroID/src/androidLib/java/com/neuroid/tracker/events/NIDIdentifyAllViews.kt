@@ -1,19 +1,9 @@
 package com.neuroid.tracker.events
 
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
-import android.widget.AdapterView
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.RatingBar
-import android.widget.SeekBar
-import android.widget.Spinner
-import android.widget.Switch
-import android.widget.ToggleButton
+import android.widget.*
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
@@ -68,22 +58,31 @@ fun identifyAllViews(
             it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
                 override fun onChildViewAdded(parent: View?, child: View?) {
 
-                    NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
+                    NIDLog.d(
+                        "NIDDebug ChildViewAdded",
+                        "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
+                    )
                     child?.let { view ->
                         identifyView(view, guid, registerTarget, registerListeners)
                     }
                 }
 
                 override fun onChildViewRemoved(parent: View?, child: View?) {
-                    NIDLog.d("NIDDebug ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                    NIDLog.d(
+                        "NIDDebug ViewListener",
+                        "ViewRemoved: ${child?.getIdOrTag().orEmpty()}"
+                    )
                 }
             })
         }
     }
 }
 
-fun registerComponent(view: View, guid: String, rts: String?=null) {
-    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
+fun registerComponent(view: View, guid: String, rts: String? = null) {
+    NIDLog.d(
+        "NIDDebug registeredComponent",
+        "view: ${view::class} java: ${view.javaClass.simpleName}"
+    )
 
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -95,12 +94,12 @@ fun registerComponent(view: View, guid: String, rts: String?=null) {
         is EditText -> {
             et = "Edittext"
         }
-        /*is CheckBox, is AppCompatCheckBox -> {
-            et = "CheckBox"
-        }
-        is RadioButton -> {
-            et = "RadioButton"
-        }*/
+//        is CheckBox, is AppCompatCheckBox -> {
+//            et = "CheckBox"
+//        }
+//        is RadioButton -> {
+//            et = "RadioButton"
+//        }
         is ToggleButton -> {
             et = "ToggleButton"
         }
@@ -167,7 +166,7 @@ private fun registerListeners(view: View) {
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
     if (view is EditText) {
-        val textWatcher = NIDTextWatcher(idName)
+        val textWatcher = NIDTextWatcher(idName, view.javaClass.simpleName)
         view.addTextChangedListener(textWatcher)
 
         val actionCallback = view.customSelectionActionModeCallback
@@ -188,7 +187,7 @@ private fun registerListeners(view: View) {
                     p3: Long
                 ) {
                     lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    /*getDataStoreInstance()
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
@@ -202,7 +201,7 @@ private fun registerListeners(view: View) {
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )*/
+                        )
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -216,7 +215,7 @@ private fun registerListeners(view: View) {
             view.onItemClickListener =
                 AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
                     lastListener?.onItemClick(adapter, viewList, position, p3)
-                    /*getDataStoreInstance()
+                    getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
                                 type = SELECT_CHANGE,
@@ -229,7 +228,7 @@ private fun registerListeners(view: View) {
                                 gyro = gyroData,
                                 accel = accelData
                             )
-                        )*/
+                        )
                 }
         }
     }
