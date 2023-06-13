@@ -41,8 +41,6 @@ fun registerTargetFromScreen(
 
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-
-    android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
-    }, 300)
+    
+    identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
 }

@@ -24,6 +24,18 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
     private var listActivities = ArrayList<String>()
     private var wasChanged = false
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+    }
+
+    /**
+     * Option for customers to force start with Activity
+     */
+    public fun forceStart(activity: Activity) {
+        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+    }
+
+    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
+        super.onActivityPostCreated(activity, savedInstanceState)
+
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
         if (auxOrientation == -1) { auxOrientation = orientation }
@@ -66,14 +78,12 @@ class NIDActivityCallbacks: ActivityLifecycleCallbacks {
             ))
     }
 
-    /**
-     * Option for customers to force start with Activity
-     */
-    public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+    override fun onActivityStarted(activity: Activity) {
     }
 
-    override fun onActivityStarted(activity: Activity) {
+    override fun onActivityPostStarted(activity: Activity) {
+        super.onActivityPostStarted(activity)
+
         var cameBackFromBehind = false
         NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {

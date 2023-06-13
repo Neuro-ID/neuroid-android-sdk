@@ -19,6 +19,10 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var wasChanged = false
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+
+    }
+
+    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
         NIDLog.d("Neuro ID", "NIDDebug onActivityCreated");
 
         val currentActivityName = activity::class.java.name
@@ -73,55 +77,13 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             )
     }
 
+
     public fun forceStart(activity: Activity) {
         registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
     }
 
     override fun onActivityStarted(activity: Activity) {
-        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
 
-        var cameBackFromBehind = false
-        if (activitiesStarted == 0) {
-            cameBackFromBehind = true
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_FOCUS,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData
-                    )
-                )
-        }
-        activitiesStarted++
-
-        val currentActivityName = activity::class.java.name
-        val existActivity = listActivities.contains(currentActivityName)
-
-        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-        val hasFragments = fragManager?.hasFragments() ?: false
-
-        if (existActivity) {
-            if (hasFragments.not() && cameBackFromBehind.not()) {
-                registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
-            } else {
-                NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
-
-            }
-        } else {
-            listActivities.add(currentActivityName)
-            if (hasFragments.not()) {
-                registerTargetFromScreen(activity, wasChanged.not(), true)
-            } else
-            {
-                NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
-            }
-            wasChanged = false
-            registerWindowListeners(activity)
-        }
     }
 
     override fun onActivityResumed(activity: Activity) {
