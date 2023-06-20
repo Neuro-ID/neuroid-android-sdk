@@ -152,7 +152,7 @@ class NeuroID private constructor(
 
     fun getFirstTS(): Long = timestamp
 
-    fun getJsonPayLoad(context: Context):String {
+    fun getJsonPayLoad(context: Context): String {
         return getDataStoreInstance().getJsonPayload(context)
     }
 
@@ -226,7 +226,7 @@ class NeuroID private constructor(
     }
 
     fun start() {
-        NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
+        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -274,6 +274,7 @@ class NeuroID private constructor(
     fun getApplicationContext(): Context? {
         return this.application?.applicationContext
     }
+
     private suspend fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {

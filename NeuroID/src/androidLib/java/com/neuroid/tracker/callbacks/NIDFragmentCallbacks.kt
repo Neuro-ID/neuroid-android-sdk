@@ -13,14 +13,13 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import org.json.JSONObject
 
 class NIDFragmentCallbacks(
     isChangeOrientation: Boolean
-)
-    : FragmentManager.FragmentLifecycleCallbacks() {
-    private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+) : FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
     private var _isChangeOrientation = isChangeOrientation
-
 
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
@@ -31,13 +30,21 @@ class NIDFragmentCallbacks(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+
+            val jsonObject = JSONObject()
+            jsonObject.put("component", "fragment")
+            jsonObject.put("lifecycle", "attached")
+
             getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_LOAD,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                ))
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_LOAD,
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData,
+                        metadata = jsonObject
+                    )
+                )
         }
     }
 
@@ -55,7 +62,7 @@ class NIDFragmentCallbacks(
 
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
-        if (NeuroID.getInstance()?.getForceStart() == true){
+        if (NeuroID.getInstance()?.getForceStart() == true) {
             registerTargetFromScreen(f.requireActivity(), true)
             return
         }
@@ -82,13 +89,20 @@ class NIDFragmentCallbacks(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+            val jsonObject = JSONObject()
+            jsonObject.put("component", "fragment")
+            jsonObject.put("lifecycle", "detached")
+
             getDataStoreInstance()
-                .saveEvent(NIDEventModel(
-                    type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                ))
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_UNLOAD,
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData,
+                        metadata = jsonObject
+                    )
+                )
         }
     }
 }
