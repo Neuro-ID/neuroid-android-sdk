@@ -50,7 +50,7 @@ internal fun generateIntegrationHealthDeviceReport() {
     }
 }
 
-internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
+@Synchronized internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
     val nidInstance = NeuroID.getInstance()
 
     val context = nidInstance?.application?.getApplicationContext()
