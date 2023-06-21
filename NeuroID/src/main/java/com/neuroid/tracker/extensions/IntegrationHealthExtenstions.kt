@@ -57,7 +57,10 @@ internal fun generateIntegrationHealthDeviceReport() {
     if (context != null) {
         val gson = Gson()
         val events = nidInstance?.debugIntegrationHealthEvents
-        val json: String = gson.toJson(events)
+
+        var immutableList = events?.toList()
+
+        val json: String = gson.toJson(immutableList)
 
         createJSONFile(
             context = context,
