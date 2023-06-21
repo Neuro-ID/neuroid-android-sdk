@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+    <title>s add</title>
+    <g stroke-width="1" stroke-linejoin="round" fill="none" stroke="currentColor" stroke-linecap="round" class="nc-icon-wrapper">
+        <line x1="8.5" y1="5.5" x2="8.5" y2="11.5"></line>
+        <line x1="5.5" y1="8.5" x2="11.5" y2="8.5"></line>
+        <path d="M14.5,15.5h-12 c-0.552,0-1-0.448-1-1v-12c0-0.552,0.448-1,1-1h12c0.552,0,1,0.448,1,1v12C15.5,15.052,15.052,15.5,14.5,15.5z"></path>
+    </g>
+</svg>

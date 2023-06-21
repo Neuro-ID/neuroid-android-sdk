@@ -2,8 +2,10 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import android.content.Context
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.USER_INACTIVE
+import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -47,6 +49,7 @@ object NIDServiceTracker {
             event.getLong("ts")
         }
         if (listEvents.isEmpty().not()) {
+            NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
 
             NIDLog.d("NeuroID", "Url: $endpoint")
