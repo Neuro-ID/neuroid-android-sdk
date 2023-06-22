@@ -1,12 +1,15 @@
 package com.neuroid.tracker.events
 
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
-import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
+import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
+import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
@@ -185,16 +188,23 @@ private fun registerListeners(view: View) {
 
     // EditText is a parent class to multiple components
     if (view is EditText) {
-//        NIDLog.d(
-//            "NID-Activity",
-//            "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
-//        )
+        NIDLog.d(
+            "NID-Activity",
+            "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
+        )
+        // add Text Change watcher
         val textWatcher = NIDTextWatcher(idName, simpleClassName)
         view.addTextChangedListener(textWatcher)
 
+        // add original action menu watcher
         val actionCallback = view.customSelectionActionModeCallback
-        if (actionCallback !is NIDContextMenuCallbacks) {
-            view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
+        if (actionCallback !is NIDTextContextMenuCallbacks) {
+            view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(actionCallback)
+        }
+
+        // if later api version, add additional action menu watcher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            addExtraActionMenuListener(view)
         }
     }
 
@@ -355,5 +365,15 @@ private fun addSelectOnClickListener(
                     v = "$position"
                 )
             )
+    }
+}
+
+
+@RequiresApi(Build.VERSION_CODES.M)
+private fun addExtraActionMenuListener(view: EditText) {
+    val actionInsertionCallback = view.customInsertionActionModeCallback
+    if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
+        view.customInsertionActionModeCallback =
+            NIDLongPressContextMenuCallbacks(actionInsertionCallback)
     }
 }
