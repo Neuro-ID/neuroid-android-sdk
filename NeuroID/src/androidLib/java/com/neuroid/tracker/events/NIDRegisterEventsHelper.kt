@@ -1,7 +1,6 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
@@ -41,6 +40,6 @@ fun registerTargetFromScreen(
 
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-    
+
     identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
 }

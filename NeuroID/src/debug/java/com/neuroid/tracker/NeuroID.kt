@@ -122,6 +122,15 @@ class NeuroID private constructor(
         NIDServiceTracker.environment = environment
     }
 
+    fun setEnvironmentProduction(prod: Boolean) {
+        if (prod) {
+            NIDServiceTracker.environment = "LIVE"
+        } else {
+            NIDServiceTracker.environment = "TEST"
+
+        }
+    }
+
     fun getEnvironment(): String = NIDServiceTracker.environment
 
     fun setSiteId(siteId: String) {
