@@ -31,7 +31,9 @@ fun registerWindowListeners(activity: Activity) {
 fun registerTargetFromScreen(
     activity: Activity,
     registerTarget: Boolean = true,
-    registerListeners: Boolean = true
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
     // DEBUG are we actually fetching all view containers
     val viewMainContainer = activity.window.decorView.findViewById<View>(
@@ -41,5 +43,12 @@ fun registerTargetFromScreen(
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
+    identifyAllViews(
+        viewMainContainer,
+        guid,
+        registerTarget,
+        registerListeners,
+        activityOrFragment,
+        parent
+    )
 }

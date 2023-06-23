@@ -12,6 +12,7 @@ import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
+import org.json.JSONObject
 
 
 class NIDTextWatcher(
@@ -43,10 +44,31 @@ class NIDTextWatcher(
             val pastedText = clipData.getItemAt(0).text
             if (sequence.toString().contains(pastedText)) {
                 // The change is likely due to a paste operation
-                NIDLog.d(
-                    "NID-a",
-                    "**OnTextChange Clipboard Entry $idName - $pastedText - ${clipData.itemCount}"
-                )
+
+                val ts = System.currentTimeMillis()
+                val gyroData = NIDSensorHelper.getGyroscopeInfo()
+                val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+                val jsonObject = JSONObject()
+                jsonObject.put("clipboardText", "S~C~~${pastedText.length}")
+
+                getDataStoreInstance()
+                    .saveEvent(
+                        NIDEventModel(
+                            type = PASTE,
+                            ts = ts,
+                            tg = hashMapOf(
+                                "attr" to getAttrJson(sequence.toString()),
+                                "et" to "text"
+                            ),
+                            tgs = idName,
+                            v = "S~C~~${sequence?.length}",
+                            hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                            gyro = gyroData,
+                            accel = accelData,
+                            metadata = jsonObject
+                        )
+                    )
             }
         }
     }
@@ -58,25 +80,22 @@ class NIDTextWatcher(
 
 //        NIDLog.d("NIDDebugEvent", "**AfterTextChange $idName - $className")
         NIDLog.d("NID-Activity", "after text ${sequence.toString()}")
-        if (lastSize != sequence?.length) {
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = INPUT,
-                        ts = ts,
-                        tg = hashMapOf(
-                            "attr" to getAttrJson(sequence.toString()),
-                            "etn" to INPUT,
-                            "et" to "text"
-                        ),
-                        tgs = idName,
-                        v = "S~C~~${sequence?.length}",
-                        hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                        gyro = gyroData,
-                        accel = accelData
-                    )
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = ts,
+                    tg = hashMapOf(
+                        "attr" to getAttrJson(sequence.toString()),
+                        "etn" to INPUT,
+                        "et" to "text"
+                    ),
+                    tgs = idName,
+                    v = "S~C~~${sequence?.length}",
+                    hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                    gyro = gyroData,
+                    accel = accelData
                 )
-        }
-        lastSize = sequence?.length ?: 0
+            )
     }
 }

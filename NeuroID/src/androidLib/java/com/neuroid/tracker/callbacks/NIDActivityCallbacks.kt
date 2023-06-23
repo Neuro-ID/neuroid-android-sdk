@@ -26,7 +26,11 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
      * Option for customers to force start with Activity
      */
     public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+        registerTargetFromScreen(
+            activity,
+            activityOrFragment = "activity",
+            parent = activity::class.java.simpleName
+        )
     }
 
     override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -77,7 +81,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val jsonObject = JSONObject()
         jsonObject.put("component", "activity")
         jsonObject.put("lifecycle", "postCreated")
-
+        jsonObject.put("className", "${activity::class.java.simpleName}")
 
 //        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
         getDataStoreInstance()
@@ -104,25 +108,25 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "activity")
-            jsonObject.put("lifecycle", "postStarted")
-
-
-//            NIDLog.d("NID--Activity", "Activity - POST Started - Window Focus")
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_FOCUS,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData,
-                        metadata = jsonObject
-                    )
-                )
+//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+//            val accelData = NIDSensorHelper.getAccelerometerInfo()
+//
+//            val jsonObject = JSONObject()
+//            jsonObject.put("component", "activity")
+//            jsonObject.put("lifecycle", "postStarted")
+//
+//
+////            NIDLog.d("NID--Activity", "Activity - POST Started - Window Focus")
+//            getDataStoreInstance()
+//                .saveEvent(
+//                    NIDEventModel(
+//                        type = WINDOW_FOCUS,
+//                        ts = System.currentTimeMillis(),
+//                        gyro = gyroData,
+//                        accel = accelData,
+//                        metadata = jsonObject
+//                    )
+//                )
         }
         activitiesStarted++
 
@@ -135,7 +139,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         if (existActivity) {
             if (hasFragments.not() && cameBackFromBehind.not()) {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & fragments")
-                registerTargetFromScreen(activity, registerTarget = true, registerListeners = false)
+                registerTargetFromScreen(
+                    activity,
+                    registerListeners = false,
+                    activityOrFragment = "activity",
+                    parent = currentActivityName
+                )
             } else {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & no fragment")
                 NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
@@ -144,7 +153,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
             listActivities.add(currentActivityName)
             if (hasFragments.not()) {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & fragment")
-                registerTargetFromScreen(activity, wasChanged.not())
+                registerTargetFromScreen(
+                    activity,
+                    wasChanged.not(),
+                    activityOrFragment = "activity",
+                    parent = currentActivityName
+                )
             } else {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & no fragment")
                 NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
@@ -165,6 +179,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val jsonObject = JSONObject()
         jsonObject.put("component", "activity")
         jsonObject.put("lifecycle", "resumed")
+        jsonObject.put("className", "${activity::class.java.simpleName}")
 
         getDataStoreInstance()
             .saveEvent(
@@ -189,6 +204,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val jsonObject = JSONObject()
         jsonObject.put("component", "activity")
         jsonObject.put("lifecycle", "paused")
+        jsonObject.put("className", "${activity::class.java.simpleName}")
 
         getDataStoreInstance()
             .saveEvent(
@@ -205,27 +221,27 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
     override fun onActivityStopped(activity: Activity) {
 //        NIDLog.d("NID--Activity", "Activity - Stopped")
         activitiesStarted--
-        if (activitiesStarted == 0) {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "activity")
-            jsonObject.put("lifecycle", "stopped")
-
-
-//            NIDLog.d("NID--Activity", "Activity - Stopped - Window Blur")
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_BLUR,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData,
-                        metadata = jsonObject
-                    )
-                )
-        }
+//        if (activitiesStarted == 0) {
+//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+//            val accelData = NIDSensorHelper.getAccelerometerInfo()
+//
+//            val jsonObject = JSONObject()
+//            jsonObject.put("component", "activity")
+//            jsonObject.put("lifecycle", "stopped")
+//
+//
+////            NIDLog.d("NID--Activity", "Activity - Stopped - Window Blur")
+//            getDataStoreInstance()
+//                .saveEvent(
+//                    NIDEventModel(
+//                        type = WINDOW_BLUR,
+//                        ts = System.currentTimeMillis(),
+//                        gyro = gyroData,
+//                        accel = accelData,
+//                        metadata = jsonObject
+//                    )
+//                )
+//        }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
@@ -243,6 +259,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val jsonObject = JSONObject()
         jsonObject.put("component", "activity")
         jsonObject.put("lifecycle", "destroyed")
+        jsonObject.put("className", "${activity::class.java.simpleName}")
 
 //        NIDLog.d("NID--Activity", "Activity - Destroyed - Window Unload")
         getDataStoreInstance()

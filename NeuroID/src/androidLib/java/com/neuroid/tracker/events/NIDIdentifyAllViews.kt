@@ -11,6 +11,7 @@ import androidx.core.view.forEach
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -22,17 +23,121 @@ import com.neuroid.tracker.utils.getParents
 import org.json.JSONArray
 import org.json.JSONObject
 
+
+fun identifyAllViews(
+    viewParent: ViewGroup,
+    guid: String,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+
+    viewParent.forEach {
+        when (it) {
+            is ViewGroup -> {
+                identifyAllViews(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+                it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
+                    override fun onChildViewAdded(parent: View?, child: View?) {
+                        NIDLog.d(
+                            "NIDDebug ChildViewAdded",
+                            "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
+                        )
+                        child?.let { view ->
+                            // This is double registering targets and registering listeners before the correct
+                            //  lifecycle event which is causing a replay of text input events to occur
+//                         identifyView(view, guid, registerTarget, registerListeners)
+                        }
+                    }
+
+                    override fun onChildViewRemoved(parent: View?, child: View?) {
+                        NIDLog.d(
+                            "NIDDebug ViewListener",
+                            "ViewRemoved: ${child?.getIdOrTag().orEmpty()}"
+                        )
+                    }
+                })
+            }
+            else -> {
+                identifyView(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+            }
+        }
+
+        // exception groups that should be registered:
+        when (it) {
+            is RadioGroup -> {
+                identifyView(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+            }
+        }
+    }
+}
+
 fun identifyView(
     view: View,
     guid: String,
     registerTarget: Boolean = true,
-    registerListeners: Boolean = true
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
     when (view) {
-        is ViewGroup -> identifyAllViews(view, guid, registerTarget, registerListeners)
+        is ViewGroup -> {
+            identifyAllViews(
+                view,
+                guid,
+                registerTarget,
+                registerListeners,
+                activityOrFragment = activityOrFragment,
+                parent = parent
+            )
+        }
         else -> {
             if (registerTarget) {
-                registerComponent(view, guid)
+                registerComponent(
+                    view,
+                    guid,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
+            }
+            if (registerListeners) {
+                registerListeners(view)
+            }
+        }
+    }
+
+    // exception groups that should be registered:
+    when (view) {
+        is RadioGroup -> {
+            if (registerTarget) {
+                registerComponent(
+                    view,
+                    guid,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
             }
             if (registerListeners) {
                 registerListeners(view)
@@ -41,58 +146,14 @@ fun identifyView(
     }
 }
 
-fun identifyAllViews(
-    viewParent: ViewGroup,
+
+fun registerComponent(
+    view: View,
     guid: String,
-    registerTarget: Boolean = true,
-    registerListeners: Boolean = true
+    rts: String? = null,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
-    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
-
-    viewParent.forEach {
-        if (it is ViewGroup) {
-            identifyAllViews(it, guid, registerTarget, registerListeners)
-            it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
-                override fun onChildViewAdded(parent: View?, child: View?) {
-//                    NIDLog.d(
-//                        "NID-Activity",
-//                        "CHILD VIEW ${
-//                            child?.getIdOrTag().orEmpty()
-//                        }  ${
-//                            child?.javaClass?.simpleName
-//                        } from ${parent.getIdOrTag()} ${parent?.javaClass?.simpleName} -"
-//                    )
-                    NIDLog.d(
-                        "NIDDebug ChildViewAdded",
-                        "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
-                    )
-                    child?.let { view ->
-                        // This is double registering targets and registering listeners before the correct
-                        //  lifecycle event which is causing a replay of text input events to occur
-//                         identifyView(view, guid, registerTarget, registerListeners)
-                    }
-                }
-
-                override fun onChildViewRemoved(parent: View?, child: View?) {
-//                    NIDLog.d(
-//                        "NID-Activity",
-//                        "CHILD VIEW REMOVED ${
-//                            child?.getIdOrTag().orEmpty()
-//                        } from ${parent.getIdOrTag()} ${parent?.javaClass?.simpleName}"
-//                    )
-                    NIDLog.d(
-                        "NIDDebug ViewListener",
-                        "ViewRemoved: ${child?.getIdOrTag().orEmpty()}"
-                    )
-                }
-            })
-        } else {
-            identifyView(it, guid, registerTarget, registerListeners)
-        }
-    }
-}
-
-fun registerComponent(view: View, guid: String, rts: String? = null) {
     NIDLog.d(
         "NIDDebug registeredComponent",
         "view: ${view::class} java: ${view.javaClass.simpleName}"
@@ -102,18 +163,40 @@ fun registerComponent(view: View, guid: String, rts: String? = null) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
+    var v = "S~C~~0"
+    val jsonObject = JSONObject()
 
     when (view) {
-
         is EditText -> {
             et = "Edittext"
+            v = "S~C~~${view.text.length}"
         }
 //        is CheckBox, is AppCompatCheckBox -> {
 //            et = "CheckBox"
 //        }
-//        is RadioButton -> {
-//            et = "RadioButton"
-//        }
+        is RadioButton -> {
+            et = "RadioButton"
+            v = "${view.isChecked}"
+
+            jsonObject.put("type", "radioButton")
+            jsonObject.put("id", "${view.getIdOrTag()}")
+
+            // go up to 3 parents in case a RadioGroup is not the direct parent
+            var rParent = view.parent;
+            repeat(3) { index ->
+                if (rParent is RadioGroup) {
+                    val p = rParent as RadioGroup
+                    jsonObject.put("rGroupId", "${p.getIdOrTag()}")
+                    return@repeat
+                } else {
+                    rParent = rParent.parent
+                }
+            }
+        }
+        is RadioGroup -> {
+            et = "RadioGroup"
+            v = "${view.checkedRadioButtonId}"
+        }
         is ToggleButton -> {
             et = "ToggleButton"
         }
@@ -143,7 +226,7 @@ fun registerComponent(view: View, guid: String, rts: String? = null) {
 
 //    NIDLog.d(
 //        "NID-Activity",
-//        "Actually Target Registered $et - ${view.javaClass.simpleName} - ${view::class} - ${view.getIdOrTag()}"
+//        "Actually Target Registered $et - ${view.javaClass.simpleName} - ${view::class} - ${view.getIdOrTag()} $parent $activityOrFragment"
 //    )
     val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
         ""
@@ -155,7 +238,11 @@ fun registerComponent(view: View, guid: String, rts: String? = null) {
     val idJson = JSONObject().put("n", "guid").put("v", guid)
     val classJson = JSONObject().put("n", "screenHierarchy")
         .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
-    val attrJson = JSONArray().put(idJson).put(classJson)
+    val parentData =
+        JSONObject().put("parentClass", "$parent").put("component", "$activityOrFragment")
+
+    val attrJson = JSONArray().put(idJson).put(classJson).put(parentData)
+
 
     getDataStoreInstance()
         .saveEvent(
@@ -169,13 +256,14 @@ fun registerComponent(view: View, guid: String, rts: String? = null) {
                 eid = idName,
                 tgs = idName,
                 en = idName,
-                v = "S~C~~0",
-                hv = "",
+                v = v,
+                hv = v.getSHA256withSalt()?.take(8),
                 ts = System.currentTimeMillis(),
                 url = urlView,
                 gyro = gyroData,
                 accel = accelData,
-                rts = rts
+                rts = rts,
+                metadata = jsonObject
             )
         )
 }
@@ -211,10 +299,6 @@ private fun registerListeners(view: View) {
     // additional subclasses to be captured
     when (view) {
         is AbsSpinner -> {
-//            NIDLog.d(
-//                "NID-Activity",
-//                "GENERIC SPINNER Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
-//            )
             val lastClickListener = view.onItemClickListener
             view.onItemClickListener = null
             view.onItemClickListener =
@@ -237,11 +321,6 @@ private fun registerListeners(view: View) {
             )
         }
         is Spinner -> {
-//            NIDLog.d(
-//                "NID-Activity",
-//                "SPINNER Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
-//            )
-
             val lastClickListener = view.onItemClickListener
             view.onItemClickListener = null
             view.onItemClickListener =
@@ -264,10 +343,6 @@ private fun registerListeners(view: View) {
             )
         }
         is AutoCompleteTextView -> {
-            NIDLog.d(
-                "NID-Activity",
-                "AUTOCOMPLETE Listener ${view.javaClass.simpleName} - ${view::class} - ${view.getIdOrTag()}"
-            )
             val lastClickListener = view.onItemClickListener
             view.onItemClickListener = null
             view.onItemClickListener =

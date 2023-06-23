@@ -34,7 +34,7 @@ class NIDFragmentCallbacks(
             val jsonObject = JSONObject()
             jsonObject.put("component", "fragment")
             jsonObject.put("lifecycle", "attached")
-
+            jsonObject.put("className", "${f::class.java.simpleName}")
 
 //            NIDLog.d(
 //                "NID-Activity",
@@ -79,7 +79,12 @@ class NIDFragmentCallbacks(
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
         if (NeuroID.getInstance()?.getForceStart() == true) {
-            registerTargetFromScreen(f.requireActivity(), true)
+            registerTargetFromScreen(
+                f.requireActivity(),
+                true,
+                activityOrFragment = "fragment",
+                parent = f::class.java.simpleName
+            )
             return
         }
 
@@ -88,7 +93,12 @@ class NIDFragmentCallbacks(
 //                "NID-Activity",
 //                "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
 //            )
-            registerTargetFromScreen(f.requireActivity(), _isChangeOrientation.not())
+            registerTargetFromScreen(
+                f.requireActivity(),
+                _isChangeOrientation.not(),
+                activityOrFragment = "fragment",
+                parent = f::class.java.simpleName
+            )
             _isChangeOrientation = false
         } else {
 //            NIDLog.d("NID-Activity", "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")
@@ -119,7 +129,8 @@ class NIDFragmentCallbacks(
             val jsonObject = JSONObject()
             jsonObject.put("component", "fragment")
             jsonObject.put("lifecycle", "detached")
-            
+            jsonObject.put("className", "${f::class.java.simpleName}")
+
 //            NIDLog.d(
 //                "NID-Activity",
 //                "Fragment - Detached - WINDOW UNLOAD ${f::class.java.simpleName}"

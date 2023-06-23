@@ -15,6 +15,7 @@ import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.RatingBar
 import android.widget.Button
+import android.widget.RadioGroup
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
@@ -23,6 +24,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
+import org.json.JSONObject
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -54,10 +56,36 @@ class NIDTouchEventManager(
                 is SeekBar,
                 is Spinner,
                 is RatingBar,
+                is RadioGroup
 //                is AutoCompleteTextView
                 -> 1
                 is Button -> 2
                 else -> 0
+            }
+
+            var v = ""
+            val jsonObject = JSONObject()
+
+            when (currentView) {
+                is EditText -> {
+                    v = "S~C~~${currentView.text.length}"
+                }
+                is RadioButton -> {
+                    jsonObject.put("type", "radioButton")
+                    jsonObject.put("id", "${currentView.getIdOrTag()}")
+
+                    // go up to 3 parents in case a RadioGroup is not the direct parent
+                    var rParent = currentView.parent;
+                    repeat(3) { index ->
+                        if (rParent is RadioGroup) {
+                            val p = rParent as RadioGroup
+                            jsonObject.put("rGroupId", "${p.getIdOrTag()}")
+                            return@repeat
+                        } else {
+                            rParent = rParent.parent
+                        }
+                    }
+                }
             }
 
             when (it.action) {
@@ -83,7 +111,9 @@ class NIDTouchEventManager(
                                                 "}"
                                     ),
                                     gyro = gyroData,
-                                    accel = accelData
+                                    accel = accelData,
+                                    v = v,
+                                    metadata = jsonObject
                                 )
                             )
                     }
@@ -107,7 +137,9 @@ class NIDTouchEventManager(
                                             "}"
                                 ),
                                 gyro = gyroData,
-                                accel = accelData
+                                accel = accelData,
+                                v = v,
+                                metadata = jsonObject
                             )
                         )
                 }
@@ -135,7 +167,9 @@ class NIDTouchEventManager(
                                                 "}"
                                     ),
                                     gyro = gyroData,
-                                    accel = accelData
+                                    accel = accelData,
+                                    v = v,
+                                    metadata = jsonObject
                                 )
                             )
                     }
