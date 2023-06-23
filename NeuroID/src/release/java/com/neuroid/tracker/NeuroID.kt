@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -12,6 +13,8 @@ import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.identifyView
+import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
+import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -28,7 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NeuroID private constructor(
-    private var application: Application?,
+    internal var application: Application?,
     private var clientKey: String
 ) {
     private var firstTime = true
@@ -38,9 +41,15 @@ class NeuroID private constructor(
     private var userID = ""
     private var timestamp: Long = 0L
 
+    private var forceStart: Boolean? = null
+
+
     private var metaData: NIDMetaData? = null
 
-    private var forceStart: Boolean? = null
+    internal var verifyIntegrationHealth: Boolean = false
+    internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
+        mutableListOf<NIDEventModel>()
+
 
     init {
         application?.let {
@@ -106,9 +115,6 @@ class NeuroID private constructor(
 
     fun getUserId() = userID
 
-    fun forceRun() {
-       this.forceStart = true
-    }
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
     }
@@ -153,6 +159,14 @@ class NeuroID private constructor(
 
     fun getFirstTS(): Long = timestamp
 
+    fun getJsonPayLoad(context: Context): String {
+        return getDataStoreInstance().getJsonPayload(context)
+    }
+
+    fun resetJsonPayLoad() {
+        getDataStoreInstance().resetJsonPayload()
+    }
+
     fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -182,6 +196,8 @@ class NeuroID private constructor(
                 accel = accelData
             )
         )
+
+        saveIntegrationHealthEvents()
     }
 
     fun formSubmitSuccess() {
@@ -196,6 +212,8 @@ class NeuroID private constructor(
                 accel = accelData
             )
         )
+
+        saveIntegrationHealthEvents()
     }
 
     fun formSubmitFailure() {
@@ -210,6 +228,8 @@ class NeuroID private constructor(
                 accel = accelData
             )
         )
+
+        saveIntegrationHealthEvents()
     }
 
     fun configureWithOptions(clientKey: String, endpoint: String?) {
@@ -223,8 +243,12 @@ class NeuroID private constructor(
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
+            startIntegrationHealthCheck()
             getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
+
+
+            saveIntegrationHealthEvents()
         }
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
@@ -233,6 +257,7 @@ class NeuroID private constructor(
 
     fun stop() {
         NIDJobServiceManager.stopJob()
+        saveIntegrationHealthEvents()
     }
 
     fun closeSession() {
