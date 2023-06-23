@@ -10,6 +10,7 @@ import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
@@ -60,7 +61,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
 
-                var contextString: String = ""
+                var contextString: String? = ""
                 when (event.type) {
                     SET_USER_ID -> contextString = "uid=${event.uid}"
                     CREATE_SESSION -> contextString =
@@ -108,39 +109,6 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 newEvents.add(strEvent)
                 putStringSet(NID_STRING_EVENTS, newEvents)
 
-                var contextString: String? = ""
-                when (event.type) {
-                    SET_USER_ID -> contextString = event.uid
-                    CREATE_SESSION -> contextString = ""
-                    APPLICATION_SUBMIT -> contextString = ""
-                    TEXT_CHANGE -> contextString = "${event.v} - ${event.tg}"
-                    "SET_CHECKPOINT" -> contextString = ""
-                    "STATE_CHANGE" -> contextString = event.url
-                    KEY_UP -> contextString = "${event.tg}"
-                    KEY_DOWN -> contextString = "${event.tg}"
-                    INPUT -> contextString = "${event.v} - ${event.tg}"
-                    FOCUS -> contextString = ""
-                    BLUR -> contextString = ""
-                    "CLICK" -> contextString = ""
-                    REGISTER_TARGET -> contextString = "${event.tgs} - ${event.et}"
-                    "DEREGISTER_TARGET" -> contextString = ""
-                    TOUCH_START -> contextString = ""
-                    TOUCH_END -> contextString = ""
-                    TOUCH_MOVE -> contextString = ""
-                    CLOSE_SESSION -> contextString = ""
-                    "SET_VARIABLE" -> contextString = event.v
-                    CUT -> contextString = ""
-                    COPY -> contextString = ""
-                    PASTE -> contextString = ""
-
-                    else -> {}
-                }
-
-
-                NIDLog.d(
-                    Constants.debugEventTag.displayName,
-                    "Event: ${event.type} - ${event.tgs} - ${contextString}"
-                )
                 NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
             }
 
