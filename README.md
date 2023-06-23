@@ -21,4 +21,4 @@ Visit https://neuro-id.readme.io/docs/overview for full installation documentati
 
 ## License
 
-The Neuro-ID Mobile SDK is provided under an [MIT License](LICENSE).
+The NeuroID Mobile SDK is provided under an [MIT License](LICENSE).
