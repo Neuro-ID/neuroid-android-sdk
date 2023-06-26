@@ -26,9 +26,11 @@ class NIDTouchEventManager(
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
             val nameView = currentView?.getIdOrTag() ?: "main_view"
 
+            var motionValues = generateMotionEventValues(motionEvent)
+
             detectChangesOnView(currentView, timeMills, motionEvent.action)
 
-            val typeOfView = when(currentView) {
+            val typeOfView = when (currentView) {
                 is EditText,
                 is ReactEditText,
                 is CheckBox,
@@ -50,6 +52,31 @@ class NIDTouchEventManager(
                 else -> 0
             }
 
+            var v = ""
+            val jsonObject = JSONObject()
+
+            when (currentView) {
+                is EditText -> {
+                    v = "S~C~~${currentView.text.length}"
+                }
+                is RadioButton -> {
+                    jsonObject.put("type", "radioButton")
+                    jsonObject.put("id", "${currentView.getIdOrTag()}")
+
+                    // go up to 3 parents in case a RadioGroup is not the direct parent
+                    var rParent = currentView.parent;
+                    repeat(3) { index ->
+                        if (rParent is RadioGroup) {
+                            val p = rParent as RadioGroup
+                            jsonObject.put("rGroupId", "${p.getIdOrTag()}")
+                            return@repeat
+                        } else {
+                            rParent = rParent.parent
+                        }
+                    }
+                }
+            }
+
             when (it.action) {
                 ACTION_DOWN -> {
                     if (typeOfView > 0) {
@@ -63,24 +90,18 @@ class NIDTouchEventManager(
                                     tgs = nameView,
                                     tg = hashMapOf(
                                         "etn" to nameView,
-                                        "sender" to nameView
+                                        "sender" to nameView,
+                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                    )
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}, " +
+                                                motionValues +
+                                                "}"
+                                    ),
+                                    v = v,
+                                    metadata = jsonObject
                                 )
                             )
-
-                        if (typeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = FOCUS,
-                                        ts = timeMills,
-                                        tgs = lastViewName
-                                    )
-                                )
-                        }
                     }
                 }
                 ACTION_MOVE -> {
@@ -92,27 +113,21 @@ class NIDTouchEventManager(
                                 tgs = nameView,
                                 tg = hashMapOf(
                                     "etn" to nameView,
-                                    "sender" to nameView
+                                    "sender" to nameView,
+                                    "rawAction" to it.action
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                )
+                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
+                                            motionValues +
+                                            "}"
+                                ),
+                                v = v,
+                                metadata = jsonObject
                             )
                         )
                 }
                 ACTION_UP -> {
                     if (lastTypeOfView > 0) {
-
-                        if (lastTypeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = BLUR,
-                                        ts = timeMills,
-                                        tgs = lastViewName
-                                    )
-                                )
-                        }
 
                         lastTypeOfView = 0
                         lastViewName = ""
@@ -125,11 +140,16 @@ class NIDTouchEventManager(
                                     tgs = nameView,
                                     tg = hashMapOf(
                                         "etn" to nameView,
-                                        "sender" to nameView
+                                        "sender" to nameView,
+                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                    )
+                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
+                                                motionValues +
+                                                "}"
+                                    ),
+                                    v = v,
+                                    metadata = jsonObject
                                 )
                             )
                     }
@@ -215,5 +235,103 @@ class NIDTouchEventManager(
         } else if (action == ACTION_DOWN) {
             lastView = currentView
         }
+    }
+
+
+    private fun generateMotionEventValues(motionEvent: MotionEvent): String {
+        var pointers = generatePointerValues(motionEvent?.pointerCount, motionEvent)
+
+        var yValues = generateYValues(motionEvent)
+        var xValues = generateXValues(motionEvent)
+
+        var size = motionEvent.size
+
+        return "\"pointerCount\":${motionEvent?.pointerCount}," +
+                "${pointers}," +
+
+                "${yValues}," +
+                "${xValues}," +
+
+                "\"pressure\":${motionEvent?.pressure}," +
+                "\"hSize\":${motionEvent.historySize}," +
+                "\"size\":${size}"
+    }
+
+    private fun generatePointerValues(pointerCount: Int, motionEvent: MotionEvent): String {
+        var pointString = "\"pointers\":{"
+        for (i in 0 until pointerCount) {
+            var mProp = MotionEvent.PointerProperties()
+            motionEvent.getPointerProperties(
+                motionEvent.getPointerId(i),
+                mProp,
+            )
+
+            var pHistorySize = motionEvent.getHistorySize()
+
+            pointString += "\"$i\":{ " +
+                    "\"mPropId\":${
+                        mProp.id
+                    }," +
+                    "\"mPropToolType\":${
+                        mProp.toolType
+                    }"
+
+            if (pHistorySize > 0) {
+                var yHistoryString = "["
+                var xHistoryString = "["
+                for (hi in 0 until pHistorySize) {
+                    var hY = motionEvent.getHistoricalY(i, hi)
+                    var hX = motionEvent.getHistoricalX(i, hi)
+
+                    yHistoryString += "$hY,"
+                    xHistoryString += "$hX,"
+
+                    if (i + 1 == pHistorySize) {
+                        yHistoryString = yHistoryString.dropLast(1)
+                        xHistoryString = xHistoryString.dropLast(1)
+                        break
+                    }
+                }
+                yHistoryString += "]"
+                xHistoryString += "]"
+
+                pointString += ",\"historicalY\":${
+                    yHistoryString
+                },"
+                pointString += "\"historicalX\":${
+                    xHistoryString
+                }"
+
+
+            }
+
+            pointString += "},"
+
+            if (i + 1 == pointerCount) {
+                pointString = pointString.dropLast(1)
+                break
+            }
+        }
+
+        pointString += "}"
+        return pointString
+    }
+
+    private fun generateYValues(motionEvent: MotionEvent): String {
+        return "\"yValues\":{" +
+                "\"y\":${motionEvent?.y}," +
+                "\"yP\":${motionEvent?.yPrecision}," +
+                "\"yR\":${motionEvent?.rawY}," +
+                "\"yCalc\":${motionEvent?.rawY * motionEvent?.yPrecision}" +
+                "}"
+    }
+
+    private fun generateXValues(motionEvent: MotionEvent): String {
+        return "\"xValues\":{" +
+                "\"x\":${motionEvent?.x}," +
+                "\"xP\":${motionEvent?.xPrecision}," +
+                "\"xR\":${motionEvent?.rawX}," +
+                "\"xCalc\":${motionEvent?.rawX * motionEvent?.xPrecision}" +
+                "}"
     }
 }

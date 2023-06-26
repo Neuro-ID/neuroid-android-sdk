@@ -12,8 +12,8 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 
 
-class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
-    private val blackListFragments = listOf("NavHostFragment","SupportMapFragment")
+class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
     private var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
@@ -24,13 +24,19 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+            val jsonObject = JSONObject()
+            jsonObject.put("component", "fragment")
+            jsonObject.put("lifecycle", "attached")
+            jsonObject.put("className", "${f::class.java.simpleName}")
+
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_LOAD,
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
-                        accel = accelData
+                        accel = accelData,
+                        metadata = jsonObject
                     )
                 )
 
@@ -43,18 +49,24 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
 
             if (listFragment.contains(fragName)) {
                 val index = listFragment.indexOf(fragName)
-                if (index != listFragment.size -1) {
+                if (index != listFragment.size - 1) {
                     listFragment.removeLast()
-                    registerTargetFromScreen(f.requireActivity(),
+                    registerTargetFromScreen(
+                        f.requireActivity(),
                         registerTarget = true,
-                        registerListeners = false
+                        registerListeners = false,
+                        activityOrFragment = "fragment",
+                        parent = f::class.java.simpleName
                     )
                 }
             } else {
                 listFragment.add(fragName)
-                registerTargetFromScreen(f.requireActivity(),
+                registerTargetFromScreen(
+                    f.requireActivity(),
                     registerTarget = true,
-                    registerListeners = true
+                    registerListeners = true,
+                    activityOrFragment = "fragment",
+                    parent = f::class.java.simpleName
                 )
             }
         }
@@ -93,13 +105,20 @@ class NIDFragmentCallbacks: FragmentManager.FragmentLifecycleCallbacks() {
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+            val jsonObject = JSONObject()
+            jsonObject.put("component", "fragment")
+            jsonObject.put("lifecycle", "detached")
+            jsonObject.put("className", "${f::class.java.simpleName}")
+
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
                         type = WINDOW_UNLOAD,
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
-                        accel = accelData
+                        accel = accelData,
+                        metadata = jsonObject
                     )
                 )
         }

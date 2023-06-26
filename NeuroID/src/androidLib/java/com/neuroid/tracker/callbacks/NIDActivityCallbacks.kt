@@ -22,17 +22,6 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         NIDLog.d("NID--Activity", "Activity - Created")
     }
 
-    /**
-     * Option for customers to force start with Activity
-     */
-    public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            activityOrFragment = "activity",
-            parent = activity::class.java.simpleName
-        )
-    }
-
     override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
         super.onActivityPostCreated(activity, savedInstanceState)
 //        NIDLog.d("NID--Activity", "Activity - POST Created")
@@ -94,6 +83,17 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
                     metadata = jsonObject
                 )
             )
+    }
+
+    /**
+     * Option for customers to force start with Activity
+     */
+    public fun forceStart(activity: Activity) {
+        registerTargetFromScreen(
+            activity,
+            activityOrFragment = "activity",
+            parent = activity::class.java.simpleName
+        )
     }
 
     override fun onActivityStarted(activity: Activity) {

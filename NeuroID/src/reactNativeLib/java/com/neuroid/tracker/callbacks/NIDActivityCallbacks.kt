@@ -66,20 +66,32 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             auxOrientation = orientation
         }
 
+        val jsonObject = JSONObject()
+        jsonObject.put("component", "activity")
+        jsonObject.put("lifecycle", "postCreated")
+        jsonObject.put("className", "$currentActivityName")
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = WINDOW_LOAD,
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    metadata = jsonObject
                 )
             )
     }
 
 
     public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(activity, registerTarget = true, registerListeners = true)
+        registerTargetFromScreen(
+            activity,
+            registerTarget = true,
+            registerListeners = true,
+            activityOrFragment = "activity",
+            parent = activity::class.java.name
+        )
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -88,28 +100,67 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
 
     override fun onActivityResumed(activity: Activity) {
         //No operation
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+        val jsonObject = JSONObject()
+        jsonObject.put("component", "activity")
+        jsonObject.put("lifecycle", "resumed")
+        jsonObject.put("className", "${activity::class.java.name}")
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = WINDOW_FOCUS,
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData,
+                    metadata = jsonObject
+                )
+            )
     }
 
     override fun onActivityPaused(activity: Activity) {
         //No operation
+
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+        val jsonObject = JSONObject()
+        jsonObject.put("component", "activity")
+        jsonObject.put("lifecycle", "paused")
+        jsonObject.put("className", "${activity::class.java.name}")
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = WINDOW_BLUR,
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData,
+                    metadata = jsonObject
+                )
+            )
     }
 
     override fun onActivityStopped(activity: Activity) {
         activitiesStarted--
-        if (activitiesStarted == 0) {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_BLUR,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData
-                    )
-                )
-        }
+//        if (activitiesStarted == 0) {
+//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+//            val accelData = NIDSensorHelper.getAccelerometerInfo()
+//
+//            getDataStoreInstance()
+//                .saveEvent(
+//                    NIDEventModel(
+//                        type = WINDOW_BLUR,
+//                        ts = System.currentTimeMillis(),
+//                        gyro = gyroData,
+//                        accel = accelData
+//                    )
+//                )
+//        }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
@@ -117,10 +168,15 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        val currentActivityName = activity::class.java.name
-        listActivities.remove(currentActivityName)
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
+        val activityDestroyed = activity::class.java.name
+        listActivities.remove(activityDestroyed)
+
+        val jsonObject = JSONObject()
+        jsonObject.put("component", "activity")
+        jsonObject.put("lifecycle", "destroyed")
+        jsonObject.put("className", "$activityDestroyed")
 
         getDataStoreInstance()
             .saveEvent(
@@ -128,7 +184,8 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     type = WINDOW_UNLOAD,
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
-                    accel = accelData
+                    accel = accelData,
+                    metadata = jsonObject
                 )
             )
     }

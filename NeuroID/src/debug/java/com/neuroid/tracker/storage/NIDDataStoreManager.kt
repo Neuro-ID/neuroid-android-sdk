@@ -77,7 +77,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                     BLUR -> contextString = ""
                     "CLICK" -> contextString = ""
                     REGISTER_TARGET -> contextString =
-                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg}"
+                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
                     "DEREGISTER_TARGET" -> contextString = ""
                     TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
                     TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
@@ -89,11 +89,18 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                     PASTE -> contextString = ""
                     WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
                     SELECT_CHANGE -> contextString = "tg=${event.tg}"
-
+                    WINDOW_LOAD -> contextString = "meta=${event.metadata}"
+                    WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
+                    WINDOW_BLUR -> contextString = "meta=${event.metadata}"
+                    WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
+                    CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     else -> {}
                 }
 
-                NIDLog.d("NIDDebugEvent", "EVENT: ${event.type} - ${event.tgs} - ${contextString}")
+                NIDLog.d(
+                    Constants.debugEventTag.displayName,
+                    "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
+                )
 
                 if (NIDJobServiceManager.userActive.not()) {
                     NIDJobServiceManager.userActive = true

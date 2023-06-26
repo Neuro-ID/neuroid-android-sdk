@@ -77,29 +77,37 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
 
                 var contextString: String? = ""
                 when (event.type) {
-                    SET_USER_ID -> contextString = event.uid
-                    CREATE_SESSION -> contextString = ""
+                    SET_USER_ID -> contextString = "uid=${event.uid}"
+                    CREATE_SESSION -> contextString =
+                        "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
                     APPLICATION_SUBMIT -> contextString = ""
-                    TEXT_CHANGE -> contextString = "${event.v} - ${event.tg}"
+                    TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
                     "SET_CHECKPOINT" -> contextString = ""
-                    "STATE_CHANGE" -> contextString = event.url
-                    KEY_UP -> contextString = "${event.tg}"
-                    KEY_DOWN -> contextString = "${event.tg}"
-                    INPUT -> contextString = "${event.v} - ${event.tg}"
+                    "STATE_CHANGE" -> contextString = event.url ?: ""
+                    KEY_UP -> contextString = "tg=${event.tg}"
+                    KEY_DOWN -> contextString = "tg=${event.tg}"
+                    INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
                     FOCUS -> contextString = ""
                     BLUR -> contextString = ""
                     "CLICK" -> contextString = ""
-                    REGISTER_TARGET -> contextString = "${event.tgs} - ${event.et}"
+                    REGISTER_TARGET -> contextString =
+                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
                     "DEREGISTER_TARGET" -> contextString = ""
-                    TOUCH_START -> contextString = ""
-                    TOUCH_END -> contextString = ""
-                    TOUCH_MOVE -> contextString = ""
+                    TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
+                    TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
+                    TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
                     CLOSE_SESSION -> contextString = ""
-                    "SET_VARIABLE" -> contextString = event.v
+                    "SET_VARIABLE" -> contextString = event.v ?: ""
                     CUT -> contextString = ""
                     COPY -> contextString = ""
                     PASTE -> contextString = ""
-
+                    WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
+                    SELECT_CHANGE -> contextString = "tg=${event.tg}"
+                    WINDOW_LOAD -> contextString = "meta=${event.metadata}"
+                    WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
+                    WINDOW_BLUR -> contextString = "meta=${event.metadata}"
+                    WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
+                    CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     else -> {}
                 }
 

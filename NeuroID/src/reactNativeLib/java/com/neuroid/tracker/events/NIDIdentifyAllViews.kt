@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import android.widget.RadioGroup
 import androidx.core.view.children
 import androidx.core.view.forEach
 import com.facebook.react.views.text.ReactTextView
@@ -21,17 +22,118 @@ import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
 
+fun identifyAllViews(
+    viewParent: ViewGroup,
+    guid: String,
+    registerTarget: Boolean,
+    registerListeners: Boolean,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+
+    viewParent.forEach {
+        when (it) {
+            is ViewGroup -> {
+                identifyAllViews(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+                it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+
+                    override fun onChildViewAdded(parent: View?, child: View?) {
+                        NIDLog.d(
+                            "NIDDebug ChildViewAdded",
+                            "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
+                        )
+
+                        child?.let { view ->
+                            // This is double registering targets and registering listeners before the correct
+                            //  lifecycle event which is causing a replay of text input events to occur
+//                            identifyView(view, guid, registerTarget, registerListeners)
+                        }
+                    }
+
+                    override fun onChildViewRemoved(parent: View?, child: View?) {
+                        Log.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                    }
+                })
+            }
+            else -> {
+                identifyView(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+            }
+        }
+
+        // exception groups that should be registered:
+        when (it) {
+            is RadioGroup -> {
+                identifyView(
+                    it,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment,
+                    parent
+                )
+            }
+        }
+    }
+}
+
+
 fun identifyView(
     view: View,
     guid: String,
     registerTarget: Boolean = true,
-    registerListeners: Boolean = true
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
     when (view) {
-        is ViewGroup -> identifyAllViews(view, guid, registerTarget, registerListeners)
+        is ViewGroup -> identifyAllViews(
+            view,
+            guid,
+            registerTarget,
+            registerListeners,
+            activityOrFragment = activityOrFragment,
+            parent = parent
+        )
         else -> {
             if (registerTarget) {
-                registerComponent(view, guid)
+                registerComponent(
+                    view,
+                    guid,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
+            }
+            if (registerListeners) {
+                registerListeners(view)
+            }
+        }
+    }
+
+    // exception groups that should be registered:
+    when (view) {
+        is RadioGroup -> {
+            if (registerTarget) {
+                registerComponent(
+                    view,
+                    guid,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
             }
             if (registerListeners) {
                 registerListeners(view)
@@ -40,58 +142,56 @@ fun identifyView(
     }
 }
 
-fun identifyAllViews(
-    viewParent: ViewGroup,
+fun registerComponent(
+    view: View,
     guid: String,
-    registerTarget: Boolean,
-    registerListeners: Boolean
+    rts: String? = null,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
-    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+    NIDLog.d(
+        "NIDDebug registeredComponent",
+        "view: ${view::class} java: ${view.javaClass.simpleName}"
+    )
 
-    viewParent.forEach {
-        if (registerTarget) {
-            registerComponent(it, guid)
-        }
-        if (registerListeners) {
-            registerListeners(it)
-        }
-        if (it is ViewGroup) {
-            identifyAllViews(it, guid, registerTarget, registerListeners)
-            it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-
-                override fun onChildViewAdded(parent: View?, child: View?) {
-                    NIDLog.d("NIDDebug ChildViewAdded", "ViewAdded: ${child?.getIdOrTag().orEmpty()}")
-
-                    child?.let { view ->
-                        identifyView(view, guid, registerTarget, registerListeners)
-                    }
-                }
-
-                override fun onChildViewRemoved(parent: View?, child: View?) {
-                    Log.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
-                }
-            })
-        }
-    }
-}
-
-fun registerComponent(view: View, guid: String, rts: String?=null) {
     val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
-
-    NIDLog.d("NIDDebug registeredComponent", "view: ${view::class} java: ${view.javaClass.simpleName}")
+    var v = "S~C~~0"
+    val jsonObject = JSONObject()
 
     when (view) {
         is EditText -> {
             et = "Edittext"
+            v = "S~C~~${view.text.length}"
         }
         is CheckBox -> {
             et = "CheckBox"
         }
         is RadioButton -> {
             et = "RadioButton"
+            v = "${view.isChecked}"
+
+            jsonObject.put("type", "radioButton")
+            jsonObject.put("id", "${view.getIdOrTag()}")
+
+            // go up to 3 parents in case a RadioGroup is not the direct parent
+            var rParent = view.parent;
+            repeat(3) { index ->
+                if (rParent is RadioGroup) {
+                    val p = rParent as RadioGroup
+                    jsonObject.put("rGroupId", "${p.getIdOrTag()}")
+                    return@repeat
+                } else {
+                    rParent = rParent.parent
+                }
+            }
+        }
+        is RadioGroup -> {
+            et = "RadioGroup"
+            v = "${view.checkedRadioButtonId}"
+
         }
         is ToggleButton -> {
             et = "ToggleButton"
@@ -110,6 +210,7 @@ fun registerComponent(view: View, guid: String, rts: String?=null) {
         }
         is ReactEditText -> {
             et = "ReactEditText"
+            v = "S~C~~${view.text.length}"
         }
         is ReactViewGroup -> {
             if (view.hasOnClickListeners() && view.children.count() == 1 && view.children.firstOrNull() is ReactTextView) {
@@ -121,107 +222,230 @@ fun registerComponent(view: View, guid: String, rts: String?=null) {
 
     NIDLog.d("NIDDebug et at registerComponent", "${et}")
 
-    if (et.isNotEmpty()) {
-        val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
-            ""
-        } else {
-            "/${NIDServiceTracker.screenFragName}"
+    // early exit if not supported target type
+    if (et.isEmpty()) {
+        return
+    }
+
+    val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+        ""
+    } else {
+        "/${NIDServiceTracker.screenFragName}"
+    }
+    val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+
+    val idJson = JSONObject().put("n", "guid").put("v", guid)
+    val classJson = JSONObject().put("n", "screenHierarchy")
+        .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
+    val parentData =
+        JSONObject().put("parentClass", "$parent").put("component", "$activityOrFragment")
+
+    val attrJson = JSONArray().put(idJson).put(classJson).put(parentData)
+
+    getDataStoreInstance()
+        .saveEvent(
+            NIDEventModel(
+                type = REGISTER_TARGET,
+                attrs = attrJson,
+                et = et + "::" + view.javaClass.simpleName,
+                etn = "INPUT",
+                ec = NIDServiceTracker.screenName,
+                eid = idName,
+                tgs = idName,
+                en = idName,
+                v = v,
+                hv = v.getSHA256withSalt()?.take(8),
+                ts = System.currentTimeMillis(),
+                url = urlView,
+                gyro = gyroData,
+                accel = accelData,
+                rts = rts,
+                metadata = jsonObject
+            )
+        )
+}
+
+private fun registerListeners(view: View) {
+    val idName = view.getIdOrTag()
+    val simpleClassName = view.javaClass.simpleName
+    val gyroData = NIDSensorHelper.getGyroscopeInfo()
+    val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+    // EditText is a parent class to multiple components
+    if (view is EditText) {
+        NIDLog.d(
+            "NID-Activity",
+            "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
+        )
+        // add Text Change watcher
+        val textWatcher = NIDTextWatcher(idName, simpleClassName)
+        view.addTextChangedListener(textWatcher)
+
+        // add original action menu watcher
+        val actionCallback = view.customSelectionActionModeCallback
+        if (actionCallback !is NIDTextContextMenuCallbacks) {
+            view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(actionCallback)
         }
-        val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
 
-        val idJson = JSONObject().put("n", "guid").put("v", guid)
-        val classJson = JSONObject().put("n", "screenHierarchy")
-            .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
-        val attrJson = JSONArray().put(idJson).put(classJson)
+        // if later api version, add additional action menu watcher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            addExtraActionMenuListener(view)
+        }
+    }
 
+    when (view) {
+        is AbsSpinner -> {
+            val lastClickListener = view.onItemClickListener
+            view.onItemClickListener = null
+            view.onItemClickListener =
+                addSelectOnClickListener(
+                    idName,
+                    lastClickListener,
+                    simpleClassName,
+                    gyroData,
+                    accelData
+                )
+
+            val lastSelectListener = view.onItemSelectedListener
+            view.onItemSelectedListener = null
+            view.onItemSelectedListener = addSelectOnSelect(
+                idName,
+                lastSelectListener,
+                simpleClassName,
+                gyroData,
+                accelData
+            )
+        }
+        is Spinner -> {
+            val lastClickListener = view.onItemClickListener
+            view.onItemClickListener = null
+            view.onItemClickListener =
+                addSelectOnClickListener(
+                    idName,
+                    lastClickListener,
+                    simpleClassName,
+                    gyroData,
+                    accelData
+                )
+
+            val lastSelectListener = view.onItemSelectedListener
+            view.onItemSelectedListener = null
+            view.onItemSelectedListener = addSelectOnSelect(
+                idName,
+                lastSelectListener,
+                simpleClassName,
+                gyroData,
+                accelData
+            )
+        }
+        is AutoCompleteTextView -> {
+            val lastClickListener = view.onItemClickListener
+            view.onItemClickListener = null
+            view.onItemClickListener =
+                addSelectOnClickListener(
+                    idName,
+                    lastClickListener,
+                    simpleClassName,
+                    gyroData,
+                    accelData
+                )
+
+            val lastSelectListener = view.onItemSelectedListener
+            view.onItemSelectedListener = null
+            view.onItemSelectedListener = addSelectOnSelect(
+                idName,
+                lastSelectListener,
+                simpleClassName,
+                gyroData,
+                accelData
+            )
+        }
+    }
+}
+
+
+private fun addSelectOnSelect(
+    idName: String,
+    lastSelectListener: AdapterView.OnItemSelectedListener?,
+    simpleClassName: String,
+    gyroData: NIDSensorModel?,
+    accelData: NIDSensorModel?,
+): AdapterView.OnItemSelectedListener {
+    return object : AdapterView.OnItemSelectedListener {
+        override fun onItemSelected(
+            adapter: AdapterView<*>?,
+            viewList: View?,
+            position: Int,
+            p3: Long
+        ) {
+            lastSelectListener?.onItemSelected(adapter, viewList, position, p3)
+
+//            NIDLog.d(
+//                "NID-Activity",
+//                "Select Selected $idName - $simpleClassName $position $p3 $viewList"
+//            )
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = SELECT_CHANGE,
+                        tg = hashMapOf(
+                            "etn" to simpleClassName,
+                            "tgs" to idName,
+                            "sender" to simpleClassName
+                        ),
+                        tgs = idName,
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData,
+                        v = "$position"
+                    )
+                )
+        }
+
+        override fun onNothingSelected(p0: AdapterView<*>?) {
+            lastSelectListener?.onNothingSelected(p0)
+        }
+    }
+}
+
+private fun addSelectOnClickListener(
+    idName: String,
+    lastClickListener: AdapterView.OnItemClickListener?,
+    simpleClassName: String,
+    gyroData: NIDSensorModel?,
+    accelData: NIDSensorModel?,
+): AdapterView.OnItemClickListener {
+    return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+        lastClickListener?.onItemClick(adapter, viewList, position, p3)
+
+//        NIDLog.d(
+//            "NID-Activity",
+//            "Select CLICK $idName - $simpleClassName $position $p3 $viewList"
+//        )
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
-                    type = REGISTER_TARGET,
-                    attrs = attrJson,
-                    et = et + "::" + view.javaClass.simpleName,
-                    etn = "INPUT",
-                    ec = NIDServiceTracker.screenName,
-                    eid = idName,
+                    type = SELECT_CHANGE,
+                    tg = hashMapOf(
+                        "etn" to "INPUT",
+                        "et" to "text"
+                    ),
                     tgs = idName,
-                    en = idName,
-                    v = "S~C~~0",
                     ts = System.currentTimeMillis(),
-                    url = urlView,
                     gyro = gyroData,
                     accel = accelData,
-                    rts = rts
+                    v = "$position"
                 )
             )
     }
 }
 
-private fun registerListeners(view: View) {
-    val idName = view.getIdOrTag()
-    val gyroData = NIDSensorHelper.getGyroscopeInfo()
-    val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-    when (view) {
-        is EditText -> {
-            val actionCallback = view.customSelectionActionModeCallback
-            if (actionCallback !is NIDContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDContextMenuCallbacks(actionCallback)
-                val textWatcher = NIDTextWatcher(idName)
-                view.addTextChangedListener(textWatcher)
-            }
-        }
-        is Spinner -> {
-            val lastListener = view.onItemSelectedListener
-            view.onItemSelectedListener = null
-            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    adapter: AdapterView<*>?,
-                    viewList: View?,
-                    position: Int,
-                    p3: Long
-                ) {
-                    lastListener?.onItemSelected(adapter, viewList, position, p3)
-                    /*getDataStoreInstance()
-                        .saveEvent(
-                            NIDEventModel(
-                                type = SELECT_CHANGE,
-                                tg = hashMapOf(
-                                    "etn" to "INPUT",
-                                    "et" to "text"
-                                ),
-                                tgs = idName,
-                                ts = System.currentTimeMillis(),
-                                gyro = gyroData,
-                                accel = accelData
-                            ))*/
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    lastListener?.onNothingSelected(p0)
-                }
-            }
-        }
-        is AutoCompleteTextView -> {
-            val lastListener = view.onItemClickListener
-            view.onItemClickListener = null
-            view.onItemClickListener =
-                AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
-                    lastListener.onItemClick(adapter, viewList, position, p3)
-                    /*getDataStoreInstance()
-                        .saveEvent(
-                            NIDEventModel(
-                                type = SELECT_CHANGE,
-                                tg = hashMapOf(
-                                    "etn" to "INPUT",
-                                    "et" to "text"
-                                ),
-                                tgs = idName,
-                                ts = System.currentTimeMillis(),
-                                gyro = gyroData,
-                                accel = accelData
-                            ))*/
-                }
-        }
-
+@RequiresApi(Build.VERSION_CODES.M)
+private fun addExtraActionMenuListener(view: EditText) {
+    val actionInsertionCallback = view.customInsertionActionModeCallback
+    if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
+        view.customInsertionActionModeCallback =
+            NIDLongPressContextMenuCallbacks(actionInsertionCallback)
     }
 }
