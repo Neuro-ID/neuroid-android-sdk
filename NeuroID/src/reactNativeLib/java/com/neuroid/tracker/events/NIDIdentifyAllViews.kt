@@ -1,5 +1,6 @@
 package com.neuroid.tracker.events
 
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -9,8 +10,8 @@ import androidx.core.view.children
 import androidx.core.view.forEach
 import androidx.annotation.RequiresApi
 import com.facebook.react.views.text.ReactTextView
-import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
+import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
 import com.neuroid.tracker.extensions.getSHA256withSalt
@@ -214,7 +215,7 @@ fun registerComponent(
         }
         is ReactEditText -> {
             et = "ReactEditText"
-            v = "S~C~~${view.text.length}"
+            v = "S~C~~${view.text?.length}"
         }
         is ReactViewGroup -> {
             if (view.hasOnClickListeners() && view.children.count() == 1 && view.children.firstOrNull() is ReactTextView) {
