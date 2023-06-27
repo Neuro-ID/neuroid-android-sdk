@@ -7,12 +7,16 @@ import android.widget.*
 import android.widget.RadioGroup
 import androidx.core.view.children
 import androidx.core.view.forEach
+import androidx.annotation.RequiresApi
 import com.facebook.react.views.text.ReactTextView
 import com.neuroid.tracker.callbacks.NIDContextMenuCallbacks
+import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
+import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
