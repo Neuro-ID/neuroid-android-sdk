@@ -67,10 +67,11 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             auxOrientation = orientation
         }
 
-        val jsonObject = JSONObject()
-        jsonObject.put("component", "activity")
-        jsonObject.put("lifecycle", "postCreated")
-        jsonObject.put("className", "$currentActivityName")
+        val metadataObj = JSONObject()
+        metadataObj.put("component", "activity")
+        metadataObj.put("lifecycle", "postCreated")
+        metadataObj.put("className", "$currentActivityName")
+        val attrJSON = JSONArray().put(metadataObj)
 
         getDataStoreInstance()
             .saveEvent(
@@ -79,7 +80,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    metadata = jsonObject
+                    attrs = attrJSON
                 )
             )
     }
@@ -105,10 +106,11 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val jsonObject = JSONObject()
-        jsonObject.put("component", "activity")
-        jsonObject.put("lifecycle", "resumed")
-        jsonObject.put("className", "${activity::class.java.name}")
+        val metadataObj = JSONObject()
+        metadataObj.put("component", "activity")
+        metadataObj.put("lifecycle", "resumed")
+        metadataObj.put("className", "${activity::class.java.name}")
+        val attrJSON = JSONArray().put(metadataObj)
 
         getDataStoreInstance()
             .saveEvent(
@@ -117,7 +119,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    metadata = jsonObject
+                    attrs = attrJSON
                 )
             )
     }
@@ -129,10 +131,11 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val jsonObject = JSONObject()
-        jsonObject.put("component", "activity")
-        jsonObject.put("lifecycle", "paused")
-        jsonObject.put("className", "${activity::class.java.name}")
+        val metadataObj = JSONObject()
+        metadataObj.put("component", "activity")
+        metadataObj.put("lifecycle", "paused")
+        metadataObj.put("className", "${activity::class.java.name}")
+        val attrJSON = JSONArray().put(metadataObj)
 
         getDataStoreInstance()
             .saveEvent(
@@ -141,7 +144,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    metadata = jsonObject
+                    attrs = attrJSON
                 )
             )
     }
@@ -174,10 +177,11 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
-        val jsonObject = JSONObject()
-        jsonObject.put("component", "activity")
-        jsonObject.put("lifecycle", "destroyed")
-        jsonObject.put("className", "$activityDestroyed")
+        val metadataObj = JSONObject()
+        metadataObj.put("component", "activity")
+        metadataObj.put("lifecycle", "destroyed")
+        metadataObj.put("className", "$activityDestroyed")
+        val attrJSON = JSONArray().put(metadataObj)
 
         getDataStoreInstance()
             .saveEvent(
@@ -186,7 +190,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    metadata = jsonObject
+                    attrs = attrJSON
                 )
             )
     }

@@ -13,6 +13,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import org.json.JSONArray
 import org.json.JSONObject
 
 class NIDFragmentCallbacks(
@@ -31,10 +32,11 @@ class NIDFragmentCallbacks(
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
 
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "fragment")
-            jsonObject.put("lifecycle", "attached")
-            jsonObject.put("className", "${f::class.java.simpleName}")
+            val metadataObj = JSONObject()
+            metadataObj.put("component", "fragment")
+            metadataObj.put("lifecycle", "attached")
+            metadataObj.put("className", "${f::class.java.simpleName}")
+            val attrJSON = JSONArray().put(metadataObj)
 
 //            NIDLog.d(
 //                "NID-Activity",
@@ -47,7 +49,7 @@ class NIDFragmentCallbacks(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        metadata = jsonObject
+                        attrs = attrJSON
                     )
                 )
         }
@@ -126,10 +128,11 @@ class NIDFragmentCallbacks(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "fragment")
-            jsonObject.put("lifecycle", "detached")
-            jsonObject.put("className", "${f::class.java.simpleName}")
+            val metadataObj = JSONObject()
+            metadataObj.put("component", "fragment")
+            metadataObj.put("lifecycle", "detached")
+            metadataObj.put("className", "${f::class.java.simpleName}")
+            val attrJSON = JSONArray().put(metadataObj)
 
 //            NIDLog.d(
 //                "NID-Activity",
@@ -142,7 +145,7 @@ class NIDFragmentCallbacks(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        metadata = jsonObject
+                        attrs = attrJSON
                     )
                 )
         }

@@ -12,6 +12,7 @@ import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -49,8 +50,10 @@ class NIDTextWatcher(
                 val gyroData = NIDSensorHelper.getGyroscopeInfo()
                 val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-                val jsonObject = JSONObject()
-                jsonObject.put("clipboardText", "S~C~~${pastedText.length}")
+                val metadataObj = JSONObject()
+                metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
+
+                val attrJSON = JSONArray().put(metadataObj)
 
                 getDataStoreInstance()
                     .saveEvent(
@@ -66,7 +69,7 @@ class NIDTextWatcher(
                             hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
                             gyro = gyroData,
                             accel = accelData,
-                            metadata = jsonObject
+                            attrs = attrJSON
                         )
                     )
             }

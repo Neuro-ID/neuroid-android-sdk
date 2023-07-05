@@ -107,10 +107,11 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "fragment")
-            jsonObject.put("lifecycle", "detached")
-            jsonObject.put("className", "${f::class.java.simpleName}")
+            val metadataObj = JSONObject()
+            metadataObj.put("component", "fragment")
+            metadataObj.put("lifecycle", "detached")
+            metadataObj.put("className", "${f::class.java.simpleName}")
+            val attrJSON = JSONArray().put(metadataObj)
 
             getDataStoreInstance()
                 .saveEvent(
@@ -119,7 +120,7 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        metadata = jsonObject
+                        attrs = attrJSON
                     )
                 )
         }

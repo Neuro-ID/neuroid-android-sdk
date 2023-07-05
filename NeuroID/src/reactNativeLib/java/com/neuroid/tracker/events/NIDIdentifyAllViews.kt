@@ -164,7 +164,7 @@ fun registerComponent(
     val accelData = NIDSensorHelper.getAccelerometerInfo()
     var et = ""
     var v = "S~C~~0"
-    val jsonObject = JSONObject()
+    val metaData = JSONObject()
 
     when (view) {
         is EditText -> {
@@ -178,15 +178,15 @@ fun registerComponent(
             et = "RadioButton"
             v = "${view.isChecked}"
 
-            jsonObject.put("type", "radioButton")
-            jsonObject.put("id", "${view.getIdOrTag()}")
+            metaData.put("type", "radioButton")
+            metaData.put("id", "${view.getIdOrTag()}")
 
             // go up to 3 parents in case a RadioGroup is not the direct parent
             var rParent = view.parent;
             repeat(3) { index ->
                 if (rParent is RadioGroup) {
                     val p = rParent as RadioGroup
-                    jsonObject.put("rGroupId", "${p.getIdOrTag()}")
+                    metaData.put("rGroupId", "${p.getIdOrTag()}")
                     return@repeat
                 } else {
                     rParent = rParent.parent
@@ -245,7 +245,7 @@ fun registerComponent(
     val parentData =
         JSONObject().put("parentClass", "$parent").put("component", "$activityOrFragment")
 
-    val attrJson = JSONArray().put(idJson).put(classJson).put(parentData)
+    val attrJson = JSONArray().put(idJson).put(classJson).put(parentData).put(metaData)
 
     getDataStoreInstance()
         .saveEvent(
@@ -264,8 +264,7 @@ fun registerComponent(
                 url = urlView,
                 gyro = gyroData,
                 accel = accelData,
-                rts = rts,
-                metadata = jsonObject
+                rts = rts
             )
         )
 }
