@@ -84,6 +84,8 @@ class NIDTouchEventManager(
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
+                        val rawAction = JSONObject().put("rawAction", it.action)
+                        val attrJSON = JSONArray().put(rawAction)
                         getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
@@ -93,7 +95,6 @@ class NIDTouchEventManager(
                                     tg = hashMapOf(
                                         "etn" to nameView,
                                         "sender" to nameView,
-                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}, " +
@@ -101,12 +102,15 @@ class NIDTouchEventManager(
                                                 "}"
                                     ),
                                     v = v,
-                                    metadata = jsonObject
+                                    metadata = jsonObject,
+                                    attrs = attrJSON
                                 )
                             )
                     }
                 }
                 ACTION_MOVE -> {
+                    val rawAction = JSONObject().put("rawAction", it.action)
+                    val attrJSON = JSONArray().put(rawAction)
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
@@ -116,7 +120,6 @@ class NIDTouchEventManager(
                                 tg = hashMapOf(
                                     "etn" to nameView,
                                     "sender" to nameView,
-                                    "rawAction" to it.action
                                 ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
@@ -124,7 +127,10 @@ class NIDTouchEventManager(
                                             "}"
                                 ),
                                 v = v,
-                                metadata = jsonObject
+                                metadata = jsonObject,
+                                attrs = attrJSON
+
+
                             )
                         )
                 }
@@ -133,7 +139,8 @@ class NIDTouchEventManager(
 
                         lastTypeOfView = 0
                         lastViewName = ""
-
+                        val rawAction = JSONObject().put("rawAction", it.action)
+                        val attrJSON = JSONArray().put(rawAction)
                         getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
@@ -143,7 +150,6 @@ class NIDTouchEventManager(
                                     tg = hashMapOf(
                                         "etn" to nameView,
                                         "sender" to nameView,
-                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
@@ -151,7 +157,9 @@ class NIDTouchEventManager(
                                                 "}"
                                     ),
                                     v = v,
-                                    metadata = jsonObject
+                                    metadata = jsonObject,
+                                    attrs = attrJSON
+
                                 )
                             )
                     }

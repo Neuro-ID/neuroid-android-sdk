@@ -24,6 +24,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
+import org.json.JSONArray
 import org.json.JSONObject
 
 class NIDTouchEventManager(
@@ -93,6 +94,8 @@ class NIDTouchEventManager(
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
+                        val rawAction = JSONObject().put("rawAction", it.action)
+                        val attrJSON = JSONArray().put(rawAction)
                         getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
@@ -103,7 +106,6 @@ class NIDTouchEventManager(
                                         "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                         "tgs" to nameView,
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
-                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}, " +
@@ -113,12 +115,15 @@ class NIDTouchEventManager(
                                     gyro = gyroData,
                                     accel = accelData,
                                     v = v,
-                                    metadata = jsonObject
+                                    metadata = jsonObject,
+                                    attrs = attrJSON
                                 )
                             )
                     }
                 }
                 ACTION_MOVE -> {
+                    val rawAction = JSONObject().put("rawAction", it.action)
+                    val attrJSON = JSONArray().put(rawAction)
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
@@ -129,7 +134,6 @@ class NIDTouchEventManager(
                                     "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                     "tgs" to nameView,
                                     "sender" to currentView?.javaClass?.simpleName.orEmpty(),
-                                    "rawAction" to it.action
                                 ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
@@ -139,7 +143,8 @@ class NIDTouchEventManager(
                                 gyro = gyroData,
                                 accel = accelData,
                                 v = v,
-                                metadata = jsonObject
+                                metadata = jsonObject,
+                                attrs = attrJSON
                             )
                         )
                 }
@@ -148,6 +153,8 @@ class NIDTouchEventManager(
 
                         lastTypeOfView = 0
                         lastViewName = ""
+                        val rawAction = JSONObject().put("rawAction", it.action)
+                        val attrJSON = JSONArray().put(rawAction)
 
                         getDataStoreInstance()
                             .saveEvent(
@@ -159,7 +166,6 @@ class NIDTouchEventManager(
                                         "etn" to currentView?.javaClass?.simpleName.orEmpty(),
                                         "tgs" to nameView,
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
-                                        "rawAction" to it.action
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}," +
@@ -169,7 +175,8 @@ class NIDTouchEventManager(
                                     gyro = gyroData,
                                     accel = accelData,
                                     v = v,
-                                    metadata = jsonObject
+                                    metadata = jsonObject,
+                                    attrs = attrJSON
                                 )
                             )
                     }
