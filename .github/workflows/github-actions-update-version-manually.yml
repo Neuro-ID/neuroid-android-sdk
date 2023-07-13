@@ -29,9 +29,9 @@ on:
           ** minor: Cross platform minor changes                    
           ** patch: Changes affecting only this platform
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
-        options: [ 'major','minor','patch' ]
+        options: ["major", "minor", "patch"]
 
 jobs:
   update_version:
@@ -49,21 +49,19 @@ jobs:
 
       - name: Update current version
         run: |
-        # Read the current version from version.properties file
           CURRENT_VERSION=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
           echo "Current Version=$CURRENT_VERSION"
-        # Break it into major, minor and patch numbers
+
           MAJOR_VERSION=$CURRENT_VERSION | cut -d'.' -f1
           echo "Major Version=$MAJOR_VERSION"
           MINOR_VERSION=$CURRENT_VERSION | cut -d'.' -f2
           echo "Minor Version=$MINOR_VERSION"
           PATCH_VERSION=$CURRENT_VERSION | cut -d'.' -f3
           echo "Patch Version=$PATCH_VERSION"
-        # Increment the variables depending on update type
+
           echo "${{ env.RELEASE_TYPE }}_VERSION=$((${{ env.RELEASE_TYPE }}_VERSION + 1))"
-        # New version
           echo "NEW_VERSION=$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION" >> $GITHUB_ENV
-        # update current version with new version in version.properties
+          
           sed -i "s/SDK_VERSION=$CURRENT_VERSION/SDK_VERSION=$NEW_VERSION/" version.properties
 
       - run: |
