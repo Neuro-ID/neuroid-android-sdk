@@ -38,16 +38,15 @@ jobs:
     name: Update package version
     runs-on: ubuntu-latest
     steps:
-      - name: Determine update type
-        run: |
-          echo "RELEASE_TYPE=${{ inputs.version_update}}" >> $GITHUB_ENV
       - name: Main branch checkout
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine update type
         run: |
-          git config --global user.email developer@neuro-id.com
-          git config --global user.name neuroid-developer
+          echo "RELEASE_TYPE=${{ inputs.version_update}}" >> $GITHUB_ENV
+
       - name: Update current version
         run: |
         # Read the current version from version.properties file
@@ -68,6 +67,8 @@ jobs:
           sed -i "s/SDK_VERSION=$CURRENT_VERSION/SDK_VERSION=$NEW_VERSION/" version.properties
 
       - run: |
+          git config --global user.email developer@neuro-id.com
+          git config --global user.name neuroid-developer
           echo "BRANCH_NAME=releases/${NEW_VERSION}_version_update"
 
       - name: Commit changes and create PR
