@@ -32,6 +32,7 @@ on:
         default: 'patch'
         type: choice
         options: [ 'major','minor','patch' ]
+
 jobs:
   update_version:
     name: Update package version
@@ -49,7 +50,7 @@ jobs:
           git config --global user.email developer@neuro-id.com
           git config --global user.name neuroid-developer
 
-      - name: Increment Version
+      - name: Update current version
         run: |
         # Read the current version from version.properties file
           CURRENT_VERSION=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
