@@ -53,16 +53,23 @@ jobs:
           echo "Current Version=$CURRENT_VERSION"
 
           MAJOR_VERSION=$CURRENT_VERSION | cut -d'.' -f1
+          CURRENT_MAJOR_VERSION=MAJOR_VERSION
           echo "Major Version=$MAJOR_VERSION"
           MINOR_VERSION=$CURRENT_VERSION | cut -d'.' -f2
           echo "Minor Version=$MINOR_VERSION"
+          CURRENT_MINOR_VERSION=MINOR_VERSION
           PATCH_VERSION=$CURRENT_VERSION | cut -d'.' -f3
           echo "Patch Version=$PATCH_VERSION"
+          CURRENT_PATCH_VERSION=PATCH_VERSION
 
           echo "${{ env.RELEASE_TYPE }}_VERSION=$((${{ env.RELEASE_TYPE }}_VERSION + 1))"
           echo "NEW_VERSION=$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION" >> $GITHUB_ENV
           
           sed -i "s/SDK_VERSION=$CURRENT_VERSION/SDK_VERSION=$NEW_VERSION/" version.properties
+          sed -i "s/VERSION_MAJOR=$CURRENT_MAJOR_VERSION/VERSION_MAJOR=$MAJOR_VERSION/" version.properties
+          sed -i "s/VERSION_MINOR=$CURRENT_MINOR_VERSION/VERSION_MINOR=$MINOR_VERSION/" version.properties
+          sed -i "s/VERSION_PATCH=$CURRENT_PATCH_VERSION/VERSION_PATCH=$PATCH_VERSION/" version.properties
+
 
       - run: |
           git config --global user.email developer@neuro-id.com
