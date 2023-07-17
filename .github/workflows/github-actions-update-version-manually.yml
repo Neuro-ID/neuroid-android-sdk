@@ -52,11 +52,11 @@ jobs:
           current_version=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
           echo "Current Version=${current_version}"
 
-          major_version=$current_version | cut -d'.' -f1
+          major_version=echo "${current_version}" | cut -d'.' -f1
           echo "Major Version=${major_version}"
-          minor_version=$current_version | cut -d'.' -f2
+          minor_version=echo "${current_version}" | cut -d'.' -f2
           echo "Minor Version=${minor_version}"
-          patch_version=$current_version | cut -d'.' -f3
+          patch_version=echo "${current_version}" | cut -d'.' -f3
           echo "Patch Version=${patch_version}"
   
           echo "${{ env.RELEASE_TYPE }}_version=$((${{ env.RELEASE_TYPE }}_version + 1))"
