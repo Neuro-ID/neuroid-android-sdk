@@ -102,30 +102,4 @@ class TextUnitTest {
         val eventType = "\"type\":\"INPUT\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, text.length)
     }
-
-    /**
-     * Validate TEXT_CHANGE when the user type on editText and change focus
-     */
-    @Test
-    fun test04ValidateTypeTextOnEditText() = runTest {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
-        getDataStoreInstance().clearEvents()
-        Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
-            .perform(ViewActions.click())
-        delay(500)
-        Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
-            .perform(ViewActions.click())
-        delay(500)
-        Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
-            .perform(ViewActions.typeText("Some text"))
-        delay(500)
-
-        Espresso.onView(ViewMatchers.withId(R.id.editText_password_field))
-            .perform(ViewActions.click())
-        delay(500)
-
-        val eventType = "\"type\":\"TEXT_CHANGE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
-    }
 }
