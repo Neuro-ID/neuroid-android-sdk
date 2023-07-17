@@ -49,23 +49,23 @@ jobs:
 
       - name: Update current version
         run: |
-          CURRENT_VERSION=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
-          echo "Current Version=${CURRENT_VERSION}"
+          current_version=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
+          echo "Current Version=${current_version}"
 
-          MAJOR_VERSION=$CURRENT_VERSION | cut -d'.' -f1
-          echo "Major Version=${MAJOR_VERSION}"
-          MINOR_VERSION=$CURRENT_VERSION | cut -d'.' -f2
-          echo "Minor Version=${MINOR_VERSION}"
-          PATCH_VERSION=$CURRENT_VERSION | cut -d'.' -f3
-          echo "Patch Version=${PATCH_VERSION}"
+          major_version=$current_version | cut -d'.' -f1
+          echo "Major Version=${major_version}"
+          minor_version=$current_version | cut -d'.' -f2
+          echo "Minor Version=${minor_version}"
+          patch_version=$current_version | cut -d'.' -f3
+          echo "Patch Version=${patch_version}"
   
-          echo "${{ env.RELEASE_TYPE }}_VERSION=$((${{ env.RELEASE_TYPE }}_VERSION + 1))"
-          echo "NEW_VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}" >> $GITHUB_ENV
+          echo "${{ env.RELEASE_TYPE }}_version=$((${{ env.RELEASE_TYPE }}_version + 1))"
+          echo "NEW_VERSION=${major_version}.${minor_version}.${patch_version}" >> $GITHUB_ENV
           
           sed -i "s/SDK_VERSION=.*/SDK_VERSION=${NEW_VERSION}/" version.properties
-          sed -i "s/VERSION_MAJOR=*[0-9]*/VERSION_MAJOR=${MAJOR_VERSION}/" version.properties
-          sed -i "s/VERSION_MINOR=*[0-9]*/VERSION_MINOR=${MINOR_VERSION}/" version.properties
-          sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${PATCH_VERSION}/" version.properties
+          sed -i "s/VERSION_MAJOR=*[0-9]*/VERSION_MAJOR=${major_version}/" version.properties
+          sed -i "s/VERSION_MINOR=*[0-9]*/VERSION_MINOR=${minor_version}/" version.properties
+          sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${patch_version}/" version.properties
 
 
       - run: |
