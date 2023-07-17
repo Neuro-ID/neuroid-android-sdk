@@ -47,15 +47,7 @@ jobs:
             git push
 
       - name: Create Release ✅
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{env.GITHUB_SDK_VERSION}}
-          release_name: v${{env.GITHUB_SDK_VERSION}}
-          draft: false
-          prerelease: false
+        run: gh release create v${{env.GITHUB_SDK_VERSION}} --generate-notes --title "v${{env.GITHUB_SDK_VERSION}}"
 
       - name: Upload Native AAR 🗳
         uses: actions/upload-release-asset@v1
