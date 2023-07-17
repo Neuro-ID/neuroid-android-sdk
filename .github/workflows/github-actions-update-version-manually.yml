@@ -67,15 +67,40 @@ jobs:
           sed -i "s/VERSION_MINOR=*[0-9]*/VERSION_MINOR=${minor_version}/" version.properties
           sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${patch_version}/" version.properties
 
-
-      - run: |
+      - name: Commit version update 
+        run: |
           git config --global user.email developer@neuro-id.com
           git config --global user.name neuroid-developer
-          echo "BRANCH_NAME=releases/${NEW_VERSION}_version_update"
+          echo "BRANCH_NAME=$(releases/${{ env.NEW_VERSION }}_version_update") >> $GITHUB_ENV
+          git checkout -b ${{ env.BRANCH_NAME }}
+          git status
+          set +e
+          git add version.properties
+          git commit -m "Update Android SDK to ${{ env.NEW_VERSION }}"
+          git tag "${{ env.NEW_VERSION }}"
+          git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          set -e
 
-      - name: Commit changes and create PR
-        uses: peter-evans/create-pull-request@v5
+      - name: Open Pull Request
+        uses: actions/github-script@v5
         with:
-          commit-message: update android package version to ${{ env.NEW_VERSION }}
-          title: Update version
-          branch: ${{ env.BRANCH_NAME }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = 'Update To Version: ${{ env.NEW_VERSION }}';
+            const body = 'Update To Version: ${{ env.NEW_VERSION }}';
+            const headBranch = '${{ env.BRANCH_NAME }}';
+            const baseBranch = 'main';
+
+            const createPullRequest = async () => {
+              const response = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                head: headBranch,
+                base: baseBranch
+              });
+              console.log(`Pull request ${response.data.number} created`);
+            };
+
+            createPullRequest();
