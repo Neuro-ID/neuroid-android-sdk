@@ -11,6 +11,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONObject
+import org.json.JSONArray
 
 
 class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
