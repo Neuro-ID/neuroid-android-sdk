@@ -1,0 +1,81 @@
+# ******************************************************************
+# Before triggering an android sdk release, update the version by running this workflow
+# from the GitHub UI and selecting parameters based on the type of release:
+#
+# - Major Update
+#   Select "Branch: main"
+#   Set `true` if there are breaking changes affecting sdk's across platforms i.e. react-native, android, ios etc.
+#
+# - Minor Update
+#   Select "Branch: main"
+#   Set `true` if there are multiple minor changes affecting sdk's across platforms i.e. react-native, android, ios etc.
+#
+# - Patch Update
+#   Select "Branch: main"
+#   Set `true` if the change affects only the android platform.
+#
+#   This will create a PR with the updated version in version.properties file.
+# ******************************************************************
+
+name: Create Version Update PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_update:
+        description: >
+          Choose the type of version update:            
+          ** major: Cross platform breaking changes                                   
+          ** minor: Cross platform minor changes                    
+          ** patch: Changes affecting only this platform
+        required: true
+        default: "patch"
+        type: choice
+        options: ["major", "minor", "patch"]
+
+jobs:
+  update_version:
+    name: Update package version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Main branch checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine update type
+        run: |
+          echo "RELEASE_TYPE=${{ inputs.version_update}}" >> $GITHUB_ENV
+
+      - name: Update current version
+        run: |
+          current_version=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
+          echo "Current Version=${current_version}"
+
+          major_version=$current_version | cut -d'.' -f1
+          echo "Major Version=${major_version}"
+          minor_version=$current_version | cut -d'.' -f2
+          echo "Minor Version=${minor_version}"
+          patch_version=$current_version | cut -d'.' -f3
+          echo "Patch Version=${patch_version}"
+  
+          echo "${{ env.RELEASE_TYPE }}_version=$((${{ env.RELEASE_TYPE }}_version + 1))"
+          echo "NEW_VERSION=${major_version}.${minor_version}.${patch_version}" >> $GITHUB_ENV
+          
+          sed -i "s/SDK_VERSION=.*/SDK_VERSION=${NEW_VERSION}/" version.properties
+          sed -i "s/VERSION_MAJOR=*[0-9]*/VERSION_MAJOR=${major_version}/" version.properties
+          sed -i "s/VERSION_MINOR=*[0-9]*/VERSION_MINOR=${minor_version}/" version.properties
+          sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${patch_version}/" version.properties
+
+
+      - run: |
+          git config --global user.email developer@neuro-id.com
+          git config --global user.name neuroid-developer
+          echo "BRANCH_NAME=releases/${NEW_VERSION}_version_update"
+
+      - name: Commit changes and create PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: update android package version to ${{ env.NEW_VERSION }}
+          title: Update version
+          branch: ${{ env.BRANCH_NAME }}
