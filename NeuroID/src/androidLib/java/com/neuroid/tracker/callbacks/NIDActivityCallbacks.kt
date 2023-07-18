@@ -25,7 +25,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
 
     override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
         super.onActivityPostCreated(activity, savedInstanceState)
-//        NIDLog.d("NID--Activity", "Activity - POST Created")
+        NIDLog.d("NID--Activity", "Activity - POST Created")
 
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
@@ -48,12 +48,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         if (existActivity.not()) {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-//            NIDLog.d("NID--Activity", "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            NIDLog.d("NID--Activity", "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(wasChanged), true)
         }
 
         if (wasChanged) {
-//            NIDLog.d("NID--Activity", "Activity - POST Created - Orientation change")
+            NIDLog.d("NID--Activity", "Activity - POST Created - Orientation change")
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
@@ -73,7 +73,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         metadataObj.put("lifecycle", "postCreated")
         metadataObj.put("className", "${activity::class.java.simpleName}")
         val attrJSON = JSONArray().put(metadataObj)
-//        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
+        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -98,36 +98,17 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityStarted(activity: Activity) {
-//        NIDLog.d("NID--Activity", "Activity - Started")
+        NIDLog.d("NID--Activity", "Activity - Started")
     }
 
     override fun onActivityPostStarted(activity: Activity) {
         super.onActivityPostStarted(activity)
-//        NIDLog.d("NID--Activity", "Activity - POST Started")
+        NIDLog.d("NID--Activity", "Activity - POST Started")
 
         var cameBackFromBehind = false
         NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
-//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-//            val accelData = NIDSensorHelper.getAccelerometerInfo()
-//
-//            val jsonObject = JSONObject()
-//            jsonObject.put("component", "activity")
-//            jsonObject.put("lifecycle", "postStarted")
-//
-//
-////            NIDLog.d("NID--Activity", "Activity - POST Started - Window Focus")
-//            getDataStoreInstance()
-//                .saveEvent(
-//                    NIDEventModel(
-//                        type = WINDOW_FOCUS,
-//                        ts = System.currentTimeMillis(),
-//                        gyro = gyroData,
-//                        accel = accelData,
-//                        metadata = jsonObject
-//                    )
-//                )
         }
         activitiesStarted++
 

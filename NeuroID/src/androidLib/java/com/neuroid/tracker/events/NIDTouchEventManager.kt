@@ -226,43 +226,6 @@ class NIDTouchEventManager(
                         // Null
                     }
                 }
-
-                /* if (type.isNotEmpty()) {
-                     getDataStoreInstance()
-                         .saveEvent(
-                             NIDEventModel(
-                                 type = type,
-                                 tg = hashMapOf(
-                                     "etn" to currentView?.javaClass?.simpleName.orEmpty(),
-                                     "tgs" to nameView,
-                                     "sender" to currentView?.javaClass?.simpleName.orEmpty()
-                                 ),
-                                 tgs = nameView,
-                                 ts = timeMills,
-                                 gyro = gyroData,
-                                 accel = accelData
-                             )
-                         )
-                 }*/
-            } else {
-                /*if (lastView is SeekBar) {
-                    getDataStoreInstance()
-                        .saveEvent(
-                            NIDEventModel(
-                                type = SLIDER_CHANGE,
-                                tg = hashMapOf(
-                                    "etn" to currentView?.javaClass?.simpleName.orEmpty(),
-                                    "tgs" to nameView,
-                                    "sender" to currentView?.javaClass?.simpleName.orEmpty()
-                                ),
-                                tgs = nameView,
-                                v = ((lastView as SeekBar).progress).toString(),
-                                ts = System.currentTimeMillis(),
-                                gyro = gyroData,
-                                accel = accelData
-                            )
-                        )
-                }*/
             }
             lastView = null
         } else if (action == ACTION_DOWN) {
