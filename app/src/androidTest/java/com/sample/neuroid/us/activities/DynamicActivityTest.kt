@@ -42,7 +42,7 @@ class DynamicActivityTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500)
+        delay(2000)
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
