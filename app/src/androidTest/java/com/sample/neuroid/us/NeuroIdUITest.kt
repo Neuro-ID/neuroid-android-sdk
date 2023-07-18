@@ -91,7 +91,7 @@ class NeuroIdUITest {
     fun test04ValidateLifecycleStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        delay(500) //Wait a half second for create the MainActivity View
+        delay(2000) //Wait a half second for create the MainActivity View
         val eventType = "\"type\":\"WINDOW_LOAD\""
         NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
     }
