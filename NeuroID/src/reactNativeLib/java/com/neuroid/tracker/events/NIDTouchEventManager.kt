@@ -13,6 +13,9 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.getIdOrTag
+import org.json.JSONArray
+import org.json.JSONObject
+
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -26,9 +29,11 @@ class NIDTouchEventManager(
             val currentView = getView(viewParent, motionEvent.x, motionEvent.y)
             val nameView = currentView?.getIdOrTag() ?: "main_view"
 
+
+
             detectChangesOnView(currentView, timeMills, motionEvent.action)
 
-            val typeOfView = when(currentView) {
+            val typeOfView = when (currentView) {
                 is EditText,
                 is ReactEditText,
                 is CheckBox,
@@ -50,11 +55,41 @@ class NIDTouchEventManager(
                 else -> 0
             }
 
+            var v = ""
+            val metadataObj = JSONObject()
+
+            when (currentView) {
+                is EditText -> {
+                    v = "S~C~~${currentView.text.length}"
+                }
+                is RadioButton -> {
+                    metadataObj.put("type", "radioButton")
+                    metadataObj.put("id", "${currentView.getIdOrTag()}")
+
+                    // go up to 3 parents in case a RadioGroup is not the direct parent
+                    var rParent = currentView.parent;
+                    repeat(3) { index ->
+                        if (rParent is RadioGroup) {
+                            val p = rParent as RadioGroup
+                            metadataObj.put("rGroupId", "${p.getIdOrTag()}")
+                            return@repeat
+                        } else {
+                            rParent = rParent.parent
+                        }
+                    }
+                }
+            }
+
+            val motionValues = generateMotionEventValues(motionEvent)
+            val rawAction = JSONObject().put("rawAction", it.action)
+            val attrJSON = JSONArray().put(rawAction).put(metadataObj).put(motionValues)
+
             when (it.action) {
                 ACTION_DOWN -> {
                     if (typeOfView > 0) {
                         lastViewName = nameView
                         lastTypeOfView = typeOfView
+
                         getDataStoreInstance()
                             .saveEvent(
                                 NIDEventModel(
@@ -63,27 +98,19 @@ class NIDTouchEventManager(
                                     tgs = nameView,
                                     tg = hashMapOf(
                                         "etn" to nameView,
-                                        "sender" to nameView
+                                        "sender" to nameView,
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                    )
+                                    ),
+                                    v = v,
+                                    attrs = attrJSON
                                 )
                             )
-
-                        if (typeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = FOCUS,
-                                        ts = timeMills,
-                                        tgs = lastViewName
-                                    )
-                                )
-                        }
                     }
                 }
                 ACTION_MOVE -> {
+
                     getDataStoreInstance()
                         .saveEvent(
                             NIDEventModel(
@@ -92,27 +119,20 @@ class NIDTouchEventManager(
                                 tgs = nameView,
                                 tg = hashMapOf(
                                     "etn" to nameView,
-                                    "sender" to nameView
+                                    "sender" to nameView,
                                 ),
                                 touches = listOf(
                                     "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                )
+                                ),
+                                v = v,
+                                attrs = attrJSON
+
+
                             )
                         )
                 }
                 ACTION_UP -> {
                     if (lastTypeOfView > 0) {
-
-                        if (lastTypeOfView == 2) {
-                            getDataStoreInstance()
-                                .saveEvent(
-                                    NIDEventModel(
-                                        type = BLUR,
-                                        ts = timeMills,
-                                        tgs = lastViewName
-                                    )
-                                )
-                        }
 
                         lastTypeOfView = 0
                         lastViewName = ""
@@ -125,11 +145,14 @@ class NIDTouchEventManager(
                                     tgs = nameView,
                                     tg = hashMapOf(
                                         "etn" to nameView,
-                                        "sender" to nameView
+                                        "sender" to nameView,
                                     ),
                                     touches = listOf(
                                         "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
-                                    )
+                                    ),
+                                    v = v,
+                                    attrs = attrJSON
+
                                 )
                             )
                     }
@@ -215,5 +238,85 @@ class NIDTouchEventManager(
         } else if (action == ACTION_DOWN) {
             lastView = currentView
         }
+    }
+
+
+    private fun generateMotionEventValues(motionEvent: MotionEvent): JSONObject {
+        var pointers = generatePointerValues(motionEvent?.pointerCount, motionEvent)
+
+        var yValues = generateYValues(motionEvent)
+        var xValues = generateXValues(motionEvent)
+
+        var size = motionEvent.size
+
+        val metadataObj = JSONObject()
+        metadataObj.put("pointerCount", motionEvent?.pointerCount)
+        metadataObj.put("pointers", pointers)
+
+        metadataObj.put("yValues", yValues)
+        metadataObj.put("xValues", xValues)
+
+        metadataObj.put("pressure", motionEvent?.pressure)
+        metadataObj.put("hSize", motionEvent.historySize)
+        metadataObj.put("size", size)
+
+        return metadataObj
+    }
+
+    private fun generatePointerValues(pointerCount: Int, motionEvent: MotionEvent): JSONObject {
+        val pointerObj = JSONObject()
+
+        for (i in 0 until pointerCount) {
+            var mProp = MotionEvent.PointerProperties()
+            motionEvent.getPointerProperties(
+                motionEvent.getPointerId(i),
+                mProp,
+            )
+
+            val pointerDetailsObj = JSONObject()
+            pointerDetailsObj.put("mPropId", mProp.id)
+            pointerDetailsObj.put("mPropToolType", mProp.toolType)
+
+            var pHistorySize = motionEvent.getHistorySize()
+            if (pHistorySize > 0) {
+                val xHistoryArray = JSONArray()
+                val yHistoryArray = JSONArray()
+
+                for (hi in 0 until pHistorySize) {
+                    var hY = motionEvent.getHistoricalY(i, hi)
+                    var hX = motionEvent.getHistoricalX(i, hi)
+
+                    xHistoryArray.put(hX)
+                    yHistoryArray.put(hY)
+                }
+
+                pointerDetailsObj.put("historicalX", xHistoryArray)
+                pointerDetailsObj.put("historicalY", yHistoryArray)
+            }
+
+            pointerObj.put("$i", pointerDetailsObj)
+        }
+
+        return pointerObj
+    }
+
+    private fun generateYValues(motionEvent: MotionEvent): JSONObject {
+        val metadataObj = JSONObject()
+        metadataObj.put("y", motionEvent?.y)
+        metadataObj.put("yP", motionEvent?.yPrecision)
+        metadataObj.put("yR", motionEvent?.rawY)
+        metadataObj.put("yCalc", motionEvent?.rawY * motionEvent?.yPrecision)
+
+        return metadataObj
+    }
+
+    private fun generateXValues(motionEvent: MotionEvent): JSONObject {
+        val metadataObj = JSONObject()
+        metadataObj.put("x", motionEvent?.x)
+        metadataObj.put("xP", motionEvent?.xPrecision)
+        metadataObj.put("xR", motionEvent?.rawX)
+        metadataObj.put("xCalc", motionEvent?.rawX * motionEvent?.xPrecision)
+
+        return metadataObj
     }
 }

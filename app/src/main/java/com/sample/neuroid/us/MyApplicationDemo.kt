@@ -36,7 +36,7 @@ class MyApplicationDemo : MultiDexApplication() {
             "key_live_suj4CX90v0un2k1ufGrbItT5"
         ).build()
         NeuroID.setNeuroIdInstance(neuroId)
-        NeuroID.getInstance()?.setEnvironment("TEST")
+        NeuroID.getInstance()?.setEnvironmentProduction(true)
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
 

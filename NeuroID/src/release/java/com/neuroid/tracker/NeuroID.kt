@@ -129,6 +129,15 @@ class NeuroID private constructor(
         NIDServiceTracker.environment = environment
     }
 
+    fun setEnvironmentProduction(prod: Boolean) {
+        if (prod) {
+            NIDServiceTracker.environment = "LIVE"
+        } else {
+            NIDServiceTracker.environment = "TEST"
+
+        }
+    }
+
     fun getEnvironment(): String = NIDServiceTracker.environment
 
     fun setSiteId(siteId: String) {
@@ -239,8 +248,8 @@ class NeuroID private constructor(
     }
 
     fun start() {
-        NIDServiceTracker.rndmId = NIDSharedPrefsDefaults.getHexRandomID()
-        NIDSingletonIDs.updateSalt()
+        NIDServiceTracker.rndmId = "mobile"
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
@@ -284,6 +293,13 @@ class NeuroID private constructor(
 
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(view, activity.getGUID(), true, addListener)
+    }
+
+    /**
+     * Provide public access to application context for other intenral NID functions
+     */
+    fun getApplicationContext(): Context? {
+        return this.application?.applicationContext
     }
 
     private suspend fun createSession() {
