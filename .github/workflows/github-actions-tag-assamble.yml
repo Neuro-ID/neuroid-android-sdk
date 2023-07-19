@@ -47,24 +47,72 @@ jobs:
             git push
 
       - name: Create Release ✅
-        run: gh release create v${{env.GITHUB_SDK_VERSION}} --generate-notes --title "v${{env.GITHUB_SDK_VERSION}}"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = 'Creating release of Android SDK v${{env.GITHUB_SDK_VERSION}}';
+            const tag_name = 'v${{env.GITHUB_SDK_VERSION}}';
+            const createRelease = async () => {
+              const response = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag_name,
+                body: body    
+              });
+              console.log(`Create release ${response.data.id} created`);
+              core.exportVariable('RELEASE_ID', response.data.id);
+            };    
+            await createRelease();
+            console.log(`set release id as env variable: ${process.env.RELEASE_ID}`);
+          
 
       - name: Upload Native AAR 🗳
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v6
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar
-          asset_name: neuro-id-android-sdk-androidLib-release
-          asset_content_type: application/aar
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const asset_path = 'NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar'
+            const asset_name = 'neuro-id-android-sdk-androidLib-release'
+            const asset_content_type = 'application/aar'
+            const asset_data = fs.readFileSync(asset_path);
 
+            const uploadNativeAssets = async () => {
+            const response = await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: process.env.RELEASE_ID,
+                name: asset_name,
+                data: asset_data,
+                headers: {
+                  'content-type': asset_content_type
+                }
+              });
+            };    
+            uploadNativeAssets();
+      
       - name: Upload React Native AAR 🗳
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v5
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar
-          asset_name: neuro-id-android-sdk-reactNativeLib-release
-          asset_content_type: application/aar
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const asset_path = 'NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar'
+            const asset_name = 'neuro-id-android-sdk-reactNativeLib-release'
+            const asset_content_type = 'application/aar'
+            const asset_data = fs.readFileSync(asset_path);
+
+            const uploadReactNativeAssets = async () => {
+            const response = await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: process.env.RELEASE_ID,
+                name: asset_name,
+                data: asset_data,
+                headers: {
+                  'content-type': asset_content_type
+                  }
+                });
+              };    
+            uploadReactNativeAssets();

@@ -106,7 +106,7 @@ jobs:
           set -e
 
       - name: Create Pull Request
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -128,4 +128,3 @@ jobs:
             };
             
             createPullRequest();
-            
