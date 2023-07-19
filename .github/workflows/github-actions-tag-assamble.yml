@@ -39,13 +39,6 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Create TAG
-        run: |
-            git config --global user.email developer@neuro-id.com
-            git config --global user.name neuroid-developer
-            git tag -a v${{env.GITHUB_SDK_VERSION}} -m "Neuro-ID Android SDK Version: ${{env.GITHUB_SDK_VERSION}}"
-            git push
-
       - name: Create Release ✅
         uses: actions/github-script@v6
         with:
