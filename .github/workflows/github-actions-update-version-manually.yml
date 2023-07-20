@@ -17,7 +17,7 @@
 #   This will create a PR with the updated version in version.properties file.
 # ******************************************************************
 
-name: Create Version Update PR
+name: Pre-Release SDK PR
 
 on:
   workflow_dispatch:
