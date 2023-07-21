@@ -50,6 +50,8 @@ class LifeCycleTest {
         device.setOrientationNatural()
         delay(500)
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType, -1)
     }
 }
