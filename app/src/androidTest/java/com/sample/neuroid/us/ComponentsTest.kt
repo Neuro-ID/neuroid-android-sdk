@@ -62,11 +62,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"CHECKBOX_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
@@ -88,11 +85,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"RADIO_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
@@ -118,11 +112,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"SWITCH_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
@@ -148,11 +139,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"TOGGLE_BUTTON_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
@@ -178,11 +166,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"RATING_BAR_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
@@ -212,11 +197,8 @@ class ComponentsTest {
 
         delay(500)
 
-        val eventType = "\"type\":\"SLIDER_CHANGE\""
-        NIDSchema().validateEvents(
-            getDataStoreInstance().getAllEvents(),
-            eventType,
-            validateEvent = false
+        NIDSchema().validateSchema(
+            getDataStoreInstance().getAllEvents()
         )
     }
 
