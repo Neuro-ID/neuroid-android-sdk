@@ -7,8 +7,8 @@ on:
       - master
 
 permissions:
-  contents: write
-  issues: write
+    contents: write
+    issues: write
 
 jobs:
   if_merged:
@@ -36,13 +36,19 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Grant Permission for Gradlew and ReadProperties to Execute
-        run: |
+        run: | 
           chmod +x gradlew
           chmod +x properties_read.sh
           ./properties_read.sh
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
+        env:
+            GPR_USER: ${{ secrets.GPR_USER }}
+            GPR_API_KEY: ${{ secrets.GPR_API_KEY }}
+
+      - name: Publish Github Packages
+        run: ./gradlew publish :NeuroID:assemble
 
       - name: Create Release ✅
         uses: actions/github-script@v6
@@ -68,7 +74,7 @@ jobs:
             };    
             await createRelease();
 
-      - name: Upload Native AAR 🗳
+      - name: Upload Native AAR 🗳 Assets
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -92,8 +98,8 @@ jobs:
               });
             };    
             uploadNativeAssets();
-
-      - name: Upload React Native AAR 🗳
+      
+      - name: Upload React Native AAR 🗳 Assets
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -117,53 +123,4 @@ jobs:
                 });
               };    
             uploadReactNativeAssets();
-
-      - name: Update Internal Library
-        run: |
-          cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar app/libs
-          cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-debug.aar app/libs
-          cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar app/libs
-          cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-debug.aar app/libs
-          git config --global user.email "developer@neuro-id.com"
-          git config --global user.name "neuroid-developer"
-          git add app/libs
-          git commit -m "updating libraries"
-          git push
-
-      - name: Push SDK on Sandbox Project (Master)
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/androidLib/'
-          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'app/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
-          destination_branch: 'master'
-          commit_message: ${{ github.event.head_commit.message }}
-
-      - name: Push SDK on ReactNative Project (Main)
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
-          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'android/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
-          destination_branch: 'main'
-          commit_message: ${{ github.event.head_commit.message }}
-
-      - name: Send Slack Notification on Failure
-        if: ${{ failure() }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: mobile-sdk-tech-team
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: "Failed execution on master sdk build"
-          SLACK_TITLE: Failed master SDK
-          SLACK_USERNAME: rtBot
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        

@@ -1,4 +1,4 @@
-name: Publishing NeuroID SDK (Staging)
+name: Publishing NeuroID SDK (Development)
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ env:
   GIT_HASH: ${{github.sha}}
 jobs:
   publish:
-    name: Release NeuroID SDK (Staging)
+    name: Release NeuroID SDK (Development)
     runs-on: ubuntu-latest
 
     steps:
