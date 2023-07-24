@@ -52,14 +52,18 @@ class DynamicActivityTest {
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
         delay(2000)
         val eventType = "\"type\":\"REGISTER_TARGET\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        var events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
         delay(2000)
         getDataStoreInstance().clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())
         delay(2000)
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
         delay(2000)
     }
 }

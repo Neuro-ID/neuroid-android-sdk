@@ -54,7 +54,9 @@ class TextUnitTest {
         delay(500)
 
         val eventType = "\"type\":\"FOCUS\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
     }
 
     /**
@@ -77,7 +79,9 @@ class TextUnitTest {
         delay(600)
 
         val eventType = "\"type\":\"BLUR\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType)
     }
 
     /**
@@ -100,6 +104,8 @@ class TextUnitTest {
         delay(500)
 
         val eventType = "\"type\":\"INPUT\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, text.length)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType, text.length)
     }
 }
