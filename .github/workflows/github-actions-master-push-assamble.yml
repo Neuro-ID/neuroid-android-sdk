@@ -2,7 +2,7 @@ name: Uploading React and Sandbox Projects (Master)
 on:
   push:
     branches:
-      - master
+      - develop
     paths-ignore:
       - app/libs
 
