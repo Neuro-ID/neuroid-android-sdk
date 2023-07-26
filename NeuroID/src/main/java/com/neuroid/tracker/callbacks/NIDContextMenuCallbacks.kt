@@ -13,11 +13,10 @@ import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
 
-// This is the callback for the context menu that appears when text is already in field
-class NIDTextContextMenuCallbacks(
+abstract class NIDContextMenuCallBacks(
     actionCallBack: ActionMode.Callback?
 ) : ActionMode.Callback {
-    private val wrapper = actionCallBack
+    val wrapper = actionCallBack
 
     override fun onCreateActionMode(action: ActionMode?, menu: Menu?): Boolean {
         wrapper?.onCreateActionMode(action, menu)
@@ -28,6 +27,16 @@ class NIDTextContextMenuCallbacks(
         wrapper?.onPrepareActionMode(action, menu)
         return false
     }
+
+    override fun onDestroyActionMode(actionMode: ActionMode?) {
+        wrapper?.onDestroyActionMode(actionMode)
+    }
+}
+
+// This is the callback for the context menu that appears when text is already in field
+class NIDTextContextMenuCallbacks(
+    actionCallBack: ActionMode.Callback?
+) : NIDContextMenuCallBacks(actionCallBack) {
 
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
@@ -40,28 +49,12 @@ class NIDTextContextMenuCallbacks(
         item?.itemId?.let { saveEvent(it, item.toString()) }
         return false
     }
-
-    override fun onDestroyActionMode(actionMode: ActionMode?) {
-        wrapper?.onDestroyActionMode(actionMode)
-    }
 }
 
 // This is the callback for the context menu that appears when the text field is empty (only available in later API versions)
 class NIDLongPressContextMenuCallbacks(
     actionCallBack: ActionMode.Callback?
-) : ActionMode.Callback {
-    private val wrapper = actionCallBack
-
-    override fun onCreateActionMode(action: ActionMode?, menu: Menu?): Boolean {
-        wrapper?.onCreateActionMode(action, menu)
-        return true
-    }
-
-    override fun onPrepareActionMode(action: ActionMode?, menu: Menu?): Boolean {
-        wrapper?.onPrepareActionMode(action, menu)
-        return false
-    }
-
+) : NIDContextMenuCallBacks(actionCallBack) {
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
 
@@ -73,12 +66,6 @@ class NIDLongPressContextMenuCallbacks(
         item?.itemId?.let { saveEvent(it, item.toString()) }
         return false
     }
-
-    override fun onDestroyActionMode(actionMode: ActionMode?) {
-        wrapper?.onDestroyActionMode(actionMode)
-    }
-
-
 }
 
 private fun saveEvent(option: Int, item: String) {
