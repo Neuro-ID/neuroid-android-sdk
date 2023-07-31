@@ -1,15 +1,20 @@
-name: Uploading React and Sandbox Projects (Master)
+name: Release production SDK & Uploading React and Sandbox Projects (Master)
 on:
-  push:
+  pull_request_target:
+    types:
+      - closed
     branches:
       - master
-    paths-ignore:
-      - app/libs
+
+permissions:
+  contents: write
+  issues: write
 
 env:
   GIT_HASH: ${{github.sha}}
 jobs:
-  publish:
+  if_merged:
+    if: github.event.pull_request.merged && startsWith(github.head_ref, 'releases/')
     name: Updating NeuroID SDK (Master)
     runs-on: ubuntu-latest
 
@@ -44,8 +49,8 @@ jobs:
           cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-debug.aar app/libs
           cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar app/libs
           cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-debug.aar app/libs
-          git config --global user.email "robot@neuro-id.com"
-          git config --global user.name "robot"
+          git config --global user.email "developer@neuro-id.com"
+          git config --global user.name "neuroid-developer"
           git add app/libs
           git commit -m "updating libraries"
           git push
@@ -58,8 +63,8 @@ jobs:
           source_file: 'NeuroID/build/outputs/aar/androidLib/'
           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
           destination_folder: 'app/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
+          user_email: 'developer@neuro-id.com'
+          user_name: 'neuroid-developer'
           destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
@@ -71,8 +76,8 @@ jobs:
           source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
           destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
           destination_folder: 'android/libs/'
-          user_email: 'robot@neuro-id.com'
-          user_name: 'robot'
+          user_email: 'developer@neuro-id.com'
+          user_name: 'neuroid-developer'
           destination_branch: 'main'
           commit_message: ${{ github.event.head_commit.message }}
 
