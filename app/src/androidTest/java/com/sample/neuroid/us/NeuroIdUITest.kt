@@ -1,5 +1,7 @@
 package com.sample.neuroid.us
 
+import android.app.Application
+import android.content.Context
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -8,16 +10,25 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.mockito.Mockito.*
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Neuro ID: 26 UI Test
@@ -259,9 +270,61 @@ class NeuroIdUITest {
         NIDSchema().validateSchema(events)
     }
 
+    @Test
+    fun testRetryOnHttpErrors() = runBlocking {
+        val key = "your_key"
+        val endpoint = "http://example.com"
+
+        // Mock the HttpURLConnection
+        val connection = mock(HttpURLConnection::class.java)
+        `when`(connection.outputStream).thenReturn(mock(OutputStream::class.java))
+        `when`(connection.responseCode).thenReturn(
+            500,
+            503,
+            503,
+            200
+        ) // Simulate HTTP errors and then success
+        `when`(connection.responseMessage).thenReturn(
+            "Internal Server Error",
+            "Service Unavailable",
+            "Service Unavailable",
+            "OK"
+        )
+
+        // Mock the URL and URLConnection
+        val url = mock(URL::class.java)
+        `when`(url.openConnection()).thenReturn(connection)
+
+//        val context = InstrumentationRegistry.getInstrumentation().context
+        val context = mock(Context::class.java)
+
+        // Mock the getContentJson function to return an empty JSON
+        val nidServiceTracker = NIDServiceTracker
+        val mockedNIDServiceTracker = mock(NIDServiceTracker::class.java)
+        `when`(
+            mockedNIDServiceTracker.getContentJson(
+                context, // Use any() for the Application parameter
+                any()  // Use any() for the JSONArray parameter
+            )
+        ).thenReturn("{}")
 
 
+        runBlocking {
+            // Test the sendEventToServer function with retry attempts
+            val result = nidServiceTracker.sendEventToServer(key, endpoint)
 
-
-
+            // Verify that the function retries three times (total 4 attempts) on HTTP errors
+            assertEquals(4, nidServiceTracker.MAX_RETRY_ATTEMPTS)
+            // Verify that the function returns the success response code after retrying
+            assertEquals(200, result.first)
+            // Verify that the userActive flag is set to false after encountering USER_INACTIVE
+            assertEquals(true, result.second)
+        }
+    }
 }
+
+
+
+
+
+
