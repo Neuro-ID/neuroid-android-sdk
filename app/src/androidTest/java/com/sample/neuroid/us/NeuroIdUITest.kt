@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.mockito.Mockito.*
 
 /**
  * Neuro ID: 26 UI Test
@@ -258,10 +259,10 @@ class NeuroIdUITest {
         NIDSchema().validateEvents(events, eventType, -1)
         NIDSchema().validateSchema(events)
     }
-
-
-
-
-
-
 }
+
+
+
+
+
+
