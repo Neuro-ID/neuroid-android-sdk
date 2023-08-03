@@ -15,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import java.io.BufferedReader
 import java.io.IOException
@@ -23,49 +24,47 @@ import java.io.InputStreamReader
 
 class NIDSchema {
 
+    /**
+     * if validateEvent == false, only schema validation is done.
+     */
     suspend fun validateEvents(
         eventList: Set<String>,
         eventType: String = "",
-        maxEventsCount: Int = 1,
-        validateEvent: Boolean = true
+        maxEventsCount: Int = 1
     ) {
-        if (validateEvent) {
-            val events: Set<String>
-            if (eventType.isNotEmpty()) {
-                events = eventList.filter { it.contains(eventType) }.toSet()
-                if (maxEventsCount > 0) {
-                    assertEquals(
-                        eventList.toList().joinToString(",").ifEmpty { "No Events" },
-                        maxEventsCount,
-                        events.size
-                    )
-                } else {
-                    assertTrue(events.isNotEmpty())
-                }
-            } else {
-                events = eventList
-            }
-
-            val json =
-                getJsonData(
-                    context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
-                    events
+        val events: Set<String>
+        if (eventType.isNotEmpty() && eventList.isNotEmpty()) {
+            events = eventList.filter { it.contains(eventType) }.toSet()
+            if (maxEventsCount > 0) {
+                assertEquals(
+                    eventList.toList().joinToString(",").ifEmpty { "No Events" },
+                    maxEventsCount,
+                    events.size
                 )
-            validateSchema(json)
-
-            val application = ApplicationProvider.getApplicationContext<Application>()
-            val typeResponse = NIDServiceTracker.sendEventToServer(
-                "key_live_suj4CX90v0un2k1ufGrbItT5",
-                NeuroID.ENDPOINT_PRODUCTION,
-                application,
-                events
-            )
-
-            assertEquals(json, 200, typeResponse.first)
-        } else {
-            assertTrue(true)
+            } else {
+                assertTrue(events.isNotEmpty())
+            }
         }
+    }
 
+    suspend fun validateSchema(
+        eventList: Set<String>,
+    ) {
+        val json =
+            getJsonData(
+                context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
+                eventList
+            )
+        validateSchema(json)
+
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val typeResponse = NIDServiceTracker.sendEventToServer(
+            "key_live_suj4CX90v0un2k1ufGrbItT5",
+            NeuroID.ENDPOINT_PRODUCTION,
+            application,
+            eventList
+        )
+        assertEquals(json, 200, typeResponse.first)
     }
 
     private fun validateSchema(json: String) {

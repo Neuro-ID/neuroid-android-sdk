@@ -56,6 +56,18 @@ class NIDSharedPrefsDefaults(
         return uid.ifBlank { JSONObject.NULL }
     }
 
+    /**
+     * Shared device salt used for all strings
+     */
+    fun getDeviceSalt(): String {
+        return getString(NID_DEVICE_SALT)
+    }
+
+    fun putDeviceSalt(salt: String): String {
+        putString(NID_DEVICE_SALT, salt)
+        return salt
+    }
+
     fun getDeviceId(): String {
         var deviceId = getString(NID_DID)
 
@@ -129,6 +141,7 @@ class NIDSharedPrefsDefaults(
         private const val NID_CID = "NID_CID_GUID_KEY"
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
+        private const val NID_DEVICE_SALT = "NID_DEVICE_SALT"
 
         fun getHexRandomID(): String = List(12) {
             (('a'..'f') + ('0'..'9')).random()

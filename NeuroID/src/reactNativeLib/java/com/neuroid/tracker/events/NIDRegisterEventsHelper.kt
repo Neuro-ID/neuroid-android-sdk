@@ -43,7 +43,9 @@ fun registerWindowListeners(activity: Activity) {
 fun registerTargetFromScreen(
     activity: Activity,
     registerTarget: Boolean,
-    registerListeners: Boolean
+    registerListeners: Boolean,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
@@ -53,6 +55,13 @@ fun registerTargetFromScreen(
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
     android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
+        identifyAllViews(
+            viewMainContainer,
+            guid,
+            registerTarget,
+            registerListeners,
+            activityOrFragment,
+            parent
+        )
     }, 300)
 }
