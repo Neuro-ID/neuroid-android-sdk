@@ -70,8 +70,11 @@ jobs:
 
           if [ "$update_type" = "major" ]; then
             major_version=$((major_version + 1))
+            minor_version=0
+            patch_version=0
           elif [ "$update_type" = "minor" ]; then
             minor_version=$((minor_version + 1))
+            patch_version=0
           elif [ "$update_type" = "patch" ]; then
             patch_version=$((patch_version + 1))
           fi  
