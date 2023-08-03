@@ -40,7 +40,7 @@ private fun getParentsOfView(layers: Int, view: View): String {
         throw Error("Before registerTarget add the view to his parent")
     }
     return if (view.parent is View) {
-        valew = view.parent as View
+        val childView = view.parent as View
         if (layers == 3 || childView.id == android.R.id.content) "" else {
             "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
         }
