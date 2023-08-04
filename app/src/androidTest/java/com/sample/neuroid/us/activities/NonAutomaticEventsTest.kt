@@ -52,7 +52,9 @@ class NonAutomaticEventsTest {
         delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType)
     }
 
     /**
@@ -68,7 +70,9 @@ class NonAutomaticEventsTest {
         delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT_SUCCESS\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType)
     }
 
     /**
@@ -84,7 +88,9 @@ class NonAutomaticEventsTest {
         delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT_FAILURE\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType)
     }
 
     /**
@@ -101,7 +107,9 @@ class NonAutomaticEventsTest {
         delay(1000)
 
         val eventType = "\"type\":\"CUSTOM_EVENT\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType)
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateSchema(events)
+        NIDSchema().validateEvents(events, eventType)
     }
 
 }

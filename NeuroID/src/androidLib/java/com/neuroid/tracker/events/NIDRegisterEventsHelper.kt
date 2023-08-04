@@ -1,7 +1,6 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
@@ -32,7 +31,9 @@ fun registerWindowListeners(activity: Activity) {
 fun registerTargetFromScreen(
     activity: Activity,
     registerTarget: Boolean = true,
-    registerListeners: Boolean = true
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
 ) {
     // DEBUG are we actually fetching all view containers
     val viewMainContainer = activity.window.decorView.findViewById<View>(
@@ -42,7 +43,12 @@ fun registerTargetFromScreen(
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(viewMainContainer, guid, registerTarget, registerListeners)
-    }, 300)
+    identifyAllViews(
+        viewMainContainer,
+        guid,
+        registerTarget,
+        registerListeners,
+        activityOrFragment,
+        parent
+    )
 }

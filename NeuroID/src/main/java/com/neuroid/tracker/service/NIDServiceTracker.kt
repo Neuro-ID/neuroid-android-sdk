@@ -2,8 +2,10 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import android.content.Context
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.USER_INACTIVE
+import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -35,6 +37,8 @@ object NIDServiceTracker {
     var siteId = ""
     var rndmId = ""
     var firstScreenName = ""
+    const val MAX_RETRY_ATTEMPTS = 3
+
 
     suspend fun sendEventToServer(
         key: String,
@@ -46,11 +50,13 @@ object NIDServiceTracker {
             val event = JSONObject(it)
             event.getLong("ts")
         }
+
         if (listEvents.isEmpty().not()) {
+            NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
 
             NIDLog.d("NeuroID", "Url: $endpoint")
-            val url = URL(endpoint)
+            val url = URL("${endpoint}/${key}")
             val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.doInput = true
@@ -61,7 +67,6 @@ object NIDServiceTracker {
                 "Content-Type",
                 "application/json"
             )
-            conn.setRequestProperty("site_key", key)
 
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
@@ -83,30 +88,39 @@ object NIDServiceTracker {
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
             NIDLog.d("NeuroID", "payload Json::: $data")
 
-            try {
-                val os: OutputStream = conn.outputStream
-                val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
-                writer.write(data)
-                writer.flush()
-                writer.close()
-                os.close()
+            var retryAttempts = 0
+            while (retryAttempts < MAX_RETRY_ATTEMPTS) {
+                try {
+                    val os: OutputStream = conn.outputStream
+                    val writer = BufferedWriter(OutputStreamWriter(os, "UTF-8"))
+                    writer.write(data)
+                    writer.flush()
+                    writer.close()
+                    os.close()
 
-                val code = conn.responseCode
-                val message = conn.responseMessage
+                    val code = conn.responseCode
+                    val message = conn.responseMessage
 
-                return if (code == 200) {
-                    NIDLog.d("NeuroID", "Http response code: $code")
-                    Pair(code, stopLoopService)
-                } else {
-                    NIDLog.e("NeuroID", "Error service: $message Code:$code")
-                    Pair(code, stopLoopService)
+                    if (code == 200) {
+                        NIDLog.d("NeuroID", "Http response code: $code")
+                        return Pair(code, stopLoopService)
+                    } else {
+                        NIDLog.e("NeuroID", "Error service: $message Code:$code")
+                        // Retry in case of HTTP error
+                        retryAttempts++
+                    }
+                } catch (ex: Exception) {
+                    NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
+                    // Retry in case of HTTP error
+                    retryAttempts++
+                } finally {
+                    conn.disconnect()
                 }
-            } catch (ex: Exception) {
-                NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
-                return Pair(NID_ERROR_SERVICE, stopLoopService)
-            } finally {
-                conn.disconnect()
             }
+
+            // If we reach here, it means we've exhausted all retries and still encountered an error.
+            // Return the error with the last HTTP response code received.
+            return Pair(NID_ERROR_SERVICE, stopLoopService)
         } else {
             return Pair(NID_ERROR_SERVICE, false)
         }

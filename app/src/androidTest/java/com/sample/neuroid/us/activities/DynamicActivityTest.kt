@@ -2,6 +2,7 @@ package com.sample.neuroid.us.activities
 
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.pressKey
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,12 +15,15 @@ import com.sample.neuroid.us.R
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.hamcrest.Matcher
+import org.hamcrest.core.Is.`is`
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.util.Objects
 
 @ExperimentalCoroutinesApi
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -38,21 +42,28 @@ class DynamicActivityTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500)
+        delay(2000)
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
         delay(2000)
-
+        Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(click())
+        delay(2000)
+        Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
+        delay(2000)
         val eventType = "\"type\":\"REGISTER_TARGET\""
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        var events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
         delay(2000)
         getDataStoreInstance().clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())
         delay(2000)
-        NIDSchema().validateEvents(getDataStoreInstance().getAllEvents(), eventType, -1)
+        events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
         delay(2000)
     }
 }

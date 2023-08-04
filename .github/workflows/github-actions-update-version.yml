@@ -1,45 +1,133 @@
-name: Auto Update Version
+# ******************************************************************
+# Before triggering an android sdk release, update the version by running this workflow
+# from the GitHub UI and selecting parameters based on the type of release:
+#
+# - Major Update
+#   Select "Branch: main"
+#   Set `true` if there are breaking changes affecting sdk's across platforms i.e. react-native, android, ios etc.
+#
+# - Minor Update
+#   Select "Branch: main"
+#   Set `true` if there are multiple minor changes affecting sdk's across platforms i.e. react-native, android, ios etc.
+#
+# - Patch Update
+#   Select "Branch: main"
+#   Set `true` if the change affects only the android platform.
+#
+#   This will create a PR with the updated version in version.properties file.
+# ******************************************************************
+
+name: Pre-Release Version PR
+
 on:
-  pull_request:
-    branches:
-      - master
-    types:
-      - opened
+  workflow_dispatch:
+    inputs:
+      version_update:
+        description: >
+          Choose the type of version update:            
+          ** major: Cross platform breaking changes                                   
+          ** minor: Cross platform minor changes                    
+          ** patch: Changes affecting only this platform
+        required: true
+        default: "patch"
+        type: choice
+        options: ["major", "minor", "patch"]
+
+permissions:
+  pull-requests: write
+  contents: write
+  issues: write
 
 jobs:
-  versionCheck:
-    name: Pull request version number validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check PR Title
-        run: |
-          v=`echo ${{github.event.pull_request.title}} | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'`
-          if [ "${{github.event.pull_request.title}}" = "$v" ]; then
-            exit 0;
-          else
-            echo $v;
-          fi
-
   update_version:
-    name: Update version
+    name: Update package version
     runs-on: ubuntu-latest
-    needs: versionCheck
     steps:
-        - name: checkout
-          uses: actions/checkout@v3
-          with:
-              ref: ${{github.head_ref}}
+      - name: Main branch checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-        - name: Grant Permission
-          run: chmod +x version_update.sh
+      - name: Determine update type
+        run: echo "UPDATE_TYPE=${{ inputs.version_update}}" >> $GITHUB_ENV
 
-        - name: Update Version Properties
-          run: ./version_update.sh '${{ github.event.pull_request.title }}'
+      - name: Get current version
+        run: |
+          current_version=$(cat version.properties | grep "SDK_VERSION=" | cut -d'=' -f2)
+          echo "CURRENT_VERSION=$current_version" >> $GITHUB_ENV
 
-        - name: Commit new Version
-          run: |
-              git config --global user.email "robot@neuro-id.com"
-              git config --global user.name "robot"
-              git add version.properties
-              git commit -m "updating version"
-              git push
+      - name: Increment version
+        run: |
+          update_type=${{ env.UPDATE_TYPE }}
+          current_version=${{ env.CURRENT_VERSION }}
+
+          major_version=$(echo "${current_version}" | cut -d'.' -f1)
+          echo "Major Version=${major_version}"
+          minor_version=$(echo "${current_version}" | cut -d'.' -f2)
+          echo "Minor Version=${minor_version}"
+          patch_version=$(echo "${current_version}" | cut -d'.' -f3)
+          echo "Patch Version=${patch_version}"
+
+          if [ "$update_type" = "major" ]; then
+            major_version=$((major_version + 1))
+            minor_version=0
+            patch_version=0
+          elif [ "$update_type" = "minor" ]; then
+            minor_version=$((minor_version + 1))
+            patch_version=0
+          elif [ "$update_type" = "patch" ]; then
+            patch_version=$((patch_version + 1))
+          fi  
+          
+          package_version=$major_version.$minor_version.$patch_version
+          echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
+          echo "MAJOR_VERSION=$major_version" >> $GITHUB_ENV
+          echo "MINOR_VERSION=$minor_version" >> $GITHUB_ENV
+          echo "PATCH_VERSION=$patch_version" >> $GITHUB_ENV
+
+      - name: Update version.properties file
+        run: |
+          package_version=${{ env.PACKAGE_VERSION }}
+          sed -i "s/SDK_VERSION=.*/SDK_VERSION=${package_version}/" version.properties
+          sed -i "s/VERSION_MAJOR=*[0-9]*/VERSION_MAJOR=${{ env.MAJOR_VERSION }}/" version.properties
+          sed -i "s/VERSION_MINOR=*[0-9]*/VERSION_MINOR=${{ env.MINOR_VERSION }}/" version.properties
+          sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${{ env.PATCH_VERSION }}/" version.properties
+          echo "BRANCH_NAME=releases/${package_version}_version_update" >> $GITHUB_ENV
+
+      - name: Commit version update
+        run: |
+          package_version=${{ env.PACKAGE_VERSION }}
+          git config --global user.email developer@neuro-id.com
+          git config --global user.name neuroid-developer   
+          git checkout -b ${{ env.BRANCH_NAME }}
+          git status
+          set +e
+          git add version.properties
+          git commit -m "Update Android SDK to ${package_version}"
+          git tag "${package_version}"
+          git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          set -e
+
+      - name: Create Pull Request
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = 'Update To Version: ${{ env.PACKAGE_VERSION }}';
+            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}';
+            const headBranch = '${{ env.BRANCH_NAME }}';
+            const baseBranch = 'master';
+            
+            const createPullRequest = async () => {
+              const response = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                head: headBranch,
+                base: baseBranch
+              });
+              console.log(`Pull request ${response.data.number} created`);
+            };
+            
+            createPullRequest();

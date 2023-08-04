@@ -31,9 +31,14 @@ fun View.getParents(): String {
 }
 
 private fun getParentsOfView(layers: Int, view: View): String {
-    val childView = view.parent as View
-    return if (layers == 3 || childView.id == android.R.id.content) "" else {
-        "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
+    return if (view.parent is View) {
+        val childView = view.parent as View
+        if (layers == 3 || childView.id == android.R.id.content) "" else {
+            "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
+        }
+    } else {
+        NIDLog.e("NeuroID", "instance ${view.parent?.javaClass?.name} is not a view!")
+        "not_a_view"
     }
 }
 
