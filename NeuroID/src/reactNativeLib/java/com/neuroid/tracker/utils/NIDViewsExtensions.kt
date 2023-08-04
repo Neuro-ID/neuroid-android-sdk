@@ -37,7 +37,7 @@ private fun getParentsOfView(layers: Int, view: View): String {
             "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
         }
     } else {
-        NIDLog.e("NeuroID", "instance ${view.parent.javaClass.name} is not a view!")
+        NIDLog.e("NeuroID", "instance ${view.parent?.javaClass?.name} is not a view!")
         "not_a_view"
     }
 }
