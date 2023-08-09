@@ -1,4 +1,4 @@
-name: Unit Test sample app
+name: Unit Test
 on:
   pull_request:
     branches:
@@ -40,7 +40,7 @@ jobs:
             java-version: 11
 
         # Execute unit tests
-        - name: Unit Test Sample App
+        - name: Unit Test
           uses: ReactiveCircus/android-emulator-runner@v2.24.0
           with:
               api-level: 29

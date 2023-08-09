@@ -1,4 +1,4 @@
-name: Unit Test Neuroid
+name: Unit Test
 on:
   pull_request:
     branches:
@@ -40,5 +40,5 @@ jobs:
           java-version: 11
 
       # Execute unit test neuroid lib
-      - name: Unit Test NeuroID
-        run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest `
+      - name: Unit Test
+        run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
