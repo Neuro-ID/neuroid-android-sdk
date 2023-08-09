@@ -1,4 +1,4 @@
-name: Unit Test
+name: Unit Test NeuroID
 on:
   pull_request:
     branches:
