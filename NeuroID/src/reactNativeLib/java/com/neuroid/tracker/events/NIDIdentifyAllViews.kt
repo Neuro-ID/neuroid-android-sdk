@@ -26,6 +26,7 @@ import com.neuroid.tracker.utils.getParents
 import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
+import com.neuroid.tracker.NeuroID
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -275,6 +276,11 @@ private fun registerListeners(view: View) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+    // If we have already added the listener here.
+    if (NeuroID.NID_TEXT_WATCHERS.contains(view.getIdOrTag())){
+        return
+    }
+    NeuroID.NID_TEXT_WATCHERS.add(view.getIdOrTag())
     // EditText is a parent class to multiple components
     if (view is EditText) {
         NIDLog.d(
