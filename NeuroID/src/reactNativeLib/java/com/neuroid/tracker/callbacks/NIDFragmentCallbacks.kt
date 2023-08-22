@@ -51,7 +51,9 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
 
             if (listFragment.contains(fragName)) {
                 val index = listFragment.indexOf(fragName)
-                if (index != listFragment.size - 1) {
+                if (index != listFragment.size - 1
+                        && !NIDCallbackUtils.ACTIVE_REGISTERED_TARGETS.contains(f::class.java.simpleName)) {
+                    NIDCallbackUtils.ACTIVE_REGISTERED_TARGETS.add(f::class.java.simpleName)
                     listFragment.removeLast()
                     registerTargetFromScreen(
                         f.requireActivity(),
@@ -63,13 +65,16 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
                 }
             } else {
                 listFragment.add(fragName)
-                registerTargetFromScreen(
-                    f.requireActivity(),
-                    registerTarget = true,
-                    registerListeners = true,
-                    activityOrFragment = "fragment",
-                    parent = f::class.java.simpleName
-                )
+                if (!NIDCallbackUtils.ACTIVE_REGISTERED_TARGETS.contains(f::class.java.simpleName)) {
+                    NIDCallbackUtils.ACTIVE_REGISTERED_TARGETS.add(f::class.java.simpleName)
+                    registerTargetFromScreen(
+                        f.requireActivity(),
+                        registerTarget = true,
+                        registerListeners = true,
+                        activityOrFragment = "fragment",
+                        parent = f::class.java.simpleName
+                    )
+                }
             }
         }
     }

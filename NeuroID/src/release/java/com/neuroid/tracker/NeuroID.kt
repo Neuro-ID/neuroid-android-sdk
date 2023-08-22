@@ -80,7 +80,7 @@ class NeuroID private constructor(
 
     companion object {
         const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
-
+        val ACTIVE_REGISTERED_TARGETS = mutableSetOf<String>()
         private var singleton: NeuroID? = null
 
         @JvmStatic

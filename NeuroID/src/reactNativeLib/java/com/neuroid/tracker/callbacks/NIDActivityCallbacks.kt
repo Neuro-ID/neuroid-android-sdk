@@ -16,6 +16,7 @@ import org.json.JSONObject
 
 
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
+
     private var auxOrientation = -1
     private var activitiesStarted = 1
     private var listActivities = ArrayList<String>()
@@ -89,13 +90,16 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
 
 
     public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            registerTarget = true,
-            registerListeners = true,
-            activityOrFragment = "activity",
-            parent = activity::class.java.name
-        )
+        if (!ACTIVE_REGISTERED_TARGETS.contains(activity::class.java.name)) {
+            ACTIVE_REGISTERED_TARGETS.add(activity::class.java.name)
+            registerTargetFromScreen(
+                activity,
+                registerTarget = true,
+                registerListeners = true,
+                activityOrFragment = "activity",
+                parent = activity::class.java.name
+            )
+        }
     }
 
     override fun onActivityStarted(activity: Activity) {
