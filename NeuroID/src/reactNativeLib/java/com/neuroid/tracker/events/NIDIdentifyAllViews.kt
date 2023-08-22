@@ -275,6 +275,11 @@ private fun registerListeners(view: View) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
+    // If we have already added the listener here.
+    if (NeuroID.NID_TEXT_WATCHERS.contains(view.getIdOrTag())){
+        return
+    }
+    NeuroID.NID_TEXT_WATCHERS.add(view.getIdOrTag())
     // EditText is a parent class to multiple components
     if (view is EditText) {
         NIDLog.d(
