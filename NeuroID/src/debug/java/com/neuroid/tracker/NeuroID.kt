@@ -43,6 +43,7 @@ class NeuroID private constructor(
 
     private var forceStart: Boolean? = null
 
+
     private var metaData: NIDMetaData? = null
 
     internal var verifyIntegrationHealth: Boolean = false
@@ -79,6 +80,7 @@ class NeuroID private constructor(
 
     companion object {
         const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
+
         val ACTIVE_REGISTERED_TARGETS = mutableSetOf<String>()
         private var singleton: NeuroID? = null
 
