@@ -1,6 +1,5 @@
 package com.neuroid.tracker.utils
 
-import android.R
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.Editable
@@ -44,6 +43,12 @@ class NIDTextWatcher(
         val clipData = clipboard?.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             val pastedText = clipData.getItemAt(0).text
+            // we will get the length of the pasted text and see if this matches the
+            // the current text count, if not the same, this is not a paste but text typed
+            // by the user (1 char) and should not send a paste event. if however the paste
+            // is one character, the paste will show on every text update until activity/fragment
+            // is killed or a larger cut/paste is done.
+            // TODO think about a way to check the actual text instead of just the count
             val pasteCount = pastedText.length
             if (sequence.toString().contains(pastedText) && (pasteCount == count)) {
                 // The change is likely due to a paste operation
