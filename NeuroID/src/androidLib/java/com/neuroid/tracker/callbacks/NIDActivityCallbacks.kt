@@ -234,6 +234,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
 
     override fun onActivityDestroyed(activity: Activity) {
 //        NIDLog.d("NID--Activity", "Activity - Destroyed")
+        NeuroID.NID_TEXT_WATCHERS.clear()
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
         val activityDestroyed = activity::class.java.name

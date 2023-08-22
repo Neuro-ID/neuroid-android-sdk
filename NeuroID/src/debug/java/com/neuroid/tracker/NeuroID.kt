@@ -83,6 +83,8 @@ class NeuroID private constructor(
 
         private var singleton: NeuroID? = null
 
+        public var NID_TEXT_WATCHERS = mutableListOf<String>();
+
         @JvmStatic
         fun setNeuroIdInstance(neuroId: NeuroID) {
             if (singleton == null) {
