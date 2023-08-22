@@ -90,11 +90,14 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
      * Option for customers to force start with Activity
      */
     public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            activityOrFragment = "activity",
-            parent = activity::class.java.simpleName
-        )
+        if (!NeuroID.ACTIVE_REGISTERED_TARGETS.contains(activity::class.java.simpleName)) {
+            NeuroID.ACTIVE_REGISTERED_TARGETS.add(activity::class.java.simpleName)
+            registerTargetFromScreen(
+                activity,
+                activityOrFragment = "activity",
+                parent = activity::class.java.simpleName
+            )
+        }
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -119,8 +122,10 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val hasFragments = fragManager?.hasFragments() ?: false
 
         if (existActivity) {
-            if (hasFragments.not() && cameBackFromBehind.not()) {
+            if (!NeuroID.ACTIVE_REGISTERED_TARGETS.contains(currentActivityName)
+                    && hasFragments.not() && cameBackFromBehind.not()) {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & fragments")
+                NeuroID.ACTIVE_REGISTERED_TARGETS.contains(currentActivityName)
                 registerTargetFromScreen(
                     activity,
                     registerListeners = false,
@@ -133,8 +138,9 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
             }
         } else {
             listActivities.add(currentActivityName)
-            if (hasFragments.not()) {
+            if (hasFragments.not() && !NeuroID.ACTIVE_REGISTERED_TARGETS.contains(currentActivityName)) {
 //                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & fragment")
+                NeuroID.ACTIVE_REGISTERED_TARGETS.add(currentActivityName)
                 registerTargetFromScreen(
                     activity,
                     wasChanged.not(),

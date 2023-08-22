@@ -80,7 +80,9 @@ class NIDFragmentCallbacks(
 
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
-        if (NeuroID.getInstance()?.getForceStart() == true) {
+        if (!NeuroID.ACTIVE_REGISTERED_TARGETS.contains(f::class.java.simpleName)
+                && NeuroID.getInstance()?.getForceStart() == true) {
+            NeuroID.ACTIVE_REGISTERED_TARGETS.add(f::class.java.simpleName)
             registerTargetFromScreen(
                 f.requireActivity(),
                 true,
@@ -95,12 +97,15 @@ class NIDFragmentCallbacks(
 //                "NID-Activity",
 //                "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
 //            )
-            registerTargetFromScreen(
-                f.requireActivity(),
-                _isChangeOrientation.not(),
-                activityOrFragment = "fragment",
-                parent = f::class.java.simpleName
-            )
+            if (!NeuroID.ACTIVE_REGISTERED_TARGETS.contains(f::class.java.simpleName)) {
+                NeuroID.ACTIVE_REGISTERED_TARGETS.add(f::class.java.simpleName)
+                registerTargetFromScreen(
+                    f.requireActivity(),
+                    _isChangeOrientation.not(),
+                    activityOrFragment = "fragment",
+                    parent = f::class.java.simpleName
+                )
+            }
             _isChangeOrientation = false
         } else {
 //            NIDLog.d("NID-Activity", "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")

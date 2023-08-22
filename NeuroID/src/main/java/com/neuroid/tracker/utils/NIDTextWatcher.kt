@@ -1,5 +1,6 @@
 package com.neuroid.tracker.utils
 
+import android.R
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.Editable
@@ -43,7 +44,8 @@ class NIDTextWatcher(
         val clipData = clipboard?.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             val pastedText = clipData.getItemAt(0).text
-            if (sequence.toString().contains(pastedText)) {
+            val pasteCount = pastedText.length
+            if (sequence.toString().contains(pastedText) && (pasteCount == count)) {
                 // The change is likely due to a paste operation
 
                 val ts = System.currentTimeMillis()
