@@ -103,10 +103,33 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
 
     override fun onActivityPostStarted(activity: Activity) {
         super.onActivityPostStarted(activity)
-        NIDLog.d("NID--Activity", "Activity - POST Started")
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+        //No op
+        // SHOULD BE WINDOW FOCUS?
+        NIDLog.d("NID--Activity", "Activity - Resumed")
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+        val metadataObj = JSONObject()
+        metadataObj.put("component", "activity")
+        metadataObj.put("lifecycle", "resumed")
+        metadataObj.put("className", "${activity::class.java.simpleName}")
+        val attrJSON = JSONArray().put(metadataObj)
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = WINDOW_FOCUS,
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData,
+                    attrs = attrJSON
+                )
+            )
 
         var cameBackFromBehind = false
-        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
         if (activitiesStarted == 0) {
             cameBackFromBehind = true
         }
@@ -148,31 +171,6 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
             wasChanged = false
             registerWindowListeners(activity)
         }
-    }
-
-    override fun onActivityResumed(activity: Activity) {
-        //No op
-        // SHOULD BE WINDOW FOCUS?
-//        NIDLog.d("NID--Activity", "Activity - Resumed")
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "resumed")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = WINDOW_FOCUS,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
     }
 
     override fun onActivityPaused(activity: Activity) {
