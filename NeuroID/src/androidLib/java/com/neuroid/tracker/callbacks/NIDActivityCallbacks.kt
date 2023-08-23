@@ -141,36 +141,16 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
         val hasFragments = fragManager?.hasFragments() ?: false
 
-        if (existActivity) {
-            if (hasFragments.not() && cameBackFromBehind.not()) {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & fragments")
-                registerTargetFromScreen(
-                    activity,
-                    registerListeners = false,
-                    activityOrFragment = "activity",
-                    parent = currentActivityName
-                )
-            } else {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & no fragment")
-                NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
-            }
-        } else {
-            listActivities.add(currentActivityName)
-            if (hasFragments.not()) {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & fragment")
-                registerTargetFromScreen(
-                    activity,
-                    wasChanged.not(),
-                    activityOrFragment = "activity",
-                    parent = currentActivityName
-                )
-            } else {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & no fragment")
-                NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
-            }
-            wasChanged = false
-            registerWindowListeners(activity)
-        }
+        registerTargetFromScreen(
+            activity,
+            registerTarget = true,
+            registerListeners = true,
+            activityOrFragment = "activity",
+            parent = currentActivityName
+        )
+
+        registerWindowListeners(activity)
+
     }
 
     override fun onActivityPaused(activity: Activity) {
