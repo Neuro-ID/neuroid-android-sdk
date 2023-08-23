@@ -1,6 +1,7 @@
 package com.neuroid.tracker.events
 
 import android.os.Build
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
@@ -268,17 +269,15 @@ fun registerComponent(
         )
 }
 
+// list of text watchers in the entire app
+val textWatchers = mutableListOf<TextWatcher>()
+
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
     val simpleClassName = view.javaClass.simpleName
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-    // If we have already added the listener here.
-    if (NeuroID.NID_TEXT_WATCHERS.contains(view.getIdOrTag())){
-        return
-    }
-    NeuroID.NID_TEXT_WATCHERS.add(view.getIdOrTag())
     // EditText is a parent class to multiple components
     if (view is EditText) {
         NIDLog.d(
@@ -287,7 +286,15 @@ private fun registerListeners(view: View) {
         )
         // add Text Change watcher
         val textWatcher = NIDTextWatcher(idName, simpleClassName)
+        // first we have to clear the text watcher that is currently in the EditText
+        for(watcher in textWatchers) {
+            view.removeTextChangedListener(watcher)
+        }
+        // we add the new one in there
         view.addTextChangedListener(textWatcher)
+        // we add the new one to the list of existing text watchers so we can remove it later when
+        // it is re-registered
+        textWatchers.add(textWatcher)
 
         // add original action menu watcher
         val actionCallback = view.customSelectionActionModeCallback
