@@ -104,10 +104,10 @@ class NeuroID private constructor(
         }
 
         this.validateUserId(userId)
+        userID = userId
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-
         application?.let {
             NIDSharedPrefsDefaults(it).setUserId(userId)
         }
