@@ -6,13 +6,7 @@ import android.content.Context
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.CLOSE_SESSION
-import com.neuroid.tracker.events.CREATE_SESSION
-import com.neuroid.tracker.events.FORM_SUBMIT
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
-import com.neuroid.tracker.events.SET_USER_ID
-import com.neuroid.tracker.events.identifyView
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
@@ -131,6 +125,7 @@ class NeuroID private constructor(
 
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        createMobileMetadata()
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -317,7 +312,21 @@ class NeuroID private constructor(
     fun getApplicationContext(): Context? {
         return this.application?.applicationContext
     }
-
+    private fun createMobileMetadata() {
+        timestamp = System.currentTimeMillis()
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        getDataStoreInstance().saveEvent(
+            NIDEventModel(
+                type = MOBILE_METADATA_ANDROID,
+                ts = timestamp,
+                gyro = gyroData,
+                accel = accelData,
+                sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                metadata = metaData?.toJson(),
+            ));
+    }
     private suspend fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {
@@ -356,6 +365,7 @@ class NeuroID private constructor(
                     metadata = metaData?.toJson()
                 )
             )
+            createMobileMetadata()
         }
     }
 

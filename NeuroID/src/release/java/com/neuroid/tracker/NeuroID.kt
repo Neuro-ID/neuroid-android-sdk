@@ -127,6 +127,10 @@ class NeuroID private constructor(
         )
     }
 
+    fun setScreenName(screen: String) {
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        createMobileMetadata()
+    }
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
@@ -307,6 +311,21 @@ class NeuroID private constructor(
 
     fun isStopped() = NIDJobServiceManager.isStopped()
 
+    private fun createMobileMetadata() {
+        timestamp = System.currentTimeMillis()
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        getDataStoreInstance().saveEvent(
+            NIDEventModel(
+                type = MOBILE_METADATA_ANDROID,
+                ts = timestamp,
+                gyro = gyroData,
+                accel = accelData,
+                sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                metadata = metaData?.toJson(),
+            ));
+    }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(view, activity.getGUID(), true, addListener)
     }
@@ -356,6 +375,7 @@ class NeuroID private constructor(
                     metadata = metaData?.toJson()
                 )
             )
+            createMobileMetadata()
         }
     }
 
