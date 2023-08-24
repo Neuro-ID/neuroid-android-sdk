@@ -81,6 +81,7 @@ class NeuroIdUITest {
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
+        NeuroID.getInstance()?.start()
         getDataStoreInstance().clearEvents()
         delay(500)
         NeuroID.getInstance()?.setUserID("UUID1234")

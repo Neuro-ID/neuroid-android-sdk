@@ -39,10 +39,7 @@ class NIDSharedPrefsDefaults(
     }
 
     fun resetClientId(): String {
-        val cid = UUID.randomUUID().toString()
-        putString(NID_CID, cid)
-
-        return cid
+        return this.getClientId()
     }
 
     fun setUserId(userId: String) {
