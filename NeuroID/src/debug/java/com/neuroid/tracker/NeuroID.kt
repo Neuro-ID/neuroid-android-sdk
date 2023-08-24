@@ -264,10 +264,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
-
-
             saveIntegrationHealthEvents()
         }
         application?.let {
@@ -277,8 +274,11 @@ class NeuroID private constructor(
 
     fun stop() {
         this.isSDKStarted = false
-        NIDJobServiceManager.stopJob()
-        saveIntegrationHealthEvents()
+        CoroutineScope(Dispatchers.IO).launch {
+            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
+        }
     }
 
     fun closeSession() {
