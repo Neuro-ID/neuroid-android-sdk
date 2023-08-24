@@ -98,13 +98,13 @@ class NeuroID private constructor(
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            throw new IllegalArgumentException ("Invalid UserId");
+            throw IllegalArgumentException ("Invalid UserId");
         }
     }
 
     fun setUserID(userId: String) {
         if (!this.isSDKStarted) {
-            throw new IllegalArgumentException ("NeuroID SDK is not started");
+            throw IllegalArgumentException ("NeuroID SDK is not started");
         }
 
         this.validateUserId(userId)
