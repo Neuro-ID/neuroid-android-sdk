@@ -306,35 +306,39 @@ class NeuroID private constructor(
         timestamp = System.currentTimeMillis()
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-        getDataStoreInstance().saveEvent(
-            NIDEventModel(
-                type = MOBILE_METADATA_ANDROID,
-                ts = timestamp,
-                gyro = gyroData,
-                accel = accelData,
-                sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                metadata = metaData?.toJson(),
-                f = clientKey,
-                sid = sessionID,
-                lsid = "null",
-                cid = clientID,
-                did = sharedDefaults.getDeviceId(),
-                iid = sharedDefaults.getIntermediateId(),
-                loc = sharedDefaults.getLocale(),
-                ua = sharedDefaults.getUserAgent(),
-                tzo = sharedDefaults.getTimeZone(),
-                lng = sharedDefaults.getLanguage(),
-                ce = true,
-                je = true,
-                ol = true,
-                p = sharedDefaults.getPlatform(),
-                jsl = listOf(),
-                dnt = false,
-                url = "",
-                ns = "nid",
-                jsv = NIDVersion.getSDKVersion(),
-            ));
+        application?.let {
+            val sharedDefaults = NIDSharedPrefsDefaults(it)
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = MOBILE_METADATA_ANDROID,
+                    ts = timestamp,
+                    gyro = gyroData,
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData?.toJson(),
+                    f = clientKey,
+                    sid = sessionID,
+                    lsid = "null",
+                    cid = clientID,
+                    did = sharedDefaults.getDeviceId(),
+                    iid = sharedDefaults.getIntermediateId(),
+                    loc = sharedDefaults.getLocale(),
+                    ua = sharedDefaults.getUserAgent(),
+                    tzo = sharedDefaults.getTimeZone(),
+                    lng = sharedDefaults.getLanguage(),
+                    ce = true,
+                    je = true,
+                    ol = true,
+                    p = sharedDefaults.getPlatform(),
+                    jsl = listOf(),
+                    dnt = false,
+                    url = "",
+                    ns = "nid",
+                    jsv = NIDVersion.getSDKVersion(),
+                )
+            );
+        }
     }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(view, activity.getGUID(), true, addListener)
