@@ -34,6 +34,7 @@ class NeuroID private constructor(
     internal var application: Application?,
     private var clientKey: String
 ) {
+    private var isSDKStarted = false
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
@@ -94,8 +95,21 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
+    internal fun validateUserId(userId: String) {
+        val regex = "^[a-zA-Z0-9-_.]{3,100}$"
+
+        if (!userId.matches(regex.toRegex())) {
+            throw IllegalArgumentException("Invalid UserId");
+        }
+    }
+
     fun setUserID(userId: String) {
-        userID = userId
+        if (!this.isSDKStarted) {
+            throw IllegalArgumentException("NeuroID SDK is not started");
+        }
+
+        this.validateUserId(userId)
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -248,6 +262,7 @@ class NeuroID private constructor(
     }
 
     fun start() {
+        this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
@@ -265,6 +280,7 @@ class NeuroID private constructor(
     }
 
     fun stop() {
+        this.isSDKStarted = false
         NIDJobServiceManager.stopJob()
         saveIntegrationHealthEvents()
     }
