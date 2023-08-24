@@ -103,57 +103,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
 
     override fun onActivityPostStarted(activity: Activity) {
         super.onActivityPostStarted(activity)
-        NIDLog.d("NID--Activity", "Activity - POST Started")
-
-        var cameBackFromBehind = false
-        NIDLog.d("Neuro ID", "NIDDebug onActivityStarted");
-        if (activitiesStarted == 0) {
-            cameBackFromBehind = true
-        }
-        activitiesStarted++
-
-        val currentActivityName = activity::class.java.name
-        val existActivity = listActivities.contains(currentActivityName)
-
-        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-        val hasFragments = fragManager?.hasFragments() ?: false
-
-        if (existActivity) {
-            if (hasFragments.not() && cameBackFromBehind.not()) {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & fragments")
-                registerTargetFromScreen(
-                    activity,
-                    registerListeners = false,
-                    activityOrFragment = "activity",
-                    parent = currentActivityName
-                )
-            } else {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - Exist & no fragment")
-                NIDLog.d("Neuro ID", "NIDDebug Activity has no fragments");
-            }
-        } else {
-            listActivities.add(currentActivityName)
-            if (hasFragments.not()) {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & fragment")
-                registerTargetFromScreen(
-                    activity,
-                    wasChanged.not(),
-                    activityOrFragment = "activity",
-                    parent = currentActivityName
-                )
-            } else {
-//                NIDLog.d("NID--Activity", "Activity - POST Started - NOT Exist & no fragment")
-                NIDLog.d("Neuro ID", "NIDDebug Activity does not exist, no fragments");
-            }
-            wasChanged = false
-            registerWindowListeners(activity)
-        }
     }
 
     override fun onActivityResumed(activity: Activity) {
         //No op
         // SHOULD BE WINDOW FOCUS?
-//        NIDLog.d("NID--Activity", "Activity - Resumed")
+        NIDLog.d("NID--Activity", "Activity - Resumed")
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -173,6 +128,29 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
                     attrs = attrJSON
                 )
             )
+
+        var cameBackFromBehind = false
+        if (activitiesStarted == 0) {
+            cameBackFromBehind = true
+        }
+        activitiesStarted++
+
+        val currentActivityName = activity::class.java.name
+        val existActivity = listActivities.contains(currentActivityName)
+
+        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+        val hasFragments = fragManager?.hasFragments() ?: false
+
+        registerTargetFromScreen(
+            activity,
+            registerTarget = true,
+            registerListeners = true,
+            activityOrFragment = "activity",
+            parent = currentActivityName
+        )
+
+        registerWindowListeners(activity)
+
     }
 
     override fun onActivityPaused(activity: Activity) {
