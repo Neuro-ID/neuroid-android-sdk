@@ -13,6 +13,7 @@ import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
@@ -21,6 +22,7 @@ import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.getGUID
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -264,10 +266,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
-
-
             saveIntegrationHealthEvents()
         }
         application?.let {
@@ -277,8 +276,11 @@ class NeuroID private constructor(
 
     fun stop() {
         this.isSDKStarted = false
-        NIDJobServiceManager.stopJob()
-        saveIntegrationHealthEvents()
+        CoroutineScope(Dispatchers.IO).launch {
+            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
+        }
     }
 
     fun closeSession() {
