@@ -51,7 +51,7 @@ jobs:
             git commit -m "updating libraries"
             git push
 
-       - name: Push SDK on Sandbox Project
+      - name: Push SDK on Sandbox Project
          uses: dmnemec/copy_file_to_another_repo_action@main
          env:
            API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
