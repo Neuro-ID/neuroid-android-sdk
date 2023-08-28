@@ -52,17 +52,17 @@ jobs:
             git push
 
       - name: Push SDK on Sandbox Project
-         uses: dmnemec/copy_file_to_another_repo_action@main
-         env:
-           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-         with:
-           source_file: 'NeuroID/build/outputs/aar/androidLib/'
-           destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-           destination_folder: 'app/libs/'
-           user_email: 'developer@neuro-id.com'
-           user_name: 'neuroid-developer'
-           destination_branch: 'master'
-           commit_message: ${{ github.event.head_commit.message }}
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: 'NeuroID/build/outputs/aar/androidLib/'
+          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
+          destination_folder: 'app/libs/'
+          user_email: 'developer@neuro-id.com'
+          user_name: 'neuroid-developer'
+          destination_branch: 'master'
+          commit_message: ${{ github.event.head_commit.message }}
 
       - name: Push SDK on ReactNative Project
         uses: dmnemec/copy_file_to_another_repo_action@main
