@@ -75,6 +75,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                     INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
                     FOCUS -> contextString = ""
                     BLUR -> contextString = ""
+                    MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
                     "CLICK" -> contextString = ""
                     REGISTER_TARGET -> contextString =
                         "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"

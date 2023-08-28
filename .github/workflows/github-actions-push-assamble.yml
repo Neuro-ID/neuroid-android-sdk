@@ -1,11 +1,10 @@
 name: Publishing NeuroID SDK (Staging)
 on:
-  push:
+  pull_request_target:
+    types:
+      - closed
     branches:
-      - develop
-    paths-ignore:
-      - version.properties
-      - app/libs
+      - master
 
 env:
   GIT_HASH: ${{github.sha}}
@@ -61,7 +60,7 @@ jobs:
           destination_folder: 'app/libs/'
           user_email: 'developer@neuro-id.com'
           user_name: 'neuroid-developer'
-          destination_branch: 'develop'
+          destination_branch: 'master'
           commit_message: ${{ github.event.head_commit.message }}
 
       - name: Push SDK on ReactNative Project
@@ -74,5 +73,5 @@ jobs:
           destination_folder: 'android/libs/'
           user_email: 'developer@neuro-id.com'
           user_name: 'neuroid-developer'
-          destination_branch: 'develop'
+          destination_branch: 'main'
           commit_message: ${{ github.event.head_commit.message }}

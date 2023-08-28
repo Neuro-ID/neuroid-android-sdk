@@ -6,12 +6,7 @@ import android.content.Context
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.CLOSE_SESSION
-import com.neuroid.tracker.events.CREATE_SESSION
-import com.neuroid.tracker.events.FORM_SUBMIT
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
-import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.events.*
 import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
@@ -34,6 +29,7 @@ class NeuroID private constructor(
     internal var application: Application?,
     private var clientKey: String
 ) {
+    private var isSDKStarted = false
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
@@ -42,7 +38,6 @@ class NeuroID private constructor(
     private var timestamp: Long = 0L
 
     private var forceStart: Boolean? = null
-
 
     private var metaData: NIDMetaData? = null
 
@@ -94,7 +89,21 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
+    internal fun validateUserId(userId: String) {
+        val regex = "^[a-zA-Z0-9-_.]{3,100}$"
+
+        if (!userId.matches(regex.toRegex())) {
+            throw IllegalArgumentException ("Invalid UserId");
+        }
+    }
+
     fun setUserID(userId: String) {
+        if (!this.isSDKStarted) {
+            throw IllegalArgumentException ("NeuroID SDK is not started");
+        }
+
+        this.validateUserId(userId)
+
         userID = userId
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -117,6 +126,7 @@ class NeuroID private constructor(
 
     fun setScreenName(screen: String) {
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        createMobileMetadata()
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -248,15 +258,13 @@ class NeuroID private constructor(
     }
 
     fun start() {
+        this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            getDataStoreInstance().clearEvents() // Clean Events ?
             createSession()
-
-
             saveIntegrationHealthEvents()
         }
         application?.let {
@@ -265,8 +273,12 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        NIDJobServiceManager.stopJob()
-        saveIntegrationHealthEvents()
+        this.isSDKStarted = false
+        CoroutineScope(Dispatchers.IO).launch {
+            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
+        }
     }
 
     fun closeSession() {
@@ -291,6 +303,44 @@ class NeuroID private constructor(
 
     fun isStopped() = NIDJobServiceManager.isStopped()
 
+    private fun createMobileMetadata() {
+        timestamp = System.currentTimeMillis()
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        application?.let {
+            val sharedDefaults = NIDSharedPrefsDefaults(it)
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = MOBILE_METADATA_ANDROID,
+                    ts = timestamp,
+                    gyro = gyroData,
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData?.toJson(),
+                    f = clientKey,
+                    sid = sessionID,
+                    lsid = "null",
+                    cid = clientID,
+                    did = sharedDefaults.getDeviceId(),
+                    iid = sharedDefaults.getIntermediateId(),
+                    loc = sharedDefaults.getLocale(),
+                    ua = sharedDefaults.getUserAgent(),
+                    tzo = sharedDefaults.getTimeZone(),
+                    lng = sharedDefaults.getLanguage(),
+                    ce = true,
+                    je = true,
+                    ol = true,
+                    p = sharedDefaults.getPlatform(),
+                    jsl = listOf(),
+                    dnt = false,
+                    url = "",
+                    ns = "nid",
+                    jsv = NIDVersion.getSDKVersion(),
+                )
+            );
+        }
+    }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(view, activity.getGUID(), true, addListener)
     }
@@ -340,6 +390,7 @@ class NeuroID private constructor(
                     metadata = metaData?.toJson()
                 )
             )
+            createMobileMetadata()
         }
     }
 

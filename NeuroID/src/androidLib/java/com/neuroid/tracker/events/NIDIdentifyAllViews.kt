@@ -1,6 +1,7 @@
 package com.neuroid.tracker.events
 
 import android.os.Build
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.OnHierarchyChangeListener
@@ -8,6 +9,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -267,6 +269,9 @@ fun registerComponent(
         )
 }
 
+// list of text watchers in the entire app
+val textWatchers = mutableListOf<TextWatcher>()
+
 private fun registerListeners(view: View) {
     val idName = view.getIdOrTag()
     val simpleClassName = view.javaClass.simpleName
@@ -281,7 +286,15 @@ private fun registerListeners(view: View) {
         )
         // add Text Change watcher
         val textWatcher = NIDTextWatcher(idName, simpleClassName)
+        // first we have to clear the text watcher that is currently in the EditText
+        for(watcher in textWatchers) {
+            view.removeTextChangedListener(watcher)
+        }
+        // we add the new one in there
         view.addTextChangedListener(textWatcher)
+        // we add the new one to the list of existing text watchers so we can remove it later when
+        // it is re-registered
+        textWatchers.add(textWatcher)
 
         // add original action menu watcher
         val actionCallback = view.customSelectionActionModeCallback
