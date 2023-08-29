@@ -11,13 +11,13 @@
         android:label="@string/nid_app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NeuroIdAndroidExample"
+        android:theme="@style/Theme.NeuroIdAndroidSdk"
         tools:ignore="DataExtractionRules,UnusedAttribute">
 
         <activity
             android:name=".activities.NIDPayloadJsonActivity"
             android:exported="false"
-            android:theme="@style/Theme.NeuroIdAndroidExample" />
+            android:theme="@style/Theme.NeuroIdAndroidSdk" />
     </application>
 
 </manifest>

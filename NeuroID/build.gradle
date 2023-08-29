@@ -89,7 +89,7 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-process:2.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
-    reactNativeLibImplementation("com.facebook.react:react-native:+")
+    reactNativeLibImplementation("com.facebook.react:react-native:0.71.0-rc.0")
 
 }
 
