@@ -45,17 +45,12 @@ jobs:
             git config --global user.name "neuroid-developer"
             git tag -a v${{env.GITHUB_SDK_VERSION}} -m "Neuro-ID Android SDK Version: ${{env.GITHUB_SDK_VERSION}}"
             git push
+            echo "TAG_NAME=v${{env.GITHUB_SDK_VERSION}}" >> $GITHUB_ENV
 
       - name: Create Release ✅
-        id: create_release
-        uses: actions/create-release@v1
+        run: gh release create ${{ env.TAG_NAME }} --generate-notes --title "${{ env.TAG_NAME }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{env.GITHUB_SDK_VERSION}}
-          release_name: v${{env.GITHUB_SDK_VERSION}}
-          draft: false
-          prerelease: false
 
       - name: Upload Native AAR 🗳
         uses: actions/upload-release-asset@v1

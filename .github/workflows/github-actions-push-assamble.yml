@@ -10,7 +10,8 @@ env:
   GIT_HASH: ${{github.sha}}
 jobs:
   publish:
-    name: Release NeuroID SDK (Staging)
+    if: github.event.pull_request.merged && startsWith(github.head_ref, 'releases/') != true
+    name: Release NeuroID SDK
     runs-on: ubuntu-latest
 
     steps:

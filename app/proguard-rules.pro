@@ -31,6 +31,7 @@
 -dontnote com.google.vending.licensing.ILicensingService
 -dontnote com.google.android.vending.licensing.ILicensingService
 
+-keep class kotlinx.coroutines.** { *; }
 -keep class com.neuroid.tracker.** { *; }
 
 -assumenosideeffects class android.util.Log {
