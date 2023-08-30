@@ -3,7 +3,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
+        jcenter() // Warning: this repository has shut down and is read-only. Must be refactored to point to MavenCentral
     }
 }
 rootProject.name = "NeuroIdAndroidSdk"
