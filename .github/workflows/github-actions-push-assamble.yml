@@ -64,7 +64,7 @@ jobs:
              https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox/dispatches \
              -d '{"event_type":"publish-dev","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.head_commit.message }}"}}'
 
-      - name: Run iOS SwiftUI Sandbox Dev Deployment
+      - name: Run Android Sandbox Layout Dev Deployment
         run: |
           curl \
             -X POST \
