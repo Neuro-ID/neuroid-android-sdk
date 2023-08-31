@@ -43,43 +43,49 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Update Internal Library
+      - name: Get last version from tags
         run: |
-          cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar app/libs
-          cp NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-debug.aar app/libs
-          cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar app/libs
-          cp NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-debug.aar app/libs
-          git config --global user.email "developer@neuro-id.com"
-          git config --global user.name "neuroid-developer"
-          git add app/libs
-          git commit -m "updating libraries"
-          git push
+          git fetch --prune --unshallow
+          echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
-      - name: Push SDK on Sandbox Project (Master)
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/androidLib/'
-          destination_repo: 'Neuro-ID/neuroid-android-sdk-sandbox'
-          destination_folder: 'app/libs/'
-          user_email: 'developer@neuro-id.com'
-          user_name: 'neuroid-developer'
-          destination_branch: 'master'
-          commit_message: ${{ github.event.head_commit.message }}
+      - name: Update new commit to have "latest" Tag
+        run: |
+          git config --global user.email developer@neuro-id.com
+          git config --global user.name neuroid-developer
+          set +e
+          git push origin :latest
+          git tag -d latest
+          git tag latest
+          git push origin latest
+          set -e
 
-      - name: Push SDK on ReactNative Project (Main)
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        with:
-          source_file: 'NeuroID/build/outputs/aar/reactNativeLib/'
-          destination_repo: 'Neuro-ID/neuroid-reactnative-sdk'
-          destination_folder: 'android/libs/'
-          user_email: 'developer@neuro-id.com'
-          user_name: 'neuroid-developer'
-          destination_branch: 'main'
-          commit_message: ${{ github.event.head_commit.message }}
+      - name: Run Android Sandbox Prod Deployment
+        run: |
+          curl \
+             -X POST \
+             -H "Accept: application/vnd.github.v3+json" \
+             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+             https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox/dispatches \
+             -d '{"event_type":"publish-prod","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.head_commit.message }}"}}'
+
+      - name: Run Android Layout Sandbox Prod Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
+            -d '{"event_type":"publish-prod","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.head_commit.message }}"}}'
+
+      - name: Run ReactNative Sandbox Prod Deployment
+        run: |
+          curl \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
+              -d '{"event_type":"publish-prod","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.commit.message }}"}}'
+
 
       - name: Send Slack Notification on Failure
         if: ${{ failure() }}
