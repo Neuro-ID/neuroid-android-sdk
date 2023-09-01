@@ -1,3 +1,8 @@
+# ******************************************************************
+# This workflow triggers Prod Android and React Native Sandbox Apps
+# to update their NeuroID Android SDK versions to the latest release
+# on https://jitpack.io/#neuro-id/neuroid-android-sdk
+# ******************************************************************
 name: Deploy Prod Sandbox Apps
 on:
   pull_request_target:

@@ -1,3 +1,8 @@
+# ******************************************************************
+# This workflow triggers Dev Android and React Native Sandbox Apps
+# to update their NeuroID Android SDK versions to the latest master branch
+# merge (master-SNAPSHOT) on https://jitpack.io/#neuro-id/neuroid-android-sdk
+# ******************************************************************
 name: Deploy Dev Sandbox Apps
 on:
   pull_request_target:
