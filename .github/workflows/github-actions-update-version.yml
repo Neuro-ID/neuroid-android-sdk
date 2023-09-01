@@ -17,7 +17,7 @@
 #   This will create a PR with the updated version in version.properties file.
 # ******************************************************************
 
-name: Pre-Release Version PR
+name: Manual Trigger to Release Android SDK
 
 on:
   workflow_dispatch:

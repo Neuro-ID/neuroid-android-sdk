@@ -1,4 +1,4 @@
-name: Publishing NeuroID SDK (Staging)
+name: Deploy Dev Sandbox Apps
 on:
   pull_request_target:
     types:
@@ -9,9 +9,9 @@ on:
 env:
   GIT_HASH: ${{github.sha}}
 jobs:
-  publish:
+  deployDevSandboxApps:
     if: github.event.pull_request.merged && startsWith(github.head_ref, 'releases/') != true
-    name: Release NeuroID SDK
+    name: Deploy Dev Sandbox Apps
     runs-on: ubuntu-latest
 
     steps:
@@ -39,47 +39,46 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Get last version from tags
-        run: |
-          git fetch --prune --unshallow
-          echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
-
-      - name: Update new commit to have "Development" Tag
-        run: |
-          git config --global user.email developer@neuro-id.com
-          git config --global user.name neuroid-developer
-          set +e
-          git push origin :development
-          git tag -d development
-          git tag development
-          git push origin development
-          set -e
-
-      - name: Run Android Sandbox Dev Deployment
+      - name: Trigger Android Sandbox Dev Deployment
         run: |
           curl \
              -X POST \
              -H "Accept: application/vnd.github.v3+json" \
              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
              https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox/dispatches \
-             -d '{"event_type":"publish-dev","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.head_commit.message }}"}}'
+             -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
 
-      - name: Run Android Sandbox Layout Dev Deployment
+      - name: Trigger Android Sandbox Layout Dev Deployment
         run: |
           curl \
             -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
             https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
-            -d '{"event_type":"publish-dev","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.head_commit.message }}"}}'
+            -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
 
-      - name: Run ReactNative Sandbox Dev Deployment
-        run: |
-          curl \
-              -X POST \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
-              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
-              -d '{"event_type":"publish-dev","client_payload":{"version":"android-${{env.VERSION}}", "message": "${{ github.event.commit.message }}"}}'
+#       TODO uncomment after React Native Dev Sandbox app is published to Google Console
+#      - name: Trigger ReactNative Sandbox Dev Deployment
+#        run: |
+#          curl \
+#              -X POST \
+#              -H "Accept: application/vnd.github.v3+json" \
+#              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+#              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
+#              -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
 
-      
+  notifications:
+    runs-on: ubuntu-latest
+    needs: deployDevSandboxApps
+    steps:
+      - name: Send Slack Notification on Failure
+        if: ${{ needs.deployDevSandboxApps.result != 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: mobile-sdk-tech-team
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: "Failed to update Dev Android and ReactNative Sandbox apps on master branch update"
+          SLACK_TITLE: Failed Dev Android and ReactNative Sandbox Update
+          SLACK_USERNAME: rtBot
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

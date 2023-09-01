@@ -1,4 +1,10 @@
-name: Release production SDK
+# ******************************************************************
+# This workflow creates a Github release with the version in
+# the version.properties file. The updated version is then available
+# in https://jitpack.io/#neuro-id/neuroid-android-sdk
+# ******************************************************************
+
+name: Auto Release Android SDK
 on:
   push:
     branches:
@@ -39,12 +45,10 @@ jobs:
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Create TAG
+      - name: Create TAG Name
         run: |
             git config --global user.email "developer@neuro-id.com"
             git config --global user.name "neuroid-developer"
-            git tag -a v${{env.GITHUB_SDK_VERSION}} -m "Neuro-ID Android SDK Version: ${{env.GITHUB_SDK_VERSION}}"
-            git push
             echo "TAG_NAME=v${{env.GITHUB_SDK_VERSION}}" >> $GITHUB_ENV
 
       - name: Create Release ✅
@@ -58,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-release.aar
+          asset_path: NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-v${{ env.GITHUB_SDK_VERSION}}}-release.aar
           asset_name: neuro-id-android-sdk-androidLib-release
           asset_content_type: application/aar
 
@@ -68,6 +72,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-release.aar
+          asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-v${{ env.GITHUB_SDK_VERSION}}}-release.aar
           asset_name: neuro-id-android-sdk-reactNativeLib-release
           asset_content_type: application/aar
+
+  notifications:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - name: Send Slack Notification on Success
+        if: ${{ needs.publish.result == 'success' }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: mobile-sdk-tech-team
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: "Successful Android SDK Deployment"
+          SLACK_TITLE: Successful Android SDK Deployment
+          SLACK_USERNAME: rtBot
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
