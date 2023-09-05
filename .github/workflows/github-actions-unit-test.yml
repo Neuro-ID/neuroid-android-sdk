@@ -1,4 +1,4 @@
-name: Unit Test
+name: Unit Test Sample App
 on:
   pull_request:
     branches:
@@ -38,6 +38,10 @@ jobs:
           with:
             java-version: 11
 
+        # Execute unit test neuroid lib
+        - name: Unit Test NeuroId
+          run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
+
         # Execute unit tests
         - name: Unit Test
           uses: ReactiveCircus/android-emulator-runner@v2.24.0
@@ -47,4 +51,3 @@ jobs:
               emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
               disable-animations: false
               script: ./gradlew :app:connectedandroidLibDebugAndroidTest
-
