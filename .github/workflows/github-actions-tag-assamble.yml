@@ -51,7 +51,7 @@ jobs:
             git config --global user.name "neuroid-developer"
             echo "TAG_NAME=v${{env.GITHUB_SDK_VERSION}}" >> $GITHUB_ENV
 
-      - name: Create Release ✅
+      - name: Create Release ✅ and upload assets
         run: |
           gh release create ${{ env.TAG_NAME }} \
           NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release  \
