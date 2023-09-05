@@ -52,29 +52,13 @@ jobs:
             echo "TAG_NAME=v${{env.GITHUB_SDK_VERSION}}" >> $GITHUB_ENV
 
       - name: Create Release ✅
-        run: gh release create ${{ env.TAG_NAME }} --generate-notes --title "${{ env.TAG_NAME }}"
+        run: |
+          gh release create ${{ env.TAG_NAME }} \
+          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release  \
+          NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release \
+          --generate-notes --title "${{ env.TAG_NAME }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Native AAR 🗳
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-v${{ env.GITHUB_SDK_VERSION}}}-release.aar
-          asset_name: neuro-id-android-sdk-androidLib-release
-          asset_content_type: application/aar
-
-      - name: Upload React Native AAR 🗳
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-v${{ env.GITHUB_SDK_VERSION}}}-release.aar
-          asset_name: neuro-id-android-sdk-reactNativeLib-release
-          asset_content_type: application/aar
 
   notifications:
     runs-on: ubuntu-latest
