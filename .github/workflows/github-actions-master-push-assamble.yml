@@ -85,7 +85,7 @@ jobs:
     needs: deploySandboxApps
     steps:
       - name: Send Slack Notification on Failure
-        if: ${{ needs.deploySandboxApps.result != 'success' }}
+        if: ${{ needs.deploySandboxApps.result == 'failure' }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: mobile-sdk-tech-team
