@@ -1,9 +1,10 @@
 package com.neuroid.tracker.utils
 
-import android.util.Log
-import com.neuroid.tracker.BuildConfig
-
 class NIDLogWrapper {
+    companion object {
+        var nidLogWrapper: NIDLogWrapper = NIDLogWrapper()
+    }
+
     fun d(tag: String, msg: String) {
         NIDLog.d(tag, msg)
     }

@@ -5,8 +5,8 @@ import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.service.NIDResponseCallBack
 import com.neuroid.tracker.service.NIDServiceTracker
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
@@ -15,7 +15,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import java.io.BufferedReader
 import java.io.IOException
@@ -58,13 +57,20 @@ class NIDSchema {
         validateSchema(json)
 
         val application = ApplicationProvider.getApplicationContext<Application>()
-        val typeResponse = NIDServiceTracker.sendEventToServer(
+        NIDServiceTracker.sendEventToServer(
             "key_live_suj4CX90v0un2k1ufGrbItT5",
-            NeuroID.ENDPOINT_PRODUCTION,
             application,
-            eventList
+            eventList,
+            object: NIDResponseCallBack {
+                override fun onSuccess(code: Int) {
+                    assertEquals(json, 200, code)
+                }
+
+                override fun onFailure(code: Int, message: String) {
+                    assert(false)
+                }
+            }
         )
-        assertEquals(json, 200, typeResponse.first)
     }
 
     private fun validateSchema(json: String) {

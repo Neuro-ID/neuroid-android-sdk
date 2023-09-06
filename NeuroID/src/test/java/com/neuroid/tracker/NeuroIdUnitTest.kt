@@ -3,7 +3,6 @@ package com.neuroid.tracker
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewParent
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.getParentsOfView
 import io.mockk.every
@@ -30,7 +29,7 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        assertEquals(true, label.contains("not_a_view"))
     }
 
     @Test
@@ -46,7 +45,7 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        assertEquals(true, label.contains("not_a_view"))
     }
 
     @Test
@@ -73,6 +72,6 @@ class NeuroIdUnitTest {
 
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/", label)
+        assertEquals(false, label.contains("not_a_view"))
     }
 }

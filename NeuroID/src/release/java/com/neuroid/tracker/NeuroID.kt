@@ -16,6 +16,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -74,7 +75,7 @@ class NeuroID private constructor(
     }
 
     companion object {
-        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
+        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c/"
 
         private var singleton: NeuroID? = null
 
@@ -275,7 +276,7 @@ class NeuroID private constructor(
     fun stop() {
         this.isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
-            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.sendEventsNow(NIDLogWrapper.nidLogWrapper,true)
             NIDJobServiceManager.stopJob()
             saveIntegrationHealthEvents()
         }
