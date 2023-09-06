@@ -54,6 +54,18 @@ object NIDJobServiceManager {
         }
     }
 
+    fun getServiceAPI() = NIDEventSender(Retrofit.Builder()
+            .baseUrl(endpoint)
+            .client(OkHttpClient.Builder()
+                .readTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .callTimeout(0, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(LoggerIntercepter(NIDLogWrapper.nidLogWrapper)).build())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NIDApiService::class.java))
+
     /**
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
      * set here to show what timeouts are available in the OKHttp client.
@@ -62,17 +74,7 @@ object NIDJobServiceManager {
         logger.d("Neuro ID", "sendEventsNow() start forceSendEvents $forceSendEvents userActive: $userActive")
         if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
             application?.let {
-                var eventSender = NIDEventSender(Retrofit.Builder()
-                    .baseUrl(endpoint)
-                    .client(OkHttpClient.Builder()
-                        .readTimeout(10, TimeUnit.SECONDS)
-                        .connectTimeout(10, TimeUnit.SECONDS)
-                        .callTimeout(0, TimeUnit.SECONDS)
-                        .writeTimeout(10, TimeUnit.SECONDS)
-                        .addInterceptor(LoggerIntercepter(NIDLogWrapper.nidLogWrapper)).build())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build()
-                    .create(NIDApiService::class.java))
+                var eventSender = getServiceAPI()
 
                 NIDServiceTracker.sendEventToServer(eventSender, clientKey, it, null, object: NIDResponseCallBack {
                     override fun onSuccess(code: Int) {

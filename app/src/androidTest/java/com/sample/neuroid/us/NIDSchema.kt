@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDResponseCallBack
 import com.neuroid.tracker.service.NIDServiceTracker
 import org.everit.json.schema.Validator
@@ -58,6 +59,7 @@ class NIDSchema {
 
         val application = ApplicationProvider.getApplicationContext<Application>()
         NIDServiceTracker.sendEventToServer(
+           NIDJobServiceManager.getServiceAPI(),
             "key_live_suj4CX90v0un2k1ufGrbItT5",
             application,
             eventList,
@@ -66,7 +68,7 @@ class NIDSchema {
                     assertEquals(json, 200, code)
                 }
 
-                override fun onFailure(code: Int, message: String) {
+                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
                     assert(false)
                 }
             }
