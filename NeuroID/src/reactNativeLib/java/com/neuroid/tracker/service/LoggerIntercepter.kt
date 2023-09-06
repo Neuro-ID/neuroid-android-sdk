@@ -13,13 +13,13 @@ class LoggerIntercepter(val logger: NIDLogWrapper): Interceptor {
      */
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        var response = chain.proceed(request)
-        if (response.code() != 200) {
-            logger.e("Neuro ID","http error, ${request.method()}, ${request.url()}, " +
-                    "${response.code()}, ${response.cacheResponse()?.body()}")
+        val response = chain.proceed(request)
+        if (response.code != 200) {
+            logger.e("Neuro ID","http error, ${request.method}, ${request.url}, " +
+                    "${response.code}, ${response.cacheResponse?.body}")
         } else {
-            logger.d("Neuro ID","http ok, ${request.method()}, ${request.url()}, " +
-                    "${response.code()}")
+            logger.d("Neuro ID","http ok, ${request.method}, ${request.url}, " +
+                    "${response.code}")
         }
         return response
     }
