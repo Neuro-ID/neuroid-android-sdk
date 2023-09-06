@@ -8,7 +8,7 @@ import okhttp3.RequestBody
  * https://medium.com/inloopx/okhttp-is-quietly-retrying-requests-is-your-api-ready-19489ef35ace
  * and here:
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
- * we retryrequests below for failures that do connect and come back with bad response codes.
+ * we retry requests that connect and come back with bad response codes.
  */
 class NIDEventSender(private var apiService: NIDApiService) {
 

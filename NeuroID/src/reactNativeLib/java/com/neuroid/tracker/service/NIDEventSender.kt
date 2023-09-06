@@ -1,20 +1,19 @@
 package com.neuroid.tracker.service
 
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * quiet retry on slow networks will occur auto-magically by OKHttp and is explained here:
  * https://medium.com/inloopx/okhttp-is-quietly-retrying-requests-is-your-api-ready-19489ef35ace
  * and here:
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
- * we retryrequests below for failures that do connect and come back with bad response codes.
+ * we retry requests that connect and come back with bad response codes.
  */
 class NIDEventSender(private var apiService: NIDApiService) {
 
     fun sendTrackerData(events: String, key: String, nidResponseCallback: NIDResponseCallBack) {
-        val requestBody = RequestBody.create("application/JSON".toMediaTypeOrNull(), events)
+        val requestBody = events.toRequestBody("application/JSON".toMediaTypeOrNull())
         val call = apiService.sendEvents(requestBody, key)
         try {
             var retryCount = 0

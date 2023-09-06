@@ -32,7 +32,7 @@ class NeuroID private constructor(
 ) {
     private var isSDKStarted = false
     private var firstTime = true
-    private var endpoint = ENDPOINT_DEV
+    private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
     private var clientID = ""
     private var userID = ""
@@ -76,7 +76,7 @@ class NeuroID private constructor(
     }
 
     companion object {
-        const val ENDPOINT_DEV = "https://receiver.neuro-dev.com/c/"
+        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c/"
 
         private var singleton: NeuroID? = null
 
@@ -253,7 +253,7 @@ class NeuroID private constructor(
     }
 
     fun configureWithOptions(clientKey: String, endpoint: String?) {
-        this.endpoint = endpoint ?: ENDPOINT_DEV
+        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
         this.clientKey = clientKey
         NIDServiceTracker.rndmId = ""
     }
