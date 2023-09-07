@@ -51,7 +51,7 @@ jobs:
       - name: Get last version from tags
         run: |
           git fetch --prune --unshallow
-          echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
+          echo "VERSION=$(git describe --tag --abbrev=0)" >> $GITHUB_ENV
 
       - name: Trigger Android Sandbox Prod Deployment
         run: |
