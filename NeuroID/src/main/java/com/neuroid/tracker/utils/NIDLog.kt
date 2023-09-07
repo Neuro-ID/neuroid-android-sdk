@@ -1,7 +1,7 @@
 package com.neuroid.tracker.utils
 
 import android.util.Log
-import androidx.multidex.BuildConfig
+import com.neuroid.tracker.BuildConfig
 
 object NIDLog {
     fun d(tag: String, msg: String) {
