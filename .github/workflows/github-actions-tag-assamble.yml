@@ -70,10 +70,10 @@ jobs:
         if: ${{ needs.publish.result == 'success' }}
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: mobile-sdk-tech-team
+          SLACK_CHANNEL: ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://github.com/rtCamp.png?size=48
           SLACK_MESSAGE: "Successful Android SDK Deployment"
           SLACK_TITLE: Successful Android SDK Deployment
           SLACK_USERNAME: rtBot
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.MOBILE_SLACK_WEBHOOK }}
