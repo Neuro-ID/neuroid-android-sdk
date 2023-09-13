@@ -15,7 +15,12 @@ class NIDCustomEventsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setTitle(R.string.nid_custom_events_title_activity)
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_custom_events)
-        NeuroID.getInstance()?.setScreenName("NID CUSTOM EVENT PAGE")
+        NeuroID.getInstance()?.let {
+            if (it.isStopped()) {
+                it.start()
+            }
+            it.setScreenName("NID CUSTOM EVENT PAGE")
+        }
 
         binding.apply {
             buttonSendCustomEvent.setOnClickListener {
