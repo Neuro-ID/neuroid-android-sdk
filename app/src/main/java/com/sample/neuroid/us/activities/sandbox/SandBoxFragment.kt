@@ -24,7 +24,12 @@ class SandBoxFragment : Fragment() {
     ): View? {
         binding = SandboxFragmentBinding.inflate(inflater)
         binding?.apply {
-            NeuroID.getInstance()?.setScreenName("PERSONAL_DETAILS")
+            NeuroID.getInstance()?.let {
+                if (it.isStopped()) {
+                    it.start()
+                }
+                it.setScreenName("PERSONAL_DETAILS")
+            }
 
             val yearList = resources.getStringArray(R.array.nid_app_array_years)
             val monthList = resources.getStringArray(R.array.nid_app_array_months)

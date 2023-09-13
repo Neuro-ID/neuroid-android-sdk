@@ -51,7 +51,7 @@ jobs:
       - name: Get last version from tags
         run: |
           git fetch --prune --unshallow
-          echo "VERSION=$(git describe --tags)" >> $GITHUB_ENV
+          echo "VERSION=$(git describe --tag --abbrev=0)" >> $GITHUB_ENV
 
       - name: Trigger Android Sandbox Prod Deployment
         run: |
@@ -89,10 +89,10 @@ jobs:
         if: ${{ needs.deploySandboxApps.result == 'failure' }}
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: mobile-sdk-tech-team
+          SLACK_CHANNEL:  ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://github.com/rtCamp.png?size=48
           SLACK_MESSAGE: "Failed to update Prod Android and ReactNative Sandbox apps on Android sdk release"
           SLACK_TITLE: Failed Prod Android and ReactNative Sandbox Update
           SLACK_USERNAME: rtBot
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.MOBILE_SLACK_WEBHOOK }}

@@ -126,6 +126,9 @@ class NeuroID private constructor(
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
+        if (!this.isSDKStarted) {
+            throw IllegalArgumentException ("NeuroID SDK is not started");
+        }
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
         createMobileMetadata()
     }
