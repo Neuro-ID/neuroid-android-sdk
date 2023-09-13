@@ -9,17 +9,21 @@ fun View?.getIdOrTag(): String {
     return if (this == null) {
         "no_id"
     } else {
-        if (this.id == View.NO_ID) {
-            if (this.tag == null) {
-                this.getRandomId()
-            } else {
-                this.tag.toString()
-            }
+        if (this.contentDescription.isNotEmpty()) {
+            this.contentDescription.toString()
         } else {
-            try {
-                this.resources.getResourceEntryName(this.id)
-            } catch (e: Resources.NotFoundException) {
-                return this.getRandomId()
+            if (this.id == View.NO_ID) {
+                if (this.tag == null) {
+                    this.getRandomId()
+                } else {
+                    this.tag.toString()
+                }
+            } else {
+                try {
+                    this.resources.getResourceEntryName(this.id)
+                } catch (e: Resources.NotFoundException) {
+                    return this.getRandomId()
+                }
             }
         }
     }
