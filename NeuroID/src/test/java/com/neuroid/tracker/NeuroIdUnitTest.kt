@@ -82,6 +82,13 @@ class NeuroIdUnitTest {
         assertEquals("View_10000_9000", value)
     }
 
+    @Test
+    fun testGetIdOrTag_return_no_id() {
+        val viewReal:View? = null
+        val value = viewReal.getIdOrTag()
+        assertEquals("no_id", value)
+    }
+
     /**
      * This test addresses the ENG-5877
      */
