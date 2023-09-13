@@ -9,7 +9,7 @@ fun View?.getIdOrTag(): String {
     return if (this == null) {
         "no_id"
     } else {
-        if (this.contentDescription.isNotEmpty()) {
+        if (!this.contentDescription.isNullOrEmpty()) {
             this.contentDescription.toString()
         } else {
             if (this.id == View.NO_ID) {
