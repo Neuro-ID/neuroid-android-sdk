@@ -62,15 +62,14 @@ jobs:
             https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
             -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
 
-#       TODO uncomment after React Native Dev Sandbox app is published to Google Console
-#      - name: Trigger ReactNative Sandbox Dev Deployment
-#        run: |
-#          curl \
-#              -X POST \
-#              -H "Accept: application/vnd.github.v3+json" \
-#              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
-#              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
-#              -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
+     - name: Trigger ReactNative Sandbox Dev Deployment
+       run: |
+         curl \
+             -X POST \
+             -H "Accept: application/vnd.github.v3+json" \
+             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+             https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
+             -d '{"event_type":"publish-dev-android","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
 
   notifications:
     runs-on: ubuntu-latest
