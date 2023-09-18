@@ -21,6 +21,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.getIdOrTag
 import java.util.*
 
@@ -253,7 +254,7 @@ private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
         val hashCodeAct = view.javaClass.name.hashCode();
         val guid =
             UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-        registerComponent(view, guid, "targetInteractionEvent")
+        registerComponent(view, guid, NIDLogWrapper(), getDataStoreInstance(), "targetInteractionEvent")
         NIDServiceTracker.registeredViews.add(idName);
     } else {
         NIDLog.d(

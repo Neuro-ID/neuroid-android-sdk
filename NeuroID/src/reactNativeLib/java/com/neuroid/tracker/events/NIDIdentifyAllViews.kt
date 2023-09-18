@@ -37,7 +37,7 @@ fun identifyAllViews(
     activityOrFragment: String = "",
     parent: String = "",
 ) {
-    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+    logger.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
 
     viewParent.forEach {
         when (it) {
