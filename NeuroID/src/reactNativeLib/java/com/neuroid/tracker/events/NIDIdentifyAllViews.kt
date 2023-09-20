@@ -61,7 +61,7 @@ fun identifyAllViews(
                         child?.let { view ->
                             // This is double registering targets and registering listeners before the correct
                             //  lifecycle event which is causing a replay of text input events to occur
-                            identifyView(view, guid, registerTarget, registerListeners)
+//                            identifyView(view, guid, registerTarget, registerListeners)
                         }
                     }
 
@@ -287,7 +287,11 @@ private fun registerListeners(view: View) {
             "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
         )
         // add Text Change watcher
-        val textWatcher = NIDTextWatcher(idName, simpleClassName)
+        val textWatcher = NIDTextWatcher(
+            idName,
+            simpleClassName,
+            "${view.text.toString().getSHA256withSalt()?.take(8)}"
+        )
         // first we have to clear the text watcher that is currently in the EditText
         for(watcher in textWatchers) {
             view.removeTextChangedListener(watcher)
