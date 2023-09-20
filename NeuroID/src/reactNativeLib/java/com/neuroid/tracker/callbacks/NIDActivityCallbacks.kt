@@ -14,7 +14,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 
-
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var auxOrientation = -1
     private var activitiesStarted = 1
@@ -124,16 +123,6 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     attrs = attrJSON
                 )
             )
-
-
-        val currentActivityName = activity::class.java.name
-        registerTargetFromScreen(
-            activity,
-            registerTarget = true,
-            registerListeners = true,
-            activityOrFragment = "activity",
-            parent = currentActivityName
-        )
     }
 
     override fun onActivityPaused(activity: Activity) {
