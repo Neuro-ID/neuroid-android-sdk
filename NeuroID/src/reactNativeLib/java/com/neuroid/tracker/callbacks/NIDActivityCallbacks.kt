@@ -124,6 +124,16 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
                     attrs = attrJSON
                 )
             )
+
+
+        val currentActivityName = activity::class.java.name
+        registerTargetFromScreen(
+            activity,
+            registerTarget = true,
+            registerListeners = true,
+            activityOrFragment = "activity",
+            parent = currentActivityName
+        )
     }
 
     override fun onActivityPaused(activity: Activity) {

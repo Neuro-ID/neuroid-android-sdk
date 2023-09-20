@@ -61,7 +61,7 @@ fun identifyAllViews(
                         child?.let { view ->
                             // This is double registering targets and registering listeners before the correct
                             //  lifecycle event which is causing a replay of text input events to occur
-//                            identifyView(view, guid, registerTarget, registerListeners)
+                            identifyView(view, guid, registerTarget, registerListeners)
                         }
                     }
 
