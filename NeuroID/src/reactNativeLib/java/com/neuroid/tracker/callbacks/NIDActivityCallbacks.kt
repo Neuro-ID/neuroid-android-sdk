@@ -14,7 +14,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 
-
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var auxOrientation = -1
     private var activitiesStarted = 1
@@ -96,6 +95,8 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             activityOrFragment = "activity",
             parent = activity::class.java.name
         )
+        // register listeners for focus, blur and touch events
+        registerWindowListeners(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {
