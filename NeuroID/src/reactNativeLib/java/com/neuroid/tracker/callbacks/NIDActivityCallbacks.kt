@@ -14,7 +14,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 
-
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var auxOrientation = -1
     private var activitiesStarted = 1
