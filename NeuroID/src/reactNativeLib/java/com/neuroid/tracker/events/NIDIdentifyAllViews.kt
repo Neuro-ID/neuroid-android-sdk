@@ -10,6 +10,7 @@ import android.widget.RadioGroup
 import androidx.core.view.children
 import androidx.core.view.forEach
 import androidx.annotation.RequiresApi
+import com.facebook.react.views.image.ReactImageView
 import com.facebook.react.views.text.ReactTextView
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
@@ -27,7 +28,6 @@ import com.neuroid.tracker.utils.getParents
 import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
-import com.neuroid.tracker.NeuroID
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -42,6 +42,21 @@ fun identifyAllViews(
     viewParent.forEach {
         when (it) {
             is ViewGroup -> {
+
+                if (it.hasOnClickListeners()) {
+                    val firstChild = it.children.firstOrNull()
+                    if (firstChild != null) {
+                        registerElement(
+                            it,
+                            guid,
+                            registerTarget,
+                            registerListeners,
+                            activityOrFragment = activityOrFragment,
+                            parent = parent
+                        )
+                    }
+                }
+
                 identifyAllViews(
                     it,
                     guid,
@@ -50,13 +65,10 @@ fun identifyAllViews(
                     activityOrFragment,
                     parent
                 )
+
                 it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
 
                     override fun onChildViewAdded(parent: View?, child: View?) {
-                        NIDLog.d(
-                            "NIDDebug ChildViewAdded",
-                            "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
-                        )
 
                         child?.let { view ->
                             // This is double registering targets and registering listeners before the correct
@@ -70,6 +82,7 @@ fun identifyAllViews(
                     }
                 })
             }
+
             else -> {
                 identifyView(
                     it,
@@ -116,36 +129,52 @@ fun identifyView(
             activityOrFragment = activityOrFragment,
             parent = parent
         )
+
         else -> {
-            if (registerTarget) {
-                registerComponent(
-                    view,
-                    guid,
-                    activityOrFragment = activityOrFragment,
-                    parent = parent
-                )
-            }
-            if (registerListeners) {
-                registerListeners(view)
-            }
+            registerElement(
+                view,
+                guid,
+                registerTarget,
+                registerListeners,
+                activityOrFragment = activityOrFragment,
+                parent = parent
+            )
         }
     }
 
     // exception groups that should be registered:
     when (view) {
         is RadioGroup -> {
-            if (registerTarget) {
-                registerComponent(
-                    view,
-                    guid,
-                    activityOrFragment = activityOrFragment,
-                    parent = parent
-                )
-            }
-            if (registerListeners) {
-                registerListeners(view)
-            }
+            registerElement(
+                view,
+                guid,
+                registerTarget,
+                registerListeners,
+                activityOrFragment = activityOrFragment,
+                parent = parent
+            )
         }
+    }
+}
+
+fun registerElement(
+    view: View,
+    guid: String,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+    if (registerTarget) {
+        registerComponent(
+            view,
+            guid,
+            activityOrFragment = activityOrFragment,
+            parent = parent
+        )
+    }
+    if (registerListeners) {
+        registerListeners(view)
     }
 }
 
@@ -161,9 +190,9 @@ fun registerComponent(
         "view: ${view::class} java: ${view.javaClass.simpleName}"
     )
 
-    val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
+    var idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
     val metaData = JSONObject()
@@ -173,9 +202,11 @@ fun registerComponent(
             et = "Edittext"
             v = "S~C~~${view.text.length}"
         }
+
         is CheckBox -> {
             et = "CheckBox"
         }
+
         is RadioButton -> {
             et = "RadioButton"
             v = "${view.isChecked}"
@@ -195,33 +226,53 @@ fun registerComponent(
                 }
             }
         }
+
         is RadioGroup -> {
             et = "RadioGroup"
             v = "${view.checkedRadioButtonId}"
 
         }
+
         is ToggleButton -> {
             et = "ToggleButton"
         }
+
         is Switch -> {
             et = "Switch"
         }
+
         is Button -> {
             et = "Button"
         }
+
         is SeekBar -> {
             et = "SeekBar"
         }
+
         is Spinner -> {
             et = "Spinner"
         }
+
         is ReactEditText -> {
             et = "ReactEditText"
             v = "S~C~~${view.text?.length}"
         }
+
         is ReactViewGroup -> {
-            if (view.hasOnClickListeners() && view.children.count() == 1 && view.children.firstOrNull() is ReactTextView) {
-                et = "ReactButton"
+            if (view.hasOnClickListeners() && view.children.count() == 1) {
+                val child = view.children.firstOrNull()
+                if (child is ReactTextView) {
+                    et = "ReactButton::${child.javaClass.simpleName}"
+                    idName = "${idName}-${
+                        child?.getIdOrTag()
+                    }-${child?.text.toString().getSHA256withSalt()?.take(8)}"
+
+                } else if (child is ReactImageView) {
+                    et = "ReactButton::${child.javaClass.simpleName}"
+                       idName = "${idName}-${
+                        child?.getIdOrTag()
+                    }"
+                }
             }
         }
     }
@@ -293,7 +344,7 @@ private fun registerListeners(view: View) {
             "${view.text.toString().getSHA256withSalt()?.take(8)}"
         )
         // first we have to clear the text watcher that is currently in the EditText
-        for(watcher in textWatchers) {
+        for (watcher in textWatchers) {
             view.removeTextChangedListener(watcher)
         }
         // we add the new one in there
@@ -337,6 +388,7 @@ private fun registerListeners(view: View) {
                 accelData
             )
         }
+
         is Spinner -> {
             val lastClickListener = view.onItemClickListener
             view.onItemClickListener = null
@@ -359,6 +411,7 @@ private fun registerListeners(view: View) {
                 accelData
             )
         }
+
         is AutoCompleteTextView -> {
             val lastClickListener = view.onItemClickListener
             view.onItemClickListener = null
