@@ -95,6 +95,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             activityOrFragment = "activity",
             parent = activity::class.java.name
         )
+        registerWindowListeners(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {
