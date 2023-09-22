@@ -1,7 +1,6 @@
 package com.neuroid.tracker.events
 
 import android.os.Build
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.text.TextWatcher
@@ -25,19 +24,23 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.getIdOrTag
 import com.neuroid.tracker.utils.getParents
-import com.neuroid.tracker.utils.NIDLog
 import org.json.JSONArray
 import org.json.JSONObject
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun identifyAllViews(
     viewParent: ViewGroup,
     guid: String,
     registerTarget: Boolean,
     registerListeners: Boolean,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
-    NIDLog.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+    logger.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
 
     viewParent.forEach {
         when (it) {
@@ -49,6 +52,8 @@ fun identifyAllViews(
                         registerElement(
                             it,
                             guid,
+                            logger,
+                            storeManager,
                             registerTarget,
                             registerListeners,
                             activityOrFragment = activityOrFragment,
@@ -62,6 +67,8 @@ fun identifyAllViews(
                     guid,
                     registerTarget,
                     registerListeners,
+                    logger,
+                    storeManager,
                     activityOrFragment,
                     parent
                 )
@@ -69,6 +76,10 @@ fun identifyAllViews(
                 it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
 
                     override fun onChildViewAdded(parent: View?, child: View?) {
+                        logger.d(
+                            "NIDDebug ChildViewAdded",
+                            "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
+                        )
 
                         child?.let { view ->
                             // This is double registering targets and registering listeners before the correct
@@ -78,7 +89,7 @@ fun identifyAllViews(
                     }
 
                     override fun onChildViewRemoved(parent: View?, child: View?) {
-                        Log.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                        logger.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
                     }
                 })
             }
@@ -87,6 +98,8 @@ fun identifyAllViews(
                 identifyView(
                     it,
                     guid,
+                    logger,
+                    storeManager,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
@@ -101,6 +114,8 @@ fun identifyAllViews(
                 identifyView(
                     it,
                     guid,
+                    logger,
+                    storeManager,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
@@ -115,6 +130,8 @@ fun identifyAllViews(
 fun identifyView(
     view: View,
     guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -126,6 +143,8 @@ fun identifyView(
             guid,
             registerTarget,
             registerListeners,
+            logger,
+            storeManager,
             activityOrFragment = activityOrFragment,
             parent = parent
         )
@@ -134,6 +153,8 @@ fun identifyView(
             registerElement(
                 view,
                 guid,
+                logger,
+                storeManager,
                 registerTarget,
                 registerListeners,
                 activityOrFragment = activityOrFragment,
@@ -148,6 +169,8 @@ fun identifyView(
             registerElement(
                 view,
                 guid,
+                logger,
+                storeManager,
                 registerTarget,
                 registerListeners,
                 activityOrFragment = activityOrFragment,
@@ -160,6 +183,8 @@ fun identifyView(
 fun registerElement(
     view: View,
     guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -169,6 +194,8 @@ fun registerElement(
         registerComponent(
             view,
             guid,
+            logger,
+            storeManager,
             activityOrFragment = activityOrFragment,
             parent = parent
         )
@@ -181,11 +208,13 @@ fun registerElement(
 fun registerComponent(
     view: View,
     guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     rts: String? = null,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
-    NIDLog.d(
+    logger.d(
         "NIDDebug registeredComponent",
         "view: ${view::class} java: ${view.javaClass.simpleName}"
     )
@@ -278,7 +307,7 @@ fun registerComponent(
     }
 
 
-    NIDLog.d("NIDDebug et at registerComponent", "${et}")
+    logger.d("NIDDebug et at registerComponent", "${et}")
 
     // early exit if not supported target type
     if (et.isEmpty()) {
@@ -294,13 +323,13 @@ fun registerComponent(
 
     val idJson = JSONObject().put("n", "guid").put("v", guid)
     val classJson = JSONObject().put("n", "screenHierarchy")
-        .put("v", "${view.getParents()}${NIDServiceTracker.screenName}")
+        .put("v", "${view.getParents(logger)}${NIDServiceTracker.screenName}")
     val parentData =
         JSONObject().put("parentClass", "$parent").put("component", "$activityOrFragment")
 
     val attrJson = JSONArray().put(idJson).put(classJson).put(parentData).put(metaData)
 
-    getDataStoreInstance()
+    storeManager
         .saveEvent(
             NIDEventModel(
                 type = REGISTER_TARGET,

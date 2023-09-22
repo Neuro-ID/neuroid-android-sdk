@@ -16,6 +16,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -344,7 +345,8 @@ class NeuroID private constructor(
         }
     }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(view, activity.getGUID(), true, addListener)
+        identifyView(view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),
+            true, addListener)
     }
 
     /**

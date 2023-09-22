@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.callbacks.*
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.NIDLogWrapper
 import java.util.*
 
 fun registerLaterLifecycleFragments(activity: Activity) {
@@ -44,6 +46,8 @@ fun registerTargetFromScreen(
     activity: Activity,
     registerTarget: Boolean,
     registerListeners: Boolean,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
@@ -60,6 +64,8 @@ fun registerTargetFromScreen(
             guid,
             registerTarget,
             registerListeners,
+            logger,
+            storeManager,
             activityOrFragment,
             parent
         )

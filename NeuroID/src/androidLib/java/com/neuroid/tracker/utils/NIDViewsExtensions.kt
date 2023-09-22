@@ -35,8 +35,8 @@ fun View.getRandomId(): String {
     return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
-fun View.getParents(): String {
-    return getParentsOfView(0, this, NIDLogWrapper())
+fun View.getParents(logger: NIDLogWrapper): String {
+    return getParentsOfView(0, this, logger)
 }
 
 
