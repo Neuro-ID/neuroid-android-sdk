@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NeuroIdUnitTest {
@@ -105,7 +106,14 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_root_view_ViewRootImp failed. Actual: $label should have matched regex: $control`")
+        }
+        assertTrue("testGetParentsOfView_root_view_ViewRootImp", result)
     }
 
     @Test
@@ -121,7 +129,14 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_root_view_null failed. Actual: $label should have matched regex: $control")
+        }
+        assertTrue("testGetParentsOfView_root_view_null", matcher.matches(label))
     }
 
     @Test
@@ -141,13 +156,18 @@ class NeuroIdUnitTest {
         val viewGroup4 = mockk<ViewGroup>()
         every { viewGroup4.parent } returns viewGroup3
         every { viewGroup4.id } returns 13
-
         val view = mockk<View>()
         every { view.parent } returns viewGroup4
         every { view.id } returns 14
-
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_deep_root_view_greater_than_3 failed. Actual: $label should have matched regex: $control")
+        }
+        assertTrue("testGetParentsOfView_deep_root_view_greater_than_3", result)
     }
 }

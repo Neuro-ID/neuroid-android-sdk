@@ -26,15 +26,15 @@ fun View.getRandomId(): String {
     return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
-fun View.getParents(): String {
-    return getParentsOfView(0, this)
+fun View.getParents(logger: NIDLogWrapper): String {
+    return getParentsOfView(0, this, logger)
 }
 
-private fun getParentsOfView(layers: Int, view: View): String {
+fun View.getParentsOfView(layers: Int, view: View, logger: NIDLogWrapper): String {
     return if (view.parent is View) {
         val childView = view.parent as View
         if (layers == 3 || childView.id == android.R.id.content) "" else {
-            "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView)}"
+            "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView, logger)}"
         }
     } else {
         NIDLog.e("NeuroID", "instance ${view.parent?.javaClass?.name} is not a view!")
