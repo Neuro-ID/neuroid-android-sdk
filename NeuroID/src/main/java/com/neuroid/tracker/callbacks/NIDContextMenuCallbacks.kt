@@ -79,6 +79,11 @@ private fun saveEvent(option: Int, item: String) {
         else -> ""
     }
 
+    NIDLog.d(
+        "NIDDebug",
+        "NID ContextMenuCallback saveEvent: $item"
+    )
+
     val metadataObj = JSONObject()
     metadataObj.put("option", "$option")
     metadataObj.put("item", "$item")

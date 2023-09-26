@@ -56,6 +56,10 @@ class NIDTextWatcher(
                 metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
 
                 val attrJSON = JSONArray().put(metadataObj)
+                NIDLog.d(
+                    "NIDDebug",
+                    "NID TextWatcher onTextChanged"
+                )
 
                 getDataStoreInstance()
                     .saveEvent(
