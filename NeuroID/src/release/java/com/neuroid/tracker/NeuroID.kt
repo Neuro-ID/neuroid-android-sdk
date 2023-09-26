@@ -46,6 +46,7 @@ class NeuroID private constructor(
     internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
         mutableListOf<NIDEventModel>()
 
+    internal var isRN = false
 
     init {
         application?.let {
@@ -94,13 +95,13 @@ class NeuroID private constructor(
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            throw IllegalArgumentException ("Invalid UserId");
+            throw IllegalArgumentException("Invalid UserId");
         }
     }
 
     fun setUserID(userId: String) {
         if (!this.isSDKStarted) {
-            throw IllegalArgumentException ("NeuroID SDK is not started");
+            throw IllegalArgumentException("NeuroID SDK is not started");
         }
 
         this.validateUserId(userId)
@@ -127,7 +128,7 @@ class NeuroID private constructor(
 
     fun setScreenName(screen: String) {
         if (!this.isSDKStarted) {
-            throw IllegalArgumentException ("NeuroID SDK is not started");
+            throw IllegalArgumentException("NeuroID SDK is not started");
         }
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
         createMobileMetadata()
@@ -307,46 +308,15 @@ class NeuroID private constructor(
 
     fun isStopped() = NIDJobServiceManager.isStopped()
 
-    private fun createMobileMetadata() {
-        timestamp = System.currentTimeMillis()
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        application?.let {
-            val sharedDefaults = NIDSharedPrefsDefaults(it)
-            getDataStoreInstance().saveEvent(
-                NIDEventModel(
-                    type = MOBILE_METADATA_ANDROID,
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                )
-            );
-        }
-    }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),true, addListener)
+        identifyView(
+            view,
+            activity.getGUID(),
+            NIDLogWrapper(),
+            getDataStoreInstance(),
+            true,
+            addListener
+        )
     }
 
     /**
@@ -398,5 +368,47 @@ class NeuroID private constructor(
         }
     }
 
+    private fun createMobileMetadata() {
+        timestamp = System.currentTimeMillis()
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        application?.let {
+            val sharedDefaults = NIDSharedPrefsDefaults(it)
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = MOBILE_METADATA_ANDROID,
+                    ts = timestamp,
+                    gyro = gyroData,
+                    accel = accelData,
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData?.toJson(),
+                    f = clientKey,
+                    sid = sessionID,
+                    lsid = "null",
+                    cid = clientID,
+                    did = sharedDefaults.getDeviceId(),
+                    iid = sharedDefaults.getIntermediateId(),
+                    loc = sharedDefaults.getLocale(),
+                    ua = sharedDefaults.getUserAgent(),
+                    tzo = sharedDefaults.getTimeZone(),
+                    lng = sharedDefaults.getLanguage(),
+                    ce = true,
+                    je = true,
+                    ol = true,
+                    p = sharedDefaults.getPlatform(),
+                    jsl = listOf(),
+                    dnt = false,
+                    url = "",
+                    ns = "nid",
+                    jsv = NIDVersion.getSDKVersion(),
+                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
+                )
+            );
+        }
+    }
 
+    fun setIsRN() {
+        this.isRN = true
+    }
 }
