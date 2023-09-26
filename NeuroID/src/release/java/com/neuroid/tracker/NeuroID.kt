@@ -25,6 +25,8 @@ import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?,
