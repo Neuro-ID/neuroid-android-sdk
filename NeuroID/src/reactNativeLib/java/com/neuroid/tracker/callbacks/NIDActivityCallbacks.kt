@@ -10,9 +10,9 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.hasFragments
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONArray
 import org.json.JSONObject
-
 
 
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
@@ -93,9 +93,13 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             activity,
             registerTarget = true,
             registerListeners = true,
+            NIDLogWrapper(),
+            getDataStoreInstance(),
             activityOrFragment = "activity",
             parent = activity::class.java.name
         )
+        // register listeners for focus, blur and touch events
+        registerWindowListeners(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {

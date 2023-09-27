@@ -10,6 +10,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONObject
 import org.json.JSONArray
 
@@ -57,6 +58,8 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
                         f.requireActivity(),
                         registerTarget = true,
                         registerListeners = false,
+                        NIDLogWrapper(),
+                        getDataStoreInstance(),
                         activityOrFragment = "fragment",
                         parent = f::class.java.simpleName
                     )
@@ -67,6 +70,8 @@ class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
                     f.requireActivity(),
                     registerTarget = true,
                     registerListeners = true,
+                    NIDLogWrapper(),
+                    getDataStoreInstance(),
                     activityOrFragment = "fragment",
                     parent = f::class.java.simpleName
                 )

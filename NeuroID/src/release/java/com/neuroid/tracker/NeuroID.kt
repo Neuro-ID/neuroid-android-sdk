@@ -346,7 +346,7 @@ class NeuroID private constructor(
         }
     }
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(view, activity.getGUID(), true, addListener)
+        identifyView(view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),true, addListener)
     }
 
     /**
