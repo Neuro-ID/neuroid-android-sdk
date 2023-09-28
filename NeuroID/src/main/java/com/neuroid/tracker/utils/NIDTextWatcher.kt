@@ -50,10 +50,10 @@ class NIDTextWatcher(
             if (sequence.toString().contains(pastedText) && (pasteCount == count)) {
                 // The change is likely due to a paste operation
 
-                val currentPastedHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
+                val currentPastedHashValue = sequence?.toString()?.hashCode().toString()
                 // Checks if paste operation is duplicated ENG-6236
                 if (currentPastedHashValue != lastPastedHashValue){
-                    lastPastedHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
+                    lastPastedHashValue = sequence?.toString()?.hashCode().toString()
                     val ts = System.currentTimeMillis()
                     val gyroData = NIDSensorHelper.getGyroscopeInfo()
                     val accelData = NIDSensorHelper.getAccelerometerInfo()
