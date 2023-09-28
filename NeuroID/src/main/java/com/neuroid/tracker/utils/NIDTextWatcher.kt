@@ -20,13 +20,12 @@ import org.json.JSONObject
 class NIDTextWatcher(
     private val idName: String,
     val className: String? = "",
-    val startingHashValue: String? = "",
-    val startingPastedHashValue: String? = ""
+    val startingHashValue: String? = ""
 ) : TextWatcher {
 
     private var lastSize = 0
     private var lastHashValue = startingHashValue
-    private var lastPastedHashValue = startingPastedHashValue
+    private var lastPastedHashValue: String? = ""
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
         // No operation
