@@ -21,12 +21,12 @@ class NIDTextWatcher(
     private val idName: String,
     val className: String? = "",
     val startingHashValue: String? = "",
-    val startingPasteHashValue: String? = ""
+    val startingPastedHashValue: String? = ""
 ) : TextWatcher {
 
     private var lastSize = 0
     private var lastHashValue = startingHashValue
-    private var lastPasteHashValue = startingPasteHashValue
+    private var lastPastedHashValue = startingPastedHashValue
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
         // No operation
@@ -53,8 +53,8 @@ class NIDTextWatcher(
 
                 val currentPastedHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
                 // Checks if paste operation is duplicated ENG-6236
-                if (currentPastedHashValue != lastPasteHashValue){
-                    lastPasteHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
+                if (currentPastedHashValue != lastPastedHashValue){
+                    lastPastedHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
                     val ts = System.currentTimeMillis()
                     val gyroData = NIDSensorHelper.getGyroscopeInfo()
                     val accelData = NIDSensorHelper.getAccelerometerInfo()
