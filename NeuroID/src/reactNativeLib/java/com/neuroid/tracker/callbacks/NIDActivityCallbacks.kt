@@ -8,12 +8,10 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.utils.hasFragments
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONArray
 import org.json.JSONObject
-
 
 class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var auxOrientation = -1
@@ -22,12 +20,10 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     private var wasChanged = false
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
-
+        // no operation
     }
 
-    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
-        NIDLog.d("Neuro ID", "NIDDebug onActivityCreated");
-
+    override fun onActivityStarted(activity: Activity) {
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
         val existActivity = listActivities.contains(currentActivityName)
@@ -88,7 +84,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     }
 
 
-    public fun forceStart(activity: Activity) {
+    fun forceStart(activity: Activity) {
         registerTargetFromScreen(
             activity,
             registerTarget = true,
@@ -102,13 +98,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         registerWindowListeners(activity)
     }
 
-    override fun onActivityStarted(activity: Activity) {
-
-    }
-
     override fun onActivityResumed(activity: Activity) {
-        //No operation
-
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -131,9 +121,6 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityPaused(activity: Activity) {
-        //No operation
-
-
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -157,20 +144,6 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
 
     override fun onActivityStopped(activity: Activity) {
         activitiesStarted--
-//        if (activitiesStarted == 0) {
-//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-//            val accelData = NIDSensorHelper.getAccelerometerInfo()
-//
-//            getDataStoreInstance()
-//                .saveEvent(
-//                    NIDEventModel(
-//                        type = WINDOW_BLUR,
-//                        ts = System.currentTimeMillis(),
-//                        gyro = gyroData,
-//                        accel = accelData
-//                    )
-//                )
-//        }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
