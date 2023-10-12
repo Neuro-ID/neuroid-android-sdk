@@ -107,11 +107,10 @@ class NeuroID private constructor(
         }
 
         this.validateUserId(userId)
-
         userID = userId
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-
         application?.let {
             NIDSharedPrefsDefaults(it).setUserId(userId)
         }
@@ -312,12 +311,8 @@ class NeuroID private constructor(
 
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
-            view,
-            activity.getGUID(),
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            true,
-            addListener
+            view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),
+            true, addListener
         )
     }
 

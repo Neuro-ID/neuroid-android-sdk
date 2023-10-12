@@ -1,27 +1,18 @@
 package com.neuroid.tracker.callbacks
 
 import android.app.Activity
-import android.app.Application.ActivityLifecycleCallbacks
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONArray
 import org.json.JSONObject
 
-class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
-    private var auxOrientation = -1
-    private var activitiesStarted = 1
-    private var listActivities = ArrayList<String>()
-    private var wasChanged = false
-
-    override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
-        // no operation
-    }
+class NIDActivityCallbacks() : ActivityCallbacks() {
+    var auxOrientation = -1
+    var wasChanged = false
 
     override fun onActivityStarted(activity: Activity) {
         val currentActivityName = activity::class.java.name
@@ -70,7 +61,7 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
         metadataObj.put("lifecycle", "postCreated")
         metadataObj.put("className", "$currentActivityName")
         val attrJSON = JSONArray().put(metadataObj)
-
+        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -83,22 +74,9 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             )
     }
 
-
-    fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            registerTarget = true,
-            registerListeners = true,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            activityOrFragment = "activity",
-            parent = activity::class.java.name
-        )
-        // register listeners for focus, blur and touch events
-        registerWindowListeners(activity)
-    }
-
     override fun onActivityResumed(activity: Activity) {
+        NIDLog.d("NID--Activity", "Activity - Resumed")
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -120,57 +98,4 @@ class NIDActivityCallbacks() : ActivityLifecycleCallbacks {
             )
     }
 
-    override fun onActivityPaused(activity: Activity) {
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "paused")
-        metadataObj.put("className", "${activity::class.java.name}")
-        val attrJSON = JSONArray().put(metadataObj)
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = WINDOW_BLUR,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        activitiesStarted--
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
-        // No Operation
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        val activityDestroyed = activity::class.java.name
-        listActivities.remove(activityDestroyed)
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "destroyed")
-        metadataObj.put("className", "$activityDestroyed")
-        val attrJSON = JSONArray().put(metadataObj)
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
-    }
 }

@@ -4,7 +4,7 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import java.util.UUID
 
@@ -32,6 +32,8 @@ fun registerWindowListeners(activity: Activity) {
 
 fun registerTargetFromScreen(
     activity: Activity,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -48,8 +50,8 @@ fun registerTargetFromScreen(
     identifyAllViews(
         viewMainContainer,
         guid,
-        NIDLogWrapper(),
-        getDataStoreInstance(),
+        logger,
+        storeManager,
         registerTarget,
         registerListeners,
         activityOrFragment,

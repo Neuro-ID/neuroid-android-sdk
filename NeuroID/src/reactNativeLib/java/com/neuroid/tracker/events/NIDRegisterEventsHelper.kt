@@ -44,10 +44,10 @@ fun registerWindowListeners(activity: Activity) {
 
 fun registerTargetFromScreen(
     activity: Activity,
-    registerTarget: Boolean,
-    registerListeners: Boolean,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
+    registerTarget: Boolean,
+    registerListeners: Boolean,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
