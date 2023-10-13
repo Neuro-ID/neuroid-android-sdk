@@ -34,11 +34,15 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         val existActivity = listActivities.contains(currentActivityName)
 
         NIDServiceTracker.screenActivityName = currentActivityName
-        if (NIDServiceTracker.firstScreenName.isBlank()) {
+        if (NIDServiceTracker.firstScreenName.isNullOrEmpty()) {
             NIDServiceTracker.firstScreenName = currentActivityName
         }
-        NIDServiceTracker.screenFragName = ""
-        NIDServiceTracker.screenName = "AppInit"
+        if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
+            NIDServiceTracker.screenFragName = ""
+        }
+        if (NIDServiceTracker.screenName.isNullOrEmpty()) {
+            NIDServiceTracker.screenName = "AppInit"
+        }
         wasChanged = auxOrientation != orientation
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
