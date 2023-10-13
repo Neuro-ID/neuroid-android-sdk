@@ -22,8 +22,8 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDTextWatcher
-import com.neuroid.tracker.utils.getIdOrTag
-import com.neuroid.tracker.utils.getParents
+import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.extensions.getParents
 import org.json.JSONArray
 import org.json.JSONObject
 import com.neuroid.tracker.storage.NIDDataStoreManager

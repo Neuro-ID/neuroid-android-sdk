@@ -22,7 +22,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.getIdOrTag
+import com.neuroid.tracker.extensions.getIdOrTag
 import java.util.*
 
 class NIDGlobalEventCallback(

@@ -61,6 +61,20 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
 
+                if (NIDJobServiceManager.userActive.not()) {
+                    NIDJobServiceManager.userActive = true
+                    NIDJobServiceManager.restart()
+                }
+
+                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
+                    NIDTimerActive.restartTimerActive()
+                }
+                val lastEvents = getStringSet(NID_STRING_EVENTS)
+                val newEvents = LinkedHashSet<String>()
+                newEvents.addAll(lastEvents)
+                newEvents.add(strEvent)
+                putStringSet(NID_STRING_EVENTS, newEvents)
+
                 var contextString: String? = ""
                 when (event.type) {
                     SET_USER_ID -> contextString = "uid=${event.uid}"
@@ -102,20 +116,6 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                     Constants.debugEventTag.displayName,
                     "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
                 )
-
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
-                }
-
-                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-                    NIDTimerActive.restartTimerActive()
-                }
-                val lastEvents = getStringSet(NID_STRING_EVENTS)
-                val newEvents = LinkedHashSet<String>()
-                newEvents.addAll(lastEvents)
-                newEvents.add(strEvent)
-                putStringSet(NID_STRING_EVENTS, newEvents)
 
                 NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
             }

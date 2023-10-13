@@ -20,8 +20,8 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTextWatcher
-import com.neuroid.tracker.utils.getIdOrTag
-import com.neuroid.tracker.utils.getParents
+import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.extensions.getParents
 import org.json.JSONArray
 import org.json.JSONObject
 

@@ -1,11 +1,11 @@
-package com.neuroid.tracker.utils
+package com.neuroid.tracker.extensions
 
 import android.content.res.Resources
 import android.view.View
 import androidx.fragment.app.FragmentManager
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun View?.getIdOrTag(): String {
-
     return if (this == null) {
         "no_id"
     } else {

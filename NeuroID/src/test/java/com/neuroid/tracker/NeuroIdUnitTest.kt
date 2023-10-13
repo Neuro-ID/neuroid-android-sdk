@@ -5,8 +5,8 @@ import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.getIdOrTag
-import com.neuroid.tracker.utils.getParentsOfView
+import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.extensions.getParentsOfView
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
