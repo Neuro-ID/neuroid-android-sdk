@@ -28,7 +28,7 @@ abstract class TouchEventManager {
     }
 
     fun generateMotionEventValues(motionEvent: MotionEvent): JSONObject {
-        var pointers = generatePointerValues(motionEvent?.pointerCount, motionEvent)
+        var pointers = generatePointerValues(motionEvent.pointerCount, motionEvent)
 
         var yValues = generateYValues(motionEvent)
         var xValues = generateXValues(motionEvent)
@@ -91,7 +91,7 @@ abstract class TouchEventManager {
         metadataObj.put("y", motionEvent?.y)
         metadataObj.put("yP", motionEvent?.yPrecision)
         metadataObj.put("yR", motionEvent?.rawY)
-        metadataObj.put("yCalc", motionEvent?.rawY * motionEvent?.yPrecision)
+        metadataObj.put("yCalc", motionEvent.rawY * motionEvent.yPrecision)
 
         return metadataObj
     }
@@ -101,7 +101,7 @@ abstract class TouchEventManager {
         metadataObj.put("x", motionEvent?.x)
         metadataObj.put("xP", motionEvent?.xPrecision)
         metadataObj.put("xR", motionEvent?.rawX)
-        metadataObj.put("xCalc", motionEvent?.rawX * motionEvent?.xPrecision)
+        metadataObj.put("xCalc", motionEvent.rawX * motionEvent.xPrecision)
 
         return metadataObj
     }
