@@ -162,7 +162,7 @@ afterEvaluate {
                 from components.advancedDeviceAndroidLibRelease
 
                 groupId = 'com.neuroid'
-                artifactId = 'android-device-sdk'
+                artifactId = 'android-advanced-device-sdk'
                 version = versionName
                 artifact androidSourcesJar
             }
@@ -170,7 +170,7 @@ afterEvaluate {
                 from components.advancedDeviceAndroidLibDebug
 
                 groupId = 'com.neuroid'
-                artifactId = 'android-sdk-debug'
+                artifactId = 'android-advanced-device-sdk-debug'
                 version = versionName
                 artifact androidSourcesJar
             }
@@ -180,7 +180,7 @@ afterEvaluate {
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.neuroid'
-                artifactId = 'react-android-sdk'
+                artifactId = 'react-android-advanced-device-sdk'
                 version = versionName
                 artifact androidSourcesJar
             }
@@ -190,7 +190,7 @@ afterEvaluate {
                 from components.advancedDeviceReactNativeLibDebug
 
                 groupId = 'com.neuroid'
-                artifactId = 'react-android-sdk-debug'
+                artifactId = 'react-android-advanced-device-sdk-debug'
                 version = versionName
                 artifact androidSourcesJar
             }
