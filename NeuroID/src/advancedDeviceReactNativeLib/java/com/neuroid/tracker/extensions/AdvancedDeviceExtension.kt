@@ -11,7 +11,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
         val fpjsClient = applicationContext?.let {
             FingerprintJSFactory(applicationContext = it).createInstance(
                 Configuration(
-                    apiKey = "2yCCIEOa9moXzCfjzpKC"
+                    apiKey = "ADD_KEY"
                 )
             )
         }
