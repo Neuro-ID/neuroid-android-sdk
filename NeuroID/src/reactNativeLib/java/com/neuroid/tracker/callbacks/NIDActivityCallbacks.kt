@@ -19,9 +19,15 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
         val orientation = activity.resources.configuration.orientation
         val existActivity = listActivities.contains(currentActivityName)
 
-        NIDServiceTracker.screenActivityName = currentActivityName
-        NIDServiceTracker.screenFragName = ""
-        NIDServiceTracker.screenName = "AppInit"
+        if (NIDServiceTracker.screenActivityName.isNullOrEmpty()) {
+            NIDServiceTracker.screenActivityName = currentActivityName
+        }
+        if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
+            NIDServiceTracker.screenFragName = ""
+        }
+        if (NIDServiceTracker.screenName.isNullOrEmpty()) {
+            NIDServiceTracker.screenName = "AppInit"
+        }
 
         val changedOrientation = auxOrientation != orientation
         wasChanged = changedOrientation

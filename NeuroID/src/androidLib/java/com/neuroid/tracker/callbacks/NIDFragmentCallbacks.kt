@@ -18,8 +18,12 @@ class NIDFragmentCallbacks(
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
         NIDLog.d("NID-Fragment", "Fragment - Attached ${f::class.java.simpleName}")
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            NIDServiceTracker.screenName = "AppInit"
-            NIDServiceTracker.screenFragName = f::class.java.simpleName
+            if (NIDServiceTracker.screenName.isNullOrEmpty()) {
+                NIDServiceTracker.screenName = "AppInit"
+            }
+            if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
+                NIDServiceTracker.screenFragName = f::class.java.simpleName
+            }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
