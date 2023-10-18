@@ -13,6 +13,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
 
     if (advancedDeviceSignals) {
         val applicationContext = getApplicationContext()
+        // TODO: Calling secrets manager for API Key
         val fpjsClient = applicationContext?.let {
             FingerprintJSFactory(applicationContext = it).createInstance(
                 Configuration(
