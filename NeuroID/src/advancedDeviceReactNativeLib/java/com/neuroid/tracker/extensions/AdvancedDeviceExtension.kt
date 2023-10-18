@@ -24,10 +24,10 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
         fpjsClient?.getVisitorId(listener = { result ->
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-
+            NIDLog.d("NIDDebugEvent", "Request ID for Advanced Device Signals: ${result.requestId}")
             getDataStoreInstance().saveEvent(NIDEventModel(
                 type = FPJS_REQUEST,
-                rid = result.visitorId,
+                rid = result.requestId,
                 gyro = gyroData,
                 accel = accelData,
                 ts = System.currentTimeMillis(),
@@ -35,7 +35,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
         },
 
             errorListener = { it ->
-                NIDLog.d("NIDDebugEvent","Error retrieving Advanced Device Signal ID")
+                NIDLog.d("NIDDebugEvent","Error retrieving Advanced Device Signal Request ID")
             })
     }
 }
