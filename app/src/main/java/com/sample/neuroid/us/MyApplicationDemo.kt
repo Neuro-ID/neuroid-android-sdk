@@ -38,9 +38,14 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.setNeuroIdInstance(neuroId)
         NeuroID.getInstance()?.setEnvironmentProduction(true)
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
+        NeuroID.getInstance()?.getAdvKey("key_live_suj4CX90v0un2k1ufGrbItT5")
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
-
         NeuroID.getInstance()?.start()
-        NeuroID.getInstance()?.setUserID(configHelper.userId)
+        try {
+            NeuroID.getInstance()?.setUserID(configHelper.userId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 }
