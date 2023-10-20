@@ -35,7 +35,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                             )
                         )
                     }
-                    while (fpjsRetryCount < 3) {
+                    while (fpjsRetryCount < FPJS_RETRY_MAX) {
                         fpjsClient?.getVisitorId(listener = { result ->
                             val gyroData = NIDSensorHelper.getGyroscopeInfo()
                             val accelData = NIDSensorHelper.getAccelerometerInfo()
