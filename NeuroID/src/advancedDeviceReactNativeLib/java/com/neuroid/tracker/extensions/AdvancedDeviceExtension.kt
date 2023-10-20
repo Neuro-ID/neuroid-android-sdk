@@ -6,7 +6,7 @@ import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.events.FPJS_REQUEST
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.utils.Base64Decoder
 import com.neuroid.tracker.utils.GsonAdvMapper
 import com.neuroid.tracker.utils.HttpConnectionProvider
@@ -45,7 +45,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                             )
                             getDataStoreInstance().saveEvent(
                                 NIDEventModel(
-                                    type = FPJS_REQUEST,
+                                    type = ADVANCED_DEVICE_REQUEST,
                                     rid = result.requestId,
                                     gyro = gyroData,
                                     accel = accelData,
