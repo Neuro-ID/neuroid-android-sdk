@@ -43,6 +43,7 @@ class NIDAdvKeyService {
                             "error! response message: ${conn.responseMessage} method: ${conn.requestMethod}",
                             conn.responseCode
                         )
+                        Thread.sleep(TIMEOUT)
                         retryCount += 1
                     }
                 }
@@ -52,6 +53,7 @@ class NIDAdvKeyService {
                     message = errorMessage
                 }
                 callback.onFailure("error! no response, message: $message", -1)
+                Thread.sleep(TIMEOUT)
                 retryCount += 1
             } finally {
                 conn.disconnect()
@@ -63,6 +65,7 @@ class NIDAdvKeyService {
         // update the tests if you change the retry count!
         const val RETRY_MAX = 3
         const val URL = "https://receiver.neuro-dev.com/a"
+        const val TIMEOUT = 2000L
     }
 }
 
