@@ -11,8 +11,9 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.Base64Decoder
 import com.neuroid.tracker.service.GsonAdvMapper
-import com.neuroid.tracker.service.HttpClientProvider
+import com.neuroid.tracker.service.HttpConnectionProvider
 import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -316,21 +317,21 @@ class NeuroID private constructor(
 
     fun getAdvKey(siteId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val conn = HttpClientProvider().getConnection(
-                "https://receiver.neuro-dev.com/a/$siteId")
             val keyService = NIDAdvKeyService()
-            keyService.getKey(object: OnKeyCallback {
+            keyService.getKey(object : OnKeyCallback {
                 override fun onKeyGotten(key: String) {
-                    NIDLog.d("NeuroId", key)
+                    NIDLog.d("NeuroId", "key: $key")
                     // do some work here with the key
                 }
 
-                override fun onFailure(message: String) {
-                    NIDLog.e("NeuroId", message)
+                override fun onFailure(message: String, responseCode: Int) {
+                    NIDLog.e("NeuroId", "cannot get key, message: $message")
+                    // do some error handling with the error
                 }
-            }, conn, GsonAdvMapper())
+            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), siteId)
         }
     }
+
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
             view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),

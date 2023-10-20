@@ -3,7 +3,7 @@ package com.neuroid.tracker.service
 import java.net.HttpURLConnection
 import java.net.URL
 
-class HttpClientProvider {
+class HttpConnectionProvider {
     fun getConnection(url: String): HttpURLConnection {
         val conn: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
         conn.requestMethod = "GET"
