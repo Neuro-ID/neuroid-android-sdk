@@ -61,6 +61,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                                     "Error retrieving Advanced Device Signal Request ID"
                                 )
                                 fpjsRetryCount += 1
+                                Thread.sleep(5000)
                             })
                     }
 
