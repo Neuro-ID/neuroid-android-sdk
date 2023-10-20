@@ -23,7 +23,9 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
     if (advancedDeviceSignals) {
         CoroutineScope(Dispatchers.IO).launch {
             val keyService = NIDAdvKeyService()
-            keyService.getKey(object: OnKeyCallback{
+            var fpjsRetryCount = 0
+            val FPJS_RETRY_MAX = 3
+            keyService.getKey(object : OnKeyCallback {
                 override fun onKeyGotten(key: String) {
                     val applicationContext = getApplicationContext()
                     val fpjsClient = applicationContext?.let {
@@ -33,29 +35,40 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                             )
                         )
                     }
+                    while (fpjsRetryCount < 3) {
+                        fpjsClient?.getVisitorId(listener = { result ->
+                            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+                            val accelData = NIDSensorHelper.getAccelerometerInfo()
+                            NIDLog.d(
+                                "NIDDebugEvent",
+                                "Request ID for Advanced Device Signals: ${result.requestId}"
+                            )
+                            getDataStoreInstance().saveEvent(
+                                NIDEventModel(
+                                    type = FPJS_REQUEST,
+                                    rid = result.requestId,
+                                    gyro = gyroData,
+                                    accel = accelData,
+                                    ts = System.currentTimeMillis(),
+                                )
+                            )
+                        },
 
-                    fpjsClient?.getVisitorId(listener = { result ->
-                        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-                        val accelData = NIDSensorHelper.getAccelerometerInfo()
-                        NIDLog.d("NIDDebugEvent", "Request ID for Advanced Device Signals: ${result.requestId}")
-                        getDataStoreInstance().saveEvent(NIDEventModel(
-                            type = FPJS_REQUEST,
-                            rid = result.requestId,
-                            gyro = gyroData,
-                            accel = accelData,
-                            ts = System.currentTimeMillis(),
-                        ))
-                    },
+                            errorListener = { it ->
+                                NIDLog.d(
+                                    "NIDDebugEvent",
+                                    "Error retrieving Advanced Device Signal Request ID"
+                                )
+                                fpjsRetryCount += 1
+                            })
+                    }
 
-                    errorListener = { it ->
-                        NIDLog.d("NIDDebugEvent","Error retrieving Advanced Device Signal Request ID")
-                    })
                 }
 
                 override fun onFailure(message: String, responseCode: Int) {
                     NIDLog.e("NeuroId", "cannot get key, message: $message")
                 }
-            },  HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey)
+            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey)
         }
     }
 }
