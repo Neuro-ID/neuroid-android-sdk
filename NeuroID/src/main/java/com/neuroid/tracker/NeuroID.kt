@@ -269,7 +269,7 @@ class NeuroID private constructor(
         NIDServiceTracker.rndmId = ""
     }
 
-    fun start() {
+   open fun start() {
         this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
