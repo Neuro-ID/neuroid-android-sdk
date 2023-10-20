@@ -11,17 +11,11 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.Base64Decoder
-import com.neuroid.tracker.service.GsonAdvMapper
-import com.neuroid.tracker.service.HttpConnectionProvider
-import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.service.OnKeyCallback
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -36,7 +30,7 @@ import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?,
-    private var clientKey: String
+    internal var clientKey: String
 ) {
     private var isSDKStarted = false
     private var firstTime = true
@@ -314,23 +308,6 @@ class NeuroID private constructor(
     }
 
     fun isStopped() = NIDJobServiceManager.isStopped()
-
-    fun getAdvKey(siteId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val keyService = NIDAdvKeyService()
-            keyService.getKey(object : OnKeyCallback {
-                override fun onKeyGotten(key: String) {
-                    NIDLog.d("NeuroId", "key: $key")
-                    // do some work here with the key
-                }
-
-                override fun onFailure(message: String, responseCode: Int) {
-                    NIDLog.e("NeuroId", "cannot get key, message: $message")
-                    // do some error handling with the error
-                }
-            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), siteId)
-        }
-    }
 
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(

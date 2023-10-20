@@ -1,4 +1,4 @@
-package com.neuroid.tracker.service
+package com.neuroid.tracker.utils
 
 import android.util.Base64
 

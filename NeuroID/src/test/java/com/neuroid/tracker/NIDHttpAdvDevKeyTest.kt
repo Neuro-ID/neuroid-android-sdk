@@ -1,9 +1,9 @@
 package com.neuroid.tracker
 
-import com.neuroid.tracker.service.AdvancedDeviceKey
-import com.neuroid.tracker.service.Base64Decoder
-import com.neuroid.tracker.service.GsonAdvMapper
-import com.neuroid.tracker.service.HttpConnectionProvider
+import com.neuroid.tracker.models.AdvancedDeviceKey
+import com.neuroid.tracker.utils.Base64Decoder
+import com.neuroid.tracker.utils.GsonAdvMapper
+import com.neuroid.tracker.utils.HttpConnectionProvider
 import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.OnKeyCallback
 import io.mockk.every
@@ -53,7 +53,7 @@ class NIDHttpAdvDevKeyTest {
         val decoder = mockk<Base64Decoder>()
         keyService.getKey(callBack, connProvider, mapper, decoder, "12345")
         verify{ mapper.getKey("{\"status\":\"notOK\", \"key\":\"g2334asdgawe4535435r=\"}") }
-        verify(exactly = 1){ callBack.onFailure("error: status notOK", 200) }
+        verify(exactly = 1){ callBack.onFailure("advanced signal not available: status notOK", 200) }
     }
 
     @Test

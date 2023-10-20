@@ -1,4 +1,4 @@
-package com.neuroid.tracker.service
+package com.neuroid.tracker.utils
 
 import java.net.HttpURLConnection
 import java.net.URL

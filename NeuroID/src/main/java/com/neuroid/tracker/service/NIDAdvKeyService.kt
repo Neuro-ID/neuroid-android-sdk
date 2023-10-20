@@ -1,17 +1,20 @@
 package com.neuroid.tracker.service
 
+import com.neuroid.tracker.utils.Base64Decoder
+import com.neuroid.tracker.utils.GsonAdvMapper
+import com.neuroid.tracker.utils.HttpConnectionProvider
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class NIDAdvKeyService {
     fun getKey(callback: OnKeyCallback, connProvider: HttpConnectionProvider,
-               keyMapper: GsonAdvMapper, base64Decoder: Base64Decoder, siteId: String) {
+               keyMapper: GsonAdvMapper, base64Decoder: Base64Decoder, siteKey: String) {
         var retryCount = 0
         while (retryCount < RETRY_MAX) {
-            val conn = connProvider.getConnection("$URL/$siteId")
+            val conn = connProvider.getConnection("$URL/$siteKey")
             try {
                 when (conn.responseCode) {
-                    200, 203 -> {
+                    200 -> {
                         // read data
                         val buffer = StringBuffer()
                         val reader = BufferedReader(InputStreamReader(conn.inputStream))
@@ -29,13 +32,13 @@ class NIDAdvKeyService {
                                 )
                             )
                         } else {
-                            callback.onFailure("error: status ${advData.status}", conn.responseCode)
+                            callback.onFailure("advanced signal not available: status ${advData.status}", conn.responseCode)
                         }
                         retryCount = RETRY_MAX
                     }
 
                     else -> {
-                        // got response code other than 200 / 203
+                        // got response code other than 200
                         callback.onFailure(
                             "error! response message: ${conn.responseMessage} method: ${conn.requestMethod}",
                             conn.responseCode
