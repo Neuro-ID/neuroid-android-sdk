@@ -37,7 +37,7 @@ class FPJSHelper {
                 } else {
                     NIDLog.d(
                         "NeuroId",
-                        "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID"
+                        "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"
                     )
                 }
 
