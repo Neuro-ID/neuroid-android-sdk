@@ -1,5 +1,4 @@
 package com.neuroid.tracker.utils
-
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
