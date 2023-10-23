@@ -6,7 +6,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 
 class FPJSHelper {
-    fun getRequestId(fpjsClient: FingerprintJS?, fpjsRetryCount: Int, maxRetryCount: Int) {
+    fun createRequestIdEvent(fpjsClient: FingerprintJS?, fpjsRetryCount: Int, maxRetryCount: Int) {
         var retryCount = fpjsRetryCount
         fpjsClient?.getVisitorId(listener = { result ->
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -33,7 +33,7 @@ class FPJSHelper {
                 )
                 Thread.sleep(5000)
                 if (retryCount < maxRetryCount) {
-                    getRequestId(fpjsClient, retryCount, maxRetryCount)
+                    createRequestIdEvent(fpjsClient, retryCount, maxRetryCount)
                 } else {
                     NIDLog.d(
                         "NIDDebugEvent",
