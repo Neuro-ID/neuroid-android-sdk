@@ -36,8 +36,8 @@ class FPJSHelper {
                     createRequestIdEvent(fpjsClient, retryCount, maxRetryCount)
                 } else {
                     NIDLog.d(
-                        "NIDDebugEvent",
-                        "Reached maximum number of retries $maxRetryCount to get Advanced Device Signal Request ID"
+                        "NeuroId",
+                        "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID"
                     )
                 }
 
