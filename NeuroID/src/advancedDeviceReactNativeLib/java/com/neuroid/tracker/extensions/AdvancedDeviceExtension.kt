@@ -5,6 +5,7 @@ import com.fingerprintjs.android.fpjs_pro.Configuration
 import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
 import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.OnKeyCallback
+import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                 override fun onFailure(message: String, responseCode: Int) {
                     NIDLog.e("NeuroId", "cannot get key, message: $message")
                 }
-            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey)
+            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey, getDataStoreInstance())
         }
     }
 }
