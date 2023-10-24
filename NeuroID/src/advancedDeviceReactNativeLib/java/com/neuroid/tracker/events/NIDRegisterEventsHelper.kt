@@ -11,15 +11,6 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import java.util.*
 
-fun registerLaterLifecycleFragments(activity: Activity) {
-    NIDServiceTracker.screenActivityName = activity::class.java.name
-
-    val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-    fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
-
-    registerWindowListeners(activity)
-}
-
 fun registerWindowListeners(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
@@ -62,10 +53,10 @@ fun registerTargetFromScreen(
         identifyAllViews(
             viewMainContainer,
             guid,
-            registerTarget,
-            registerListeners,
             logger,
             storeManager,
+            registerTarget,
+            registerListeners,
             activityOrFragment,
             parent
         )

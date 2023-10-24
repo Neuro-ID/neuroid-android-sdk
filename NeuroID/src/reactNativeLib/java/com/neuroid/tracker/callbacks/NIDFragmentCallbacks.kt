@@ -18,7 +18,12 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
         NIDLog.d("Neuro ID", "NIDDebug onFragmentAttached ${f::class.java.simpleName}");
 
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            NIDServiceTracker.screenFragName = f::class.java.simpleName
+            if (NIDServiceTracker.screenName.isNullOrEmpty()) {
+                NIDServiceTracker.screenName = "AppInit"
+            }
+            if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
+                NIDServiceTracker.screenFragName = f::class.java.simpleName
+            }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
