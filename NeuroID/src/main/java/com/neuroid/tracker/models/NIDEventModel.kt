@@ -54,7 +54,9 @@ data class NIDEventModel(
     val o: String? = null,
     var rts: String? = null,
     val metadata: JSONObject? = null,
-    val rid: String? = null
+    val rid: String? = null,
+    val m: String? = null,
+    val level: String? = null,
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()
@@ -72,6 +74,8 @@ data class NIDEventModel(
                 }
                 jsonObject.put("touches", array)
             }
+            m?.let { jsonObject.put("m", it) }
+            level?.let {jsonObject.put("level", it)}
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             hv?.let { jsonObject.put("hv", it) }

@@ -1,5 +1,8 @@
 package com.neuroid.tracker.service
 
+import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.Base64Decoder
 import com.neuroid.tracker.utils.GsonAdvMapper
 import com.neuroid.tracker.utils.HttpConnectionProvider
@@ -8,7 +11,8 @@ import java.io.InputStreamReader
 
 class NIDAdvKeyService {
     fun getKey(callback: OnKeyCallback, connProvider: HttpConnectionProvider,
-               keyMapper: GsonAdvMapper, base64Decoder: Base64Decoder, siteKey: String) {
+               keyMapper: GsonAdvMapper, base64Decoder: Base64Decoder, siteKey: String,
+               dataStore: NIDDataStoreManager) {
         var retryCount = 0
         while (retryCount < RETRY_MAX) {
             val conn = connProvider.getConnection("$URL/$siteKey")
@@ -33,8 +37,18 @@ class NIDAdvKeyService {
                             )
                         } else {
                             callback.onFailure("advanced signal not available: status ${advData.status}", conn.responseCode)
+
+                            // send error if we don't get status="OK"
+                            dataStore.saveEvent(
+                                NIDEventModel(
+                                    type = LOG,
+                                    ts = System.currentTimeMillis(),
+                                    level="error",
+                                    m="advanced signal not available: status ${advData.status}, conn.responseCode"
+                                )
+                            )
                         }
-                        retryCount = RETRY_MAX
+                        break
                     }
 
                     else -> {
@@ -45,6 +59,18 @@ class NIDAdvKeyService {
                         )
                         Thread.sleep(TIMEOUT)
                         retryCount += 1
+
+                        // send error to server if we hit the max retry limit
+                        if (retryCount >= RETRY_MAX) {
+                            dataStore.saveEvent(
+                                NIDEventModel(
+                                    type = LOG,
+                                    ts = System.currentTimeMillis(),
+                                    level="error",
+                                    m="error! response message: ${conn.responseMessage} method: ${conn.requestMethod}"
+                                )
+                            )
+                        }
                     }
                 }
             } catch (exception: Exception) {
@@ -54,7 +80,20 @@ class NIDAdvKeyService {
                 }
                 callback.onFailure("error! no response, message: $message", -1)
                 Thread.sleep(TIMEOUT)
+
                 retryCount += 1
+
+                if (retryCount >= RETRY_MAX) {
+                    // send error if we don't get response!
+                    dataStore.saveEvent(
+                        NIDEventModel(
+                            type = LOG,
+                            ts = System.currentTimeMillis(),
+                            level = "error",
+                            m = "error! no response, message: $message, -1"
+                        )
+                    )
+                }
             } finally {
                 conn.disconnect()
             }

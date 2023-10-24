@@ -35,6 +35,14 @@ class FPJSHelper {
                 if (retryCount < maxRetryCount) {
                     createRequestIdEvent(fpjsClient, retryCount, maxRetryCount)
                 } else {
+                    getDataStoreInstance().saveEvent(
+                        NIDEventModel(
+                            type = LOG,
+                            ts = System.currentTimeMillis(),
+                            level="error",
+                            m="Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"
+                        )
+                    )
                     NIDLog.e(
                         "NeuroId",
                         "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"

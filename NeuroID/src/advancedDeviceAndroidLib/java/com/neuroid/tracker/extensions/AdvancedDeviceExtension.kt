@@ -8,6 +8,7 @@ import com.neuroid.tracker.utils.GsonAdvMapper
 import com.neuroid.tracker.utils.HttpConnectionProvider
 import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.OnKeyCallback
+import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +42,8 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                     // do some error handling with the error
                     NIDLog.e("NeuroId", "Failed to get API key from NID: $message")
                 }
-            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey)
+            }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey,
+                getDataStoreInstance())
         }
     }
 }
