@@ -2,32 +2,29 @@ package com.neuroid.tracker.events
 
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.OnHierarchyChangeListener
 import android.widget.*
-import android.widget.RadioGroup
-import androidx.core.view.children
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
-import com.facebook.react.views.image.ReactImageView
-import com.facebook.react.views.text.ReactTextView
-import com.facebook.react.views.textinput.ReactEditText
-import com.facebook.react.views.view.ReactViewGroup
-import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParents
 import org.json.JSONArray
 import org.json.JSONObject
-import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.utils.NIDLogWrapper
+
 
 fun identifyAllViews(
     viewParent: ViewGroup,
     guid: String,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
-    registerTarget: Boolean,
-    registerListeners: Boolean,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true,
     activityOrFragment: String = "",
     parent: String = ""
 ) {
@@ -36,23 +33,6 @@ fun identifyAllViews(
     viewParent.forEach {
         when (it) {
             is ViewGroup -> {
-
-                if (it.hasOnClickListeners()) {
-                    val firstChild = it.children.firstOrNull()
-                    if (firstChild != null) {
-                        registerElement(
-                            it,
-                            guid,
-                            logger,
-                            storeManager,
-                            registerTarget,
-                            registerListeners,
-                            activityOrFragment = activityOrFragment,
-                            parent = parent
-                        )
-                    }
-                }
-
                 identifyAllViews(
                     it,
                     guid,
@@ -63,28 +43,24 @@ fun identifyAllViews(
                     activityOrFragment,
                     parent
                 )
-
-                it.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-
+                it.setOnHierarchyChangeListener(object : OnHierarchyChangeListener {
                     override fun onChildViewAdded(parent: View?, child: View?) {
                         logger.d(
                             "NIDDebug ChildViewAdded",
                             "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
                         )
-
                         child?.let { view ->
-                            // This is double registering targets and registering listeners before the correct
-                            //  lifecycle event which is causing a replay of text input events to occur
-//                            identifyView(view, guid, registerTarget, registerListeners)
                         }
                     }
 
                     override fun onChildViewRemoved(parent: View?, child: View?) {
-                        logger.i("ViewListener", "ViewRemoved: ${child?.getIdOrTag().orEmpty()}")
+                        logger.d(
+                            "NIDDebug ViewListener",
+                            "ViewRemoved: ${child?.getIdOrTag().orEmpty()}"
+                        )
                     }
                 })
             }
-
             else -> {
                 identifyView(
                     it,
@@ -117,7 +93,6 @@ fun identifyAllViews(
     }
 }
 
-
 fun identifyView(
     view: View,
     guid: String,
@@ -129,19 +104,8 @@ fun identifyView(
     parent: String = "",
 ) {
     when (view) {
-        is ViewGroup -> identifyAllViews(
-            view,
-            guid,
-            logger,
-            storeManager,
-            registerTarget,
-            registerListeners,
-            activityOrFragment = activityOrFragment,
-            parent = parent
-        )
-
-        else -> {
-            registerElement(
+        is ViewGroup -> {
+            identifyAllViews(
                 view,
                 guid,
                 logger,
@@ -151,50 +115,44 @@ fun identifyView(
                 activityOrFragment = activityOrFragment,
                 parent = parent
             )
+        }
+        else -> {
+            if (registerTarget) {
+                registerComponent(
+                    view,
+                    guid,
+                    logger,
+                    storeManager,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
+            }
+            if (registerListeners) {
+                registerListeners(view, logger)
+            }
         }
     }
 
     // exception groups that should be registered:
     when (view) {
         is RadioGroup -> {
-            registerElement(
-                view,
-                guid,
-                logger,
-                storeManager,
-                registerTarget,
-                registerListeners,
-                activityOrFragment = activityOrFragment,
-                parent = parent
-            )
+            if (registerTarget) {
+                registerComponent(
+                    view,
+                    guid,
+                    logger,
+                    storeManager,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent
+                )
+            }
+            if (registerListeners) {
+                registerListeners(view, logger)
+            }
         }
     }
 }
 
-fun registerElement(
-    view: View,
-    guid: String,
-    logger: NIDLogWrapper,
-    storeManager: NIDDataStoreManager,
-    registerTarget: Boolean = true,
-    registerListeners: Boolean = true,
-    activityOrFragment: String = "",
-    parent: String = "",
-) {
-    if (registerTarget) {
-        registerComponent(
-            view,
-            guid,
-            logger,
-            storeManager,
-            activityOrFragment = activityOrFragment,
-            parent = parent
-        )
-    }
-    if (registerListeners) {
-        registerListeners(view, logger)
-    }
-}
 
 fun registerComponent(
     view: View,
@@ -210,9 +168,9 @@ fun registerComponent(
         "view: ${view::class} java: ${view.javaClass.simpleName}"
     )
 
+    val idName = view.getIdOrTag()
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
-    var idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
     val metaData = JSONObject()
@@ -222,11 +180,6 @@ fun registerComponent(
             et = "Edittext"
             v = "S~C~~${view.text.length}"
         }
-
-        is CheckBox -> {
-            et = "CheckBox"
-        }
-
         is RadioButton -> {
             et = "RadioButton"
             v = "${view.isChecked}"
@@ -246,59 +199,31 @@ fun registerComponent(
                 }
             }
         }
-
         is RadioGroup -> {
             et = "RadioGroup"
             v = "${view.checkedRadioButtonId}"
-
         }
-
         is ToggleButton -> {
             et = "ToggleButton"
         }
-
-        is Switch -> {
+        is Switch, is SwitchCompat -> {
             et = "Switch"
         }
-
-        is Button -> {
+        is Button, is ImageButton -> {
             et = "Button"
         }
-
         is SeekBar -> {
             et = "SeekBar"
         }
-
         is Spinner -> {
             et = "Spinner"
         }
-
-        is ReactEditText -> {
-            et = "ReactEditText"
-            v = "S~C~~${view.text?.length}"
-        }
-
-        is ReactViewGroup -> {
-            if (view.hasOnClickListeners() && view.children.count() == 1) {
-                val child = view.children.firstOrNull()
-                if (child is ReactTextView) {
-                    et = "ReactButton::${child.javaClass.simpleName}"
-                    idName = "${idName}-${
-                        child?.getIdOrTag()
-                    }-${child?.text.toString().getSHA256withSalt()?.take(8)}"
-
-                } else if (child is ReactImageView) {
-                    et = "ReactButton::${child.javaClass.simpleName}"
-                       idName = "${idName}-${
-                        child?.getIdOrTag()
-                    }"
-                }
-            }
+        is RatingBar -> {
+            et = "RatingBar"
         }
     }
 
-
-    logger.d("NIDDebug et at registerComponent", "${et}")
+    logger.d("NIDDebug et at registerComponent", "$et")
 
     // early exit if not supported target type
     if (et.isEmpty()) {
@@ -320,11 +245,13 @@ fun registerComponent(
 
     val attrJson = JSONArray().put(idJson).put(classJson).put(parentData).put(metaData)
 
+    logger.d("NID test output", "etn: INPUT, et: ${view.javaClass.simpleName}, eid: $idName, v:$v")
     storeManager
         .saveEvent(
             NIDEventModel(
                 type = REGISTER_TARGET,
                 attrs = attrJson,
+                tg = mapOf("attr" to attrJson),
                 et = et + "::" + view.javaClass.simpleName,
                 etn = "INPUT",
                 ec = NIDServiceTracker.screenName,

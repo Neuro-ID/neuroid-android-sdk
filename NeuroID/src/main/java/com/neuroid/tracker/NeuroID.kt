@@ -30,7 +30,7 @@ import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?,
-    private var clientKey: String
+    internal var clientKey: String
 ) {
     private var isSDKStarted = false
     private var firstTime = true
@@ -263,7 +263,7 @@ class NeuroID private constructor(
         NIDServiceTracker.rndmId = ""
     }
 
-    fun start() {
+   open fun start() {
         this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()

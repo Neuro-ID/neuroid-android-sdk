@@ -1,13 +1,12 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
-import com.neuroid.tracker.callbacks.*
+import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
-import java.util.*
+import java.util.UUID
 
 fun registerWindowListeners(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
@@ -35,11 +34,12 @@ fun registerTargetFromScreen(
     activity: Activity,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
-    registerTarget: Boolean,
-    registerListeners: Boolean,
+    registerTarget: Boolean = true,
+    registerListeners: Boolean = true,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
+    // DEBUG are we actually fetching all view containers
     val viewMainContainer = activity.window.decorView.findViewById<View>(
         android.R.id.content
     ) as ViewGroup
@@ -47,17 +47,14 @@ fun registerTargetFromScreen(
     val hashCodeAct = activity.hashCode()
     val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
-    android.os.Handler(Looper.getMainLooper()).postDelayed({
-        identifyAllViews(
-            viewMainContainer,
-            guid,
-            logger,
-            storeManager,
-            registerTarget,
-            registerListeners,
-            activityOrFragment,
-            parent
-        )
-    }, 300)
+    identifyAllViews(
+        viewMainContainer,
+        guid,
+        logger,
+        storeManager,
+        registerTarget,
+        registerListeners,
+        activityOrFragment,
+        parent
+    )
 }
-

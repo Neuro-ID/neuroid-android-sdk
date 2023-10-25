@@ -51,10 +51,3 @@ fun View.getParentsOfView(layers: Int, view: View, log: NIDLogWrapper): String {
         "not_a_view"
     }
 }
-
-fun FragmentManager.hasFragments(): Boolean {
-    return this.fragments.any {
-        val name = it::class.java.simpleName
-        name != "NavHostFragment" || name != "SupportMapFragment"
-    }
-}

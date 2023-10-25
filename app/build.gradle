@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
 
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     packagingOptions {
         pickFirst 'lib/armeabi-v7a/libfbjni.so'
@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId "com.sample.neuroid.us"
         minSdk 28
-        targetSdk 31
+        targetSdk 33
         multiDexEnabled true
         versionCode 1
         versionName "1.0"
@@ -83,6 +83,12 @@ android {
         reactNativeLib {
             dimension "version"
         }
+        advancedDeviceAndroidLib {
+            dimension "version"
+        }
+        advancedDeviceReactNativeLib {
+            dimension "version"
+        }
     }
 
     buildFeatures {
@@ -100,7 +106,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -122,8 +128,8 @@ dependencies {
     implementation project(':NeuroID')
     debugImplementation 'com.github.erosb:everit-json-schema:1.14.1'
 
-    implementation("com.google.dagger:hilt-android:2.38.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.38.1")
+    implementation("com.google.dagger:hilt-android:2.42")
+    kapt("com.google.dagger:hilt-android-compiler:2.42")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")

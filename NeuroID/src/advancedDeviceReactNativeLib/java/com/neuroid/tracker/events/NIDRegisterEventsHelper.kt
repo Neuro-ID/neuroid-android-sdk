@@ -4,7 +4,9 @@ import android.app.Activity
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.callbacks.*
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import java.util.*
@@ -60,4 +62,3 @@ fun registerTargetFromScreen(
         )
     }, 300)
 }
-

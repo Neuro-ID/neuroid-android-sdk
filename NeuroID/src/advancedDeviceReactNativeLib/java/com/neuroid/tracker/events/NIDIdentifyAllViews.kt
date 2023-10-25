@@ -29,7 +29,7 @@ fun identifyAllViews(
     registerTarget: Boolean,
     registerListeners: Boolean,
     activityOrFragment: String = "",
-    parent: String = ""
+    parent: String = "",
 ) {
     logger.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
 
@@ -73,9 +73,6 @@ fun identifyAllViews(
                         )
 
                         child?.let { view ->
-                            // This is double registering targets and registering listeners before the correct
-                            //  lifecycle event which is causing a replay of text input events to occur
-//                            identifyView(view, guid, registerTarget, registerListeners)
                         }
                     }
 
