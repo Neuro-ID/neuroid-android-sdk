@@ -110,6 +110,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                     WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
                     CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}"
+                    LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
                     else -> {}
                 }
 
