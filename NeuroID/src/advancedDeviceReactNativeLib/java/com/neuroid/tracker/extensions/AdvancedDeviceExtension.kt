@@ -31,8 +31,8 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                         )
                     }
                     //  Retrieving the Request ID from FPJS
-                    var fpjsHelper = FPJSHelper()
-                    fpjsHelper.createRequestIdEvent(fpjsClient, fpjsRetryCount, FPJS_RETRY_MAX)
+                    var fpjsHelper = applicationContext?.let { FPJSHelper(it) }
+                    fpjsHelper?.createRequestIdEvent(fpjsClient, fpjsRetryCount, FPJS_RETRY_MAX)
                 }
 
                 override fun onFailure(message: String, responseCode: Int) {
