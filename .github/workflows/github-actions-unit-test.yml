@@ -43,7 +43,7 @@ jobs:
           run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
 
         # Execute unit test neuroid lib
-        - name: Unit Test NeuroId
+        - name: Unit Test NeuroId (advanced)
           run: ./gradlew :NeuroID:testAdvancedDeviceAndroidLibDebugUnitTest
 
         # Execute unit tests
