@@ -8,12 +8,14 @@ import com.neuroid.tracker.utils.GsonAdvMapper
 import com.neuroid.tracker.utils.HttpConnectionProvider
 import com.neuroid.tracker.service.NIDAdvKeyService
 import com.neuroid.tracker.service.OnKeyCallback
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.neuroid.tracker.utils.FPJSHelper
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun NeuroID.start(advancedDeviceSignals: Boolean) {
     start()
@@ -34,8 +36,10 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
                         )
                     }
                     //  Retrieving the Request ID from FPJS
-                    var fpjsHelper = applicationContext?.let { FPJSHelper(it) }
-                    fpjsHelper?.createRequestIdEvent(fpjsClient, fpjsRetryCount, FPJS_RETRY_MAX)
+                    applicationContext?.let {
+                        FPJSHelper().createRequestIdEvent(fpjsClient, fpjsRetryCount, FPJS_RETRY_MAX,
+                            NIDSharedPrefsDefaults(it), NIDLogWrapper(), getDataStoreInstance())
+                    }
                 }
 
                 override fun onFailure(message: String, responseCode: Int) {
