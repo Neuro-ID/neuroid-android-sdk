@@ -103,7 +103,7 @@ class NIDAdvKeyService {
     companion object {
         // update the tests if you change the retry count!
         const val RETRY_MAX = 3
-        const val URL = "https://receiver.neuro-id.com/a"
+        const val URL = "https://receiver.neuroid.cloud/a"
         const val TIMEOUT = 2000L
     }
 }
