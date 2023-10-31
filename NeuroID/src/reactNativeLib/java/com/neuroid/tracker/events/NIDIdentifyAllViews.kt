@@ -325,6 +325,7 @@ fun registerComponent(
             NIDEventModel(
                 type = REGISTER_TARGET,
                 attrs = attrJson,
+                tg = mapOf("attr" to attrJson),
                 et = et + "::" + view.javaClass.simpleName,
                 etn = "INPUT",
                 ec = NIDServiceTracker.screenName,
