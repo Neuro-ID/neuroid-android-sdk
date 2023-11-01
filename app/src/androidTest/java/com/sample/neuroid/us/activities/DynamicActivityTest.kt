@@ -15,7 +15,6 @@ import com.sample.neuroid.us.R
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.hamcrest.Matcher
 import org.hamcrest.core.Is.`is`
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -23,7 +22,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.util.Objects
 
 @ExperimentalCoroutinesApi
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

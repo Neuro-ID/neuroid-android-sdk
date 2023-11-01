@@ -1,18 +1,94 @@
 package com.neuroid.tracker
 
 import android.content.Context
+import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewParent
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.getParentsOfView
+import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.extensions.getParentsOfView
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NeuroIdUnitTest {
+
+    @Test
+    fun testGetIdOrTag_return_content_description() {
+        val viewReal = mockk<View>()
+        val resources = mockk<Resources>()
+        every {viewReal.contentDescription} returns "content_desc_test"
+        every {viewReal.id} returns 0
+        every {viewReal.resources} returns resources
+        every {resources.getResourceEntryName(any())} returns "REN_test"
+        val value = viewReal.getIdOrTag()
+        assertEquals("content_desc_test", value)
+    }
+
+    @Test
+    fun testGetIdOrTag_return_tag() {
+        val viewReal = mockk<View>()
+        val resources = mockk<Resources>()
+        every {viewReal.contentDescription} returns ""
+        every {viewReal.id} returns -1
+        every {viewReal.tag} returns "tag_test"
+        every {viewReal.resources} returns resources
+        every {resources.getResourceEntryName(any())} returns "REN_test"
+        val value = viewReal.getIdOrTag()
+        assertEquals("tag_test", value)
+    }
+
+    @Test
+    fun testGetIdOrTag_return_resources_entry_name() {
+        val viewReal = mockk<View>()
+        val resources = mockk<Resources>()
+        every {viewReal.contentDescription} returns ""
+        every {viewReal.id} returns 10
+        every {viewReal.tag} returns "test"
+        every {viewReal.resources} returns resources
+        every {resources.getResourceEntryName(any())} returns "REN_test"
+        val value = viewReal.getIdOrTag()
+        assertEquals("REN_test", value)
+    }
+
+    @Test
+    fun testGetIdOrTag_return_random_id_contains_id() {
+        val viewReal = mockk<View>()
+        val resources = mockk<Resources>()
+        every {viewReal.contentDescription} returns ""
+        every {viewReal.id} returns 10
+        every {viewReal.resources} returns resources
+        every {viewReal.x} returns 1000F
+        every {viewReal.y} returns 900F
+        every {resources.getResourceEntryName(any())} throws Resources.NotFoundException("")
+        val value = viewReal.getIdOrTag()
+        assertEquals("View_10000_9000", value)
+    }
+
+    @Test
+    fun testGetIdOrTag_return_random_id_no_id() {
+        val viewReal = mockk<View>()
+        val resources = mockk<Resources>()
+        every {viewReal.contentDescription} returns ""
+        every {viewReal.id} returns -1
+        every {viewReal.tag} returns null
+        every {viewReal.resources} returns resources
+        every {viewReal.x} returns 1000F
+        every {viewReal.y} returns 900F
+        every {resources.getResourceEntryName(any())} throws Resources.NotFoundException("")
+        val value = viewReal.getIdOrTag()
+        assertEquals("View_10000_9000", value)
+    }
+
+    @Test
+    fun testGetIdOrTag_return_no_id() {
+        val viewReal:View? = null
+        val value = viewReal.getIdOrTag()
+        assertEquals("no_id", value)
+    }
 
     /**
      * This test addresses the ENG-5877
@@ -30,7 +106,14 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_root_view_ViewRootImp failed. Actual: $label should have matched regex: $control`")
+        }
+        assertTrue("testGetParentsOfView_root_view_ViewRootImp", result)
     }
 
     @Test
@@ -46,7 +129,14 @@ class NeuroIdUnitTest {
         justRun {log.e(any(), any())}
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/not_a_view", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_root_view_null failed. Actual: $label should have matched regex: $control")
+        }
+        assertTrue("testGetParentsOfView_root_view_null", matcher.matches(label))
     }
 
     @Test
@@ -66,13 +156,18 @@ class NeuroIdUnitTest {
         val viewGroup4 = mockk<ViewGroup>()
         every { viewGroup4.parent } returns viewGroup3
         every { viewGroup4.id } returns 13
-
         val view = mockk<View>()
         every { view.parent } returns viewGroup4
         every { view.id } returns 14
-
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
-        assertEquals("ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/ViewGroup${'$'}Subclass1/", label)
+        // need to use matcher, class.simpleName() returns random numbers in the when mocked
+        val control = "ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/"
+        val matcher = control.toRegex()
+        val result = matcher.matches(label)
+        if (!result) {
+            println("testGetParentsOfView_deep_root_view_greater_than_3 failed. Actual: $label should have matched regex: $control")
+        }
+        assertTrue("testGetParentsOfView_deep_root_view_greater_than_3", result)
     }
 }
