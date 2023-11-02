@@ -17,6 +17,7 @@ import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.UUID
 
 object NIDServiceTracker {
     @get:Synchronized
@@ -140,7 +141,8 @@ object NIDServiceTracker {
             put("pageTag", screenActivityName)
             put("pageId", rndmId)
             put("tabId", rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId())
+            put("responseId", sharedDefaults.generateUniqueHexId(
+               UUID.randomUUID().toString(), System.currentTimeMillis()))
             put("url", "$ANDROID_URI$screenActivityName")
             put("jsVersion", "5.0.0")
             put("sdkVersion", NIDVersion.getSDKVersion())

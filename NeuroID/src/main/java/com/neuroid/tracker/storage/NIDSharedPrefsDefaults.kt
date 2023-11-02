@@ -6,9 +6,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.util.UUID
+import java.security.MessageDigest
 import java.util.Locale
+import java.util.UUID
 import kotlin.random.Random
+
 
 class NIDSharedPrefsDefaults(
     context: Context
@@ -90,12 +92,23 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun generateUniqueHexId(): String {
-        val x = 1
-        val now = System.currentTimeMillis()
-        val rawId = (now - 1488084578518) * 1024 + (x + 1)
-
+    fun generateUniqueHexId(randomId: String, now: Long): String {
+        // use random UUID to ensure uniqueness amongst devices,
+        // hash this to get a Long and mix it up a
+        // bit as shown below to make it unique every time we send it back to the server
+        val rawId = (now - 1488084578518 + md5Hash(randomId)) * 1024
         return String.format("%02x", rawId)
+    }
+
+    private fun md5Hash(input: String): Long {
+        val digest = MessageDigest.getInstance("MD5")
+        digest.update(input.toByteArray())
+        val messageDigest = digest.digest()
+        var result: Long = 0
+        for (i in 0 until 8) {
+            result = (result shl 8) or (messageDigest[i].toLong() and 0xFF)
+        }
+        return result
     }
 
     fun getLocale(): String = Locale.getDefault().toString()

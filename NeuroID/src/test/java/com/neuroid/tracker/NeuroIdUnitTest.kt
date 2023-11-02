@@ -1,12 +1,14 @@
 package com.neuroid.tracker
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParentsOfView
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -15,6 +17,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NeuroIdUnitTest {
+
+    @Test
+    fun testGenerateUniqueHexId() {
+        val sharedPrefs = mockk<SharedPreferences>()
+        val context = mockk<Context>()
+        every{context.getSharedPreferences(any(), any())} returns sharedPrefs
+        val prefs = NIDSharedPrefsDefaults(context)
+        val temp = prefs.generateUniqueHexId("test", 1L)
+        assertEquals(temp, "3da9cb35848a7800")
+        val temp2 = prefs.generateUniqueHexId("test", 2L)
+        assertEquals(temp2, "3da9cb35848a7c00")
+        val temp3 = prefs.generateUniqueHexId("test2", 1L)
+        assertEquals(temp3, "8cca0651420b800")
+        val temp4 = prefs.generateUniqueHexId("test", 1L)
+        assertEquals(temp4, "3da9cb35848a7800")
+    }
 
     @Test
     fun testGetIdOrTag_return_content_description() {

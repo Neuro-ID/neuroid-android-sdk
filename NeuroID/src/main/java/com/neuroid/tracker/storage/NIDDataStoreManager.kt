@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
@@ -252,7 +253,9 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
             put("pageTag", NIDServiceTracker.screenActivityName)
             put("pageId", NIDServiceTracker.rndmId)
             put("tabId", NIDServiceTracker.rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId())
+            put("responseId", sharedDefaults.generateUniqueHexId(
+                UUID.randomUUID().toString(),
+                System.currentTimeMillis()))
             put("url", "$ANDROID_URI${NIDServiceTracker.screenActivityName}")
             put("jsVersion", "5.0.0")
             put("sdkVersion", NIDVersion.getSDKVersion())
