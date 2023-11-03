@@ -19,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.UUID
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
