@@ -12,26 +12,43 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Calendar
+import java.util.UUID
 
 class NeuroIdUnitTest {
 
     @Test
     fun testGenerateUniqueHexId() {
+        val cal = mockk<Calendar>()
+        every {cal.timeInMillis} returns 1
+        mockkStatic(Calendar::class)
+        every {Calendar.getInstance()} returns cal
+        val uuid = mockk<UUID>()
+        every {uuid.toString()} returns "test"
+        mockkStatic(UUID::class)
+        every {UUID.randomUUID()} returns uuid
         val sharedPrefs = mockk<SharedPreferences>()
         val context = mockk<Context>()
         every{context.getSharedPreferences(any(), any())} returns sharedPrefs
         val prefs = NIDSharedPrefsDefaults(context)
-        val temp = prefs.generateUniqueHexId("test", 1L)
+        val temp = prefs.generateUniqueHexId()
         assertEquals(temp, "3da9cb35848a7800")
-        val temp2 = prefs.generateUniqueHexId("test", 2L)
+        every {cal.timeInMillis} returns 2
+        val temp2 = prefs.generateUniqueHexId()
+        every {cal.timeInMillis} returns 1
+        every {uuid.toString()} returns "test2"
         assertEquals(temp2, "3da9cb35848a7c00")
-        val temp3 = prefs.generateUniqueHexId("test2", 1L)
+        val temp3 = prefs.generateUniqueHexId()
         assertEquals(temp3, "8cca0651420b800")
-        val temp4 = prefs.generateUniqueHexId("test", 1L)
+        every {uuid.toString()} returns "test"
+        val temp4 = prefs.generateUniqueHexId()
         assertEquals(temp4, "3da9cb35848a7800")
+        unmockkAll()
     }
 
     @Test

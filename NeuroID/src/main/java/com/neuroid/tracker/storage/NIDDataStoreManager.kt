@@ -253,9 +253,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
             put("pageTag", NIDServiceTracker.screenActivityName)
             put("pageId", NIDServiceTracker.rndmId)
             put("tabId", NIDServiceTracker.rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId(
-                UUID.randomUUID().toString(),
-                System.currentTimeMillis()))
+            put("responseId", sharedDefaults.generateUniqueHexId())
             put("url", "$ANDROID_URI${NIDServiceTracker.screenActivityName}")
             put("jsVersion", "5.0.0")
             put("sdkVersion", NIDVersion.getSDKVersion())

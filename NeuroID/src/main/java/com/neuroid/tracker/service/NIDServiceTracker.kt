@@ -141,8 +141,7 @@ object NIDServiceTracker {
             put("pageTag", screenActivityName)
             put("pageId", rndmId)
             put("tabId", rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId(
-               UUID.randomUUID().toString(), System.currentTimeMillis()))
+            put("responseId", sharedDefaults.generateUniqueHexId())
             put("url", "$ANDROID_URI$screenActivityName")
             put("jsVersion", "5.0.0")
             put("sdkVersion", NIDVersion.getSDKVersion())
