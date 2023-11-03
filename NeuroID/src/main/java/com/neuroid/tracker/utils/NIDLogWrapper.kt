@@ -4,23 +4,23 @@ import android.util.Log
 import com.neuroid.tracker.BuildConfig
 
 class NIDLogWrapper {
-    fun d(tag: String, msg: String) {
+    fun d(tag: String? = null, msg: String) {
         NIDLog.d(tag, msg)
     }
 
-    fun e(tag: String, msg: String) {
+    fun e(tag: String? = null, msg: String) {
         NIDLog.e(tag, msg)
     }
 
-    fun i(tag: String, msg: String) {
+    fun i(tag: String? = null, msg: String) {
         NIDLog.i(tag, msg)
     }
 
-    fun v(tag: String, msg: String) {
+    fun v(tag: String? = null, msg: String) {
         NIDLog.v(tag, msg)
     }
 
-    fun w(tag: String, msg: String) {
+    fun w(tag: String? = null, msg: String) {
         NIDLog.w(tag, msg)
     }
 }

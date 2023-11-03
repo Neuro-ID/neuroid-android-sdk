@@ -1,44 +1,58 @@
 package com.neuroid.tracker.utils
 
 import android.util.Log
-import com.neuroid.tracker.BuildConfig
+import com.neuroid.tracker.NeuroID
 
 object NIDLog {
-    fun d(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) {
+    val nidTag = "NeuroID"
+    val infoTag = "NeuroID Info"
+    val debugTag = "NeuroID Debug"
+    val errorTag = "****** NeuroID ERROR: ******"
+    val warnTag = "NeuroID Warn"
+
+    fun d(tag: String? = null, msg: String) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             msg.chunked(900).forEach {
-                Log.d(tag, it)
+                Log.d(appendTag(tag, debugTag), it)
             }
         }
     }
 
-    fun e(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) {
-            Log.e(tag, msg)
+    fun e(tag: String? = null, msg: String) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+            Log.e(appendTag(tag, errorTag), msg)
         }
     }
 
-    fun i(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) {
+    fun i(tag: String? = null, msg: String) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             msg.chunked(900).forEach {
-                Log.i(tag, it)
+                Log.i(appendTag(tag, infoTag), it)
             }
         }
     }
 
-    fun v(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) {
+    fun v(tag: String? = null, msg: String) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             msg.chunked(900).forEach {
-                Log.v(tag, it)
+                Log.v(appendTag(tag, nidTag), it)
             }
         }
     }
 
-    fun w(tag: String, msg: String) {
-        if (BuildConfig.DEBUG) {
+    fun w(tag: String? = null, msg: String) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             msg.chunked(900).forEach {
-                Log.w(tag, it)
+                Log.w(appendTag(tag, warnTag), it)
             }
+        }
+    }
+
+    private fun appendTag(tag: String? = null, levelTag: String): String {
+        return if (tag != null) {
+            "$levelTag $tag"
+        } else {
+            levelTag
         }
     }
 

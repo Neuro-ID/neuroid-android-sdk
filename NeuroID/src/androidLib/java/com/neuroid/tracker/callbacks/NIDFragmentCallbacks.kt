@@ -16,7 +16,7 @@ class NIDFragmentCallbacks(
 ) : FragmentCallbacks(isChangeOrientation) {
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDLog.d("NID-Fragment", "Fragment - Attached ${f::class.java.simpleName}")
+        NIDLog.d( "Fragment - Attached ${f::class.java.simpleName}")
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             if (NIDServiceTracker.screenName.isNullOrEmpty()) {
                 NIDServiceTracker.screenName = "AppInit"

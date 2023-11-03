@@ -44,7 +44,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
 
                 override fun onFailure(message: String, responseCode: Int) {
                     // do some error handling with the error
-                    NIDLog.e("NeuroId", "Failed to get API key from NID: $message")
+                    NIDLog.e("Failed to get API key from NID: $message")
                 }
             }, HttpConnectionProvider(), GsonAdvMapper(), Base64Decoder(), clientKey,
                 getDataStoreInstance())

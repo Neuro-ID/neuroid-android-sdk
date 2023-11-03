@@ -15,7 +15,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
     var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDLog.d("Neuro ID", "NIDDebug onFragmentAttached ${f::class.java.simpleName}");
+        NIDLog.d("onFragmentAttached ${f::class.java.simpleName}");
 
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             if (NIDServiceTracker.screenName.isNullOrEmpty()) {

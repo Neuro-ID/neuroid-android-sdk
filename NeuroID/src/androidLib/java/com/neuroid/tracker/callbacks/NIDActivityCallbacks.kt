@@ -24,7 +24,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
     private var wasChanged = false
 
     override fun onActivityStarted(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Created")
+        NIDLog.d( "Activity - Created")
 
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
@@ -51,12 +51,12 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         if (existActivity.not()) {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-            NIDLog.d("NID--Activity", "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            NIDLog.d( "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(wasChanged), true)
         }
 
         if (wasChanged) {
-            NIDLog.d("NID--Activity", "Activity - POST Created - Orientation change")
+            NIDLog.d( "Activity - POST Created - Orientation change")
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
@@ -75,7 +75,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         metadataObj.put("lifecycle", "postCreated")
         metadataObj.put("className", "${activity::class.java.simpleName}")
         val attrJSON = JSONArray().put(metadataObj)
-        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
+        NIDLog.d( "Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -89,7 +89,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Resumed")
+        NIDLog.d( "Activity - Resumed")
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()

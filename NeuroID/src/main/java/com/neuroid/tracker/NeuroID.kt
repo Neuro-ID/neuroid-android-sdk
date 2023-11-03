@@ -32,7 +32,6 @@ class NeuroID private constructor(
     internal var application: Application?,
     internal var clientKey: String
 ) {
-    private var isSDKStarted = false
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
     private var sessionID = ""
@@ -78,6 +77,8 @@ class NeuroID private constructor(
     }
 
     companion object {
+        var showLogs: Boolean = true
+        var isSDKStarted = false
         const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
 
         private var singleton: NeuroID? = null
@@ -102,7 +103,7 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
-        if (!this.isSDKStarted) {
+        if (!NeuroID.isSDKStarted) {
             throw IllegalArgumentException("NeuroID SDK is not started");
         }
 
@@ -128,7 +129,7 @@ class NeuroID private constructor(
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
-        if (!this.isSDKStarted) {
+        if (!NeuroID.isSDKStarted) {
             throw IllegalArgumentException("NeuroID SDK is not started");
         }
         NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
@@ -264,7 +265,7 @@ class NeuroID private constructor(
     }
 
    open fun start() {
-        this.isSDKStarted = true
+        NeuroID.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
@@ -279,7 +280,7 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        this.isSDKStarted = false
+        NeuroID.isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
             NIDJobServiceManager.sendEventsNow(true)
             NIDJobServiceManager.stopJob()
@@ -407,5 +408,9 @@ class NeuroID private constructor(
 
     fun setIsRN() {
         this.isRN = true
+    }
+
+    fun enableLogging(enable: Boolean){
+        showLogs = enable
     }
 }

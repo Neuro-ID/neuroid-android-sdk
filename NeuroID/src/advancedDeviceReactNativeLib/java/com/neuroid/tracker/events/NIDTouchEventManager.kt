@@ -80,7 +80,7 @@ class NIDTouchEventManager(
             try {
                 motionValues = generateMotionEventValues(motionEvent)
             } catch (ex: Exception) {
-                NIDLog.d("NIDDebug NITTouchEventManager", "no motion error: ${ex.printStackTrace()}")
+                NIDLog.d("NIDTouchEventManager","no motion error: ${ex.printStackTrace()}")
             }
             val rawAction = JSONObject().put("rawAction", it.action)
             val attrJSON = JSONArray().put(rawAction).put(metadataObj).put(motionValues)

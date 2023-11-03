@@ -16,7 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONArray
 import org.json.JSONObject
 
-abstract class FragmentCallbacks(isChangeOrientation: Boolean): FragmentLifecycleCallbacks() {
+abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecycleCallbacks() {
 
     val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
     private var _isChangeOrientation = isChangeOrientation
@@ -24,24 +24,20 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean): FragmentLifecycl
     abstract override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context)
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
-        NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
+        NIDLog.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
 
     }
 
     override fun onFragmentViewCreated(
-        fm: FragmentManager,
-        f: Fragment,
-        v: View,
-        savedInstanceState: Bundle?
+        fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?
     ) {
-        NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
+        NIDLog.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
     }
 
     override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
         super.onFragmentResumed(fm, f)
         NIDLog.d(
-            "Neuro ID",
-            "Fragment - Resumed ${f.id} ${f.isVisible} ${f.tag} ${f::class.java.simpleName}"
+            msg = "Fragment - Resumed ${f.id} ${f.isVisible} ${f.tag} ${f::class.java.simpleName}"
         )
 
         // TODO skip on force start
@@ -61,8 +57,7 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean): FragmentLifecycl
 
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             NIDLog.d(
-                "NID-Activity",
-                "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
+                msg = "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
             )
             registerTargetFromScreen(
                 f.requireActivity(),
@@ -75,25 +70,25 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean): FragmentLifecycl
             )
             _isChangeOrientation = false
         } else {
-            NIDLog.d("NID-Activity", "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")
+            NIDLog.d(msg = "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")
         }
     }
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
         super.onFragmentPaused(fm, f)
-        NIDLog.d("NID-Activity", "Fragment - Paused ${f::class.java.simpleName}")
+        NIDLog.d(msg = "Fragment - Paused ${f::class.java.simpleName}")
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
-        NIDLog.d("NID-Activity", "Fragment - Stopped ${f::class.java.simpleName}")
+        NIDLog.d(msg = "Fragment - Stopped ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
-        NIDLog.d("NID-Activity", "Fragment - Destroyed ${f::class.java.simpleName}")
+        NIDLog.d(msg = "Fragment - Destroyed ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        NIDLog.d("NID-Activity", "Fragment - Detached ${f::class.java.simpleName}")
+        NIDLog.d(msg = "Fragment - Detached ${f::class.java.simpleName}")
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -103,8 +98,7 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean): FragmentLifecycl
             metadataObj.put("className", "${f::class.java.simpleName}")
             val attrJSON = JSONArray().put(metadataObj)
             NIDLog.d(
-                "NID-Activity",
-                "Fragment - Detached - WINDOW UNLOAD ${f::class.java.simpleName}"
+                msg = "Fragment - Detached - WINDOW UNLOAD ${f::class.java.simpleName}"
             )
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
