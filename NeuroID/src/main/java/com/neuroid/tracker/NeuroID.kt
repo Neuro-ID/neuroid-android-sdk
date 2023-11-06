@@ -29,8 +29,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class NeuroID private constructor(
-    internal var application: Application?,
-    internal var clientKey: String
+    internal var application: Application?, internal var clientKey: String
 ) {
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
@@ -69,11 +68,9 @@ class NeuroID private constructor(
     }
 
     data class Builder(
-        var application: Application? = null,
-        var clientKey: String = ""
+        var application: Application? = null, var clientKey: String = ""
     ) {
-        fun build() =
-            NeuroID(application, clientKey)
+        fun build() = NeuroID(application, clientKey)
     }
 
     companion object {
@@ -98,42 +95,44 @@ class NeuroID private constructor(
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            throw IllegalArgumentException("Invalid UserId");
+            throw IllegalArgumentException("Invalid UserId")
         }
     }
 
     fun setUserID(userId: String) {
-        if (!NeuroID.isSDKStarted) {
-            throw IllegalArgumentException("NeuroID SDK is not started");
-        }
+        if (isSDKStarted) {
+            this.validateUserId(userId)
+            userID = userId
 
-        this.validateUserId(userId)
-        userID = userId
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        application?.let {
-            NIDSharedPrefsDefaults(it).setUserId(userId)
-        }
-        getDataStoreInstance().saveEvent(
-            NIDEventModel(
-                type = SET_USER_ID,
-                uid = userId,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+            application?.let {
+                NIDSharedPrefsDefaults(it).setUserId(userId)
+            }
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = SET_USER_ID,
+                    uid = userId,
+                    ts = System.currentTimeMillis(),
+                    gyro = gyroData,
+                    accel = accelData
+                )
             )
-        )
+        } else {
+            throw IllegalArgumentException("NeuroID SDK is not started")
+        }
     }
 
     fun getUserId() = userID
 
     fun setScreenName(screen: String) {
-        if (!NeuroID.isSDKStarted) {
-            throw IllegalArgumentException("NeuroID SDK is not started");
+        if (isSDKStarted) {
+            NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+            createMobileMetadata()
+        } else {
+            throw IllegalArgumentException("NeuroID SDK is not started")
         }
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
-        createMobileMetadata()
+
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -161,8 +160,7 @@ class NeuroID private constructor(
         NIDServiceTracker.siteId = siteId
     }
 
-    fun getSiteId(): String =
-        NIDServiceTracker.siteId
+    fun getSiteId(): String = NIDServiceTracker.siteId
 
     fun getSessionId(): String {
         return sessionID
@@ -264,8 +262,8 @@ class NeuroID private constructor(
         NIDServiceTracker.rndmId = ""
     }
 
-   open fun start() {
-        NeuroID.isSDKStarted = true
+    open fun start() {
+        isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
@@ -280,7 +278,7 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        NeuroID.isSDKStarted = false
+        isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
             NIDJobServiceManager.sendEventsNow(true)
             NIDJobServiceManager.stopJob()
@@ -292,9 +290,7 @@ class NeuroID private constructor(
         if (!isStopped()) {
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
-                    type = CLOSE_SESSION,
-                    ct = "SDK_EVENT",
-                    ts = System.currentTimeMillis()
+                    type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
                 )
             )
             stop()
@@ -312,8 +308,7 @@ class NeuroID private constructor(
 
     fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
-            view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(),
-            true, addListener
+            view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(), true, addListener
         )
     }
 
@@ -402,7 +397,7 @@ class NeuroID private constructor(
                     jsv = NIDVersion.getSDKVersion(),
                     attrs = JSONArray().put(JSONObject().put("isRN", isRN))
                 )
-            );
+            )
         }
     }
 
@@ -410,7 +405,7 @@ class NeuroID private constructor(
         this.isRN = true
     }
 
-    fun enableLogging(enable: Boolean){
+    fun enableLogging(enable: Boolean) {
         showLogs = enable
     }
 }
