@@ -55,6 +55,17 @@ class NeuroID private constructor(
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
         }
+
+        if (!validateClientKey(clientKey)) {
+            NIDLog.e("NeuroID Error", "Invalid Client Key")
+            clientKey = ""
+        } else {
+            if (clientKey.contains("_live_")) {
+                NIDServiceTracker.environment = "LIVE"
+            } else {
+                NIDServiceTracker.environment = "TEST"
+            }
+        }
     }
 
     @Synchronized
@@ -92,6 +103,17 @@ class NeuroID private constructor(
         }
 
         fun getInstance(): NeuroID? = singleton
+    }
+
+    internal fun validateClientKey(clientKey: String): Boolean {
+        var valid = false
+        val regex = "key_(live|test)_[A-Za-z0-9]+"
+
+        if (clientKey.matches(regex.toRegex())) {
+            valid = true
+        }
+
+        return valid
     }
 
     internal fun validateUserId(userId: String) {
@@ -143,21 +165,26 @@ class NeuroID private constructor(
     }
 
     fun setEnvironment(environment: String) {
-        NIDServiceTracker.environment = environment
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+        )
     }
 
     fun setEnvironmentProduction(prod: Boolean) {
-        if (prod) {
-            NIDServiceTracker.environment = "LIVE"
-        } else {
-            NIDServiceTracker.environment = "TEST"
-
-        }
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+        )
     }
 
     fun getEnvironment(): String = NIDServiceTracker.environment
 
     fun setSiteId(siteId: String) {
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: setSiteId METHOD IS DEPRECATED"
+        )
         NIDServiceTracker.siteId = siteId
     }
 
@@ -211,6 +238,11 @@ class NeuroID private constructor(
     }
 
     fun formSubmit() {
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -227,6 +259,11 @@ class NeuroID private constructor(
     }
 
     fun formSubmitSuccess() {
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -243,6 +280,11 @@ class NeuroID private constructor(
     }
 
     fun formSubmitFailure() {
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
