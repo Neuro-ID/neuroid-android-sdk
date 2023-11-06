@@ -16,12 +16,12 @@ class FPJSHelper(private val context: Context) {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
         if (sharedDefaults.hasRequestIdExpired()) {
             NIDLog.d(              
-                "Request ID not found in cache"
+                msg="Request ID not found in cache"
             )
             // Request Id from server
             fpjsClient?.getVisitorId(listener = { result ->
                 NIDLog.d(                  
-                    "Generating Request ID for Advanced Device Signals: ${result.requestId}"
+                    msg="Generating Request ID for Advanced Device Signals: ${result.requestId}"
                 )
                 getDataStoreInstance().saveEvent(
                     NIDEventModel(
@@ -33,7 +33,7 @@ class FPJSHelper(private val context: Context) {
                 )
                 // Cache request Id for 24 hours
                 NIDLog.d(                  
-                    "Caching Request ID: ${result.requestId}"
+                    msg="Caching Request ID: ${result.requestId}"
                 )
                 sharedDefaults.cacheRequestId(result.requestId)
                 sharedDefaults.cacheRequestIdExpirationTimestamp()
@@ -41,7 +41,7 @@ class FPJSHelper(private val context: Context) {
                 errorListener = { error ->
                     retryCount += 1
                     NIDLog.d(                      
-                        "Error retrieving Advanced Device Signal Request ID:${error.description}: $fpjsRetryCount"
+                        msg="Error retrieving Advanced Device Signal Request ID:${error.description}: $fpjsRetryCount"
                     )
                     Thread.sleep(5000)
                     if (retryCount < maxRetryCount) {
@@ -56,7 +56,7 @@ class FPJSHelper(private val context: Context) {
                             )
                         )
                         NIDLog.e(
-                            "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"
+                            msg="Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"
                         )
                     }
 
@@ -65,7 +65,7 @@ class FPJSHelper(private val context: Context) {
             //  Retrieve request id from cache
             val requestId = sharedDefaults.getCachedRequestId()
             NIDLog.d(   
-                "Retrieving Request ID for Advanced Device Signals from cache: ${requestId}"
+                msg="Retrieving Request ID for Advanced Device Signals from cache: ${requestId}"
             )
             getDataStoreInstance().saveEvent(
                 NIDEventModel(
