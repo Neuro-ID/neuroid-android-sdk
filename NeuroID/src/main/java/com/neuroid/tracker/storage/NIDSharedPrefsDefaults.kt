@@ -99,7 +99,7 @@ class NIDSharedPrefsDefaults(
         // bit as shown below to make it unique every time we send it back to the server
         // cannot mock native methods (anything in System) so we use Calendar instead
         val rawId = (Calendar.getInstance().timeInMillis - 1488084578518 +
-                md5Hash(UUID.randomUUID().toString())) * 1024
+                md5Hash(UUID.randomUUID().toString()))
         return String.format("%02x", rawId)
     }
 
