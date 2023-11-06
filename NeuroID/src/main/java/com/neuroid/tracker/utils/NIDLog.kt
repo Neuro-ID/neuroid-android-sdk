@@ -19,13 +19,13 @@ object NIDLog {
     }
 
     fun e(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+        if (NeuroID.showLogs) {
             Log.e(appendTag(tag, errorTag), msg)
         }
     }
 
     fun i(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+        if (NeuroID.showLogs) {
             msg.chunked(900).forEach {
                 Log.i(appendTag(tag, infoTag), it)
             }
@@ -33,7 +33,7 @@ object NIDLog {
     }
 
     fun v(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+        if (NeuroID.showLogs) {
             msg.chunked(900).forEach {
                 Log.v(appendTag(tag, nidTag), it)
             }
@@ -41,7 +41,7 @@ object NIDLog {
     }
 
     fun w(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+        if (NeuroID.showLogs) {
             msg.chunked(900).forEach {
                 Log.w(appendTag(tag, warnTag), it)
             }
