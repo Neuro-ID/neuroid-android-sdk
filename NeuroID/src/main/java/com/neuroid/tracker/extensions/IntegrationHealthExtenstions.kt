@@ -50,7 +50,8 @@ internal fun generateIntegrationHealthDeviceReport() {
     }
 }
 
-@Synchronized internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
+@Synchronized
+internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
     val nidInstance = NeuroID.getInstance()
 
     val context = nidInstance?.application?.getApplicationContext()
@@ -73,7 +74,7 @@ internal fun generateIntegrationHealthDeviceReport() {
 
 // Internal Extensions
 internal fun NeuroID.shouldDebugIntegrationHealth(ifTrueCB: () -> Unit) {
-    if (this.verifyIntegrationHealth && this.getEnvironment() == "TEST") {
+    if (this.verifyIntegrationHealth) {
         ifTrueCB()
     }
 }
