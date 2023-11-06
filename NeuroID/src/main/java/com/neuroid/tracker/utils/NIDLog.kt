@@ -61,6 +61,4 @@ object NIDLog {
     const val CHECK_BOX_ID = "CheckBoxID:"
     const val RADIO_BUTTON_CHANGE_TAG = "RadioButtonChange"
     const val RADIO_BUTTON_ID = "RadioButtonID:"
-    const val SLIDER_CHANGE_TAG = "SliderChange"
-    const val SLIDER_ID = "SliderID:"
 }
