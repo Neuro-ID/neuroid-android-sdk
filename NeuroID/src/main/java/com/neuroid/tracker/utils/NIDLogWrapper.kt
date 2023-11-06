@@ -1,7 +1,6 @@
 package com.neuroid.tracker.utils
 
 import android.util.Log
-import com.neuroid.tracker.BuildConfig
 
 class NIDLogWrapper {
     fun d(tag: String? = null, msg: String) {
