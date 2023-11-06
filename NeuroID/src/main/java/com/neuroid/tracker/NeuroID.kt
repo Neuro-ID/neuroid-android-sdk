@@ -16,6 +16,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -263,7 +264,16 @@ class NeuroID private constructor(
         NIDServiceTracker.rndmId = ""
     }
 
-   open fun start() {
+    open fun start() {
+        if (clientKey == "") {
+            NIDLog.e(
+                "NeuroID Error",
+                "Missing Client Key - please call configure prior to calling start"
+            )
+            throw IllegalArgumentException("NeuroID SDK Missing Client API Key");
+            return
+        }
+
         this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
