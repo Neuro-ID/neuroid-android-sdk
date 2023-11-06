@@ -48,6 +48,7 @@ object NIDLog {
         }
     }
 
+    // Add default tag to provided optional tag     
     private fun appendTag(tag: String? = null, levelTag: String): String {
         return if (tag != null) {
             "$levelTag $tag"
