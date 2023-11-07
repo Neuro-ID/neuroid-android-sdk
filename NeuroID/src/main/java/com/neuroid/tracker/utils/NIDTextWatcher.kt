@@ -42,7 +42,7 @@ class NIDTextWatcher(
                 pastedText = clipData.getItemAt(0).text.toString()
             } catch (e: Exception) {
                 e.message?.let {
-                    NIDLog.e("NID-Activity", it)
+                    NIDLog.e("Activity", it)
                 }
             }
             val pasteCount = pastedText.length
@@ -92,7 +92,7 @@ class NIDTextWatcher(
         
         if (lastHashValue != currentHashValue) {
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
-            NIDLog.d("NID-Activity", "after text ${sequence.toString()}")
+            NIDLog.d(msg="Activity - after text ${sequence.toString()}")
 
             getDataStoreInstance()
                 .saveEvent(
