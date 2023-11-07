@@ -37,17 +37,17 @@ class NeuroIdUnitTest {
         every{context.getSharedPreferences(any(), any())} returns sharedPrefs
         val prefs = NIDSharedPrefsDefaults(context)
         val temp = prefs.generateUniqueHexId()
-        assertEquals(temp, "3da9cb35848a7800")
+        assertEquals(temp, "98f6a72cd61229e")
         every {cal.timeInMillis} returns 2
         val temp2 = prefs.generateUniqueHexId()
         every {cal.timeInMillis} returns 1
         every {uuid.toString()} returns "test2"
-        assertEquals(temp2, "3da9cb35848a7c00")
+        assertEquals(temp2, "98f6a72cd61229f")
         val temp3 = prefs.generateUniqueHexId()
-        assertEquals(temp3, "8cca0651420b800")
+        assertEquals(temp3, "ad0233281945082e")
         every {uuid.toString()} returns "test"
         val temp4 = prefs.generateUniqueHexId()
-        assertEquals(temp4, "3da9cb35848a7800")
+        assertEquals(temp4, "98f6a72cd61229e")
         unmockkAll()
     }
 
