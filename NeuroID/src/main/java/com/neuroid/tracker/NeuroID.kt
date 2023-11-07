@@ -55,7 +55,7 @@ class NeuroID private constructor(
         }
 
         if (!validateClientKey(clientKey)) {
-            NIDLog.e("NeuroID Error", "Invalid Client Key")
+            NIDLog.e(msg = "Invalid Client Key")
             clientKey = ""
         } else {
             if (clientKey.contains("_live_")) {
@@ -166,15 +166,13 @@ class NeuroID private constructor(
 
     fun setEnvironment(environment: String) {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
         )
     }
 
     fun setEnvironmentProduction(prod: Boolean) {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
         )
     }
 
@@ -182,16 +180,14 @@ class NeuroID private constructor(
 
     fun setSiteId(siteId: String) {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: setSiteId METHOD IS DEPRECATED"
+            msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
         )
         NIDServiceTracker.siteId = siteId
     }
 
     fun getSiteId(): String {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: getSiteId METHOD IS DEPRECATED"
+            msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
         )
         return ""
     }
@@ -244,8 +240,7 @@ class NeuroID private constructor(
 
     fun formSubmit() {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -265,8 +260,7 @@ class NeuroID private constructor(
 
     fun formSubmitSuccess() {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -286,8 +280,7 @@ class NeuroID private constructor(
 
     fun formSubmitFailure() {
         NIDLog.i(
-            "NeuroID Info",
-            "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -314,8 +307,7 @@ class NeuroID private constructor(
     open fun start() {
         if (clientKey == "") {
             NIDLog.e(
-                "NeuroID Error",
-                "Missing Client Key - please call configure prior to calling start"
+                msg = "Missing Client Key - please call configure prior to calling start"
             )
             throw IllegalStateException("NeuroID SDK Missing Client API Key");
         }
