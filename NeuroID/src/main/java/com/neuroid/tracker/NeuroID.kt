@@ -188,8 +188,13 @@ class NeuroID private constructor(
         NIDServiceTracker.siteId = siteId
     }
 
-    fun getSiteId(): String =
-        NIDServiceTracker.siteId
+    fun getSiteId(): String {
+        NIDLog.i(
+            "NeuroID Info",
+            "**** NOTE: getSiteId METHOD IS DEPRECATED"
+        )
+        return ""
+    }
 
     fun getSessionId(): String {
         return sessionID
