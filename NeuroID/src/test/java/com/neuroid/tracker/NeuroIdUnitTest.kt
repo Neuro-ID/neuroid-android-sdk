@@ -1,20 +1,55 @@
 package com.neuroid.tracker
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParentsOfView
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Calendar
+import java.util.UUID
 
 class NeuroIdUnitTest {
+
+    @Test
+    fun testGenerateUniqueHexId() {
+        val cal = mockk<Calendar>()
+        every {cal.timeInMillis} returns 1
+        mockkStatic(Calendar::class)
+        every {Calendar.getInstance()} returns cal
+        val uuid = mockk<UUID>()
+        every {uuid.toString()} returns "test"
+        mockkStatic(UUID::class)
+        every {UUID.randomUUID()} returns uuid
+        val sharedPrefs = mockk<SharedPreferences>()
+        val context = mockk<Context>()
+        every{context.getSharedPreferences(any(), any())} returns sharedPrefs
+        val prefs = NIDSharedPrefsDefaults(context)
+        val temp = prefs.generateUniqueHexId()
+        assertEquals(temp, "98f6a72cd61229e")
+        every {cal.timeInMillis} returns 2
+        val temp2 = prefs.generateUniqueHexId()
+        every {cal.timeInMillis} returns 1
+        every {uuid.toString()} returns "test2"
+        assertEquals(temp2, "98f6a72cd61229f")
+        val temp3 = prefs.generateUniqueHexId()
+        assertEquals(temp3, "ad0233281945082e")
+        every {uuid.toString()} returns "test"
+        val temp4 = prefs.generateUniqueHexId()
+        assertEquals(temp4, "98f6a72cd61229e")
+        unmockkAll()
+    }
 
     @Test
     fun testGetIdOrTag_return_content_description() {
