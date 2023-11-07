@@ -313,7 +313,6 @@ class NeuroID private constructor(
                 "Missing Client Key - please call configure prior to calling start"
             )
             throw IllegalStateException("NeuroID SDK Missing Client API Key");
-            return
         }
 
         this.isSDKStarted = true
