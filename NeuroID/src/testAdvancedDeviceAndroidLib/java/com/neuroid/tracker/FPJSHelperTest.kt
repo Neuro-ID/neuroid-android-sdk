@@ -28,7 +28,7 @@ class FPJSHelperTest {
         val fpjsHelper = FPJSHelper()
         fpjsHelper.createRequestIdEvent(fpjsClient, 0, 3, sharedPrefs, logger, dataStore)
         verify { sharedPrefs.getCachedRequestId() }
-        verify { logger.d("NIDDebugEvent", "Retrieving Request ID for Advanced Device Signals from cache: 572893hjfelsk") }
+        verify { logger.d(msg="Retrieving Request ID for Advanced Device Signals from cache: 572893hjfelsk") }
         verify { dataStore.saveEvent(any())}
     }
 
@@ -44,8 +44,8 @@ class FPJSHelperTest {
         every {dataStore.saveEvent(any())} just runs
         val fpjsHelper = FPJSHelper()
         fpjsHelper.createRequestIdEvent(fpjsClientFireAPIKeyOK, 0, 3, sharedPrefs, logger, dataStore)
-        verify { logger.d("NIDDebugEvent", "Request ID not found in cache")}
-        verify { logger.d("NIDDebugEvent", "Generating Request ID for Advanced Device Signals: 543sdgsdg") }
+        verify { logger.d(msg="Request ID not found in cache")}
+        verify { logger.d(msg="Generating Request ID for Advanced Device Signals: 543sdgsdg") }
         verify { sharedPrefs.cacheRequestId("543sdgsdg") }
         verify { sharedPrefs.cacheRequestIdExpirationTimestamp() }
         verify { dataStore.saveEvent(any())}
@@ -62,11 +62,11 @@ class FPJSHelperTest {
         every {dataStore.saveEvent(any())} just runs
         val fpjsHelper = FPJSHelper()
         fpjsHelper.createRequestIdEvent(fpjsClientFireWrongAPIKey, 0, 3, sharedPrefs, logger, dataStore)
-        verify { logger.d("NIDDebugEvent", "Error retrieving Advanced Device Signal Request ID:no request id available: 0") }
-        verify { logger.d("NIDDebugEvent", "Error retrieving Advanced Device Signal Request ID:no request id available: 1") }
-        verify { logger.d("NIDDebugEvent", "Error retrieving Advanced Device Signal Request ID:no request id available: 2") }
-        verify (exactly = 3){ logger.d("NIDDebugEvent", "Request ID not found in cache")}
-        verify { logger.e("NeuroId", "Reached maximum number of retries (3) to get Advanced Device Signal Request ID:no request id available")}
+        verify { logger.d(msg="Error retrieving Advanced Device Signal Request ID:no request id available: 0") }
+        verify { logger.d(msg="Error retrieving Advanced Device Signal Request ID:no request id available: 1") }
+        verify { logger.d(msg="Error retrieving Advanced Device Signal Request ID:no request id available: 2") }
+        verify (exactly = 3){ logger.d(msg="Request ID not found in cache")}
+        verify { logger.e(msg="Reached maximum number of retries (3) to get Advanced Device Signal Request ID:no request id available")}
         verify { dataStore.saveEvent(any())}
     }
 

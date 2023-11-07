@@ -89,7 +89,7 @@ internal fun NeuroID.startIntegrationHealthCheck() {
 
 internal fun NeuroID.captureIntegrationHealthEvent(event: NIDEventModel) {
     shouldDebugIntegrationHealth {
-//        NIDLog.d("NeuroID", "Adding Health Event: ${event.type}")
+//        NIDLog.d( "Adding Health Event: ${event.type}")
         this.debugIntegrationHealthEvents.add(event)
     }
 }
