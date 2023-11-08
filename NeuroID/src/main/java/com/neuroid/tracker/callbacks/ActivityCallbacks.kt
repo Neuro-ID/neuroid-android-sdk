@@ -24,7 +24,7 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
     var listActivities = ArrayList<String>()
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        NIDLog.d("Neuro ID", "NIDDebug onActivityCreated");
+        NIDLog.d(msg = "onActivityCreated");
     }
 
     abstract override fun onActivityStarted(activity: Activity)
@@ -48,7 +48,7 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
     abstract override fun onActivityResumed(activity: Activity)
 
     override fun onActivityPaused(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Paused")
+        NIDLog.d( msg="Activity - Paused")
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -72,17 +72,17 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
     }
 
     override fun onActivityStopped(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Stopped")
+        NIDLog.d( msg="Activity - Stopped")
         activitiesStarted--
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
         // No Operation
-        NIDLog.d("NID--Activity", "Activity - Save Instance")
+        NIDLog.d( msg="Activity - Save Instance")
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Destroyed")
+        NIDLog.d( msg="Activity - Destroyed")
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
         val activityDestroyed = activity::class.java.name
@@ -94,7 +94,7 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
         metadataObj.put("className", "${activity::class.java.simpleName}")
         val attrJSON = JSONArray().put(metadataObj)
 
-        NIDLog.d("NID--Activity", "Activity - Destroyed - Window Unload")
+        NIDLog.d( msg="Activity - Destroyed - Window Unload")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(

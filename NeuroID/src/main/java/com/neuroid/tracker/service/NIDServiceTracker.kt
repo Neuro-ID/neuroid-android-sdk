@@ -55,7 +55,7 @@ object NIDServiceTracker {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
 
-            NIDLog.d("NeuroID", "Url: $endpoint")
+            NIDLog.d( msg="Url: $endpoint")
             val url = URL("${endpoint}/${key}")
             val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
@@ -86,7 +86,7 @@ object NIDServiceTracker {
             val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
             val stopLoopService = listEvents.last().contains(USER_INACTIVE)
-            NIDLog.d("NeuroID", "payload Json::: $data")
+            NIDLog.d( msg="payload Json::: $data")
 
             var retryAttempts = 0
             while (retryAttempts < MAX_RETRY_ATTEMPTS) {
@@ -102,15 +102,15 @@ object NIDServiceTracker {
                     val message = conn.responseMessage
 
                     if (code == 200) {
-                        NIDLog.d("NeuroID", "Http response code: $code")
+                        NIDLog.d(msg="Http response code: $code")
                         return Pair(code, stopLoopService)
                     } else {
-                        NIDLog.e("NeuroID", "Error service: $message Code:$code")
+                        NIDLog.e(msg="Error service: $message Code:$code")
                         // Retry in case of HTTP error
                         retryAttempts++
                     }
                 } catch (ex: Exception) {
-                    NIDLog.e("NeuroID", "An error has occurred: ${ex.message}")
+                    NIDLog.e(msg="An error has occurred: ${ex.message}")
                     // Retry in case of HTTP error
                     retryAttempts++
                 } finally {
