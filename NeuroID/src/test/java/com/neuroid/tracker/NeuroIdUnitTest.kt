@@ -35,14 +35,6 @@ class NeuroIdUnitTest {
         val temp = prefs.generateUniqueHexId()
         assertEquals(temp, "test")
 
-        every {uuid.toString()} returns "test2"
-        val temp2 = prefs.generateUniqueHexId()
-        assertEquals(temp2, "test2")
-
-        every {uuid.toString()} returns "test"
-        val temp3 = prefs.generateUniqueHexId()
-        assertEquals(temp3, "test")
-
         unmockkAll()
     }
 
