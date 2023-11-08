@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.neuroid.tracker.utils.FPJSHelper
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.Constants
 
 fun NeuroID.start(advancedDeviceSignals: Boolean) {
     start()
@@ -25,13 +26,18 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
             val keyService = NIDAdvKeyService()
             var fpjsRetryCount = 0
             val FPJS_RETRY_MAX = 3
+            var endpointUrl = Constants.fpjsDevDomain.displayName
+            if (NeuroID.getInstance()?.getEnvironment() == "LIVE"){
+                endpointUrl = Constants.fpjsProdDomain.displayName
+            }
             keyService.getKey(object : OnKeyCallback {
                 override fun onKeyGotten(key: String) {
                     val applicationContext = getApplicationContext()
                     val fpjsClient = applicationContext?.let {
                         FingerprintJSFactory(applicationContext = it).createInstance(
                             Configuration(
-                                apiKey = key
+                                apiKey = key,
+                                endpointUrl = endpointUrl
                             )
                         )
                     }
