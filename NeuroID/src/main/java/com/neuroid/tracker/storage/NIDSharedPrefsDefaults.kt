@@ -95,24 +95,7 @@ class NIDSharedPrefsDefaults(
 
     fun generateUniqueHexId(): String {
         // use random UUID to ensure uniqueness amongst devices,
-        // hash this to get a Long and mix it up a
-        // bit as shown below to make it unique every time we send it back to the server
-        // cannot mock native methods (anything in System) so we use Calendar instead
-        val rawId = (Calendar.getInstance().timeInMillis - 1488084578518 +
-                md5Hash(UUID.randomUUID().toString()))
-        return String.format("%02x", rawId)
-    }
-
-    private fun md5Hash(input: String): Long {
-        val digest = MessageDigest.getInstance("MD5")
-        digest.update(input.toByteArray())
-        val messageDigest = digest.digest()
-        var result: Long = 0
-        // get 8 bytes (64 bits) and use these to generate the hash
-        for (i in 0 until 8) {
-            result = (result shl 8) or (messageDigest[i].toLong() and 0xFF)
-        }
-        return result
+        return UUID.randomUUID().toString()
     }
 
     fun getLocale(): String = Locale.getDefault().toString()
