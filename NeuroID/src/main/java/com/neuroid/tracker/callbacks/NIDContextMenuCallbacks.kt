@@ -42,8 +42,7 @@ class NIDTextContextMenuCallbacks(
         wrapper?.onActionItemClicked(action, item)
 
         NIDLog.d(
-            "NIDDebug",
-            "Existing Text Action Context - $item"
+            msg="Existing Text Action Context - $item"
         )
 
         item?.itemId?.let { saveEvent(it, item.toString()) }
@@ -59,8 +58,7 @@ class NIDLongPressContextMenuCallbacks(
         wrapper?.onActionItemClicked(action, item)
 
         NIDLog.d(
-            "NIDDebug",
-            "Long Press Action Context - $item"
+           msg="Long Press Action Context - $item"
         )
 
         item?.itemId?.let { saveEvent(it, item.toString()) }
