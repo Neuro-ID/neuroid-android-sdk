@@ -6,8 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.security.MessageDigest
-import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random

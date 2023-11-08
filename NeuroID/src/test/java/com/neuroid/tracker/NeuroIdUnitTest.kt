@@ -17,7 +17,6 @@ import io.mockk.unmockkAll
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.Calendar
 import java.util.UUID
 
 class NeuroIdUnitTest {
