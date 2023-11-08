@@ -30,8 +30,7 @@ interface NIDDataStoreManager {
     fun resetJsonPayload()
     fun getJsonPayload(context: Context): String
     fun queueEvent(event: NIDEventModel)
-    fun getAllQueuedEvents(): Queue<NIDEventModel>
-    fun clearAllQueuedEvents()
+    fun getAndClearAllQueuedEvents(): MutableList<NIDEventModel>
 }
 
 fun initDataStoreCtx(context: Context) {
@@ -65,13 +64,10 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     @Synchronized
-    override fun getAllQueuedEvents(): Queue<NIDEventModel> {
-        return queuedEvents
-    }
-
-    @Synchronized
-    override fun clearAllQueuedEvents() {
+    override fun getAndClearAllQueuedEvents(): MutableList<NIDEventModel> {
+        val result = queuedEvents.toMutableList()
         queuedEvents.clear()
+        return result
     }
 
     @Synchronized
