@@ -19,6 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.LinkedList
+import java.util.Queue
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
@@ -27,6 +29,9 @@ interface NIDDataStoreManager {
     suspend fun clearEvents()
     fun resetJsonPayload()
     fun getJsonPayload(context: Context): String
+    fun queueEvent(event: NIDEventModel)
+    fun getAllQueuedEvents(): Queue<NIDEventModel>
+    fun clearAllQueuedEvents()
 }
 
 fun initDataStoreCtx(context: Context) {
@@ -43,15 +48,32 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     private const val NID_STRING_JSON_PAYLOAD = "NID_STRING_JSON_PAYLOAD"
     private var sharedPref: SharedPreferences? = null
     private val listNonActiveEvents = listOf(
-        USER_INACTIVE,
-        WINDOW_BLUR //Block screen
+        USER_INACTIVE, WINDOW_BLUR //Block screen
     )
     private val listIdsExcluded = arrayListOf<String>()
+    private var queuedEvents: Queue<NIDEventModel> = LinkedList()
 
     fun init(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
         }
+    }
+
+    @Synchronized
+    override fun queueEvent(event: NIDEventModel) {
+        CoroutineScope(Dispatchers.IO).launch {
+            queuedEvents.add(event)
+        }
+    }
+
+    @Synchronized
+    override fun getAllQueuedEvents(): Queue<NIDEventModel> {
+        return queuedEvents
+    }
+
+    @Synchronized
+    override fun clearAllQueuedEvents() {
+        queuedEvents.clear()
     }
 
     @Synchronized
@@ -233,14 +255,12 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
 
             val jsonListEvents = JSONArray(listJson)
 
-            return getContentJson(context, jsonListEvents)
-                .replace("\\/", "/")
+            return getContentJson(context, jsonListEvents).replace("\\/", "/")
         }
     }
 
     private fun getContentJson(
-        context: Context,
-        events: JSONArray
+        context: Context, events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
