@@ -282,8 +282,8 @@ class NeuroID private constructor(
         val queuedEvents = getDataStoreInstance().getAllQueuedEvents()
         if (queuedEvents.isNotEmpty()) {
             queuedEvents.forEach { event -> getDataStoreInstance().saveEvent(event) }
+            getDataStoreInstance().clearAllQueuedEvents()
         }
-        getDataStoreInstance().clearAllQueuedEvents()
     }
 
     fun stop() {
