@@ -278,10 +278,7 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
-        val queuedEvents = getDataStoreInstance().getAndClearAllQueuedEvents()
-        if (queuedEvents.isNotEmpty()) {
-            queuedEvents.forEach { event -> getDataStoreInstance().saveEvent(event) }
-        }
+        getDataStoreInstance().saveAndClearAllQueuedEvents()
     }
 
     fun stop() {
