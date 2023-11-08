@@ -59,11 +59,8 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
         }
     }
 
-    @Synchronized
     override fun queueEvent(event: NIDEventModel) {
-        CoroutineScope(Dispatchers.IO).launch {
-            queuedEvents.add(event)
-        }
+        queuedEvents.add(event)
     }
 
     @Synchronized
