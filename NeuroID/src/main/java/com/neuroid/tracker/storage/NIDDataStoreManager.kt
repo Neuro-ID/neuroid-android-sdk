@@ -59,6 +59,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     // Queue events that are set before sdk is started
+    @Synchronized
     override fun queueEvent(event: NIDEventModel) {
         queuedEvents.add(event)
     }
