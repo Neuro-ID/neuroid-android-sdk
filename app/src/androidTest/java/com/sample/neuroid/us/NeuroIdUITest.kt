@@ -75,7 +75,7 @@ class NeuroIdUITest {
     }
 
     /**
-     * Validate SET_USER_ID
+     * Validate SET_USER_ID after sdk is started
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
@@ -89,6 +89,7 @@ class NeuroIdUITest {
         NIDSchema().validateEvents(events, eventType)
         NIDSchema().validateSchema(events)
     }
+
 
     /**
      * Validate WINDOW_LOAD on MainActivity class
@@ -250,6 +251,23 @@ class NeuroIdUITest {
         val eventType = "\"type\":\"REGISTER_TARGET\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateEvents(events, eventType, -1)
+        NIDSchema().validateSchema(events)
+    }
+
+    /**
+     * Validate SET_USER_ID when sdk is not started
+     */
+    @Test
+    fun test14ValidateSetUserId() = runTest {
+        getDataStoreInstance().clearEvents()
+        delay(500)
+        NeuroID.getInstance()?.setUserID("UUID123")
+        delay(500)
+        NeuroID.getInstance()?.start()
+        delay(500)
+        val eventType = "\"type\":\"SET_USER_ID\""
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType)
         NIDSchema().validateSchema(events)
     }
 }

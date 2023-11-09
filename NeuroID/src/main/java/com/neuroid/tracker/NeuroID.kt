@@ -123,27 +123,30 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
-        if (isSDKStarted) {
-            this.validateUserId(userId)
-            userID = userId
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                NIDSharedPrefsDefaults(it).setUserId(userId)
-            }
+        this.validateUserId(userId)
+        userID = userId
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        application?.let {
+            NIDSharedPrefsDefaults(it).setUserId(userId)
+        }
+        val userIdEvent = NIDEventModel(
+            type = SET_USER_ID,
+            uid = userId,
+            ts = System.currentTimeMillis(),
+            gyro = gyroData,
+            accel = accelData
+        )
+        if (isSDKStarted) {
             getDataStoreInstance().saveEvent(
-                NIDEventModel(
-                    type = SET_USER_ID,
-                    uid = userId,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                )
+                userIdEvent
             )
         } else {
-            throw IllegalArgumentException("NeuroID SDK is not started")
+            getDataStoreInstance().queueEvent(userIdEvent)
         }
+
     }
 
     fun getUserId() = userID
@@ -324,6 +327,7 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
+        getDataStoreInstance().saveAndClearAllQueuedEvents()
     }
 
     fun stop() {
