@@ -16,6 +16,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -51,6 +52,17 @@ class NeuroID private constructor(
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
+        }
+
+        if (!validateClientKey(clientKey)) {
+            NIDLog.e(msg = "Invalid Client Key")
+            clientKey = ""
+        } else {
+            if (clientKey.contains("_live_")) {
+                NIDServiceTracker.environment = "LIVE"
+            } else {
+                NIDServiceTracker.environment = "TEST"
+            }
         }
     }
 
@@ -91,6 +103,17 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
+    internal fun validateClientKey(clientKey: String): Boolean {
+        var valid = false
+        val regex = "key_(live|test)_[A-Za-z0-9]+"
+
+        if (clientKey.matches(regex.toRegex())) {
+            valid = true
+        }
+
+        return valid
+    }
+
     internal fun validateUserId(userId: String) {
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
@@ -100,27 +123,30 @@ class NeuroID private constructor(
     }
 
     fun setUserID(userId: String) {
-        if (isSDKStarted) {
-            this.validateUserId(userId)
-            userID = userId
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                NIDSharedPrefsDefaults(it).setUserId(userId)
-            }
+        this.validateUserId(userId)
+        userID = userId
+
+        val gyroData = NIDSensorHelper.getGyroscopeInfo()
+        val accelData = NIDSensorHelper.getAccelerometerInfo()
+        application?.let {
+            NIDSharedPrefsDefaults(it).setUserId(userId)
+        }
+        val userIdEvent = NIDEventModel(
+            type = SET_USER_ID,
+            uid = userId,
+            ts = System.currentTimeMillis(),
+            gyro = gyroData,
+            accel = accelData
+        )
+        if (isSDKStarted) {
             getDataStoreInstance().saveEvent(
-                NIDEventModel(
-                    type = SET_USER_ID,
-                    uid = userId,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                )
+                userIdEvent
             )
         } else {
-            throw IllegalArgumentException("NeuroID SDK is not started")
+            getDataStoreInstance().queueEvent(userIdEvent)
         }
+
     }
 
     fun getUserId() = userID
@@ -142,25 +168,32 @@ class NeuroID private constructor(
     }
 
     fun setEnvironment(environment: String) {
-        NIDServiceTracker.environment = environment
+        NIDLog.i(
+            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+        )
     }
 
     fun setEnvironmentProduction(prod: Boolean) {
-        if (prod) {
-            NIDServiceTracker.environment = "LIVE"
-        } else {
-            NIDServiceTracker.environment = "TEST"
-
-        }
+        NIDLog.i(
+            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+        )
     }
 
     fun getEnvironment(): String = NIDServiceTracker.environment
 
     fun setSiteId(siteId: String) {
+        NIDLog.i(
+            msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
+        )
         NIDServiceTracker.siteId = siteId
     }
 
-    fun getSiteId(): String = NIDServiceTracker.siteId
+    fun getSiteId(): String {
+        NIDLog.i(
+            msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
+        )
+        return ""
+    }
 
     fun getSessionId(): String {
         return sessionID
@@ -209,6 +242,10 @@ class NeuroID private constructor(
     }
 
     fun formSubmit() {
+        NIDLog.i(
+            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -225,6 +262,10 @@ class NeuroID private constructor(
     }
 
     fun formSubmitSuccess() {
+        NIDLog.i(
+            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -241,6 +282,10 @@ class NeuroID private constructor(
     }
 
     fun formSubmitFailure() {
+        NIDLog.i(
+            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+        )
+
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -263,6 +308,13 @@ class NeuroID private constructor(
     }
 
     open fun start() {
+        if (clientKey == "") {
+            NIDLog.e(
+                msg = "Missing Client Key - please call configure prior to calling start"
+            )
+            throw IllegalStateException("NeuroID SDK Missing Client API Key");
+        }
+
         isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -275,6 +327,7 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
+        getDataStoreInstance().saveAndClearAllQueuedEvents()
     }
 
     fun stop() {
