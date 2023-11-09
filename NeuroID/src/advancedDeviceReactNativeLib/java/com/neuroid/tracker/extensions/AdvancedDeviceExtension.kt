@@ -21,10 +21,8 @@ fun NeuroID.start(advancedDeviceSignals: Boolean) {
             val keyService = NIDAdvKeyService()
             var fpjsRetryCount = 0
             val FPJS_RETRY_MAX = 3
-            var endpointUrl = Constants.fpjsDevDomain.displayName
-            if (NeuroID.getInstance()?.getEnvironment() == "LIVE"){
-                endpointUrl = Constants.fpjsProdDomain.displayName
-            }
+            var endpointUrl = Constants.fpjsProdDomain.displayName
+
             keyService.getKey(object : OnKeyCallback {
                 override fun onKeyGotten(key: String) {
                     val applicationContext = getApplicationContext()
