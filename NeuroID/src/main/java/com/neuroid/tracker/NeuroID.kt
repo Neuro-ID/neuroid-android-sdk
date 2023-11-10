@@ -205,11 +205,11 @@ class NeuroID private constructor(
         return clientID
     }
 
-    fun getForceStart(): Boolean? {
+    internal fun getForceStart(): Boolean? {
         return forceStart
     }
 
-    fun setForceStart(activity: Activity) {
+    fun registerPageTargets(activity: Activity) {
         this.forceStart = true
         NIDActivityCallbacks().forceStart(activity)
     }
