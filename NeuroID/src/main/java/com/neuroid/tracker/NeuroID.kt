@@ -457,4 +457,6 @@ class NeuroID private constructor(
     fun enableLogging(enable: Boolean) {
         showLogs = enable
     }
+
+    fun getSDKVersion() = NIDVersion.getSDKVersion()
 }
