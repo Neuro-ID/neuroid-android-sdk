@@ -161,6 +161,8 @@ class NeuroID private constructor(
 
     }
 
+    fun getScreenName(): String = NIDServiceTracker.screenName
+
     fun excludeViewByResourceID(id: String) {
         application?.let {
             getDataStoreInstance().addViewIdExclude(id)
@@ -188,7 +190,7 @@ class NeuroID private constructor(
         NIDServiceTracker.siteId = siteId
     }
 
-    fun getSiteId(): String {
+    internal fun getSiteId(): String {
         NIDLog.i(
             msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
         )
@@ -212,19 +214,19 @@ class NeuroID private constructor(
         NIDActivityCallbacks().forceStart(activity)
     }
 
-    fun getTabId(): String = NIDServiceTracker.rndmId
+    internal fun getTabId(): String = NIDServiceTracker.rndmId
 
-    fun getFirstTS(): Long = timestamp
+    internal fun getFirstTS(): Long = timestamp
 
-    fun getJsonPayLoad(context: Context): String {
+    internal fun getJsonPayLoad(context: Context): String {
         return getDataStoreInstance().getJsonPayload(context)
     }
 
-    fun resetJsonPayLoad() {
+    internal fun resetJsonPayLoad() {
         getDataStoreInstance().resetJsonPayload()
     }
 
-    fun captureEvent(eventName: String, tgs: String) {
+    internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -301,12 +303,6 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
-    fun configureWithOptions(clientKey: String, endpoint: String?) {
-        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
-        this.clientKey = clientKey
-        NIDServiceTracker.rndmId = ""
-    }
-
     open fun start() {
         if (clientKey == "") {
             NIDLog.e(
@@ -350,7 +346,7 @@ class NeuroID private constructor(
         }
     }
 
-    fun resetClientId() {
+    internal fun resetClientId() {
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             clientID = sharedDefaults.resetClientId()
@@ -359,7 +355,7 @@ class NeuroID private constructor(
 
     fun isStopped() = NIDJobServiceManager.isStopped()
 
-    fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
+    internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
             view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(), true, addListener
         )
@@ -368,7 +364,7 @@ class NeuroID private constructor(
     /**
      * Provide public access to application context for other intenral NID functions
      */
-    fun getApplicationContext(): Context? {
+    internal fun getApplicationContext(): Context? {
         return this.application?.applicationContext
     }
 
