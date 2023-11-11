@@ -53,11 +53,7 @@ data class NIDEventModel(
     val uid: String? = null,
     val o: String? = null,
     var rts: String? = null,
-    val metadata: JSONObject? = null,
-    val rid: String? = null,
-    val m: String? = null,
-    val level: String? = null,
-    val c: Boolean? = null
+    val metadata: JSONObject? = null
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()
@@ -75,8 +71,6 @@ data class NIDEventModel(
                 }
                 jsonObject.put("touches", array)
             }
-            m?.let { jsonObject.put("m", it) }
-            level?.let {jsonObject.put("level", it)}
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             hv?.let { jsonObject.put("hv", it) }
@@ -122,8 +116,6 @@ data class NIDEventModel(
             tch?.let { jsonObject.put("tch", it) }
             url?.let { jsonObject.put("url", it) }
             ns?.let { jsonObject.put("ns", it) }
-            rid?.let { jsonObject.put("rid", it) }
-            c?.let { jsonObject.put("c", it) }
             jsl?.let {
                 val values = JSONArray()
                 jsonObject.put("jsl", values)

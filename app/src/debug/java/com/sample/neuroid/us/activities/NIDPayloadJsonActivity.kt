@@ -25,7 +25,7 @@ class NIDPayloadJsonActivity : AppCompatActivity() {
 
         binding.apply {
             buttonShowPayloadJson.setOnClickListener {
-                NIDLog.d(msg="Payload json: ${NeuroID.getInstance()?.getJsonPayLoad(this@NIDPayloadJsonActivity)}")
+                NIDLog.d("Neuro ID", "Payload json: ${NeuroID.getInstance()?.getJsonPayLoad(this@NIDPayloadJsonActivity)}")
             }
 
             buttonResetPayloadJson.setOnClickListener {

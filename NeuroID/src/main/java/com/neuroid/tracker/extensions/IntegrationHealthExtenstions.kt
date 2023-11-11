@@ -50,8 +50,7 @@ internal fun generateIntegrationHealthDeviceReport() {
     }
 }
 
-@Synchronized
-internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
+@Synchronized internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
     val nidInstance = NeuroID.getInstance()
 
     val context = nidInstance?.application?.getApplicationContext()
@@ -74,7 +73,7 @@ internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
 
 // Internal Extensions
 internal fun NeuroID.shouldDebugIntegrationHealth(ifTrueCB: () -> Unit) {
-    if (this.verifyIntegrationHealth) {
+    if (this.verifyIntegrationHealth && this.getEnvironment() == "TEST") {
         ifTrueCB()
     }
 }
@@ -89,7 +88,7 @@ internal fun NeuroID.startIntegrationHealthCheck() {
 
 internal fun NeuroID.captureIntegrationHealthEvent(event: NIDEventModel) {
     shouldDebugIntegrationHealth {
-//        NIDLog.d( "Adding Health Event: ${event.type}")
+//        NIDLog.d("NeuroID", "Adding Health Event: ${event.type}")
         this.debugIntegrationHealthEvents.add(event)
     }
 }

@@ -1,59 +1,44 @@
 package com.neuroid.tracker.utils
 
 import android.util.Log
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.BuildConfig
 
 object NIDLog {
-    val nidTag = "NeuroID"
-    val infoTag = "NeuroID Info"
-    val debugTag = "NeuroID Debug"
-    val errorTag = "****** NeuroID ERROR: ******"
-    val warnTag = "NeuroID Warn"
-
-    fun d(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
+    fun d(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) {
             msg.chunked(900).forEach {
-                Log.d(appendTag(tag, debugTag), it)
+                Log.d(tag, it)
             }
         }
     }
 
-    fun e(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs) {
-            Log.e(appendTag(tag, errorTag), msg)
+    fun e(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) {
+            Log.e(tag, msg)
         }
     }
 
-    fun i(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs) {
+    fun i(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) {
             msg.chunked(900).forEach {
-                Log.i(appendTag(tag, infoTag), it)
+                Log.i(tag, it)
             }
         }
     }
 
-    fun v(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs) {
+    fun v(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) {
             msg.chunked(900).forEach {
-                Log.v(appendTag(tag, nidTag), it)
+                Log.v(tag, it)
             }
         }
     }
 
-    fun w(tag: String? = null, msg: String) {
-        if (NeuroID.showLogs) {
+    fun w(tag: String, msg: String) {
+        if (BuildConfig.DEBUG) {
             msg.chunked(900).forEach {
-                Log.w(appendTag(tag, warnTag), it)
+                Log.w(tag, it)
             }
-        }
-    }
-
-    // Add default tag to provided optional tag     
-    private fun appendTag(tag: String? = null, levelTag: String): String {
-        return if (tag != null) {
-            "$levelTag $tag"
-        } else {
-            levelTag
         }
     }
 
@@ -61,4 +46,6 @@ object NIDLog {
     const val CHECK_BOX_ID = "CheckBoxID:"
     const val RADIO_BUTTON_CHANGE_TAG = "RadioButtonChange"
     const val RADIO_BUTTON_ID = "RadioButtonID:"
+    const val SLIDER_CHANGE_TAG = "SliderChange"
+    const val SLIDER_ID = "SliderID:"
 }

@@ -47,6 +47,7 @@ object NIDServiceTracker {
         if (listEvents.isEmpty().not()) {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
+
             val listJson = listEvents.map {
                 if (it.contains("\"CREATE_SESSION\"")) {
                     JSONObject(
@@ -65,6 +66,7 @@ object NIDServiceTracker {
             val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
             NIDLog.d("Neuro ID", "payload Json::: $data")
+
             eventSender.sendTrackerData(data, key, eventReportCallback)
         }
     }

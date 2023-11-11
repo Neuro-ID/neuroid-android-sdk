@@ -22,7 +22,7 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.utils.getIdOrTag
 import java.util.*
 
 class NIDGlobalEventCallback(
@@ -216,6 +216,7 @@ class NIDGlobalEventCallback(
 //
 //
 //        NIDLog.d(
+//            "NIDDebugEvent",
 //            "** ACTION MODE START ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
 //        )
         return windowCallback.onActionModeStarted(p0)
@@ -227,6 +228,7 @@ class NIDGlobalEventCallback(
 //
 //
 //        NIDLog.d(
+//            "NIDDebugEvent",
 //            "** ACTION MODE FINISH ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
 //        )
         return windowCallback.onActionModeFinished(p0)
@@ -246,7 +248,8 @@ private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
     // do a check to see if we have registered this Field yet
     if (!NIDServiceTracker.registeredViews.contains(idName)) {
         NIDLog.d(
-            msg="Late registration: registeringView $simpleJavaClassName"
+            "NIDDebug",
+            "Late registration: registeringView $simpleJavaClassName"
         )
         val hashCodeAct = view.javaClass.name.hashCode();
         val guid =
@@ -255,7 +258,8 @@ private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
         NIDServiceTracker.registeredViews.add(idName);
     } else {
         NIDLog.d(
-            msg="view already registered: registeringView $simpleJavaClassName tag: $idName"
+            "NIDDebug",
+            "view already registered: registeringView $simpleJavaClassName tag: $idName"
         )
     }
 

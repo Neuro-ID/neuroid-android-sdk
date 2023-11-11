@@ -4,10 +4,21 @@ import android.app.Activity
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.callbacks.*
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import java.util.*
+
+fun registerLaterLifecycleFragments(activity: Activity) {
+    NIDServiceTracker.screenActivityName = activity::class.java.name
+
+    val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+    fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(), true)
+
+    registerWindowListeners(activity)
+}
 
 fun registerWindowListeners(activity: Activity) {
     val viewMainContainer = activity.window.decorView.findViewById<View>(
@@ -33,10 +44,10 @@ fun registerWindowListeners(activity: Activity) {
 
 fun registerTargetFromScreen(
     activity: Activity,
-    logger: NIDLogWrapper,
-    storeManager: NIDDataStoreManager,
     registerTarget: Boolean,
     registerListeners: Boolean,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
     activityOrFragment: String = "",
     parent: String = "",
 ) {
@@ -51,13 +62,12 @@ fun registerTargetFromScreen(
         identifyAllViews(
             viewMainContainer,
             guid,
-            logger,
-            storeManager,
             registerTarget,
             registerListeners,
+            logger,
+            storeManager,
             activityOrFragment,
             parent
         )
     }, 300)
 }
-

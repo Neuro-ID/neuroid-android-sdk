@@ -1,6 +1,8 @@
 package com.neuroid.tracker.callbacks
 
 import android.content.Context
+import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.events.*
@@ -10,20 +12,18 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONObject
+import org.json.JSONArray
 
-class NIDFragmentCallbacks : FragmentCallbacks(false) {
-    var listFragment = arrayListOf<String>()
+
+class NIDFragmentCallbacks : FragmentManager.FragmentLifecycleCallbacks() {
+    private val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
+    private var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDLog.d(msg="onFragmentAttached ${f::class.java.simpleName}");
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentAttached ${f::class.java.simpleName}");
 
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            if (NIDServiceTracker.screenName.isNullOrEmpty()) {
-                NIDServiceTracker.screenName = "AppInit"
-            }
-            if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
-                NIDServiceTracker.screenFragName = f::class.java.simpleName
-            }
+            NIDServiceTracker.screenFragName = f::class.java.simpleName
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
@@ -56,10 +56,10 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                     listFragment.removeLast()
                     registerTargetFromScreen(
                         f.requireActivity(),
-                        NIDLogWrapper(),
-                        getDataStoreInstance(),
                         registerTarget = true,
                         registerListeners = false,
+                        NIDLogWrapper(),
+                        getDataStoreInstance(),
                         activityOrFragment = "fragment",
                         parent = f::class.java.simpleName
                     )
@@ -68,10 +68,10 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                 listFragment.add(fragName)
                 registerTargetFromScreen(
                     f.requireActivity(),
-                    NIDLogWrapper(),
-                    getDataStoreInstance(),
                     registerTarget = true,
                     registerListeners = true,
+                    NIDLogWrapper(),
+                    getDataStoreInstance(),
                     activityOrFragment = "fragment",
                     parent = f::class.java.simpleName
                 )
@@ -79,4 +79,56 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
         }
     }
 
+    override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
+        // No Operation
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentViewCreated ${f::class.java.simpleName}");
+
+    }
+
+    override fun onFragmentViewCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        v: View,
+        savedInstanceState: Bundle?
+    ) {
+        //No operation
+        NIDLog.d("Neuro ID", "NIDDebug onFragmentCreated");
+
+    }
+
+    override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+        //No operation
+    }
+
+    override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+        // No operation
+    }
+
+    override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+        // No operation
+    }
+
+    override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
+        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+
+            val metadataObj = JSONObject()
+            metadataObj.put("component", "fragment")
+            metadataObj.put("lifecycle", "detached")
+            metadataObj.put("className", "${f::class.java.simpleName}")
+            val attrJSON = JSONArray().put(metadataObj)
+
+            getDataStoreInstance()
+                .saveEvent(
+                    NIDEventModel(
+                        type = WINDOW_UNLOAD,
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData,
+                        attrs = attrJSON
+                    )
+                )
+        }
+    }
 }
