@@ -31,6 +31,7 @@ class NIDEventSender(private var apiService: NIDApiService) {
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times
                     retryCount ++
+                    Thread.sleep(FAIL_DELAY)
                     nidResponseCallback.onFailure(response.code(), response.message(),
                         retryCount < RETRY_COUNT)
                     response.body()?.close()
@@ -49,6 +50,7 @@ class NIDEventSender(private var apiService: NIDApiService) {
         // if you change the retry count, please update the test!
         const val RETRY_COUNT = 3
         const val HTTP_SUCCESS = 200
+        const val FAIL_DELAY = 2000L
     }
 
 }

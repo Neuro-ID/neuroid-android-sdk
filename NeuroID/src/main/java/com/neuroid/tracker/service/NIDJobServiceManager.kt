@@ -49,7 +49,7 @@ object NIDJobServiceManager {
         return CoroutineScope(Dispatchers.IO).launch {
             while (userActive && isActive) {
                 delay(5000L)
-                sendEventsNow(NIDLogWrapper.nidLogWrapper)
+                sendEventsNow(NIDLogWrapper())
             }
         }
     }
@@ -61,7 +61,7 @@ object NIDJobServiceManager {
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .callTimeout(0, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(LoggerIntercepter(NIDLogWrapper.nidLogWrapper)).build())
+                .addInterceptor(LoggerIntercepter(NIDLogWrapper())).build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(NIDApiService::class.java))
@@ -71,7 +71,6 @@ object NIDJobServiceManager {
      * set here to show what timeouts are available in the OKHttp client.
      */
     suspend fun sendEventsNow(logger: NIDLogWrapper, forceSendEvents: Boolean = false) {
-        logger.d("Neuro ID", "sendEventsNow() start forceSendEvents $forceSendEvents userActive: $userActive")
         if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
             application?.let {
                 var eventSender = getServiceAPI()
@@ -93,7 +92,6 @@ object NIDJobServiceManager {
             } ?: run {
                 userActive = false
             }
-            logger.d("Neuro ID", "sendEventsNow() end userActive: $userActive")
         }
     }
 

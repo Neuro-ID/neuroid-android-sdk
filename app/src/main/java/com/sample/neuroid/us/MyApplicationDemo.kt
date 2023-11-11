@@ -39,8 +39,7 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.getInstance()?.setEnvironmentProduction(true)
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
-
-        NeuroID.getInstance()?.start()
         NeuroID.getInstance()?.setUserID(configHelper.userId)
+        NeuroID.getInstance()?.start()
     }
 }

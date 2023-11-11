@@ -6,5 +6,5 @@ enum class Constants(val displayName: String) {
     integrationHealthFolder("nid"),
     integrationHealthAssetsFolder("integrationHealth"),
 
-    debugEventTag("NIDDebugEvent")
+    debugEventTag("Event")
 }
