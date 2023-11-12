@@ -4,27 +4,27 @@ import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.WINDOW_BLUR
+import com.neuroid.tracker.events.WINDOW_FOCUS
+import com.neuroid.tracker.events.WINDOW_LOAD
+import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
+import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.events.registerTargetFromScreen
+import com.neuroid.tracker.events.registerWindowListeners
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.hasFragments
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.json.JSONArray
 import org.json.JSONObject
 
-class NIDActivityCallbacks : ActivityLifecycleCallbacks {
+class NIDActivityCallbacks: ActivityCallbacks() {
     private var auxOrientation = -1
-    private var activitiesStarted = 0
-    private var listActivities = ArrayList<String>()
     private var wasChanged = false
-    override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
-        NIDLog.d("NID--Activity", "Activity - Created")
-    }
 
-    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
-        super.onActivityPostCreated(activity, savedInstanceState)
-        NIDLog.d("NID--Activity", "Activity - POST Created")
+    override fun onActivityStarted(activity: Activity) {
+        NIDLog.d( msg="Activity - Created")
 
         val currentActivityName = activity::class.java.name
         val orientation = activity.resources.configuration.orientation
@@ -34,11 +34,15 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         val existActivity = listActivities.contains(currentActivityName)
 
         NIDServiceTracker.screenActivityName = currentActivityName
-        if (NIDServiceTracker.firstScreenName.isBlank()) {
+        if (NIDServiceTracker.firstScreenName.isNullOrEmpty()) {
             NIDServiceTracker.firstScreenName = currentActivityName
         }
-        NIDServiceTracker.screenFragName = ""
-        NIDServiceTracker.screenName = "AppInit"
+        if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
+            NIDServiceTracker.screenFragName = ""
+        }
+        if (NIDServiceTracker.screenName.isNullOrEmpty()) {
+            NIDServiceTracker.screenName = "AppInit"
+        }
         wasChanged = auxOrientation != orientation
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -47,12 +51,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         if (existActivity.not()) {
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-            NIDLog.d("NID--Activity", "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            NIDLog.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
             fragManager?.registerFragmentLifecycleCallbacks(NIDFragmentCallbacks(wasChanged), true)
         }
 
         if (wasChanged) {
-            NIDLog.d("NID--Activity", "Activity - POST Created - Orientation change")
+            NIDLog.d( msg="Activity - POST Created - Orientation change")
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
@@ -66,13 +70,12 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
             auxOrientation = orientation
         }
 
-
         val metadataObj = JSONObject()
         metadataObj.put("component", "activity")
         metadataObj.put("lifecycle", "postCreated")
         metadataObj.put("className", "${activity::class.java.simpleName}")
         val attrJSON = JSONArray().put(metadataObj)
-        NIDLog.d("NID--Activity", "Activity - POST Created - Window Load")
+        NIDLog.d( msg="Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -85,29 +88,8 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
             )
     }
 
-    /**
-     * Option for customers to force start with Activity
-     */
-    public fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            activityOrFragment = "activity",
-            parent = activity::class.java.simpleName
-        )
-    }
-
-    override fun onActivityStarted(activity: Activity) {
-        NIDLog.d("NID--Activity", "Activity - Started")
-    }
-
-    override fun onActivityPostStarted(activity: Activity) {
-        super.onActivityPostStarted(activity)
-    }
-
     override fun onActivityResumed(activity: Activity) {
-        //No op
-        // SHOULD BE WINDOW FOCUS?
-        NIDLog.d("NID--Activity", "Activity - Resumed")
+        NIDLog.d( msg="Activity - Resumed")
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -117,6 +99,7 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         metadataObj.put("lifecycle", "resumed")
         metadataObj.put("className", "${activity::class.java.simpleName}")
         val attrJSON = JSONArray().put(metadataObj)
+
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -128,20 +111,14 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
                 )
             )
 
-        var cameBackFromBehind = false
-        if (activitiesStarted == 0) {
-            cameBackFromBehind = true
-        }
         activitiesStarted++
 
         val currentActivityName = activity::class.java.name
-        val existActivity = listActivities.contains(currentActivityName)
-
-        val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
-        val hasFragments = fragManager?.hasFragments() ?: false
 
         registerTargetFromScreen(
             activity,
+            NIDLogWrapper(),
+            getDataStoreInstance(),
             registerTarget = true,
             registerListeners = true,
             activityOrFragment = "activity",
@@ -149,89 +126,6 @@ class NIDActivityCallbacks : ActivityLifecycleCallbacks {
         )
 
         registerWindowListeners(activity)
-
     }
 
-    override fun onActivityPaused(activity: Activity) {
-        //No op
-        // SHOULD BE WINDOW BLUR?
-//        NIDLog.d("NID--Activity", "Activity - Paused")
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "paused")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = WINDOW_BLUR,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-//        NIDLog.d("NID--Activity", "Activity - Stopped")
-        activitiesStarted--
-//        if (activitiesStarted == 0) {
-//            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-//            val accelData = NIDSensorHelper.getAccelerometerInfo()
-//
-//            val jsonObject = JSONObject()
-//            jsonObject.put("component", "activity")
-//            jsonObject.put("lifecycle", "stopped")
-//
-//
-////            NIDLog.d("NID--Activity", "Activity - Stopped - Window Blur")
-//            getDataStoreInstance()
-//                .saveEvent(
-//                    NIDEventModel(
-//                        type = WINDOW_BLUR,
-//                        ts = System.currentTimeMillis(),
-//                        gyro = gyroData,
-//                        accel = accelData,
-//                        metadata = jsonObject
-//                    )
-//                )
-//        }
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
-        // No Operation
-//        NIDLog.d("NID--Activity", "Activity - Save Instance")
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
-//        NIDLog.d("NID--Activity", "Activity - Destroyed")
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        val activityDestroyed = activity::class.java.name
-        listActivities.remove(activityDestroyed)
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "destroyed")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-
-//        NIDLog.d("NID--Activity", "Activity - Destroyed - Window Unload")
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
-    }
 }

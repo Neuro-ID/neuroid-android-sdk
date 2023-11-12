@@ -42,6 +42,10 @@ jobs:
         - name: Unit Test NeuroId
           run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
 
+        # Execute unit test neuroid lib
+        - name: Unit Test NeuroId (advanced)
+          run: ./gradlew :NeuroID:testAdvancedDeviceAndroidLibDebugUnitTest
+
         # Execute unit tests
         - name: Unit Test
           uses: ReactiveCircus/android-emulator-runner@v2.24.0
