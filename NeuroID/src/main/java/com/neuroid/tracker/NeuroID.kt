@@ -178,6 +178,8 @@ class NeuroID private constructor(
         return true
     }
 
+    fun getScreenName(): String = NIDServiceTracker.screenName
+
     fun excludeViewByResourceID(id: String) {
         application?.let {
             getDataStoreInstance().addViewIdExclude(id)
@@ -205,7 +207,7 @@ class NeuroID private constructor(
         NIDServiceTracker.siteId = siteId
     }
 
-    fun getSiteId(): String {
+    internal fun getSiteId(): String {
         NIDLog.i(
             msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
         )
@@ -220,28 +222,28 @@ class NeuroID private constructor(
         return clientID
     }
 
-    fun getForceStart(): Boolean? {
+    internal fun getForceStart(): Boolean? {
         return forceStart
     }
 
-    fun setForceStart(activity: Activity) {
+    fun registerPageTargets(activity: Activity) {
         this.forceStart = true
         NIDActivityCallbacks().forceStart(activity)
     }
 
-    fun getTabId(): String = NIDServiceTracker.rndmId
+    internal fun getTabId(): String = NIDServiceTracker.rndmId
 
-    fun getFirstTS(): Long = timestamp
+    internal fun getFirstTS(): Long = timestamp
 
-    fun getJsonPayLoad(context: Context): String {
+    internal fun getJsonPayLoad(context: Context): String {
         return getDataStoreInstance().getJsonPayload(context)
     }
 
-    fun resetJsonPayLoad() {
+    internal fun resetJsonPayLoad() {
         getDataStoreInstance().resetJsonPayload()
     }
 
-    fun captureEvent(eventName: String, tgs: String) {
+    internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -318,13 +320,7 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
-    fun configureWithOptions(clientKey: String, endpoint: String?) {
-        this.endpoint = endpoint ?: ENDPOINT_PRODUCTION
-        this.clientKey = clientKey
-        NIDServiceTracker.rndmId = ""
-    }
-
-    open fun start(): Boolean {
+    open fun start() {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
@@ -369,7 +365,7 @@ class NeuroID private constructor(
         }
     }
 
-    fun resetClientId() {
+    internal fun resetClientId() {
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             clientID = sharedDefaults.resetClientId()
@@ -378,7 +374,7 @@ class NeuroID private constructor(
 
     fun isStopped() = NIDJobServiceManager.isStopped()
 
-    fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
+    internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
             view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(), true, addListener
         )
@@ -387,7 +383,7 @@ class NeuroID private constructor(
     /**
      * Provide public access to application context for other intenral NID functions
      */
-    fun getApplicationContext(): Context? {
+    internal fun getApplicationContext(): Context? {
         return this.application?.applicationContext
     }
 
@@ -480,4 +476,6 @@ class NeuroID private constructor(
     fun enableLogging(enable: Boolean) {
         showLogs = enable
     }
+
+    fun getSDKVersion() = NIDVersion.getSDKVersion()
 }

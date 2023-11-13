@@ -7,6 +7,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.NidActivityDynamicBinding
 
@@ -39,6 +40,7 @@ class DynamicActivity : AppCompatActivity() {
     }
 
     private fun addNewViewWithRegisterTarget() {
-        NeuroID.getInstance()?.registerTarget(this, editText, false)
+        // re-register targets after we add an EditText to the layout.
+        NeuroID.getInstance()?.registerPageTargets(this)
     }
 }
