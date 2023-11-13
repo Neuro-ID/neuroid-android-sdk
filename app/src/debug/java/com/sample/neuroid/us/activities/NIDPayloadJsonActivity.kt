@@ -25,11 +25,10 @@ class NIDPayloadJsonActivity : AppCompatActivity() {
 
         binding.apply {
             buttonShowPayloadJson.setOnClickListener {
-                NIDLog.d(msg="Payload json: ${NeuroID.getInstance()?.getJsonPayLoad(this@NIDPayloadJsonActivity)}")
+                NIDLog.d(msg = "Payload json: null")
             }
 
             buttonResetPayloadJson.setOnClickListener {
-                NeuroID.getInstance()?.resetJsonPayLoad()
                 showToast()
             }
         }
