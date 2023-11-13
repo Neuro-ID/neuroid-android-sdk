@@ -36,16 +36,6 @@ class SandBoxTest {
      * The sending of events to the server is stopped so that they are not eliminated from
      * the SharedPreferences and can be obtained one by one
      */
-    @Before
-    fun stopSendEventsToServer() = runTest {
-        //NeuroID.getInstance()?.stop()
-        NeuroID.getInstance()?.resetClientId()
-    }
-
-    @After
-    fun resetDispatchers() = runTest {
-        //getDataStoreInstance().clearEvents()
-    }
 
     /**
      * Validate CHECKBOX_CHANGE when the user click on it

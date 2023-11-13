@@ -40,6 +40,7 @@ class DynamicActivity : AppCompatActivity() {
     }
 
     private fun addNewViewWithRegisterTarget() {
-        NIDLog.d(msg = "trying to register view")
+        // re-register targets after we add an EditText to the layout.
+        NeuroID.getInstance()?.registerPageTargets(this)
     }
 }
