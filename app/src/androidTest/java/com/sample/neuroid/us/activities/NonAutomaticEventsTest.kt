@@ -95,8 +95,10 @@ class NonAutomaticEventsTest {
 
     /**
      * Validate CUSTOM_EVENT on NIDCustomEventsActivity class
+     * Ignore this one and move all of these to SDK as a unit test.
      */
     @Test
+    @Ignore
     fun test04ValidateFormCustomEvent() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         delay(500) //Wait a half second for create the MainActivity View
