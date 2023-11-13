@@ -7,5 +7,5 @@ enum class Constants(val displayName: String) {
     integrationHealthAssetsFolder("integrationHealth"),
 
     debugEventTag("Event"),
-    fpjsProdDomain("http://advanced.neuro-id.com/")
+    fpjsProdDomain("https://advanced.neuro-id.com")
 }
