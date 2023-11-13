@@ -20,18 +20,32 @@ import org.junit.Test
 import java.util.UUID
 
 class NeuroIdUnitTest {
+    // Helper Functions
+    private fun setNeuroIDInstance() {
+        val neuroId = NeuroID.Builder(
+            null,
+            "key_test_fake1234"
+        ).build()
+        NeuroID.setNeuroIdInstance(neuroId)
+    }
+
+    private fun setNeuroIDMockedLogger() {
+        val log = mockk<NIDLogWrapper>()
+        justRun { log.e(any(), any()) }
+        NeuroID.getInstance()?.setLoggerInstance(log)
+    }
 
     @Test
     fun testGenerateUniqueHexId() {
         val uuid = mockk<UUID>()
         mockkStatic(UUID::class)
-        every {UUID.randomUUID()} returns uuid
+        every { UUID.randomUUID() } returns uuid
         val sharedPrefs = mockk<SharedPreferences>()
         val context = mockk<Context>()
-        every{context.getSharedPreferences(any(), any())} returns sharedPrefs
+        every { context.getSharedPreferences(any(), any()) } returns sharedPrefs
         val prefs = NIDSharedPrefsDefaults(context)
 
-        every {uuid.toString()} returns "test"
+        every { uuid.toString() } returns "test"
         val temp = prefs.generateUniqueHexId()
         assertEquals(temp, "test")
 
@@ -114,11 +128,7 @@ class NeuroIdUnitTest {
 
     @Test
     fun testValidateClientKey_bad_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        setNeuroIDInstance()
 
         val value = NeuroID.getInstance()?.validateClientKey("kjjhgh")
 
@@ -127,11 +137,7 @@ class NeuroIdUnitTest {
 
     @Test
     fun testValidateClientKey_invalid_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        setNeuroIDInstance()
 
         val value = NeuroID.getInstance()?.validateClientKey("key_tert_fdffsd")
 
@@ -140,15 +146,84 @@ class NeuroIdUnitTest {
 
     @Test
     fun testValidateClientKey_valid_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        setNeuroIDInstance()
 
         val value = NeuroID.getInstance()?.validateClientKey("key_test_1235")
 
         assertEquals(true, value)
+    }
+
+
+    @Test
+    fun testSetScreenName_success() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+
+        NeuroID.isSDKStarted = true
+
+
+        val value = NeuroID.getInstance()?.setScreenName("testName")
+
+        assertEquals(true, value)
+    }
+
+    @Test
+    fun testSetScreenName_failure() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+
+        NeuroID.isSDKStarted = false
+
+        val value = NeuroID.getInstance()?.setScreenName("testName")
+
+        assertEquals(false, value)
+    }
+
+    @Test
+    fun testSetUserID_success() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+
+        val value = NeuroID.getInstance()?.setUserID("myUserID")
+
+        assertEquals(true, value)
+    }
+
+    @Test
+    fun testSetUserID_failure() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+
+        val value = NeuroID.getInstance()?.setUserID("Bad UserID")
+
+        assertEquals(false, value)
+    }
+
+
+    @Test
+    fun testStart_success() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+
+        val value = NeuroID.getInstance()?.start()
+
+        assertEquals(true, value)
+        assertEquals(true, NeuroID.isSDKStarted)
+    }
+
+    @Test
+    fun testStart_failure() {
+        setNeuroIDInstance()
+        setNeuroIDMockedLogger()
+        NeuroID.isSDKStarted = false
+
+        NeuroID.getInstance()?.clientKey = ""
+
+        val value = NeuroID.getInstance()?.start()
+
+        assertEquals("", NeuroID.getInstance()?.clientKey)
+        assertEquals(false, value)
+        assertEquals(false, NeuroID.isSDKStarted)
     }
 
     /**

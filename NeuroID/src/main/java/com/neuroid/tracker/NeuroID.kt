@@ -49,6 +49,8 @@ class NeuroID private constructor(
 
     internal var isRN = false
 
+    internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
+
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
@@ -103,6 +105,10 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
+    internal fun setLoggerInstance(logger: NIDLogWrapper) {
+        NIDLog = logger
+    }
+
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
         val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -114,17 +120,24 @@ class NeuroID private constructor(
         return valid
     }
 
-    internal fun validateUserId(userId: String) {
+    internal fun validateUserId(userId: String): Boolean {
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            throw IllegalArgumentException("Invalid UserId")
+            NIDLog.e(msg = "Invalid UserID")
+            return false
         }
+
+        return true
     }
 
-    fun setUserID(userId: String) {
+    fun setUserID(userId: String): Boolean {
 
-        this.validateUserId(userId)
+        val validUserID = this.validateUserId(userId)
+        if (!validUserID) {
+            return false
+        }
+
         userID = userId
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -147,18 +160,22 @@ class NeuroID private constructor(
             getDataStoreInstance().queueEvent(userIdEvent)
         }
 
+        return true
     }
 
     fun getUserId() = userID
 
-    fun setScreenName(screen: String) {
-        if (isSDKStarted) {
-            NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
-            createMobileMetadata()
-        } else {
-            throw IllegalArgumentException("NeuroID SDK is not started")
+    fun setScreenName(screen: String): Boolean {
+
+        if (!isSDKStarted) {
+            NIDLog.e(msg = "NeuroID SDK is not started")
+            return false
         }
 
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        createMobileMetadata()
+
+        return true
     }
 
     fun excludeViewByResourceID(id: String) {
@@ -307,12 +324,12 @@ class NeuroID private constructor(
         NIDServiceTracker.rndmId = ""
     }
 
-    open fun start() {
+    open fun start(): Boolean {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
-            throw IllegalStateException("NeuroID SDK Missing Client API Key");
+            return false
         }
 
         isSDKStarted = true
@@ -328,6 +345,8 @@ class NeuroID private constructor(
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
         getDataStoreInstance().saveAndClearAllQueuedEvents()
+
+        return true
     }
 
     fun stop() {
