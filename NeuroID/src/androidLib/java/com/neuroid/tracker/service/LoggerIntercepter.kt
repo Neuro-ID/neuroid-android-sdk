@@ -10,10 +10,10 @@ class LoggerIntercepter(val logger: NIDLogWrapper): Interceptor {
         val request = chain.request()
         val response = chain.proceed(request)
         if (response.code() != 200) {
-            logger.e("Neuro ID","http error, ${request.method()}, ${request.url()}, " +
+            logger.e(msg="http error, ${request.method()}, ${request.url()}, " +
                     "${response.code()}, ${response.cacheResponse()?.body()}")
         } else {
-            logger.d("Neuro ID","http ok, ${request.method()}, ${request.url()}, " +
+            logger.d(msg="http ok, ${request.method()}, ${request.url()}, " +
                     "${response.code()}")
         }
         return response

@@ -54,6 +54,7 @@ object NIDJobServiceManager {
         }
     }
 
+    // TODO: move this out of the job manager when we refactor the /a advanced key endpoint grabber
     fun getServiceAPI() = NIDEventSender(Retrofit.Builder()
             .baseUrl(endpoint)
             .client(OkHttpClient.Builder()
@@ -78,7 +79,7 @@ object NIDJobServiceManager {
                 NIDServiceTracker.sendEventToServer(eventSender, clientKey, it, null, object: NIDResponseCallBack {
                     override fun onSuccess(code: Int) {
                         // noop!
-                        logger.d("network success", "sendEventsNow() success userActive: $userActive")
+                        logger.d(msg=" network success, sendEventsNow() success userActive: $userActive")
                     }
 
                     override fun onFailure(code: Int, message: String, isRetry: Boolean) {
@@ -86,7 +87,7 @@ object NIDJobServiceManager {
                         // kill the job manager, isRetry = true if the retry
                         // logic is still trying.
                         userActive = isRetry
-                        logger.e("network failure","sendEventsNow() failed userActive: $userActive $message")
+                        logger.e(msg="network failure, sendEventsNow() failed userActive: $userActive $message")
                     }
                 })
             } ?: run {
