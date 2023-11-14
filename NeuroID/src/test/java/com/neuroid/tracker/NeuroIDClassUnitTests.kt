@@ -1,20 +1,22 @@
 package com.neuroid.tracker
 
+import com.neuroid.tracker.events.APPLICATION_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Job
 
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.Assert.assertEquals
-
-// uncomment once using datastore
-//import kotlinx.coroutines.test.advanceUntilIdle
-//import kotlinx.coroutines.test.runTest
 
 
 enum class TestLogLevel {
@@ -27,6 +29,10 @@ class NeuroIDClassUnitTests {
     private var errorCount = 0
     private var infoCount = 0
     private var debugCount = 0
+
+    // datastoreMock vars
+    private var storedEvents = mutableSetOf<NIDEventModel>()
+    private var queuedEvents = mutableSetOf<NIDEventModel>()
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -61,7 +67,7 @@ class NeuroIDClassUnitTests {
         every { log.e(any(), any()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.ERROR, errorMessage, actualMessage)
-            
+
             // Return the result
             actualMessage
         }
@@ -69,7 +75,7 @@ class NeuroIDClassUnitTests {
         every { log.i(any(), any()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.INFO, infoMessage, actualMessage)
-            
+
             // Return the result
             actualMessage
         }
@@ -77,12 +83,26 @@ class NeuroIDClassUnitTests {
         every { log.d(any(), any()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.DEBUG, debugMessage, actualMessage)
-           
+
             // Return the result
             actualMessage
         }
 
         NeuroID.getInstance()?.setLoggerInstance(log)
+    }
+
+    private fun setMockedDataStore() {
+        val dataStoreManager = mockk<NIDDataStoreManager>()
+        every { dataStoreManager.saveEvent(any()) } answers {
+            storedEvents.add(args[0] as NIDEventModel)
+            mockk<Job>()
+        }
+
+        every { dataStoreManager.queueEvent(any()) } answers {
+            queuedEvents.add(args[0] as NIDEventModel)
+        }
+
+        NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
     }
 
     private fun clearLogCounts() {
@@ -118,6 +138,8 @@ class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger()
 
         clearLogCounts()
+        storedEvents.clear()
+        queuedEvents.clear()
     }
 
     @After
@@ -172,16 +194,33 @@ class NeuroIDClassUnitTests {
 
     //    setUserID
     @Test
-    fun testSetUserID_success() {
+    fun testSetUserID_success_notStarted() {
+        setMockedDataStore()
+        NeuroID.isSDKStarted = false
 
         val value = NeuroID.getInstance()?.setUserID("myUserID")
 
         assertEquals(true, value)
+        assertEquals(1, queuedEvents.count())
+        assertEquals(true, queuedEvents.firstOrNull()?.type === SET_USER_ID)
+    }
+
+    @Test
+    fun testSetUserID_success_Started() {
+        setMockedDataStore()
+        NeuroID.isSDKStarted = true
+
+        val value = NeuroID.getInstance()?.setUserID("myUserID")
+
+        assertEquals(true, value)
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === SET_USER_ID)
     }
 
     @Test
     fun testSetUserID_failure() {
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+
         val value = NeuroID.getInstance()?.setUserID("Bad UserID")
 
         assertEquals(false, value)
@@ -231,7 +270,7 @@ class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    excludeViewByResourceID - Need to mock
+    //    excludeViewByResourceID - Need to mock Application
 
     //    setEnvironment - DEPRECATED
     @Test
@@ -388,39 +427,47 @@ class NeuroIDClassUnitTests {
 //    getJsonPayLoad - not sure how to mock
 //    resetJsonPayLoad - not sure how to mock
 
-    //    captureEvent - not sure how to mock Application context
-    @Test
-    @Ignore("Ignore until mocked Application")
-    fun testCaptureEvent() {
-//        = runTest
+//    captureEvent - not sure how to mock Application context
 
-//        getDataStoreInstance().clearEvents()
-//        advanceUntilIdle()
-//        var events = getDataStoreInstance().getAllEvents()
-//        assertEquals(0, events.count())
-//        advanceUntilIdle()
-//
-//        NeuroID.getInstance()?.captureEvent("test", "tgs")
-//
-//        events = getDataStoreInstance().getAllEvents()
-//        println("EVENTA: ${events.toString()} - ${events.count()} - ${events}")
-//        advanceUntilIdle()
-//        assertEquals(1, events.count())
-    }
-
-    //    formSubmit - Need to mock Datastore
+    //    formSubmit - Deprecated
     @Test
-    @Ignore("Ignore until mocked Datastore")
     fun testFormSubmit() {
-//        = runTest {  }
-//        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmit"))
+        setMockedDataStore()
+        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmit"))
 
-//        NeuroID.getInstance()?.formSubmit()
-//        assertInfoCount(1)
+        NeuroID.getInstance()?.formSubmit()
+        assertInfoCount(1)
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === APPLICATION_SUBMIT)
     }
 
-//    formSubmitSuccess - Need to mock Datastore
-//    formSubmitFailure - Need to mock Datastore
+
+    //    formSubmitSuccess - Deprecated
+    @Test
+    fun testFormSubmitSuccess() {
+        setMockedDataStore()
+        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitSuccess"))
+
+        NeuroID.getInstance()?.formSubmitSuccess()
+        assertInfoCount(1)
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_SUCCESS)
+    }
+
+    //    formSubmitFailure - Deprecated
+    @Test
+    fun testFormSubmitFailure() {
+        setMockedDataStore()
+        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitFailure"))
+
+        NeuroID.getInstance()?.formSubmitFailure()
+        assertInfoCount(1)
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_FAILURE)
+    }
 
     //    start
     @Test

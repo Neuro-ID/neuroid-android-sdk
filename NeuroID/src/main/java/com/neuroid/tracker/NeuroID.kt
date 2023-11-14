@@ -13,6 +13,7 @@ import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
@@ -50,6 +51,7 @@ class NeuroID private constructor(
     internal var isRN = false
 
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
+    internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
 
     init {
         application?.let {
@@ -109,6 +111,11 @@ class NeuroID private constructor(
         NIDLog = logger
     }
 
+    internal fun setDataStoreInstance(store: NIDDataStoreManager) {
+        dataStore = store
+    }
+
+
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
         val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -153,11 +160,11 @@ class NeuroID private constructor(
             accel = accelData
         )
         if (isSDKStarted) {
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 userIdEvent
             )
         } else {
-            getDataStoreInstance().queueEvent(userIdEvent)
+            dataStore.queueEvent(userIdEvent)
         }
 
         return true
@@ -182,7 +189,7 @@ class NeuroID private constructor(
 
     fun excludeViewByResourceID(id: String) {
         application?.let {
-            getDataStoreInstance().addViewIdExclude(id)
+            dataStore.addViewIdExclude(id)
         }
     }
 
@@ -236,11 +243,11 @@ class NeuroID private constructor(
     internal fun getFirstTS(): Long = timestamp
 
     internal fun getJsonPayLoad(context: Context): String {
-        return getDataStoreInstance().getJsonPayload(context)
+        return dataStore.getJsonPayload(context)
     }
 
     internal fun resetJsonPayLoad() {
-        getDataStoreInstance().resetJsonPayload()
+        dataStore.resetJsonPayload()
     }
 
     internal fun captureEvent(eventName: String, tgs: String) {
@@ -248,7 +255,7 @@ class NeuroID private constructor(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
@@ -268,7 +275,7 @@ class NeuroID private constructor(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis(),
@@ -288,7 +295,7 @@ class NeuroID private constructor(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
                 ts = System.currentTimeMillis(),
@@ -308,7 +315,7 @@ class NeuroID private constructor(
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
                 ts = System.currentTimeMillis(),
@@ -340,7 +347,7 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
-        getDataStoreInstance().saveAndClearAllQueuedEvents()
+        dataStore.saveAndClearAllQueuedEvents()
 
         return true
     }
@@ -356,7 +363,7 @@ class NeuroID private constructor(
 
     fun closeSession() {
         if (!isStopped()) {
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
                 )
@@ -376,7 +383,7 @@ class NeuroID private constructor(
 
     internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
-            view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(), true, addListener
+            view, activity.getGUID(), NIDLogWrapper(), dataStore, true, addListener
         )
     }
 
@@ -395,7 +402,7 @@ class NeuroID private constructor(
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
             clientID = sharedDefaults.getClientId()
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
@@ -435,7 +442,7 @@ class NeuroID private constructor(
         val accelData = NIDSensorHelper.getAccelerometerInfo()
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = MOBILE_METADATA_ANDROID,
                     ts = timestamp,
