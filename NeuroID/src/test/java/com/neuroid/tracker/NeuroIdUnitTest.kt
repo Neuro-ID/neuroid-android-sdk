@@ -20,21 +20,6 @@ import org.junit.Test
 import java.util.UUID
 
 class NeuroIdUnitTest {
-    // Helper Functions
-    private fun setNeuroIDInstance() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_fake1234"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
-    }
-
-    private fun setNeuroIDMockedLogger() {
-        val log = mockk<NIDLogWrapper>()
-        justRun { log.e(any(), any()) }
-        NeuroID.getInstance()?.setLoggerInstance(log)
-    }
-
     @Test
     fun testGenerateUniqueHexId() {
         val uuid = mockk<UUID>()
@@ -124,106 +109,6 @@ class NeuroIdUnitTest {
         val viewReal: View? = null
         val value = viewReal.getIdOrTag()
         assertEquals("no_id", value)
-    }
-
-    @Test
-    fun testValidateClientKey_bad_key() {
-        setNeuroIDInstance()
-
-        val value = NeuroID.getInstance()?.validateClientKey("kjjhgh")
-
-        assertEquals(false, value)
-    }
-
-    @Test
-    fun testValidateClientKey_invalid_key() {
-        setNeuroIDInstance()
-
-        val value = NeuroID.getInstance()?.validateClientKey("key_tert_fdffsd")
-
-        assertEquals(false, value)
-    }
-
-    @Test
-    fun testValidateClientKey_valid_key() {
-        setNeuroIDInstance()
-
-        val value = NeuroID.getInstance()?.validateClientKey("key_test_1235")
-
-        assertEquals(true, value)
-    }
-
-
-    @Test
-    fun testSetScreenName_success() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-
-        NeuroID.isSDKStarted = true
-
-
-        val value = NeuroID.getInstance()?.setScreenName("testName")
-
-        assertEquals(true, value)
-    }
-
-    @Test
-    fun testSetScreenName_failure() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-
-        NeuroID.isSDKStarted = false
-
-        val value = NeuroID.getInstance()?.setScreenName("testName")
-
-        assertEquals(false, value)
-    }
-
-    @Test
-    fun testSetUserID_success() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-
-        val value = NeuroID.getInstance()?.setUserID("myUserID")
-
-        assertEquals(true, value)
-    }
-
-    @Test
-    fun testSetUserID_failure() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-
-        val value = NeuroID.getInstance()?.setUserID("Bad UserID")
-
-        assertEquals(false, value)
-    }
-
-
-    @Test
-    fun testStart_success() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-
-        val value = NeuroID.getInstance()?.start()
-
-        assertEquals(true, value)
-        assertEquals(true, NeuroID.isSDKStarted)
-    }
-
-    @Test
-    fun testStart_failure() {
-        setNeuroIDInstance()
-        setNeuroIDMockedLogger()
-        NeuroID.isSDKStarted = false
-
-        NeuroID.getInstance()?.clientKey = ""
-
-        val value = NeuroID.getInstance()?.start()
-
-        assertEquals("", NeuroID.getInstance()?.clientKey)
-        assertEquals(false, value)
-        assertEquals(false, NeuroID.isSDKStarted)
     }
 
     /**

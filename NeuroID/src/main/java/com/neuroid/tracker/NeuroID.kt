@@ -34,12 +34,12 @@ class NeuroID private constructor(
 ) {
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
-    private var sessionID = ""
-    private var clientID = ""
-    private var userID = ""
-    private var timestamp: Long = 0L
+    internal var sessionID = ""
+    internal var clientID = ""
+    internal var userID = ""
+    internal var timestamp: Long = 0L
 
-    private var forceStart: Boolean? = null
+    internal var forceStart: Boolean = false
 
     private var metaData: NIDMetaData? = null
 
@@ -188,7 +188,7 @@ class NeuroID private constructor(
 
     fun setEnvironment(environment: String) {
         NIDLog.i(
-            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+            msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
         )
     }
 
@@ -262,7 +262,7 @@ class NeuroID private constructor(
 
     fun formSubmit() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -282,7 +282,7 @@ class NeuroID private constructor(
 
     fun formSubmitSuccess() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -302,7 +302,7 @@ class NeuroID private constructor(
 
     fun formSubmitFailure() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -320,7 +320,7 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
-    open fun start() {
+    open fun start(): Boolean {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
