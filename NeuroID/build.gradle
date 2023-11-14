@@ -110,6 +110,7 @@ dependencies {
     advancedDeviceReactNativeLibImplementation("com.fingerprint.android:pro:2.3.2"){
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
 task androidSourcesJar(type: Jar) {
