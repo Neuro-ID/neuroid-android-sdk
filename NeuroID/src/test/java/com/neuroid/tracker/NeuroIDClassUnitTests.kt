@@ -1,5 +1,12 @@
 package com.neuroid.tracker
 
+import android.app.Activity
+import android.app.Application
+import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.content.res.Resources
+import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
@@ -8,12 +15,19 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDMetaData
 
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.Job
 
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.assertEquals
@@ -33,6 +47,11 @@ class NeuroIDClassUnitTests {
     // datastoreMock vars
     private var storedEvents = mutableSetOf<NIDEventModel>()
     private var queuedEvents = mutableSetOf<NIDEventModel>()
+    private var excludedIds = mutableSetOf<String>()
+
+    @MockK
+    lateinit var mockedApplication: Application
+    private lateinit var mockContext: Context
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -102,7 +121,22 @@ class NeuroIDClassUnitTests {
             queuedEvents.add(args[0] as NIDEventModel)
         }
 
+        every { dataStoreManager.addViewIdExclude(any()) } answers {
+            excludedIds.add(args[0] as String)
+        }
+
+
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
+    }
+
+    private fun setMockedApplication() {
+        val mockedApplication = mockk<Application>()
+
+        every { mockedApplication.applicationContext } answers {
+            mockk<Context>()
+        }
+
+        NeuroID.getInstance()?.application = mockedApplication
     }
 
     private fun clearLogCounts() {
@@ -135,11 +169,13 @@ class NeuroIDClassUnitTests {
     fun setUp() {
         // setup instance and logging
         setNeuroIDInstance()
+        NeuroID.getInstance()?.application = null
         setNeuroIDMockedLogger()
 
         clearLogCounts()
         storedEvents.clear()
         queuedEvents.clear()
+        excludedIds.clear()
     }
 
     @After
@@ -149,9 +185,11 @@ class NeuroIDClassUnitTests {
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
     }
 
-    // function tests
+    // Function Tests
 
-    //    setLoggerInstance - Can't mock?
+    //    setLoggerInstance - Used for mocking
+    //    setDataStoreInstance - Used for mocking
+    //    setNIDActivityCallbackInstance - Used for mocking
 
     //    validateClientKey
     @Test
@@ -240,7 +278,6 @@ class NeuroIDClassUnitTests {
     //    setScreenName
     @Test
     fun testSetScreenName_success() {
-
         NeuroID.isSDKStarted = true
 
         val value = NeuroID.getInstance()?.setScreenName("testName")
@@ -270,7 +307,16 @@ class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    excludeViewByResourceID - Need to mock Application
+    //    excludeViewByResourceID
+    @Test
+    fun testExcludeViewByResourceID() {
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.excludeViewByTestID("fddf")
+
+        assertEquals(1, excludedIds.count())
+    }
 
     //    setEnvironment - DEPRECATED
     @Test
@@ -397,8 +443,23 @@ class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
+    //    registerPageTargets
+    @Test
+    fun testRegisterPageTargets() {
+        val mockedNIDACB = mockk<NIDActivityCallbacks>()
+        every { mockedNIDACB.forceStart(any()) } just runs
+        NeuroID.getInstance()?.setNIDActivityCallbackInstance(mockedNIDACB)
 
-    //    registerPageTargets - unsure how to mock
+        val mockedActivity = mockk<Activity>()
+
+        NeuroID.getInstance()?.registerPageTargets(mockedActivity)
+
+        assertEquals(true, NeuroID.getInstance()?.forceStart)
+        verify { mockedNIDACB.forceStart(mockedActivity) }
+
+        // reset for other tests
+        NeuroID.getInstance()?.forceStart = false
+    }
 
     //    getTabId
     @Test
@@ -427,7 +488,17 @@ class NeuroIDClassUnitTests {
 //    getJsonPayLoad - not sure how to mock
 //    resetJsonPayLoad - not sure how to mock
 
-//    captureEvent - not sure how to mock Application context
+    //    captureEvent - not sure how to mock Application context
+    @Test
+    fun testCaptureEvent() {
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.captureEvent("testEvent", "testTGS")
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === "testEvent")
+    }
 
     //    formSubmit - Deprecated
     @Test
@@ -441,7 +512,6 @@ class NeuroIDClassUnitTests {
         assertEquals(1, storedEvents.count())
         assertEquals(true, storedEvents.firstOrNull()?.type === APPLICATION_SUBMIT)
     }
-
 
     //    formSubmitSuccess - Deprecated
     @Test
@@ -510,10 +580,46 @@ class NeuroIDClassUnitTests {
     }
 
 //    closeSession - Need to mock NIDJobServiceManager
-//    resetClientId - Need to mock Application
-//    isStopped - Need to mock NIDJobServiceManager - Should change to isSDKStarted variable
-//    registerTarget - Need to mock Activity
-//    getApplicationContext - Need to mock Application
+//    resetClientId - Need to mock Application & Shared Preferences
+
+    //    isStopped
+    @Test
+    fun testIsStopped_true() {
+        val expectedValue = true
+        NeuroID.isSDKStarted = !expectedValue
+
+        val value = NeuroID.getInstance()?.isStopped()
+
+        assertEquals(expectedValue, value)
+    }
+
+    @Test
+    fun testIsStopped_false() {
+        val expectedValue = false
+        NeuroID.isSDKStarted = !expectedValue
+
+        val value = NeuroID.getInstance()?.isStopped()
+
+        assertEquals(expectedValue, value)
+    }
+
+    //    registerTarget - Need to mock Activity
+
+    //    getApplicationContext - Need to mock Application
+    @Test
+    fun testGetApplicationContext() {
+        val mockedApplication = mockk<Application>()
+        val mockedContext = mockk<Context>()
+        every { mockedApplication.applicationContext } answers {
+            mockedContext
+        }
+        NeuroID.getInstance()?.application = mockedApplication
+
+
+        var value = NeuroID.getInstance()?.getApplicationContext()
+        assertEquals(mockedContext, value)
+    }
+
 //    createSession - Need to mock Application
 //    createMobileMetadata - Need to mock Application
 

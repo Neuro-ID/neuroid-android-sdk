@@ -52,6 +52,7 @@ class NeuroID private constructor(
 
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
+    internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
 
     init {
         application?.let {
@@ -77,7 +78,7 @@ class NeuroID private constructor(
             application?.let {
 
                 initDataStoreCtx(it.applicationContext)
-                it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+                it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
             }
         }
@@ -113,6 +114,10 @@ class NeuroID private constructor(
 
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
         dataStore = store
+    }
+
+    internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
+        nidActivityCallbacks = callback
     }
 
 
@@ -187,7 +192,7 @@ class NeuroID private constructor(
 
     fun getScreenName(): String = NIDServiceTracker.screenName
 
-    fun excludeViewByResourceID(id: String) {
+    fun excludeViewByTestID(id: String) {
         application?.let {
             dataStore.addViewIdExclude(id)
         }
@@ -235,7 +240,7 @@ class NeuroID private constructor(
 
     fun registerPageTargets(activity: Activity) {
         this.forceStart = true
-        NIDActivityCallbacks().forceStart(activity)
+        nidActivityCallbacks.forceStart(activity)
     }
 
     internal fun getTabId(): String = NIDServiceTracker.rndmId
@@ -379,11 +384,16 @@ class NeuroID private constructor(
         }
     }
 
-    fun isStopped() = NIDJobServiceManager.isStopped()
+    fun isStopped() = !isSDKStarted
 
     internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
-            view, activity.getGUID(), NIDLogWrapper(), dataStore, true, addListener
+            view,
+            activity.getGUID(),
+            NIDLogWrapper(),
+            dataStore,
+            true,
+            addListener
         )
     }
 
