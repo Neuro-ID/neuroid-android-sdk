@@ -24,10 +24,6 @@ class NIDCustomEventsActivity : AppCompatActivity() {
 
         binding.apply {
             buttonSendCustomEvent.setOnClickListener {
-                NeuroID.getInstance()?.captureEvent(
-                    eventName = "CUSTOM_EVENT",
-                    tgs = "buttonSendCustomEvent"
-                )
                 showToast()
             }
             buttonSendFormSubmit.setOnClickListener {
