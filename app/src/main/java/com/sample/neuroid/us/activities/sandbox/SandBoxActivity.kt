@@ -3,7 +3,6 @@ package com.sample.neuroid.us.activities.sandbox
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.SandboxActivityBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,7 +15,6 @@ class SandBoxActivity : AppCompatActivity() {
     lateinit var binding: SandboxActivityBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NeuroID.getInstance()?.excludeViewByResourceID("textView_sid_value")
 
         setContentView(R.layout.sandbox_activity)
     }

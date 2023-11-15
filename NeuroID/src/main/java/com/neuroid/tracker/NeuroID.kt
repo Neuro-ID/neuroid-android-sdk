@@ -13,6 +13,7 @@ import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
@@ -34,12 +35,12 @@ class NeuroID private constructor(
 ) {
     private var firstTime = true
     private var endpoint = ENDPOINT_PRODUCTION
-    private var sessionID = ""
-    private var clientID = ""
-    private var userID = ""
-    private var timestamp: Long = 0L
+    internal var sessionID = ""
+    internal var clientID = ""
+    internal var userID = ""
+    internal var timestamp: Long = 0L
 
-    private var forceStart: Boolean? = null
+    internal var forceStart: Boolean = false
 
     private var metaData: NIDMetaData? = null
 
@@ -48,6 +49,10 @@ class NeuroID private constructor(
         mutableListOf<NIDEventModel>()
 
     internal var isRN = false
+
+    internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
+    internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
+    internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
 
     init {
         application?.let {
@@ -73,7 +78,7 @@ class NeuroID private constructor(
             application?.let {
 
                 initDataStoreCtx(it.applicationContext)
-                it.registerActivityLifecycleCallbacks(NIDActivityCallbacks())
+                it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
             }
         }
@@ -103,6 +108,19 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
+    internal fun setLoggerInstance(logger: NIDLogWrapper) {
+        NIDLog = logger
+    }
+
+    internal fun setDataStoreInstance(store: NIDDataStoreManager) {
+        dataStore = store
+    }
+
+    internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
+        nidActivityCallbacks = callback
+    }
+
+
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
         val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -114,17 +132,24 @@ class NeuroID private constructor(
         return valid
     }
 
-    internal fun validateUserId(userId: String) {
+    internal fun validateUserId(userId: String): Boolean {
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            throw IllegalArgumentException("Invalid UserId")
+            NIDLog.e(msg = "Invalid UserID")
+            return false
         }
+
+        return true
     }
 
-    fun setUserID(userId: String) {
+    fun setUserID(userId: String): Boolean {
 
-        this.validateUserId(userId)
+        val validUserID = this.validateUserId(userId)
+        if (!validUserID) {
+            return false
+        }
+
         userID = userId
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -140,38 +165,42 @@ class NeuroID private constructor(
             accel = accelData
         )
         if (isSDKStarted) {
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 userIdEvent
             )
         } else {
-            getDataStoreInstance().queueEvent(userIdEvent)
+            dataStore.queueEvent(userIdEvent)
         }
 
+        return true
     }
 
     fun getUserId() = userID
 
-    fun setScreenName(screen: String) {
-        if (isSDKStarted) {
-            NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
-            createMobileMetadata()
-        } else {
-            throw IllegalArgumentException("NeuroID SDK is not started")
+    fun setScreenName(screen: String): Boolean {
+
+        if (!isSDKStarted) {
+            NIDLog.e(msg = "NeuroID SDK is not started")
+            return false
         }
 
+        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        createMobileMetadata()
+
+        return true
     }
 
     fun getScreenName(): String = NIDServiceTracker.screenName
 
-    fun excludeViewByResourceID(id: String) {
+    fun excludeViewByTestID(id: String) {
         application?.let {
-            getDataStoreInstance().addViewIdExclude(id)
+            dataStore.addViewIdExclude(id)
         }
     }
 
     fun setEnvironment(environment: String) {
         NIDLog.i(
-            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
+            msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
         )
     }
 
@@ -211,7 +240,7 @@ class NeuroID private constructor(
 
     fun registerPageTargets(activity: Activity) {
         this.forceStart = true
-        NIDActivityCallbacks().forceStart(activity)
+        nidActivityCallbacks.forceStart(activity)
     }
 
     internal fun getTabId(): String = NIDServiceTracker.rndmId
@@ -219,11 +248,11 @@ class NeuroID private constructor(
     internal fun getFirstTS(): Long = timestamp
 
     internal fun getJsonPayLoad(context: Context): String {
-        return getDataStoreInstance().getJsonPayload(context)
+        return dataStore.getJsonPayload(context)
     }
 
     internal fun resetJsonPayLoad() {
-        getDataStoreInstance().resetJsonPayload()
+        dataStore.resetJsonPayload()
     }
 
     internal fun captureEvent(eventName: String, tgs: String) {
@@ -231,7 +260,7 @@ class NeuroID private constructor(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
@@ -245,13 +274,13 @@ class NeuroID private constructor(
 
     fun formSubmit() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis(),
@@ -265,13 +294,13 @@ class NeuroID private constructor(
 
     fun formSubmitSuccess() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
                 ts = System.currentTimeMillis(),
@@ -285,13 +314,13 @@ class NeuroID private constructor(
 
     fun formSubmitFailure() {
         NIDLog.i(
-            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED AND IS NO LONGER REQUIRED"
+            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
         )
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        getDataStoreInstance().saveEvent(
+        dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
                 ts = System.currentTimeMillis(),
@@ -303,12 +332,12 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
-    open fun start() {
+    open fun start(): Boolean {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
-            throw IllegalStateException("NeuroID SDK Missing Client API Key");
+            return false
         }
 
         isSDKStarted = true
@@ -323,7 +352,9 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
-        getDataStoreInstance().saveAndClearAllQueuedEvents()
+        dataStore.saveAndClearAllQueuedEvents()
+
+        return true
     }
 
     fun stop() {
@@ -337,7 +368,7 @@ class NeuroID private constructor(
 
     fun closeSession() {
         if (!isStopped()) {
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
                 )
@@ -353,11 +384,16 @@ class NeuroID private constructor(
         }
     }
 
-    fun isStopped() = NIDJobServiceManager.isStopped()
+    fun isStopped() = !isSDKStarted
 
     internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
         identifyView(
-            view, activity.getGUID(), NIDLogWrapper(), getDataStoreInstance(), true, addListener
+            view,
+            activity.getGUID(),
+            NIDLogWrapper(),
+            dataStore,
+            true,
+            addListener
         )
     }
 
@@ -376,7 +412,7 @@ class NeuroID private constructor(
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
             clientID = sharedDefaults.getClientId()
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = CREATE_SESSION,
                     f = clientKey,
@@ -416,7 +452,7 @@ class NeuroID private constructor(
         val accelData = NIDSensorHelper.getAccelerometerInfo()
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
-            getDataStoreInstance().saveEvent(
+            dataStore.saveEvent(
                 NIDEventModel(
                     type = MOBILE_METADATA_ANDROID,
                     ts = timestamp,
