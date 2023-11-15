@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NeuroID.getInstance()?.excludeViewByResourceID("textView_sid_value")
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
         binding.apply {

@@ -15,8 +15,10 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -24,7 +26,7 @@ import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel)
+    fun saveEvent(event: NIDEventModel): Job
     suspend fun getAllEvents(): Set<String>
     fun addViewIdExclude(id: String)
     suspend fun clearEvents()
@@ -42,7 +44,7 @@ fun getDataStoreInstance(): NIDDataStoreManager {
     return NIDDataStoreManagerImp
 }
 
-private object NIDDataStoreManagerImp : NIDDataStoreManager {
+internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
     private const val NID_STRING_EVENTS = "NID_STRING_EVENTS"
     private const val NID_STRING_JSON_PAYLOAD = "NID_STRING_JSON_PAYLOAD"
@@ -50,11 +52,14 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     private val listNonActiveEvents = listOf(
         USER_INACTIVE, WINDOW_BLUR //Block screen
     )
-    private val listIdsExcluded = arrayListOf<String>()
-    private var queuedEvents: Queue<NIDEventModel> = LinkedList()
+    internal val listIdsExcluded = arrayListOf<String>()
+    internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
 
-    fun init(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
+    private var ioDispatcher = CoroutineScope(Dispatchers.IO)
+
+    fun init(context: Context, newDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
+        ioDispatcher = newDispatcher
+        ioDispatcher.launch {
             sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
         }
     }
@@ -74,8 +79,8 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     @Synchronized
-    override fun saveEvent(event: NIDEventModel) {
-        CoroutineScope(Dispatchers.IO).launch {
+    override fun saveEvent(event: NIDEventModel): Job {
+        val job = ioDispatcher.launch {
             if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
@@ -88,6 +93,7 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 if (!listNonActiveEvents.any { strEvent.contains(it) }) {
                     NIDTimerActive.restartTimerActive()
                 }
+
                 val lastEvents = getStringSet(NID_STRING_EVENTS)
                 val newEvents = LinkedHashSet<String>()
                 newEvents.addAll(lastEvents)
@@ -150,6 +156,8 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
                 }
             }
         }
+
+        return job
     }
 
     override suspend fun getAllEvents(): Set<String> {

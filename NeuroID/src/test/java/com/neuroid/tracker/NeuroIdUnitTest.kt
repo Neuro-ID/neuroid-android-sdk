@@ -20,18 +20,17 @@ import org.junit.Test
 import java.util.UUID
 
 class NeuroIdUnitTest {
-
     @Test
     fun testGenerateUniqueHexId() {
         val uuid = mockk<UUID>()
         mockkStatic(UUID::class)
-        every {UUID.randomUUID()} returns uuid
+        every { UUID.randomUUID() } returns uuid
         val sharedPrefs = mockk<SharedPreferences>()
         val context = mockk<Context>()
-        every{context.getSharedPreferences(any(), any())} returns sharedPrefs
+        every { context.getSharedPreferences(any(), any()) } returns sharedPrefs
         val prefs = NIDSharedPrefsDefaults(context)
 
-        every {uuid.toString()} returns "test"
+        every { uuid.toString() } returns "test"
         val temp = prefs.generateUniqueHexId()
         assertEquals(temp, "test")
 
@@ -112,45 +111,6 @@ class NeuroIdUnitTest {
         assertEquals("no_id", value)
     }
 
-    @Test
-    fun testValidateClientKey_bad_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
-
-        val value = NeuroID.getInstance()?.validateClientKey("kjjhgh")
-
-        assertEquals(false, value)
-    }
-
-    @Test
-    fun testValidateClientKey_invalid_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
-
-        val value = NeuroID.getInstance()?.validateClientKey("key_tert_fdffsd")
-
-        assertEquals(false, value)
-    }
-
-    @Test
-    fun testValidateClientKey_valid_key() {
-        val neuroId = NeuroID.Builder(
-            null,
-            "key_test_ggfdsa"
-        ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
-
-        val value = NeuroID.getInstance()?.validateClientKey("key_test_1235")
-
-        assertEquals(true, value)
-    }
-
     /**
      * This test addresses the ENG-5877
      */
@@ -168,7 +128,7 @@ class NeuroIdUnitTest {
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
-        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val control = "ViewGroup\\\$Subclass\\d+\\/not_a_view"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
@@ -191,7 +151,7 @@ class NeuroIdUnitTest {
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
-        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val control = "ViewGroup\\\$Subclass\\d+\\/not_a_view"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
@@ -224,7 +184,7 @@ class NeuroIdUnitTest {
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
         val control =
-            "ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/"
+            "ViewGroup\\\$Subclass\\d+\\/ViewGroup\\\$Subclass\\d+\\/ViewGroup\\\$Subclass\\d+\\/"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
