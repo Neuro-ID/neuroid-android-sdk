@@ -128,7 +128,7 @@ class NeuroIdUnitTest {
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
-        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val control = "ViewGroup\\\$Subclass\\d+\\/not_a_view"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
@@ -151,7 +151,7 @@ class NeuroIdUnitTest {
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
-        val control = "ViewGroup\\\$Subclass\\d\\/not_a_view"
+        val control = "ViewGroup\\\$Subclass\\d+\\/not_a_view"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
@@ -184,7 +184,7 @@ class NeuroIdUnitTest {
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
         val control =
-            "ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/ViewGroup\\\$Subclass\\d\\/"
+            "ViewGroup\\\$Subclass\\d+\\/ViewGroup\\\$Subclass\\d+\\/ViewGroup\\\$Subclass\\d+\\/"
         val matcher = control.toRegex()
         val result = matcher.matches(label)
         if (!result) {
