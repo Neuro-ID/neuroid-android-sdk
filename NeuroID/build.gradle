@@ -95,7 +95,6 @@ dependencies {
     testImplementation 'com.google.truth:truth:0.43'
     testImplementation 'io.mockk:mockk:1.12.0'
     testImplementation 'org.json:json:20140107'
-    testImplementation 'io.mockk:mockk:1.12.0'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1"
 
     implementation 'androidx.core:core-ktx:1.8.0'
@@ -107,8 +106,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
 
     reactNativeLibImplementation("com.facebook.react:react-native:0.71.0-rc.0")
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     advancedDeviceAndroidLibImplementation("com.fingerprint.android:pro:2.3.2") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
@@ -117,6 +114,9 @@ dependencies {
     advancedDeviceReactNativeLibImplementation("com.fingerprint.android:pro:2.3.2") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
+    // okhttp lib added to keep consistency across the platforms (ReactNative, Native)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
