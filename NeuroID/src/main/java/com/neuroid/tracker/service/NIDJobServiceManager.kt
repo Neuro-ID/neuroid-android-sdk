@@ -2,6 +2,7 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +31,7 @@ object NIDJobServiceManager {
         this.endpoint = endpoint
         this.application = application
         jobCaptureEvents = createJobServer()
-        NIDSensorHelper.initSensorHelper(application)
+        NIDSensorHelper.initSensorHelper(application, NIDLogWrapper())
     }
 
     @Synchronized

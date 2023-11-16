@@ -3,9 +3,9 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
-import android.os.Build
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.models.NIDSensorModel
-import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 object NIDSensorHelper {
     private const val TAG = "NIDSensorHelper"
@@ -17,7 +17,7 @@ object NIDSensorHelper {
     private val nidSensors: NIDSensors = NIDSensors()
     private var listener: NIDSensorGenListener? = null
 
-    fun initSensorHelper(context: Context) {
+    fun initSensorHelper(context: Context, logger: NIDLogWrapper, nSensors: NIDSensors = nidSensors) {
         initSensorManager(context)
 
         val list = sensorManager?.getSensorList(Sensor.TYPE_ALL)
@@ -34,10 +34,10 @@ object NIDSensorHelper {
                     nidSensors.accelerometer.status = NIDSensorStatus.AVAILABLE
                 }
             }
-            NIDLog.i(TAG, "Sensor:${sensor.name} ${sensor.type}")
+            logger.i(TAG, "Sensor:${sensor.name} ${sensor.type}")
         }
 
-        restartSensors()
+        restartSensors(nSensors)
     }
 
     private fun initSensorManager(context: Context) {
@@ -45,21 +45,39 @@ object NIDSensorHelper {
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
 
+    @VisibleForTesting
+    // only called by unit tests, do not call outside of tests
+    internal fun resetSensorManager() {
+        sensorManager = null
+    }
+
+
     fun stopSensors() {
         sensorManager?.unregisterListener(listener)
     }
 
-    fun restartSensors() {
-        listener = NIDSensorGenListener {
+    fun restartSensors(nSensors: NIDSensors = nidSensors) {
+        listener = getNIDGenListener(nSensors)
+
+        gyroscopeSensor?.let {
+            sensorManager?.registerListener(listener, it, 10_000, 10_000)
+        }
+        accelerometerSensor?.let {
+            sensorManager?.registerListener(listener, it, 10_000, 10_000)
+        }
+    }
+
+    @VisibleForTesting
+    fun getNIDGenListener(nSensors: NIDSensors): NIDSensorGenListener{
+        return NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
-                    nidSensors.gyroscopeData =
-                        nidSensors.gyroscopeData.copy(
+                    nSensors.gyroscopeData =
+                        nSensors.gyroscopeData.copy(
                             axisX = it.axisX,
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-
                     if (firstValuesGyro.axisX == null) {
                         firstValuesGyro.axisX = it.axisX
                         firstValuesGyro.axisY = it.axisY
@@ -68,8 +86,8 @@ object NIDSensorHelper {
                     }
                 }
                 Sensor.TYPE_ACCELEROMETER -> {
-                    nidSensors.accelerometer =
-                        nidSensors.accelerometer.copy(
+                    nSensors.accelerometer =
+                        nSensors.accelerometer.copy(
                             axisX = it.axisX,
                             axisY = it.axisY,
                             axisZ = it.axisZ
@@ -82,15 +100,6 @@ object NIDSensorHelper {
                         firstValuesAccel.status = NIDSensorStatus.AVAILABLE
                     }
                 }
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            gyroscopeSensor?.let {
-                sensorManager?.registerListener(listener, it, 10_000, 10_000)
-            }
-            accelerometerSensor?.let {
-                sensorManager?.registerListener(listener, it, 10_000, 10_000)
             }
         }
     }
