@@ -68,7 +68,7 @@ object NIDSensorHelper {
     }
 
     @VisibleForTesting
-    fun getNIDGenListener(nSensors: NIDSensors): NIDSensorGenListener{
+    internal fun getNIDGenListener(nSensors: NIDSensors): NIDSensorGenListener{
         return NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
