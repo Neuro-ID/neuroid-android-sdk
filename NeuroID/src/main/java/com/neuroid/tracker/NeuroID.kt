@@ -93,7 +93,7 @@ class NeuroID private constructor(
     companion object {
         var showLogs: Boolean = true
         var isSDKStarted = false
-        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/c"
+        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/"
 
         private var singleton: NeuroID? = null
 
@@ -360,7 +360,7 @@ class NeuroID private constructor(
     fun stop() {
         isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
-            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
             NIDJobServiceManager.stopJob()
             saveIntegrationHealthEvents()
         }
