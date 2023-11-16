@@ -5,14 +5,17 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
 import androidx.core.content.getSystemService
+import com.neuroid.tracker.callbacks.NIDSensorData
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.callbacks.NIDSensorStatus
 import com.neuroid.tracker.callbacks.NIDSensors
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
@@ -35,7 +38,7 @@ class SensorHelperTests {
         val sensorManager = mockk<SensorManager>()
         every { sensorManager.getSensorList(Sensor.TYPE_ALL) } returns listOf(gyro)
         every { sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns gyro
-        every { sensorManager.registerListener(any<NIDSensorGenListener>(), any<Sensor>(), any<Int>(), any<Int>())} returns true
+        every { sensorManager.registerListener(any<NIDSensorGenListener>(), any(), any(), any<Int>())} returns true
         every { sensorManager.requestTriggerSensor(any(), any())} returns true
         val context = mockk<Context>()
         every { context.getSystemService<SensorManager>() } returns sensorManager
@@ -57,7 +60,7 @@ class SensorHelperTests {
         val sensorManager = mockk<SensorManager>()
         every { sensorManager.getSensorList(Sensor.TYPE_ALL) } returns listOf(accel)
         every { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns accel
-        every { sensorManager.registerListener(any<NIDSensorGenListener>(), any<Sensor>(), any<Int>(), any<Int>())} returns true
+        every { sensorManager.registerListener(any<NIDSensorGenListener>(), any(), any(), any<Int>())} returns true
         val context = mockk<Context>()
         every { context.getSystemService<SensorManager>() } returns sensorManager
         NIDSensorHelper.initSensorHelper(context, logger, nidSensors)
@@ -82,16 +85,29 @@ class SensorHelperTests {
 
         //prepare the sensor
         val nidSensors = mockk<NIDSensors>()
-        every {nidSensors.gyroscopeData.copy(any(),any(),any(), any(), any())} returns mockk()
+        every {nidSensors.gyroscopeData.copy(any(), any(), any(), any(), any())} returns mockk()
         every {nidSensors.gyroscopeData = any()} just runs
 
-        val listener = NIDSensorHelper.getNIDGenListener(nidSensors)
+        // prepare output receivers
+        val fvGyro = mockk<NIDSensorData>()
+        every{ fvGyro.axisX } returns null
+        every{ fvGyro.axisX = capture(slot()) } just runs
+        every{ fvGyro.axisY = capture(slot()) } just runs
+        every{ fvGyro.axisZ = capture(slot()) } just runs
+        every{ fvGyro.status = capture(slot()) } just runs
+        val fvAccel = mockk<NIDSensorData>()
+
+        val listener = NIDSensorHelper.getNIDGenListener(nidSensors, fvGyro, fvAccel)
 
         // fire the sensor event!
         listener.onSensorChanged(sensorEvent)
 
         // did we call copy on the gyroscope data?
-        verify { nidSensors.gyroscopeData.copy(any(), any(), 1.0F, 2.0F, 3.0F)}
+        verify { nidSensors.gyroscopeData.copy(any(), any(), 1.0F, 2.0F, 3.0F) }
+        verify { fvGyro setProperty "axisX" value 1.0F }
+        verify { fvGyro setProperty "axisY" value 2.0F }
+        verify { fvGyro setProperty "axisZ" value 3.0F }
+        verify { fvGyro setProperty "status" value any<NIDSensorStatus>() }
     }
 
     @Test
@@ -105,18 +121,32 @@ class SensorHelperTests {
         sensorField.set(sensorEvent, sensor)
         val valuesField: Field = SensorEvent::class.java.getField("values")
         valuesField.isAccessible = true
-        valuesField.set(sensorEvent, floatArrayOf(10.0f, 22.0f, 33.0f))
+        valuesField.set(sensorEvent, floatArrayOf(11.0f, 22.0f, 33.0f))
 
         //prepare the sensor
         val nidSensors = mockk<NIDSensors>()
-        every {nidSensors.accelerometer.copy(any(),any(),any(), any(), any())} returns mockk()
+        every {nidSensors.accelerometer.copy(any(),any(),any(), any(), any()) } returns mockk()
         every {nidSensors.accelerometer = any()} just runs
-        val listener = NIDSensorHelper.getNIDGenListener(nidSensors)
+
+        // prepare output receivers
+        val fvGyro = mockk<NIDSensorData>()
+        val fvAccel = mockk<NIDSensorData>()
+        every{ fvAccel.axisX } returns null
+        every{ fvAccel.axisX = capture(slot()) } just runs
+        every{ fvAccel.axisY = capture(slot()) } just runs
+        every{ fvAccel.axisZ = capture(slot()) } just runs
+        every{ fvAccel.status = capture(slot()) } just runs
+
+        val listener = NIDSensorHelper.getNIDGenListener(nidSensors, fvGyro, fvAccel)
 
         // fire the sensor event!
         listener.onSensorChanged(sensorEvent)
 
         // did we call copy on the accelerometer data?
-        verify { nidSensors.accelerometer.copy(any(), any(), 10.0F, 22.0F, 33.0F)}
+        verify { nidSensors.accelerometer.copy(any(), any(), 11.0F, 22.0F, 33.0F) }
+        verify { fvAccel setProperty "axisX" value 11.0F }
+        verify { fvAccel setProperty "axisY" value 22.0F }
+        verify { fvAccel setProperty "axisZ" value 33.0F }
+        verify { fvAccel setProperty "status" value any<NIDSensorStatus>() }
     }
 }

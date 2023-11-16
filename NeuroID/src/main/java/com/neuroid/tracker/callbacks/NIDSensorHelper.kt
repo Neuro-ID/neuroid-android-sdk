@@ -57,7 +57,7 @@ object NIDSensorHelper {
     }
 
     fun restartSensors(nSensors: NIDSensors = nidSensors) {
-        listener = getNIDGenListener(nSensors)
+        listener = getNIDGenListener(nSensors, firstValuesGyro, firstValuesAccel)
 
         gyroscopeSensor?.let {
             sensorManager?.registerListener(listener, it, 10_000, 10_000)
@@ -68,7 +68,9 @@ object NIDSensorHelper {
     }
 
     @VisibleForTesting
-    internal fun getNIDGenListener(nSensors: NIDSensors): NIDSensorGenListener{
+    internal fun getNIDGenListener(nSensors: NIDSensors,
+                                   fvGyro: NIDSensorData,
+                                   fvAccel: NIDSensorData): NIDSensorGenListener{
         return NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
@@ -78,11 +80,11 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-                    if (firstValuesGyro.axisX == null) {
-                        firstValuesGyro.axisX = it.axisX
-                        firstValuesGyro.axisY = it.axisY
-                        firstValuesGyro.axisZ = it.axisZ
-                        firstValuesGyro.status = NIDSensorStatus.AVAILABLE
+                    if (fvGyro.axisX == null) {
+                        fvGyro.axisX = it.axisX
+                        fvGyro.axisY = it.axisY
+                        fvGyro.axisZ = it.axisZ
+                        fvGyro.status = NIDSensorStatus.AVAILABLE
                     }
                 }
                 Sensor.TYPE_ACCELEROMETER -> {
@@ -93,11 +95,11 @@ object NIDSensorHelper {
                             axisZ = it.axisZ
                         )
 
-                    if (firstValuesAccel.axisX == null) {
-                        firstValuesAccel.axisX = it.axisX
-                        firstValuesAccel.axisY = it.axisY
-                        firstValuesAccel.axisZ = it.axisZ
-                        firstValuesAccel.status = NIDSensorStatus.AVAILABLE
+                    if (fvAccel.axisX == null) {
+                        fvAccel.axisX = it.axisX
+                        fvAccel.axisY = it.axisY
+                        fvAccel.axisZ = it.axisZ
+                        fvAccel.status = NIDSensorStatus.AVAILABLE
                     }
                 }
             }
