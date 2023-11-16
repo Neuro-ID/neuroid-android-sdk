@@ -90,7 +90,7 @@ class SensorHelperTests {
         // fire the sensor event!
         listener.onSensorChanged(sensorEvent)
 
-        // check to see we do the copy which indicates we got an event and did the copy to the NID Sensor data!
+        // did we call copy on the gyroscope data?
         verify { nidSensors.gyroscopeData.copy(any(), any(), 1.0F, 2.0F, 3.0F)}
     }
 
@@ -105,7 +105,7 @@ class SensorHelperTests {
         sensorField.set(sensorEvent, sensor)
         val valuesField: Field = SensorEvent::class.java.getField("values")
         valuesField.isAccessible = true
-        valuesField.set(sensorEvent, floatArrayOf(1.0f, 2.0f, 3.0f))
+        valuesField.set(sensorEvent, floatArrayOf(10.0f, 22.0f, 33.0f))
 
         //prepare the sensor
         val nidSensors = mockk<NIDSensors>()
@@ -116,7 +116,7 @@ class SensorHelperTests {
         // fire the sensor event!
         listener.onSensorChanged(sensorEvent)
 
-        // check to see we do the copy which indicates we got an event and did the copy to the NID Sensor data!
-        verify { nidSensors.accelerometer.copy(any(), any(), 1.0F, 2.0F, 3.0F)}
+        // did we call copy on the accelerometer data?
+        verify { nidSensors.accelerometer.copy(any(), any(), 10.0F, 22.0F, 33.0F)}
     }
 }
