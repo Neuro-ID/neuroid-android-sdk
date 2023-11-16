@@ -49,6 +49,7 @@ class ComponentsTest {
      */
     @Test
     fun test01ValidateCheckBox() = runTest {
+        NeuroID.getInstance()?.start()
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         delay(500) // When you go to the next test, the activity is destroyed and recreated
