@@ -35,7 +35,7 @@ object NIDJobServiceManager {
         this.endpoint = endpoint
         this.application = application
         jobCaptureEvents = createJobServer()
-        NIDSensorHelper.initSensorHelper(application)
+        NIDSensorHelper.initSensorHelper(application, NIDLogWrapper())
     }
 
     @Synchronized
