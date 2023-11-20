@@ -58,26 +58,28 @@ class NIDTextWatcher(
                     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
                     val metadataObj = JSONObject()
-                    metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
+                    if (pastedText.isNotEmpty()) {
+                        metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
 
-                    val attrJSON = JSONArray().put(metadataObj)
-                    getDataStoreInstance()
-                        .saveEvent(
-                            NIDEventModel(
-                                type = PASTE,
-                                ts = ts,
-                                tg = hashMapOf(
-                                    "attr" to getAttrJson(sequence.toString()),
-                                    "et" to "text"
-                                ),
-                                tgs = idName,
-                                v = "S~C~~${sequence?.length}",
-                                hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                                gyro = gyroData,
-                                accel = accelData,
-                                attrs = attrJSON
+                        val attrJSON = JSONArray().put(metadataObj)
+                        getDataStoreInstance()
+                            .saveEvent(
+                                NIDEventModel(
+                                    type = PASTE,
+                                    ts = ts,
+                                    tg = hashMapOf(
+                                        "attr" to getAttrJson(sequence.toString()),
+                                        "et" to "text"
+                                    ),
+                                    tgs = idName,
+                                    v = "S~C~~${sequence?.length}",
+                                    hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                                    gyro = gyroData,
+                                    accel = accelData,
+                                    attrs = attrJSON
+                                )
                             )
-                        )
+                    }
                 }
 
             }
