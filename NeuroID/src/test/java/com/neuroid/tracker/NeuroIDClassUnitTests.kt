@@ -307,9 +307,9 @@ class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    excludeViewByResourceID
+    //    excludeViewByTestID
     @Test
-    fun testExcludeViewByResourceID() {
+    fun testExcludeViewByTestID() {
         setMockedDataStore()
         setMockedApplication()
 
