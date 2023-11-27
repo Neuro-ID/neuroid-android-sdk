@@ -17,15 +17,22 @@ def getGitHash = { ->
     }
     return stdout.toString().trim()
 }
+def nameSpace = "com.neuroid"
+
+def androidSDKVariant = "android-sdk"
+def debugVariant = "-debug"
+def reactNativeVariant = "react"
+def advancedDeviceVariant = "advanced-device"
+
 ext {
     versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
 }
-group = 'com.neuroid'
+group = nameSpace
 version = versionName
 
 android {
 
-    compileSdkVersion 31
+    compileSdkVersion = 31
 
     defaultConfig {
         minSdk 21
@@ -51,20 +58,20 @@ android {
         }
     }
 
-    flavorDimensions "version"
+    flavorDimensions = ["native", "adv"]
 
     productFlavors {
-        androidLib {
-            dimension "version"
+        android {
+            dimension "native"
         }
-        reactNativeLib {
-            dimension "version"
+        reactNative {
+            dimension "native"
         }
-        advancedDeviceAndroidLib {
-            dimension "version"
+        lib {
+            dimension "adv"
         }
-        advancedDeviceReactNativeLib {
-            dimension "version"
+        advancedDeviceLib {
+            dimension "adv"
         }
     }
 
@@ -102,18 +109,15 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation("androidx.lifecycle:lifecycle-process:2.4.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
+    implementation 'androidx.lifecycle:lifecycle-process:2.4.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    reactNativeLibImplementation("com.facebook.react:react-native:0.71.0-rc.0")
+    reactNativeImplementation("com.facebook.react:react-native:0.71.0-rc.0")
 
-    advancedDeviceAndroidLibImplementation("com.fingerprint.android:pro:2.3.2") {
+    advancedDeviceLibImplementation("com.fingerprint.android:pro:2.3.2") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
-    advancedDeviceReactNativeLibImplementation("com.facebook.react:react-native:0.71.0-rc.0")
-    advancedDeviceReactNativeLibImplementation("com.fingerprint.android:pro:2.3.2") {
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
-    }
+
     // okhttp lib added to keep consistency across the platforms (ReactNative, Native)
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
@@ -134,18 +138,18 @@ afterEvaluate {
                 from components.androidLibRelease
 
                 // You can then customize attributes of the publication as shown below.
-                groupId = 'com.neuroid'
-                artifactId = 'android-sdk'
+                groupId = nameSpace
+                artifactId = "$androidSDKVariant"
                 version = versionName
                 artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
-            androidLibdebug(MavenPublication) {
+            androidLibDebug(MavenPublication) {
                 // Applies the component for the debug build variant.
                 from components.androidLibDebug
 
-                groupId = 'com.neuroid'
-                artifactId = 'android-sdk-debug'
+                groupId = nameSpace
+                artifactId = "$androidSDKVariant$debugVariant"
                 version = versionName
                 artifact androidSourcesJar
             }
@@ -154,8 +158,8 @@ afterEvaluate {
                 from components.reactNativeLibRelease
 
                 // You can then customize attributes of the publication as shown below.
-                groupId = 'com.neuroid'
-                artifactId = 'react-android-sdk'
+                groupId = nameSpace
+                artifactId = "$reactNativeVariant-$androidSDKVariant"
                 version = versionName
                 artifact androidSourcesJar
             }
@@ -164,44 +168,50 @@ afterEvaluate {
                 // Applies the component for the debug build variant.
                 from components.reactNativeLibDebug
 
-                groupId = 'com.neuroid'
-                artifactId = 'react-android-sdk-debug'
+                groupId = nameSpace
+                artifactId = "$reactNativeVariant-$androidSDKVariant$debugVariant"
                 version = versionName
                 artifact androidSourcesJar
             }
-            advancedDeviceAndroidLibRelease(MavenPublication) {
-                from components.advancedDeviceAndroidLibRelease
 
-                groupId = 'com.neuroid'
-                artifactId = 'android-advanced-device-sdk'
-                version = versionName
-                artifact androidSourcesJar
-            }
-            advancedDeviceAndroidLibDebug(MavenPublication) {
-                from components.advancedDeviceAndroidLibDebug
-
-                groupId = 'com.neuroid'
-                artifactId = 'android-advanced-device-sdk-debug'
-                version = versionName
-                artifact androidSourcesJar
-            }
-            advancedDeviceReactNativeLibRelease(MavenPublication) {
+            // Creates a Maven publication called "release".
+            androidAdvancedDeviceLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
-                from components.advancedDeviceReactNativeLibRelease
+                from components.androidAdvancedDeviceLibRelease
 
                 // You can then customize attributes of the publication as shown below.
-                groupId = 'com.neuroid'
-                artifactId = 'react-android-advanced-device-sdk'
+                groupId = nameSpace
+                artifactId = "android-$advancedDeviceVariant-sdk"
                 version = versionName
                 artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
-            advancedDeviceReactNativeLibDebug(MavenPublication) {
+            androidAdvancedDeviceLibDebug(MavenPublication) {
                 // Applies the component for the debug build variant.
-                from components.advancedDeviceReactNativeLibDebug
+                from components.androidAdvancedDeviceLibDebug
 
-                groupId = 'com.neuroid'
-                artifactId = 'react-android-advanced-device-sdk-debug'
+                groupId = nameSpace
+                artifactId = "android-$advancedDeviceVariant-sdk$debugVariant"
+                version = versionName
+                artifact androidSourcesJar
+            }
+            reactNativeAdvancedDeviceLibRelease(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.reactNativeAdvancedDeviceLibRelease
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = nameSpace
+                artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk"
+                version = versionName
+                artifact androidSourcesJar
+            }
+            // Creates a Maven publication called “debug”.
+            reactNativeAdvancedDeviceLibDebug(MavenPublication) {
+                // Applies the component for the debug build variant.
+                from components.reactNativeAdvancedDeviceLibDebug
+
+                groupId = nameSpace
+                artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk$debugVariant"
                 version = versionName
                 artifact androidSourcesJar
             }
