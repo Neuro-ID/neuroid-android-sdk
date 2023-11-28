@@ -2,6 +2,7 @@ package com.neuroid.tracker.utils
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.preference.PreferenceDataStore
 import android.text.Editable
 import android.text.TextWatcher
 import com.neuroid.tracker.NeuroID
@@ -10,6 +11,7 @@ import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import org.json.JSONArray
@@ -19,7 +21,12 @@ import org.json.JSONObject
 class NIDTextWatcher(
     private val idName: String,
     val className: String? = "",
-    val startingHashValue: String? = ""
+    val startingHashValue: String? = "",
+    val clipboard: ClipboardManager = NeuroID.getInstance()?.getApplicationContext()
+        ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+    val dataManager: NIDDataStoreManager = getDataStoreInstance()
+
+
 ) : TextWatcher {
 
     private var lastSize = 0
@@ -33,8 +40,6 @@ class NIDTextWatcher(
     override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
 
         // Check if the change is due to a paste operation
-        val clipboard = NeuroID.getInstance()?.getApplicationContext()
-            ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = clipboard?.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             var pastedText = ""
@@ -62,7 +67,7 @@ class NIDTextWatcher(
                         metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
 
                         val attrJSON = JSONArray().put(metadataObj)
-                        getDataStoreInstance()
+                        dataManager
                             .saveEvent(
                                 NIDEventModel(
                                     type = PASTE,
@@ -96,7 +101,7 @@ class NIDTextWatcher(
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
             NIDLog.d(msg="Activity - after text ${sequence.toString()}")
 
-            getDataStoreInstance()
+            dataManager
                 .saveEvent(
                     NIDEventModel(
                         type = INPUT,
