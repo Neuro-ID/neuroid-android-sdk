@@ -2,7 +2,7 @@ name: Unit Test Sample App
 on:
   pull_request:
     branches:
-    - master
+      - master
 
 concurrency:
   group: ${{ github.head_ref }}
@@ -17,7 +17,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name:  set up JDK 11
+      - name: set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
@@ -26,32 +26,32 @@ jobs:
         run: bash ./gradlew :NeuroID:assemble
 
   test:
-      name: SDK Test
-      runs-on: macos-latest
+    name: SDK Test
+    runs-on: macos-latest
 
-      steps:
-        - name: checkout
-          uses: actions/checkout@v3
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
 
-        - name:  set up JDK 11
-          uses: actions/setup-java@v1
-          with:
-            java-version: 11
+      - name: set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
 
-        # Execute unit test neuroid lib
-        - name: Unit Test NeuroId
-          run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
+      # Execute unit test neuroid lib
+      - name: Unit Test NeuroId
+        run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
 
-        # Execute unit test neuroid lib
-        - name: Unit Test NeuroId (advanced)
-          run: ./gradlew :NeuroID:testAdvancedDeviceAndroidLibDebugUnitTest
+      # Execute unit test neuroid lib
+      - name: Unit Test NeuroId (advanced)
+        run: ./gradlew :NeuroID:testAndroidAdvancedDeviceLibDebugUnitTest
 
-        # Execute unit tests
-        - name: Unit Test
-          uses: ReactiveCircus/android-emulator-runner@v2.24.0
-          with:
-              api-level: 29
-              profile: Nexus 6P
-              emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-              disable-animations: false
-              script: ./gradlew :app:connectedandroidLibDebugAndroidTest
+      # Execute unit tests
+      - name: Unit Test
+        uses: ReactiveCircus/android-emulator-runner@v2.24.0
+        with:
+          api-level: 29
+          profile: Nexus 6P
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: ./gradlew :app:connectedandroidLibDebugAndroidTest
