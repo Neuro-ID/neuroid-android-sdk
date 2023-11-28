@@ -2,7 +2,6 @@ package com.neuroid.tracker.utils
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.preference.PreferenceDataStore
 import android.text.Editable
 import android.text.TextWatcher
 import com.neuroid.tracker.NeuroID
