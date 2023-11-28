@@ -10,9 +10,14 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class NIDAdvKeyService {
-    fun getKey(callback: OnKeyCallback, connProvider: HttpConnectionProvider,
-               keyMapper: GsonAdvMapper, base64Decoder: Base64Decoder, siteKey: String,
-               dataStore: NIDDataStoreManager) {
+    fun getKey(
+        callback: OnKeyCallback, 
+        connProvider: HttpConnectionProvider,
+        keyMapper: GsonAdvMapper, 
+        base64Decoder: Base64Decoder, 
+        siteKey: String,
+        dataStore: NIDDataStoreManager
+        ) {
         var retryCount = 0
         while (retryCount < RETRY_MAX) {
             val conn = connProvider.getConnection("$URL/$siteKey")
