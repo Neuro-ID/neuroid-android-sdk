@@ -98,9 +98,18 @@ class NeuroID private constructor(
         private var singleton: NeuroID? = null
 
         @JvmStatic
-        fun setNeuroIdInstance(neuroId: NeuroID) {
+        @Deprecated(
+            "setNeuroIdInstance has been renamed to setNeuroIDInstance",
+            ReplaceWith("NeuroID.setNeuroIDInstance()")
+        )
+        fun setNeuroIdInstance(neuroID: NeuroID) {
+            this.setNeuroIDInstance(neuroID)
+        }
+
+        @JvmStatic
+        fun setNeuroIDInstance(neuroID: NeuroID) {
             if (singleton == null) {
-                singleton = neuroId
+                singleton = neuroID
                 singleton?.setupCallbacks()
             }
         }
@@ -119,7 +128,6 @@ class NeuroID private constructor(
     internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
         nidActivityCallbacks = callback
     }
-
 
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
@@ -175,7 +183,10 @@ class NeuroID private constructor(
         return true
     }
 
+
+    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId() = userID
+    fun getUserID() = userID
 
     fun setScreenName(screen: String): Boolean {
 
@@ -198,12 +209,14 @@ class NeuroID private constructor(
         }
     }
 
+    @Deprecated("setEnvironment is deprecated and no longer required")
     fun setEnvironment(environment: String) {
         NIDLog.i(
             msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
         )
     }
 
+    @Deprecated("setEnvironmentProduction is deprecated and no longer required")
     fun setEnvironmentProduction(prod: Boolean) {
         NIDLog.i(
             msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
@@ -212,6 +225,7 @@ class NeuroID private constructor(
 
     fun getEnvironment(): String = NIDServiceTracker.environment
 
+    @Deprecated("getSiteId is deprecated and no longer required")
     fun setSiteId(siteId: String) {
         NIDLog.i(
             msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
@@ -219,6 +233,7 @@ class NeuroID private constructor(
         NIDServiceTracker.siteId = siteId
     }
 
+    @Deprecated("getSiteId is deprecated")
     internal fun getSiteId(): String {
         NIDLog.i(
             msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
@@ -226,13 +241,19 @@ class NeuroID private constructor(
         return ""
     }
 
+    @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
     fun getSessionId(): String {
         return sessionID
     }
 
+    fun getSessionID(): String = sessionID
+
+    @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
     fun getClientId(): String {
         return clientID
     }
+
+    fun getClientID(): String = clientID
 
     internal fun getForceStart(): Boolean? {
         return forceStart
@@ -272,6 +293,7 @@ class NeuroID private constructor(
         }
     }
 
+    @Deprecated("formSubmit is deprecated and no longer required")
     fun formSubmit() {
         NIDLog.i(
             msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
@@ -292,6 +314,7 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
+    @Deprecated("formSubmitSuccess is deprecated and no longer required")
     fun formSubmitSuccess() {
         NIDLog.i(
             msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
@@ -312,6 +335,7 @@ class NeuroID private constructor(
         saveIntegrationHealthEvents()
     }
 
+    @Deprecated("formSubmitFailure is deprecated and no longer required")
     fun formSubmitFailure() {
         NIDLog.i(
             msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
