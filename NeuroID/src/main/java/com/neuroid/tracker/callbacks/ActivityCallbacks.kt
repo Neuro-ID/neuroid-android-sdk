@@ -36,18 +36,17 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
      * Option for customers to force start with Activity
      */
     fun forceStart(activity: Activity) {
-        NeuroID.getInstance()?.clipboardManager?.let {
-            registerTargetFromScreen(
-                activity,
-                NIDLogWrapper(),
-                getDataStoreInstance(),
-                it,
-                true,
-                true,
-                activityOrFragment = "activity",
-                parent = activity::class.java.simpleName
-            )
-        }
+        registerTargetFromScreen(
+            activity,
+            NIDLogWrapper(),
+            getDataStoreInstance(),
+            NeuroID.getInstance()?.getApplicationContext()
+                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+            true,
+            true,
+            activityOrFragment = "activity",
+            parent = activity::class.java.simpleName
+        )
         // register listeners for focus, blur and touch events
         registerWindowListeners(activity)
     }

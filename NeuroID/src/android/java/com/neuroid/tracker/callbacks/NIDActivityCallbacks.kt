@@ -118,18 +118,17 @@ class NIDActivityCallbacks: ActivityCallbacks() {
 
         val currentActivityName = activity::class.java.name
 
-        NeuroID.getInstance()?.clipboardManager?.let {
-            registerTargetFromScreen(
-                activity,
-                NIDLogWrapper(),
-                getDataStoreInstance(),
-                it,
-                registerTarget = true,
-                registerListeners = true,
-                activityOrFragment = "activity",
-                parent = currentActivityName
-            )
-        }
+        registerTargetFromScreen(
+            activity,
+            NIDLogWrapper(),
+            getDataStoreInstance(),
+            NeuroID.getInstance()?.getApplicationContext()
+                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+            registerTarget = true,
+            registerListeners = true,
+            activityOrFragment = "activity",
+            parent = currentActivityName
+        )
 
         registerWindowListeners(activity)
     }

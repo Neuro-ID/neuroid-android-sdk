@@ -54,8 +54,6 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var clipboardManager: ClipboardManager = getInstance()?.getApplicationContext()
-        ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     init {
         application?.let {
@@ -419,7 +417,8 @@ class NeuroID private constructor(
             activity.getGUID(),
             NIDLogWrapper(),
             dataStore,
-            clipboardManager,
+            getInstance()?.getApplicationContext()
+                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
             true,
             addListener
         )

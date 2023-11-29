@@ -44,18 +44,19 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
         if (NeuroID.getInstance()?.getForceStart() == true) {
-            NeuroID.getInstance()?.clipboardManager?.let {
-                registerTargetFromScreen(
-                    f.requireActivity(),
-                    NIDLogWrapper(),
-                    getDataStoreInstance(),
-                    it,
-                    true,
-                    true,
-                    activityOrFragment = "fragment",
-                    parent = f::class.java.simpleName
-                )
-            }
+
+            registerTargetFromScreen(
+                f.requireActivity(),
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                NeuroID.getInstance()?.getApplicationContext()
+                    ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+                true,
+                true,
+                activityOrFragment = "fragment",
+                parent = f::class.java.simpleName
+            )
+
             return
         }
 
@@ -63,18 +64,17 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
             NIDLog.d(
                 msg = "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
             )
-            NeuroID.getInstance()?.clipboardManager?.let {
-                registerTargetFromScreen(
-                    f.requireActivity(),
-                    NIDLogWrapper(),
-                    getDataStoreInstance(),
-                    it,
-                    _isChangeOrientation.not(),
-                    true,
-                    activityOrFragment = "fragment",
-                    parent = f::class.java.simpleName
-                )
-            }
+            registerTargetFromScreen(
+                f.requireActivity(),
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                NeuroID.getInstance()?.getApplicationContext()
+                    ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+                _isChangeOrientation.not(),
+                true,
+                activityOrFragment = "fragment",
+                parent = f::class.java.simpleName
+            )
             _isChangeOrientation = false
         } else {
             NIDLog.d(msg = "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")
