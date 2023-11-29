@@ -1,6 +1,7 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
+import android.content.ClipboardManager
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
