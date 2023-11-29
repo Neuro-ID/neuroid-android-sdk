@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -125,6 +126,9 @@ class NeuroIDClassUnitTests {
             excludedIds.add(args[0] as String)
         }
 
+        every { dataStoreManager.saveAndClearAllQueuedEvents() } answers {
+
+        }
 
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
     }
@@ -190,6 +194,7 @@ class NeuroIDClassUnitTests {
     //    setLoggerInstance - Used for mocking
     //    setDataStoreInstance - Used for mocking
     //    setNIDActivityCallbackInstance - Used for mocking
+    //    setNIDJobServiceManager - Used for mocking
 
     //    validateClientKey
     @Test
@@ -672,4 +677,92 @@ class NeuroIDClassUnitTests {
 
         assertEquals(true, version?.contains("5.android-rn"))
     }
+
+    //    clearSessionVariables
+    @Test
+    fun testClearSessionVariables() {
+        NeuroID.getInstance()?.userID = "myID"
+
+        NeuroID.getInstance()?.clearSessionVariables()
+
+        assertEquals("", NeuroID.getInstance()?.userID)
+    }
+
+    //    startSession
+    @Test
+    fun testStartSession_success_no_id() {
+        setMockedDataStore()
+        NeuroID.getInstance()?.let {
+            it.clientKey = "dummyKey"
+            val (started, id) = it.startSession()
+            assertEquals(true, started)
+        }
+    }
+
+    @Test
+    fun testStartSession_success_id() {
+        setMockedDataStore()
+        NeuroID.getInstance()?.let {
+            it.clientKey = "dummyKey"
+            val (started, id) = it.startSession("testID")
+            assertEquals(true, started)
+            assertEquals("testID", id)
+        }
+    }
+
+    @Test
+    fun testStartSession_failure_clientKey() {
+        setNeuroIDMockedLogger(
+            errorMessage = "Missing Client Key - please call configure prior to calling start"
+        )
+        NeuroID.getInstance()?.let {
+            it.clientKey = ""
+            val (started, id) = it.startSession()
+            assertEquals(false, started)
+            assertEquals("", id)
+
+            assertErrorCount(1)
+        }
+    }
+
+    @Test
+    fun testStartSession_failure_userID() {
+        setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+        NeuroID.getInstance()?.let {
+            it.clientKey = "dummyKey"
+            val (started, id) = it.startSession("bad user 343%%^")
+            assertEquals(false, started)
+            assertEquals("", id)
+
+            assertErrorCount(1)
+        }
+    }
+
+    //    pauseCollection
+    @Test
+    fun testPauseCollection() {
+        NeuroID.getInstance()?.let {
+            it.pauseCollection()
+            assertEquals(false, NeuroID.isSDKStarted)
+        }
+    }
+
+    //    resumeCollection
+    fun testResumeCollection() {
+        NeuroID.getInstance()?.let {
+            it.resumeCollection()
+            assertEquals(true, NeuroID.isSDKStarted)
+        }
+    }
+
+    //    stopSession
+    fun testStopSession() {
+        NeuroID.getInstance()?.let {
+            val stopped = it.stopSession()
+            assertEquals(true, stopped)
+            assertEquals(false, NeuroID.isSDKStarted)
+        }
+    }
+
+
 }

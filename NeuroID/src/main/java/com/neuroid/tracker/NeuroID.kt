@@ -23,6 +23,7 @@ import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +54,7 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
+    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
 
     init {
         application?.let {
@@ -129,6 +131,10 @@ class NeuroID private constructor(
         nidActivityCallbacks = callback
     }
 
+    internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
+        nidJobServiceManager = serviceManager
+    }
+
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
         val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -182,7 +188,6 @@ class NeuroID private constructor(
 
         return true
     }
-
 
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId() = userID
@@ -374,7 +379,7 @@ class NeuroID private constructor(
             saveIntegrationHealthEvents()
         }
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+            nidJobServiceManager.startJob(it, clientKey, endpoint)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -382,12 +387,7 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        isSDKStarted = false
-        CoroutineScope(Dispatchers.IO).launch {
-            NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-            NIDJobServiceManager.stopJob()
-            saveIntegrationHealthEvents()
-        }
+        pauseCollection()
     }
 
     fun closeSession() {
@@ -519,4 +519,82 @@ class NeuroID private constructor(
     }
 
     fun getSDKVersion() = NIDVersion.getSDKVersion()
+
+    // new Session Commands
+    fun clearSessionVariables() {
+        userID = ""
+//        registeredUserID = ""
+    }
+
+    fun startSession(sessionID: String = ""): Pair<Boolean, String> {
+        if (clientKey == "") {
+            NIDLog.e(
+                msg = "Missing Client Key - please call configure prior to calling start"
+            )
+            return Pair(false, "")
+        }
+
+        if (userID != "" || isSDKStarted) {
+            stopSession()
+        }
+
+        val finalSessionID = if (sessionID != null && sessionID != "") {
+            sessionID
+        } else {
+            generateUniqueHexId()
+        }
+
+        if (!setUserID(finalSessionID)) {
+            return Pair(false, "")
+        }
+
+        isSDKStarted = true
+        NIDServiceTracker.rndmId = "mobile"
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            startIntegrationHealthCheck()
+            createSession()
+            saveIntegrationHealthEvents()
+        }
+
+        resumeCollection()
+
+        dataStore.saveAndClearAllQueuedEvents()
+
+        return Pair(true, finalSessionID)
+    }
+
+    fun pauseCollection() {
+        isSDKStarted = false
+        CoroutineScope(Dispatchers.IO).launch {
+            nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+            nidJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
+        }
+    }
+
+    fun resumeCollection() {
+        isSDKStarted = true
+        application?.let {
+            if (!nidJobServiceManager.isSetup) {
+                nidJobServiceManager.startJob(it, clientKey, endpoint)
+            } else {
+                nidJobServiceManager.restart()
+            }
+        }
+    }
+
+    fun stopSession(): Boolean {
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
+            )
+        )
+
+        pauseCollection()
+        clearSessionVariables()
+
+        return true
+    }
 }
