@@ -212,7 +212,7 @@ class NeuroID private constructor(
     fun getUserId() = userID
     fun getUserID() = userID
 
-    fun getRegisteredUserId() = registeredUserID
+    fun getRegisteredUserID() = registeredUserID
 
     fun setScreenName(screen: String): Boolean {
 

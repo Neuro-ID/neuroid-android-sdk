@@ -312,7 +312,7 @@ class NeuroIDClassUnitTests {
     fun testGetRegisteredUserID() {
         val expectedValue = "testRegisteredID"
         NeuroID.getInstance()?.registeredUserID = expectedValue
-        val value = NeuroID.getInstance()?.getRegisteredUserId()
+        val value = NeuroID.getInstance()?.getRegisteredUserID()
 
         assertEquals(expectedValue, value)
     }
