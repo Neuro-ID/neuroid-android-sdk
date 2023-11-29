@@ -31,11 +31,11 @@ class MyApplicationDemo : MultiDexApplication() {
                 .penaltyLog()
                 .build()
         )
-        val neuroId = NeuroID.Builder(
+        val neuroID = NeuroID.Builder(
             this,
             "key_live_suj4CX90v0un2k1ufGrbItT5"
         ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        NeuroID.setNeuroIDInstance(neuroID)
         NeuroID.getInstance()?.setEnvironmentProduction(true)
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)

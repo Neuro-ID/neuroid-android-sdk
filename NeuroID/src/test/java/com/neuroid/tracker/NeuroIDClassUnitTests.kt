@@ -303,7 +303,7 @@ class NeuroIDClassUnitTests {
     fun testGetUserID() {
         val expectedValue = "testID"
         NeuroID.getInstance()?.userID = expectedValue
-        val value = NeuroID.getInstance()?.getUserId()
+        val value = NeuroID.getInstance()?.getUserID()
 
         assertEquals(expectedValue, value)
     }
@@ -441,24 +441,24 @@ class NeuroIDClassUnitTests {
 
     //    getSessionId
     @Test
-    fun testGetSessionId() {
+    fun testGetSessionID() {
 
         val expectedValue = "testSessionID"
         NeuroID.getInstance()?.sessionID = expectedValue
 
-        val value = NeuroID.getInstance()?.getSessionId()
+        val value = NeuroID.getInstance()?.getSessionID()
 
         assertEquals(expectedValue, value)
     }
 
     //    getClientId
     @Test
-    fun testGetClientId() {
+    fun testGetClientID() {
 
         val expectedValue = "testClientID"
         NeuroID.getInstance()?.clientID = expectedValue
 
-        val value = NeuroID.getInstance()?.getClientId()
+        val value = NeuroID.getInstance()?.getClientID()
 
         assertEquals(expectedValue, value)
     }
