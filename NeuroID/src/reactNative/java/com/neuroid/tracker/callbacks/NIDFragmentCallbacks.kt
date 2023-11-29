@@ -1,5 +1,6 @@
 package com.neuroid.tracker.callbacks
 
+import android.content.ClipboardManager
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -55,33 +56,31 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                 val index = listFragment.indexOf(fragName)
                 if (index != listFragment.size - 1) {
                     listFragment.removeLast()
-                    NeuroID.getInstance()?.let {
-                        registerTargetFromScreen(
-                            f.requireActivity(),
-                            NIDLogWrapper(),
-                            getDataStoreInstance(),
-                            it.clipboardManager,
-                            registerTarget = true,
-                            registerListeners = false,
-                            activityOrFragment = "fragment",
-                            parent = f::class.java.simpleName
-                        )
-                    }
-                }
-            } else {
-                listFragment.add(fragName)
-                NeuroID.getInstance()?.let {
                     registerTargetFromScreen(
                         f.requireActivity(),
                         NIDLogWrapper(),
                         getDataStoreInstance(),
-                        it.clipboardManager,
+                        NeuroID.getInstance()?.getApplicationContext()
+                            ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
                         registerTarget = true,
-                        registerListeners = true,
+                        registerListeners = false,
                         activityOrFragment = "fragment",
                         parent = f::class.java.simpleName
                     )
                 }
+            } else {
+                listFragment.add(fragName)
+                registerTargetFromScreen(
+                    f.requireActivity(),
+                    NIDLogWrapper(),
+                    getDataStoreInstance(),
+                    NeuroID.getInstance()?.getApplicationContext()
+                        ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager,
+                    registerTarget = true,
+                    registerListeners = true,
+                    activityOrFragment = "fragment",
+                    parent = f::class.java.simpleName
+                )
             }
         }
     }
