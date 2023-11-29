@@ -47,6 +47,16 @@ class NIDSharedPrefsDefaults(
         putString(NID_UID, userId)
     }
 
+    fun setRegisteredUserID(userId: String) {
+        putString(NID_REG_UID, userId)
+    }
+
+    fun getRegisteredUserId(): Any {
+        val uid = getString(NID_REG_UID)
+
+        return uid.ifBlank { JSONObject.NULL }
+    }
+
     // Must be set to null string
     fun getUserId(): Any? {
         val uid = getString(NID_UID)
@@ -170,6 +180,7 @@ class NIDSharedPrefsDefaults(
     companion object {
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
         private const val NID_UID = "NID_UID_KEY"
+        private const val NID_REG_UID = "NID_REG_UID_KEY"
         private const val NID_SID = "NID_SID_KEY"
         private const val NID_CID_OLD = "NID_CID_KEY"
         private const val NID_CID = "NID_CID_GUID_KEY"
