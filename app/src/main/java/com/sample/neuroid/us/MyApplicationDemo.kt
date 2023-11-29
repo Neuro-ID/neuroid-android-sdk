@@ -40,7 +40,7 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
         NeuroID.getInstance()?.setUserID(configHelper.userId)
-        NeuroID.getInstance()?.setRegisteredUserId("ahsdkghasdjkghdklasglasd")
+        NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
         NeuroID.getInstance()?.start()
     }
 }

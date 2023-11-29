@@ -47,7 +47,7 @@ class NIDSharedPrefsDefaults(
         putString(NID_UID, userId)
     }
 
-    fun setRegisteredUserID(userId: String) {
+    fun setRegisteredUserId(userId: String) {
         putString(NID_REG_UID, userId)
     }
 

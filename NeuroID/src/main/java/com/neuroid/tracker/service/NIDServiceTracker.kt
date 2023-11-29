@@ -81,7 +81,7 @@ object NIDServiceTracker {
             put("userId", sharedDefaults.getUserId())
             put("clientId", sharedDefaults.getClientId())
             put("identityId", sharedDefaults.getUserId())
-            put("registeredUserID", sharedDefaults.getRegisteredUserId())
+            put("registeredUserId", sharedDefaults.getRegisteredUserId())
             put("pageTag", screenActivityName)
             put("pageId", rndmId)
             put("tabId", rndmId)

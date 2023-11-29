@@ -243,7 +243,7 @@ class NeuroIDClassUnitTests {
         setMockedDataStore()
         NeuroID.isSDKStarted = false
 
-        val value = NeuroID.getInstance()?.setRegisteredUserId("myUserID")
+        val value = NeuroID.getInstance()?.setRegisteredUserID("myUserID")
 
         assertEquals(true, value)
         assertEquals(1, queuedEvents.count())
@@ -271,7 +271,7 @@ class NeuroIDClassUnitTests {
 
         NeuroID.isSDKStarted = true
 
-        val value = NeuroID.getInstance()?.setRegisteredUserId("myRegisteredUserID")
+        val value = NeuroID.getInstance()?.setRegisteredUserID("myRegisteredUserID")
 
         assertEquals(true, value)
         assertEquals(1, storedEvents.count())
@@ -292,7 +292,7 @@ class NeuroIDClassUnitTests {
     fun testSetRegisteredUserID_failure() {
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
 
-        val value = NeuroID.getInstance()?.setRegisteredUserId("Bad User REGISTERED ID")
+        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
 
         assertEquals(false, value)
         assertErrorCount(1)

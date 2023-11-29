@@ -143,7 +143,7 @@ class NeuroID private constructor(
         return true
     }
 
-    fun setRegisteredUserId(registeredUserId: String): Boolean {
+    fun setRegisteredUserID(registeredUserId: String): Boolean {
         val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
         return if (result) {
             this.registeredUserID = registeredUserId
@@ -175,7 +175,7 @@ class NeuroID private constructor(
             application?.let {
                 when (type) {
                     SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserID(genericUserId)
+                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(genericUserId)
                 }
             }
             val genericUserIdEvent = NIDEventModel(
