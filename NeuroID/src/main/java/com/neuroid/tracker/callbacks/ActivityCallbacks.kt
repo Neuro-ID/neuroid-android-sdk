@@ -2,8 +2,11 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
@@ -33,15 +36,18 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
      * Option for customers to force start with Activity
      */
     fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
-            activity,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            true,
-            true,
-            activityOrFragment = "activity",
-            parent = activity::class.java.simpleName
-        )
+        NeuroID.getInstance()?.clipboardManager?.let {
+            registerTargetFromScreen(
+                activity,
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                it,
+                true,
+                true,
+                activityOrFragment = "activity",
+                parent = activity::class.java.simpleName
+            )
+        }
         // register listeners for focus, blur and touch events
         registerWindowListeners(activity)
     }

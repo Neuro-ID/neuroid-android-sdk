@@ -2,8 +2,11 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
@@ -115,15 +118,18 @@ class NIDActivityCallbacks: ActivityCallbacks() {
 
         val currentActivityName = activity::class.java.name
 
-        registerTargetFromScreen(
-            activity,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            registerTarget = true,
-            registerListeners = true,
-            activityOrFragment = "activity",
-            parent = currentActivityName
-        )
+        NeuroID.getInstance()?.clipboardManager?.let {
+            registerTargetFromScreen(
+                activity,
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                it,
+                registerTarget = true,
+                registerListeners = true,
+                activityOrFragment = "activity",
+                parent = currentActivityName
+            )
+        }
 
         registerWindowListeners(activity)
     }

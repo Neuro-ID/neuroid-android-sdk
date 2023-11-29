@@ -1,8 +1,11 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
+import android.content.ClipboardManager
+import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -34,6 +37,7 @@ fun registerTargetFromScreen(
     activity: Activity,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
+    clipboardManager: ClipboardManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -52,6 +56,7 @@ fun registerTargetFromScreen(
         guid,
         logger,
         storeManager,
+        clipboardManager,
         registerTarget,
         registerListeners,
         activityOrFragment,

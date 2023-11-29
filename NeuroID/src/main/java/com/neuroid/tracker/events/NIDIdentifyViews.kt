@@ -1,5 +1,6 @@
 package com.neuroid.tracker.events
 
+import android.content.ClipboardManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -32,6 +33,7 @@ fun identifyAllViews(
     guid: String,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
+    clipboardManager: ClipboardManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -47,6 +49,7 @@ fun identifyAllViews(
                     guid,
                     logger,
                     storeManager,
+                    clipboardManager,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
@@ -80,6 +83,7 @@ fun identifyAllViews(
                     guid,
                     logger,
                     storeManager,
+                    clipboardManager,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
@@ -96,6 +100,7 @@ fun identifyAllViews(
                     guid,
                     logger,
                     storeManager,
+                    clipboardManager,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
@@ -112,6 +117,7 @@ fun identifyView(
     guid: String,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
+    clipboardManager: ClipboardManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -123,6 +129,7 @@ fun identifyView(
             guid,
             logger,
             storeManager,
+            clipboardManager,
             registerTarget,
             registerListeners,
             activityOrFragment = activityOrFragment,
@@ -135,6 +142,7 @@ fun identifyView(
                 guid,
                 logger,
                 storeManager,
+                clipboardManager,
                 registerTarget,
                 registerListeners,
                 activityOrFragment = activityOrFragment,
@@ -151,6 +159,7 @@ fun identifyView(
                 guid,
                 logger,
                 storeManager,
+                clipboardManager,
                 registerTarget,
                 registerListeners,
                 activityOrFragment = activityOrFragment,
@@ -166,6 +175,7 @@ fun registerElement(
     guid: String,
     logger: NIDLogWrapper,
     storeManager: NIDDataStoreManager,
+    clipboardManager: ClipboardManager,
     registerTarget: Boolean = true,
     registerListeners: Boolean = true,
     activityOrFragment: String = "",
@@ -182,7 +192,7 @@ fun registerElement(
         )
     }
     if (registerListeners) {
-        registerListeners(view, logger)
+        registerListeners(view, logger, clipboardManager)
     }
 }
 

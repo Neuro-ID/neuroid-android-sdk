@@ -1,5 +1,6 @@
 package com.neuroid.tracker.callbacks
 
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -43,15 +44,18 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
         if (NeuroID.getInstance()?.getForceStart() == true) {
-            registerTargetFromScreen(
-                f.requireActivity(),
-                NIDLogWrapper(),
-                getDataStoreInstance(),
-                true,
-                true,
-                activityOrFragment = "fragment",
-                parent = f::class.java.simpleName
-            )
+            NeuroID.getInstance()?.clipboardManager?.let {
+                registerTargetFromScreen(
+                    f.requireActivity(),
+                    NIDLogWrapper(),
+                    getDataStoreInstance(),
+                    it,
+                    true,
+                    true,
+                    activityOrFragment = "fragment",
+                    parent = f::class.java.simpleName
+                )
+            }
             return
         }
 
@@ -59,15 +63,18 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
             NIDLog.d(
                 msg = "Fragment - Resumed - REGISTER TARGET ${f::class.java.simpleName}"
             )
-            registerTargetFromScreen(
-                f.requireActivity(),
-                NIDLogWrapper(),
-                getDataStoreInstance(),
-                _isChangeOrientation.not(),
-                true,
-                activityOrFragment = "fragment",
-                parent = f::class.java.simpleName
-            )
+            NeuroID.getInstance()?.clipboardManager?.let {
+                registerTargetFromScreen(
+                    f.requireActivity(),
+                    NIDLogWrapper(),
+                    getDataStoreInstance(),
+                    it,
+                    _isChangeOrientation.not(),
+                    true,
+                    activityOrFragment = "fragment",
+                    parent = f::class.java.simpleName
+                )
+            }
             _isChangeOrientation = false
         } else {
             NIDLog.d(msg = "Fragment - Resumed - blacklisted ${f::class.java.simpleName}")

@@ -1,5 +1,6 @@
 package com.neuroid.tracker.events
 
+import android.content.ClipboardManager
 import android.os.Build
 import android.text.TextWatcher
 import android.view.View
@@ -22,7 +23,7 @@ import com.neuroid.tracker.utils.NIDTextWatcher
 // list of text watchers in the entire app
 val textWatchers = mutableListOf<TextWatcher>()
 
-fun registerListeners(view: View, logger: NIDLogWrapper) {
+fun registerListeners(view: View, logger: NIDLogWrapper, clipboardManager: ClipboardManager) {
     val idName = view.getIdOrTag()
     val simpleClassName = view.javaClass.simpleName
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -35,7 +36,7 @@ fun registerListeners(view: View, logger: NIDLogWrapper) {
             "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
         )
         // add Text Change watcher
-        val textWatcher = NIDTextWatcher(idName, simpleClassName)
+        val textWatcher = NIDTextWatcher(idName, simpleClassName, clipboard = clipboardManager)
         // first we have to clear the text watcher that is currently in the EditText
         for (watcher in textWatchers) {
             view.removeTextChangedListener(watcher)

@@ -1,5 +1,6 @@
 package com.neuroid.tracker
 
+import android.content.ClipboardManager
 import android.text.Editable
 import android.view.ViewGroup
 import android.widget.EditText
@@ -44,7 +45,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager, clipboardManager)
         verify {
             logger.d(
                 "NID test output",
@@ -69,7 +71,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify {
             logger.d(
                 "NID test output",
@@ -95,7 +98,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify {
             logger.d(
                 "NID test output",
@@ -120,7 +124,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify {
             logger.d(
                 "NID test output",
@@ -145,7 +150,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0") }
     }
 
@@ -165,7 +171,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify {
             logger.d(
                 "NID test output",
@@ -210,7 +217,8 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+        val clipboardManager = mockk<ClipboardManager>()
+        identifyView(view, "someguid", logger, dataStoreManager,clipboardManager)
         verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12") }
         verify(exactly = 2) {
             logger.d(

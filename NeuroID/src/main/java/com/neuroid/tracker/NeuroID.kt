@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
@@ -53,6 +54,8 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
+    internal var clipboardManager: ClipboardManager = getInstance()?.getApplicationContext()
+        ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     init {
         application?.let {
@@ -416,6 +419,7 @@ class NeuroID private constructor(
             activity.getGUID(),
             NIDLogWrapper(),
             dataStore,
+            clipboardManager,
             true,
             addListener
         )
