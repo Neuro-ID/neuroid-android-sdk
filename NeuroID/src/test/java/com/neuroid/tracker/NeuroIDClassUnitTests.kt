@@ -13,13 +13,9 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
+import io.mockk.*
 
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import kotlinx.coroutines.Job
 
 import org.junit.After
@@ -29,12 +25,10 @@ import org.junit.Assert.assertEquals
 
 
 enum class TestLogLevel {
-    DEBUG,
-    INFO,
-    ERROR
+    DEBUG, INFO, ERROR
 }
 
-class NeuroIDClassUnitTests {
+open class NeuroIDClassUnitTests {
     private var errorCount = 0
     private var infoCount = 0
     private var debugCount = 0
@@ -44,9 +38,11 @@ class NeuroIDClassUnitTests {
     private var queuedEvents = mutableSetOf<NIDEventModel>()
     private var excludedIds = mutableSetOf<String>()
 
+
     @MockK
     lateinit var mockedApplication: Application
     private lateinit var mockContext: Context
+
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -65,16 +61,13 @@ class NeuroIDClassUnitTests {
     // Helper Functions
     private fun setNeuroIDInstance() {
         val neuroId = NeuroID.Builder(
-            null,
-            "key_test_fake1234"
+            null, "key_test_fake1234"
         ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        NeuroID.setNeuroIDInstance(neuroId)
     }
 
     private fun setNeuroIDMockedLogger(
-        errorMessage: String = "",
-        infoMessage: String = "",
-        debugMessage: String = ""
+        errorMessage: String = "", infoMessage: String = "", debugMessage: String = ""
     ) {
         val log = mockk<NIDLogWrapper>()
 
@@ -105,7 +98,7 @@ class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.setLoggerInstance(log)
     }
 
-    private fun setMockedDataStore() {
+    fun setMockedDataStore() {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         every { dataStoreManager.saveEvent(any()) } answers {
             storedEvents.add(args[0] as NIDEventModel)
@@ -120,6 +113,7 @@ class NeuroIDClassUnitTests {
             excludedIds.add(args[0] as String)
         }
 
+        every { dataStoreManager.saveAndClearAllQueuedEvents() } answers { queuedEvents.clear() }
 
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
     }
@@ -178,6 +172,7 @@ class NeuroIDClassUnitTests {
         assertEquals("Expected Log Error Count is Greater than 0", 0, errorCount)
         assertEquals("Expected Log Info Count is Greater than 0", 0, infoCount)
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
+        unmockkAll()
     }
 
     // Function Tests
@@ -585,7 +580,7 @@ class NeuroIDClassUnitTests {
     @Test
     fun testStart_success() {
         NeuroID.isSDKStarted = false
-
+        NeuroID.getInstance()?.clientKey = "abcd"
         val value = NeuroID.getInstance()?.start()
 
         assertEquals(true, value)
