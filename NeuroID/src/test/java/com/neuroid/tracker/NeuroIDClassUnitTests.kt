@@ -291,6 +291,20 @@ open class NeuroIDClassUnitTests {
 
         assertEquals(false, value)
         assertErrorCount(1)
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testSetRegisteredUserID_failure_Started() {
+        setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+
+        NeuroID.isSDKStarted = true
+
+        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
+
+        assertEquals(false, value)
+        assertErrorCount(1)
+        assertEquals(0, storedEvents.count())
     }
 
     //    getUserId
