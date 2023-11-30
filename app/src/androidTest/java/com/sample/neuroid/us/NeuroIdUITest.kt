@@ -90,6 +90,21 @@ class NeuroIdUITest {
         NIDSchema().validateSchema(events)
     }
 
+    /**
+     * Validate SET_REGISTERED_USER_ID after sdk is started
+     */
+    @Test
+    fun test03aValidateSetRegisteredUserId() = runTest {
+        NeuroID.getInstance()?.start()
+        getDataStoreInstance().clearEvents()
+        delay(500)
+        NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
+        delay(500)
+        val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType)
+        NIDSchema().validateSchema(events)
+    }
 
     /**
      * Validate WINDOW_LOAD on MainActivity class
@@ -266,6 +281,23 @@ class NeuroIdUITest {
         NeuroID.getInstance()?.start()
         delay(500)
         val eventType = "\"type\":\"SET_USER_ID\""
+        val events = getDataStoreInstance().getAllEvents()
+        NIDSchema().validateEvents(events, eventType)
+        NIDSchema().validateSchema(events)
+    }
+
+    /**
+    * Validate SET_REGISTERED_USER_ID when sdk is not started
+    */
+    @Test
+    fun test15ValidateSetRegisteredUserId() = runTest {
+        getDataStoreInstance().clearEvents()
+        delay(500)
+        NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
+        delay(500)
+        NeuroID.getInstance()?.start()
+        delay(500)
+        val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateEvents(events, eventType)
         NIDSchema().validateSchema(events)
