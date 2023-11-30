@@ -11,6 +11,7 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -526,12 +527,12 @@ class NeuroID private constructor(
 //        registeredUserID = ""
     }
 
-    fun startSession(sessionID: String = ""): Pair<Boolean, String> {
+    fun startSession(sessionID: String = ""): SessionStartResult {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
-            return Pair(false, "")
+            return SessionStartResult(false, "")
         }
 
         if (userID != "" || isSDKStarted) {
@@ -545,7 +546,7 @@ class NeuroID private constructor(
         }
 
         if (!setUserID(finalSessionID)) {
-            return Pair(false, "")
+            return SessionStartResult(false, "")
         }
 
         isSDKStarted = true
@@ -562,7 +563,7 @@ class NeuroID private constructor(
 
         dataStore.saveAndClearAllQueuedEvents()
 
-        return Pair(true, finalSessionID)
+        return SessionStartResult(true, finalSessionID)
     }
 
     fun pauseCollection() {
