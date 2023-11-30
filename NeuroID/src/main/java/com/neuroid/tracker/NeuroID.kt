@@ -285,8 +285,6 @@ class NeuroID private constructor(
         return dataStore.getJsonPayload(context)
     }
 
-    internal fun getClipManager() = clipboardManager
-
     internal fun resetJsonPayLoad() {
         dataStore.resetJsonPayload()
     }
