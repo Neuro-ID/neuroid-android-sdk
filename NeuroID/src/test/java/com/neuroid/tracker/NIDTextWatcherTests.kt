@@ -27,7 +27,6 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.onTextChanged("existing text", 0, 1, 0)
         verify(exactly = 0) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
 
-        unmockkAll()
     }
 
     @Test
@@ -48,7 +47,6 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.onTextChanged("existing copied text", 10, 1, 11)
         verify(exactly = 1) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
 
-        unmockkAll()
     }
 
     @Test
@@ -64,7 +62,6 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.afterTextChanged(seq)
         verify(exactly = 1) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
 
-        unmockkAll()
     }
 
     @Test
@@ -85,7 +82,6 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.onTextChanged("existing copied text", 0, 11, 11)
         verify(exactly = 1) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
 
-        unmockkAll()
     }
 
     @Test
@@ -102,6 +98,5 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.afterTextChanged(seq)
         verify(exactly = 1) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
 
-        unmockkAll()
     }
 }

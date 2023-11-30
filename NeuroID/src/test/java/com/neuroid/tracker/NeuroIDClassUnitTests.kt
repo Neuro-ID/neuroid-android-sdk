@@ -16,14 +16,9 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
+import io.mockk.*
 
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.Job
 
 import org.junit.After
@@ -181,6 +176,7 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Error Count is Greater than 0", 0, errorCount)
         assertEquals("Expected Log Info Count is Greater than 0", 0, infoCount)
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
+        unmockkAll()
     }
 
     // Function Tests
@@ -541,7 +537,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testStart_success() {
         NeuroID.isSDKStarted = false
-
+        NeuroID.getInstance()?.clientKey = "abcd"
         val value = NeuroID.getInstance()?.start()
 
         assertEquals(true, value)
