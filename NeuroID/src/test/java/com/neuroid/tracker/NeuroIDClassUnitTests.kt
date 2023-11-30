@@ -122,6 +122,7 @@ open class NeuroIDClassUnitTests {
             excludedIds.add(args[0] as String)
         }
 
+        every { dataStoreManager.saveAndClearAllQueuedEvents() } answers { queuedEvents.clear() }
 
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
     }
