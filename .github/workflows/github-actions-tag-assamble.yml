@@ -62,12 +62,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  notifications:
-    runs-on: ubuntu-latest
-    needs: publish
-    steps:
       - name: Send Slack Notification on Success
-        if: ${{ needs.publish.result == 'success' }}
+        if: success()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
