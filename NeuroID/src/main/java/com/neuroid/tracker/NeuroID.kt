@@ -129,6 +129,7 @@ class NeuroID private constructor(
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
         dataStore = store
     }
+
     internal fun setClipboardManagerInstance(cm: ClipboardManager) {
         clipboardManager = cm
     }
@@ -183,7 +184,8 @@ class NeuroID private constructor(
 
     fun setUserID(userId: String): Boolean {
         val result = setGenericUserID(
-            SET_USER_ID, userId)
+            SET_USER_ID, userId
+        )
         return if (result) {
             this.userID = userId
             true
@@ -203,7 +205,9 @@ class NeuroID private constructor(
             application?.let {
                 when (type) {
                     SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(genericUserId)
+                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
+                        genericUserId
+                    )
                 }
             }
             val genericUserIdEvent = NIDEventModel(
@@ -222,7 +226,7 @@ class NeuroID private constructor(
             }
             return true
         } catch (exception: Exception) {
-            NIDLog.e(msg="failure processing user id! $type, $genericUserId $exception")
+            NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
             return false
         }
     }
@@ -354,7 +358,7 @@ class NeuroID private constructor(
                 gyro = gyroData,
                 accel = accelData,
 
-            )
+                )
         )
 
         saveIntegrationHealthEvents()
@@ -564,7 +568,7 @@ class NeuroID private constructor(
     // new Session Commands
     fun clearSessionVariables() {
         userID = ""
-//        registeredUserID = ""
+        registeredUserID = ""
     }
 
     fun startSession(sessionID: String = ""): SessionStartResult {

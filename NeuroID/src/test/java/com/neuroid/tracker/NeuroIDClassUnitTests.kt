@@ -730,10 +730,12 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testClearSessionVariables() {
         NeuroID.getInstance()?.userID = "myID"
+        NeuroID.getInstance()?.registeredUserID = "myRID"
 
         NeuroID.getInstance()?.clearSessionVariables()
 
         assertEquals("", NeuroID.getInstance()?.userID)
+        assertEquals("", NeuroID.getInstance()?.registeredUserID)
     }
 
     //    startSession
