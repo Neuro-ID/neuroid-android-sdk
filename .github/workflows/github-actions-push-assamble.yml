@@ -72,12 +72,8 @@ jobs:
              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
              -d '{"event_type":"publish-dev-android","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
 
-  notifications:
-    runs-on: ubuntu-latest
-    needs: deployDevSandboxApps
-    steps:
       - name: Send Slack Notification on Failure
-        if: ${{ needs.deployDevSandboxApps.result == 'failure' }}
+        if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
