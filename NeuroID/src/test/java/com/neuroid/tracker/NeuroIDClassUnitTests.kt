@@ -3,44 +3,33 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
-import android.content.res.Resources
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.NIDMetaData
+import io.mockk.*
 
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.Job
 
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.assertEquals
 
 
 enum class TestLogLevel {
-    DEBUG,
-    INFO,
-    ERROR
+    DEBUG, INFO, ERROR
 }
 
-class NeuroIDClassUnitTests {
+open class NeuroIDClassUnitTests {
     private var errorCount = 0
     private var infoCount = 0
     private var debugCount = 0
@@ -50,9 +39,11 @@ class NeuroIDClassUnitTests {
     private var queuedEvents = mutableSetOf<NIDEventModel>()
     private var excludedIds = mutableSetOf<String>()
 
+
     @MockK
     lateinit var mockedApplication: Application
     private lateinit var mockContext: Context
+
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -71,16 +62,13 @@ class NeuroIDClassUnitTests {
     // Helper Functions
     private fun setNeuroIDInstance() {
         val neuroId = NeuroID.Builder(
-            null,
-            "key_test_fake1234"
+            null, "key_test_fake1234"
         ).build()
-        NeuroID.setNeuroIdInstance(neuroId)
+        NeuroID.setNeuroIDInstance(neuroId)
     }
 
     private fun setNeuroIDMockedLogger(
-        errorMessage: String = "",
-        infoMessage: String = "",
-        debugMessage: String = ""
+        errorMessage: String = "", infoMessage: String = "", debugMessage: String = ""
     ) {
         val log = mockk<NIDLogWrapper>()
 
@@ -111,7 +99,7 @@ class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.setLoggerInstance(log)
     }
 
-    private fun setMockedDataStore() {
+    fun setMockedDataStore() {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         every { dataStoreManager.saveEvent(any()) } answers {
             storedEvents.add(args[0] as NIDEventModel)
@@ -126,9 +114,7 @@ class NeuroIDClassUnitTests {
             excludedIds.add(args[0] as String)
         }
 
-        every { dataStoreManager.saveAndClearAllQueuedEvents() } answers {
-
-        }
+        every { dataStoreManager.saveAndClearAllQueuedEvents() } answers { queuedEvents.clear() }
 
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
     }
@@ -187,6 +173,7 @@ class NeuroIDClassUnitTests {
         assertEquals("Expected Log Error Count is Greater than 0", 0, errorCount)
         assertEquals("Expected Log Info Count is Greater than 0", 0, infoCount)
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
+        unmockkAll()
     }
 
     // Function Tests
@@ -249,8 +236,22 @@ class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun testSetUserID_success_Started() {
+    fun testSetRegisteredUserID_success_notStarted() {
         setMockedDataStore()
+        NeuroID.isSDKStarted = false
+
+        val value = NeuroID.getInstance()?.setRegisteredUserID("myUserID")
+
+        assertEquals(true, value)
+        assertEquals(1, queuedEvents.count())
+        assertEquals(true, queuedEvents.firstOrNull()?.type === SET_REGISTERED_USER_ID)
+    }
+
+    @Test
+    fun testUserID_success_Started() {
+        setMockedDataStore()
+        setNeuroIDMockedLogger()
+
         NeuroID.isSDKStarted = true
 
         val value = NeuroID.getInstance()?.setUserID("myUserID")
@@ -258,6 +259,20 @@ class NeuroIDClassUnitTests {
         assertEquals(true, value)
         assertEquals(1, storedEvents.count())
         assertEquals(true, storedEvents.firstOrNull()?.type === SET_USER_ID)
+    }
+
+    @Test
+    fun testRegisteredUserID_success_Started() {
+        setMockedDataStore()
+        setNeuroIDMockedLogger()
+
+        NeuroID.isSDKStarted = true
+
+        val value = NeuroID.getInstance()?.setRegisteredUserID("myRegisteredUserID")
+
+        assertEquals(true, value)
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === SET_REGISTERED_USER_ID)
     }
 
     @Test
@@ -270,12 +285,45 @@ class NeuroIDClassUnitTests {
         assertErrorCount(1)
     }
 
+    @Test
+    fun testSetRegisteredUserID_failure() {
+        setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+
+        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
+
+        assertEquals(false, value)
+        assertErrorCount(1)
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testSetRegisteredUserID_failure_Started() {
+        setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+
+        NeuroID.isSDKStarted = true
+
+        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
+
+        assertEquals(false, value)
+        assertErrorCount(1)
+        assertEquals(0, storedEvents.count())
+    }
+
     //    getUserId
     @Test
     fun testGetUserID() {
         val expectedValue = "testID"
         NeuroID.getInstance()?.userID = expectedValue
         val value = NeuroID.getInstance()?.getUserID()
+
+        assertEquals(expectedValue, value)
+    }
+
+    @Test
+    fun testGetRegisteredUserID() {
+        val expectedValue = "testRegisteredID"
+        NeuroID.getInstance()?.registeredUserID = expectedValue
+        val value = NeuroID.getInstance()?.getRegisteredUserID()
 
         assertEquals(expectedValue, value)
     }
@@ -548,7 +596,7 @@ class NeuroIDClassUnitTests {
     @Test
     fun testStart_success() {
         NeuroID.isSDKStarted = false
-
+        NeuroID.getInstance()?.clientKey = "abcd"
         val value = NeuroID.getInstance()?.start()
 
         assertEquals(true, value)

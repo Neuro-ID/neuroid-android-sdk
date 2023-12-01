@@ -16,6 +16,10 @@
     "tabId": {
       "type": "string"
     },
+    "registeredUserId": {
+      "type": ["string", "null"],
+      "format": "valid-id"
+    },
     "userId": {
       "type": ["string", "null"],
       "format": "valid-id"

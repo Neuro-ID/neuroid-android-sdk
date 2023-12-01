@@ -274,6 +274,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
             put("userId", sharedDefaults.getUserId())
             put("clientId", sharedDefaults.getClientId())
             put("identityId", sharedDefaults.getUserId())
+            put("registeredUserId", sharedDefaults.getRegisteredUserId())
             put("pageTag", NIDServiceTracker.screenActivityName)
             put("pageId", NIDServiceTracker.rndmId)
             put("tabId", NIDServiceTracker.rndmId)

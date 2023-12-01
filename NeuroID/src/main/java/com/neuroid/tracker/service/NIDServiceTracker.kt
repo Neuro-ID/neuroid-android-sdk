@@ -26,7 +26,7 @@ object NIDServiceTracker {
     var screenFragName = ""
 
     var registeredViews: MutableSet<String> = mutableSetOf()
-
+    
     var environment = ""
     var siteId = ""
     var rndmId = ""
@@ -81,6 +81,7 @@ object NIDServiceTracker {
             put("userId", sharedDefaults.getUserId())
             put("clientId", sharedDefaults.getClientId())
             put("identityId", sharedDefaults.getUserId())
+            put("registeredUserId", sharedDefaults.getRegisteredUserId())
             put("pageTag", screenActivityName)
             put("pageId", rndmId)
             put("tabId", rndmId)

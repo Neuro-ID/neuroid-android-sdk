@@ -2,6 +2,7 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
@@ -18,7 +19,6 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -40,6 +40,7 @@ class NeuroID private constructor(
     internal var sessionID = ""
     internal var clientID = ""
     internal var userID = ""
+    internal var registeredUserID = ""
     internal var timestamp: Long = 0L
 
     internal var forceStart: Boolean = false
@@ -56,6 +57,7 @@ class NeuroID private constructor(
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
     internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
+    internal var clipboardManager: ClipboardManager? = null
 
     init {
         application?.let {
@@ -127,6 +129,17 @@ class NeuroID private constructor(
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
         dataStore = store
     }
+    internal fun setClipboardManagerInstance(cm: ClipboardManager) {
+        clipboardManager = cm
+    }
+
+    internal fun getClipboardManagerInstance(): ClipboardManager? {
+        if (clipboardManager == null) {
+            return getApplicationContext()
+                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        }
+        return clipboardManager
+    }
 
     internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
         nidActivityCallbacks = callback
@@ -158,41 +171,67 @@ class NeuroID private constructor(
         return true
     }
 
-    fun setUserID(userId: String): Boolean {
+    fun setRegisteredUserID(registeredUserId: String): Boolean {
+        val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
+        return if (result) {
+            this.registeredUserID = registeredUserId
+            true
+        } else {
+            false
+        }
+    }
 
-        val validUserID = this.validateUserId(userId)
-        if (!validUserID) {
+    fun setUserID(userId: String): Boolean {
+        val result = setGenericUserID(
+            SET_USER_ID, userId)
+        return if (result) {
+            this.userID = userId
+            true
+        } else {
+            false
+        }
+    }
+
+    internal fun setGenericUserID(type: String, genericUserId: String): Boolean {
+        try {
+            val isValidID = this.validateUserId(genericUserId)
+            if (!isValidID) {
+                return false
+            }
+            val gyroData = NIDSensorHelper.getGyroscopeInfo()
+            val accelData = NIDSensorHelper.getAccelerometerInfo()
+            application?.let {
+                when (type) {
+                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
+                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(genericUserId)
+                }
+            }
+            val genericUserIdEvent = NIDEventModel(
+                type = type,
+                uid = genericUserId,
+                ts = System.currentTimeMillis(),
+                gyro = gyroData,
+                accel = accelData
+            )
+            if (isSDKStarted) {
+                dataStore.saveEvent(
+                    genericUserIdEvent
+                )
+            } else {
+                dataStore.queueEvent(genericUserIdEvent)
+            }
+            return true
+        } catch (exception: Exception) {
+            NIDLog.e(msg="failure processing user id! $type, $genericUserId $exception")
             return false
         }
-
-        userID = userId
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        application?.let {
-            NIDSharedPrefsDefaults(it).setUserId(userId)
-        }
-        val userIdEvent = NIDEventModel(
-            type = SET_USER_ID,
-            uid = userId,
-            ts = System.currentTimeMillis(),
-            gyro = gyroData,
-            accel = accelData
-        )
-        if (isSDKStarted) {
-            dataStore.saveEvent(
-                userIdEvent
-            )
-        } else {
-            dataStore.queueEvent(userIdEvent)
-        }
-
-        return true
     }
 
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId() = userID
     fun getUserID() = userID
+
+    fun getRegisteredUserID() = registeredUserID
 
     fun setScreenName(screen: String): Boolean {
 
@@ -313,7 +352,8 @@ class NeuroID private constructor(
                 type = FORM_SUBMIT,
                 ts = System.currentTimeMillis(),
                 gyro = gyroData,
-                accel = accelData
+                accel = accelData,
+
             )
         )
 
