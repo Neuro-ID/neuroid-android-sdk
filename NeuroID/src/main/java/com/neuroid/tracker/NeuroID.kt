@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -23,6 +24,7 @@ import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +56,7 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
+    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
     init {
@@ -126,6 +129,7 @@ class NeuroID private constructor(
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
         dataStore = store
     }
+
     internal fun setClipboardManagerInstance(cm: ClipboardManager) {
         clipboardManager = cm
     }
@@ -140,6 +144,10 @@ class NeuroID private constructor(
 
     internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
         nidActivityCallbacks = callback
+    }
+
+    internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
+        nidJobServiceManager = serviceManager
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
@@ -176,7 +184,8 @@ class NeuroID private constructor(
 
     fun setUserID(userId: String): Boolean {
         val result = setGenericUserID(
-            SET_USER_ID, userId)
+            SET_USER_ID, userId
+        )
         return if (result) {
             this.userID = userId
             true
@@ -196,7 +205,9 @@ class NeuroID private constructor(
             application?.let {
                 when (type) {
                     SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(genericUserId)
+                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
+                        genericUserId
+                    )
                 }
             }
             val genericUserIdEvent = NIDEventModel(
@@ -215,11 +226,10 @@ class NeuroID private constructor(
             }
             return true
         } catch (exception: Exception) {
-            NIDLog.e(msg="failure processing user id! $type, $genericUserId $exception")
+            NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
             return false
         }
     }
-
 
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId() = userID
@@ -348,7 +358,7 @@ class NeuroID private constructor(
                 gyro = gyroData,
                 accel = accelData,
 
-            )
+                )
         )
 
         saveIntegrationHealthEvents()
@@ -414,7 +424,7 @@ class NeuroID private constructor(
             saveIntegrationHealthEvents()
         }
         application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+            nidJobServiceManager.startJob(it, clientKey, endpoint)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -422,12 +432,7 @@ class NeuroID private constructor(
     }
 
     fun stop() {
-        isSDKStarted = false
-        CoroutineScope(Dispatchers.IO).launch {
-            NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-            NIDJobServiceManager.stopJob()
-            saveIntegrationHealthEvents()
-        }
+        pauseCollection()
     }
 
     fun closeSession() {
@@ -560,4 +565,81 @@ class NeuroID private constructor(
 
     fun getSDKVersion() = NIDVersion.getSDKVersion()
 
+    // new Session Commands
+    fun clearSessionVariables() {
+        userID = ""
+        registeredUserID = ""
+    }
+
+    fun startSession(sessionID: String = ""): SessionStartResult {
+        if (clientKey == "") {
+            NIDLog.e(
+                msg = "Missing Client Key - please call configure prior to calling start"
+            )
+            return SessionStartResult(false, "")
+        }
+
+        if (userID != "" || isSDKStarted) {
+            stopSession()
+        }
+
+        val finalSessionID = if (sessionID != null && sessionID != "") {
+            sessionID
+        } else {
+            generateUniqueHexId()
+        }
+
+        if (!setUserID(finalSessionID)) {
+            return SessionStartResult(false, "")
+        }
+
+        isSDKStarted = true
+        NIDServiceTracker.rndmId = "mobile"
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            startIntegrationHealthCheck()
+            createSession()
+            saveIntegrationHealthEvents()
+        }
+
+        resumeCollection()
+
+        dataStore.saveAndClearAllQueuedEvents()
+
+        return SessionStartResult(true, finalSessionID)
+    }
+
+    fun pauseCollection() {
+        isSDKStarted = false
+        CoroutineScope(Dispatchers.IO).launch {
+            nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+            nidJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
+        }
+    }
+
+    fun resumeCollection() {
+        isSDKStarted = true
+        application?.let {
+            if (!nidJobServiceManager.isSetup) {
+                nidJobServiceManager.startJob(it, clientKey, endpoint)
+            } else {
+                nidJobServiceManager.restart()
+            }
+        }
+    }
+
+    fun stopSession(): Boolean {
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
+            )
+        )
+
+        pauseCollection()
+        clearSessionVariables()
+
+        return true
+    }
 }
