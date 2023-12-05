@@ -6,8 +6,10 @@ import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.extensions.setVerifyIntegrationHealth
+import com.sample.neuroid.us.activities.NIDCallActivityListener
 import com.sample.neuroid.us.domain.config.ConfigHelper
 import dagger.hilt.android.HiltAndroidApp
+
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -15,6 +17,7 @@ class MyApplicationDemo : MultiDexApplication() {
 
     @Inject
     lateinit var configHelper: ConfigHelper
+    lateinit var receiverNIDCallActivityListener: NIDCallActivityListener
 
     override fun onCreate() {
         super.onCreate()
@@ -42,5 +45,11 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.getInstance()?.setUserID(configHelper.userId)
         NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
         NeuroID.getInstance()?.start()
+        NeuroID.getInstance()?.enableLogging(true)
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        unregisterReceiver(receiverNIDCallActivityListener)
     }
 }
