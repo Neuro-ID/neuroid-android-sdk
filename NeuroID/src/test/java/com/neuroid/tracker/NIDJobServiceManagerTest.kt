@@ -91,7 +91,7 @@ class NIDJobServiceManagerTest {
 
             //prepare the sender response with a 400 error, this will trigger the onError() callback
             val eventSender = getMockEventSender(
-                true,
+                false,
                 400,
                 "your request is junk, fix it!")
 
@@ -132,7 +132,7 @@ class NIDJobServiceManagerTest {
         NIDJobServiceManager.startJob(application, "clientKey", "endpoint")
     }
 
-    private fun getMockEventSender(isSuccess: Boolean = true,
+    private fun getMockEventSender(isSuccess: Boolean,
                                    respCode: Int,
                                    respMessage: String): NIDEventSender {
         val apiService = mockk<NIDApiService>()
