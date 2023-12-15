@@ -7,6 +7,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
@@ -21,6 +22,9 @@ class NeuroIDSendEventTest {
         val call = mockk<Call<ResponseBody>>()
         val retryClone = mockk<Call<ResponseBody>>()
         val response = mockk<Response<ResponseBody>>()
+        val responseBody = mockk<ResponseBody>()
+        every {responseBody.close()} just runs
+        every {response.body()} returns responseBody
         every {response.isSuccessful} returns true
         every {response.code()} returns 200
         every {response.message()} returns "should not happen"
