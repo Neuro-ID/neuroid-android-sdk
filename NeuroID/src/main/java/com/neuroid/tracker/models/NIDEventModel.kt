@@ -57,7 +57,10 @@ data class NIDEventModel(
     val rid: String? = null,
     val m: String? = null,
     val level: String? = null,
-    val c: Boolean? = null
+    val c: Boolean? = null,
+    val sessionIdCode: String? = null,
+    val sessionIdSource: String? = null
+
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()
@@ -144,6 +147,12 @@ data class NIDEventModel(
             }
             metadata?.let {
                 jsonObject.put("metadata", it)
+            }
+            sessionIdSource?.let {
+                jsonObject.put("sessionIdSource", it)
+            }
+            sessionIdCode?.let {
+                jsonObject.put("sessionIdCode", it)
             }
         }
 

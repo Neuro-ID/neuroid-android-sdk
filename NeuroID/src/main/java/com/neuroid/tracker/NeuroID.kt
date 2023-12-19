@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -120,6 +121,12 @@ class NeuroID private constructor(
         }
 
         fun getInstance(): NeuroID? = singleton
+
+        const val NID_ORIGIN_NID_SET = "nid"
+        const val NID_ORIGIN_CUSTOMER_SET = "customer"
+        const val NID_ORIGIN_CODE_FAIL = "400"
+        const val NID_ORIGIN_CODE_NID = "200"
+        const val NID_ORIGIN_CODE_CUSTOMER = "201"
     }
 
     internal fun setLoggerInstance(logger: NIDLogWrapper) {
@@ -420,7 +427,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            createSession()
+            createSession(NID_ORIGIN_NID_SET, NID_ORIGIN_CODE_NID)
             saveIntegrationHealthEvents()
         }
         application?.let {
@@ -473,7 +480,7 @@ class NeuroID private constructor(
         return this.application?.applicationContext
     }
 
-    private suspend fun createSession() {
+    private suspend fun createSession(sessionIdSource: String, sessionIdCode: String) {
         timestamp = System.currentTimeMillis()
         application?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -508,7 +515,9 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
+                    metadata = metaData?.toJson(),
+                    sessionIdCode = sessionIdCode,
+                    sessionIdSource = sessionIdSource
                 )
             )
             createMobileMetadata()
@@ -583,13 +592,9 @@ class NeuroID private constructor(
             stopSession()
         }
 
-        val finalSessionID = if (sessionID != null && sessionID != "") {
-            sessionID
-        } else {
-            generateUniqueHexId()
-        }
+        val originResult = getOriginResult(sessionID)
 
-        if (!setUserID(finalSessionID)) {
+        if (!setUserID(originResult.sessionID)) {
             return SessionStartResult(false, "")
         }
 
@@ -599,7 +604,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            createSession()
+            createSession(originResult.origin, originResult.originCode)
             saveIntegrationHealthEvents()
         }
 
@@ -607,7 +612,23 @@ class NeuroID private constructor(
 
         dataStore.saveAndClearAllQueuedEvents()
 
-        return SessionStartResult(true, finalSessionID)
+        return SessionStartResult(true, originResult.sessionID)
+    }
+
+    internal fun getOriginResult(sessionID: String): SessionIDOriginResult {
+        var origin = NID_ORIGIN_NID_SET
+        var originCode = NID_ORIGIN_CODE_NID
+        var finalSessionID = generateUniqueHexId()
+        if (sessionID != "") {
+            if (validateUserId(sessionID)) {
+                finalSessionID = sessionID
+                origin = NID_ORIGIN_CUSTOMER_SET
+                originCode = NID_ORIGIN_CODE_CUSTOMER
+            } else {
+                originCode = NID_ORIGIN_CODE_FAIL
+            }
+        }
+        return SessionIDOriginResult(origin, originCode, finalSessionID)
     }
 
     fun pauseCollection() {
