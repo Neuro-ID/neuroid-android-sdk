@@ -594,7 +594,7 @@ class NeuroID private constructor(
 
         val originResult = getOriginResult(sessionID)
 
-        if (!setUserID(originResult.sessionID)) {
+        if (originResult.originCode == NID_ORIGIN_CODE_FAIL || !setUserID(originResult.sessionID)) {
             return SessionStartResult(false, "")
         }
 

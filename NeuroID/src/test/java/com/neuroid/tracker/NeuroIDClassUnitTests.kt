@@ -781,9 +781,9 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
-            val (started, id) = it.startSession("bad user 343%%^")
-            assertEquals(false, started)
-            assertEquals("", id)
+            val result = it.startSession("bad user 343%%^")
+            assertEquals(false, result.started)
+            assertEquals("", result.sessionID)
 
             assertErrorCount(1)
         }
