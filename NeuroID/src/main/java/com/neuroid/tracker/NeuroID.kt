@@ -623,7 +623,7 @@ class NeuroID private constructor(
     private fun sendOriginEvent(originResult: SessionIDOriginResult) {
         val originEvent = JSONObject()
         originEvent.put("sessionIdCode", originResult.originCode)
-        originEvent.put("sessionIdOrigin", originResult.origin)
+        originEvent.put("sessionIdSource", originResult.origin)
         originEvent.put("sessionId", originResult.sessionID)
         val attrJSON = JSONArray().put(originEvent)
 
