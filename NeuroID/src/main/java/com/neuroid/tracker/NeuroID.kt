@@ -213,15 +213,15 @@ class NeuroID private constructor(
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             application?.let {
                 when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
+                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(result.sessionID)
                     SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
+                        result.sessionID
                     )
                 }
             }
             val genericUserIdEvent = NIDEventModel(
                 type = type,
-                uid = genericUserId,
+                uid = result.sessionID,
                 ts = System.currentTimeMillis(),
                 gyro = gyroData,
                 accel = accelData
@@ -595,7 +595,8 @@ class NeuroID private constructor(
         val finalSessionID = if (sessionID != null && sessionID != "") {
             sessionID
         } else {
-            generateUniqueHexId()
+            // getOriginResult() will generate the UUID
+            ""
         }
 
         if (!setUserID(finalSessionID)) {
