@@ -15,7 +15,6 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -123,7 +122,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
                     TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
                     CLOSE_SESSION -> contextString = ""
-                    "SET_VARIABLE" -> contextString = event.v ?: ""
+                    SET_VARIABLE -> contextString = event.v ?: ""
                     CUT -> contextString = ""
                     COPY -> contextString = ""
                     PASTE -> contextString = ""

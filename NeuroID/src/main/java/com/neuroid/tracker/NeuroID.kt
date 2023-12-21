@@ -203,8 +203,10 @@ class NeuroID private constructor(
 
     internal fun setGenericUserID(type: String, genericUserId: String): Boolean {
         try {
-            val isValidID = this.validateUserId(genericUserId)
-            if (!isValidID) {
+            val result = getOriginResult(genericUserId)
+            sendOriginEvent(result)
+
+            if (result.originCode == NID_ORIGIN_CODE_FAIL) {
                 return false
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -427,7 +429,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            createSession(NID_ORIGIN_NID_SET, NID_ORIGIN_CODE_NID)
+            createSession()
             saveIntegrationHealthEvents()
         }
         application?.let {
@@ -480,7 +482,7 @@ class NeuroID private constructor(
         return this.application?.applicationContext
     }
 
-    private suspend fun createSession(sessionIdSource: String, sessionIdCode: String) {
+    private suspend fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -515,9 +517,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
-                    sessionIdCode = sessionIdCode,
-                    sessionIdSource = sessionIdSource
+                    metadata = metaData?.toJson()
                 )
             )
             createMobileMetadata()
@@ -592,9 +592,13 @@ class NeuroID private constructor(
             stopSession()
         }
 
-        val originResult = getOriginResult(sessionID)
+        val finalSessionID = if (sessionID != null && sessionID != "") {
+            sessionID
+        } else {
+            generateUniqueHexId()
+        }
 
-        if (originResult.originCode == NID_ORIGIN_CODE_FAIL || !setUserID(originResult.sessionID)) {
+        if (!setUserID(finalSessionID)) {
             return SessionStartResult(false, "")
         }
 
@@ -604,7 +608,7 @@ class NeuroID private constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
-            createSession(originResult.origin, originResult.originCode)
+            createSession()
             saveIntegrationHealthEvents()
         }
 
@@ -612,7 +616,24 @@ class NeuroID private constructor(
 
         dataStore.saveAndClearAllQueuedEvents()
 
-        return SessionStartResult(true, originResult.sessionID)
+        return SessionStartResult(true, finalSessionID)
+    }
+
+    private fun sendOriginEvent(originResult: SessionIDOriginResult) {
+        val originEvent = JSONObject()
+        originEvent.put("sessionIdCode", originResult.originCode)
+        originEvent.put("sessionIdOrigin", originResult.origin)
+        originEvent.put("sessionId", originResult.sessionID)
+        val attrJSON = JSONArray().put(originEvent)
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    attrs = attrJSON
+                )
+            )
     }
 
     internal fun getOriginResult(sessionID: String): SessionIDOriginResult {
