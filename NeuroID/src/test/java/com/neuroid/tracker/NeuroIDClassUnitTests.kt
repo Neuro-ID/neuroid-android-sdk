@@ -10,7 +10,11 @@ import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
+import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -821,8 +825,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.let {
             val sessionID = "gasdgasdgdsgds"
             val result = it.getOriginResult(sessionID)
-            assertEquals(result.origin, NeuroID.NID_ORIGIN_CUSTOMER_SET)
-            assertEquals(result.originCode, NeuroID.NID_ORIGIN_CODE_CUSTOMER)
+            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_CUSTOMER)
             assertEquals(result.sessionID, sessionID)
         }
     }
@@ -833,8 +837,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.let {
             val badSessionID = "gasdgas dgdsgds"
             val result = it.getOriginResult(badSessionID)
-            assertEquals(result.origin, NeuroID.NID_ORIGIN_NID_SET)
-            assertEquals(result.originCode, NeuroID.NID_ORIGIN_CODE_FAIL)
+            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
             assertNotEquals(result.sessionID, badSessionID)
         }
     }
@@ -845,8 +849,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.let {
             val emptySessionID = ""
             val result = it.getOriginResult(emptySessionID)
-            assertEquals(result.origin, NeuroID.NID_ORIGIN_NID_SET)
-            assertEquals(result.originCode, NeuroID.NID_ORIGIN_CODE_NID)
+            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_NID)
             assertNotEquals(result.sessionID, emptySessionID)
         }
     }

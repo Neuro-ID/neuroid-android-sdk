@@ -121,12 +121,6 @@ class NeuroID private constructor(
         }
 
         fun getInstance(): NeuroID? = singleton
-
-        const val NID_ORIGIN_NID_SET = "nid"
-        const val NID_ORIGIN_CUSTOMER_SET = "customer"
-        const val NID_ORIGIN_CODE_FAIL = "400"
-        const val NID_ORIGIN_CODE_NID = "200"
-        const val NID_ORIGIN_CODE_CUSTOMER = "201"
     }
 
     internal fun setLoggerInstance(logger: NIDLogWrapper) {
