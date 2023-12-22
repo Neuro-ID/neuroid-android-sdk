@@ -615,18 +615,34 @@ class NeuroID private constructor(
     }
 
     private fun sendOriginEvent(originResult: SessionIDOriginResult) {
-        val originEvent = JSONObject()
-        originEvent.put("sessionIdCode", originResult.originCode)
-        originEvent.put("sessionIdSource", originResult.origin)
-        originEvent.put("sessionId", originResult.sessionID)
-        val attrJSON = JSONArray().put(originEvent)
+        // sending these as individual items.
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    key = "sessionIdCode",
+                    v = originResult.originCode
+                )
+            )
 
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
                     type = SET_VARIABLE,
                     ts = System.currentTimeMillis(),
-                    attrs = attrJSON
+                    key = "sessionIdSource",
+                    v = originResult.origin
+                )
+            )
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    key = "sessionId",
+                    v = originResult.sessionID
                 )
             )
     }
