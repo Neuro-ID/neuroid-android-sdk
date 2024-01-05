@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
@@ -196,23 +197,25 @@ class NeuroID private constructor(
 
     internal fun setGenericUserID(type: String, genericUserId: String): Boolean {
         try {
-            val isValidID = this.validateUserId(genericUserId)
-            if (!isValidID) {
+            val result = getOriginResult(genericUserId)
+            sendOriginEvent(result)
+
+            if (result.originCode == NID_ORIGIN_CODE_FAIL) {
                 return false
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             application?.let {
                 when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
+                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(result.sessionID)
                     SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
+                        result.sessionID
                     )
                 }
             }
             val genericUserIdEvent = NIDEventModel(
                 type = type,
-                uid = genericUserId,
+                uid = result.sessionID,
                 ts = System.currentTimeMillis(),
                 gyro = gyroData,
                 accel = accelData
@@ -586,7 +589,8 @@ class NeuroID private constructor(
         val finalSessionID = if (sessionID != null && sessionID != "") {
             sessionID
         } else {
-            generateUniqueHexId()
+            // getOriginResult() will generate the UUID
+            ""
         }
 
         if (!setUserID(finalSessionID)) {
@@ -608,6 +612,55 @@ class NeuroID private constructor(
         dataStore.saveAndClearAllQueuedEvents()
 
         return SessionStartResult(true, finalSessionID)
+    }
+
+    private fun sendOriginEvent(originResult: SessionIDOriginResult) {
+        // sending these as individual items.
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    key = "sessionIdCode",
+                    v = originResult.originCode
+                )
+            )
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    key = "sessionIdSource",
+                    v = originResult.origin
+                )
+            )
+
+        getDataStoreInstance()
+            .saveEvent(
+                NIDEventModel(
+                    type = SET_VARIABLE,
+                    ts = System.currentTimeMillis(),
+                    key = "sessionId",
+                    v = originResult.sessionID
+                )
+            )
+    }
+
+    internal fun getOriginResult(sessionID: String): SessionIDOriginResult {
+        var origin = NID_ORIGIN_NID_SET
+        var originCode = NID_ORIGIN_CODE_NID
+        var finalSessionID = generateUniqueHexId()
+        if (sessionID != "") {
+            if (validateUserId(sessionID)) {
+                finalSessionID = sessionID
+                origin = NID_ORIGIN_CUSTOMER_SET
+                originCode = NID_ORIGIN_CODE_CUSTOMER
+            } else {
+                originCode = NID_ORIGIN_CODE_FAIL
+            }
+        }
+        return SessionIDOriginResult(origin, originCode, finalSessionID)
     }
 
     fun pauseCollection() {
