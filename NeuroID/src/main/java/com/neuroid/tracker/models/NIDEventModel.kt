@@ -57,7 +57,8 @@ data class NIDEventModel(
     val rid: String? = null,
     val m: String? = null,
     val level: String? = null,
-    val c: Boolean? = null
+    val c: Boolean? = null,
+
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         val jsonObject = JSONObject()

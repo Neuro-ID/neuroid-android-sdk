@@ -58,3 +58,11 @@ const val RATING_BAR_CHANGE = "RATING_BAR_CHANGE"
 const val CONTEXT_MENU = "CONTEXT_MENU"
 const val ADVANCED_DEVICE_REQUEST = "ADVANCED_DEVICE_REQUEST"
 const val ANDROID_URI ="android://"
+const val SET_VARIABLE = "SET_VARIABLE"
+
+// NID origin codes
+const val NID_ORIGIN_NID_SET = "nid"
+const val NID_ORIGIN_CUSTOMER_SET = "customer"
+const val NID_ORIGIN_CODE_FAIL = "400"
+const val NID_ORIGIN_CODE_NID = "200"
+const val NID_ORIGIN_CODE_CUSTOMER = "201"

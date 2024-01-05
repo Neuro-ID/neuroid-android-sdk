@@ -10,7 +10,11 @@ import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
+import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -23,6 +27,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 
 
 enum class TestLogLevel {
@@ -780,9 +785,9 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
-            val (started, id) = it.startSession("bad user 343%%^")
-            assertEquals(false, started)
-            assertEquals("", id)
+            val result = it.startSession("bad user 343%%^")
+            assertEquals(false, result.started)
+            assertEquals("", result.sessionID)
 
             assertErrorCount(1)
         }
@@ -814,5 +819,47 @@ open class NeuroIDClassUnitTests {
         }
     }
 
+    @Test
+    fun testGetOriginResult_CUSTOMER_SET_OK() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            val sessionID = "gasdgasdgdsgds"
+            val result = it.getOriginResult(sessionID)
+            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_CUSTOMER)
+            assertEquals(result.sessionID, sessionID)
+        }
+    }
+
+    @Test
+    fun testGetOriginResult_CUSTOMER_SET_FAIL() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            val badSessionID = "gasdgas dgdsgds"
+            val result = it.getOriginResult(badSessionID)
+            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
+            assertNotEquals(result.sessionID, badSessionID)
+        }
+    }
+
+    @Test
+    fun testGetOriginResult_CUSTOMER_SET_EMPTY_SESSION_ID() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            val emptySessionID = ""
+            val result = it.getOriginResult(emptySessionID)
+            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_NID)
+            assertNotEquals(result.sessionID, emptySessionID)
+        }
+    }
+
+    fun unsetDefaultMockedLogger() {
+        val log = mockk<NIDLogWrapper>()
+        every {log.d(any(), any()) } just runs
+        every {log.e(any(), any()) } just runs
+        NeuroID.getInstance()?.setLoggerInstance(log)
+    }
 
 }
