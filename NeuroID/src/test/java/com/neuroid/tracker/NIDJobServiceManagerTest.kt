@@ -31,7 +31,7 @@ class NIDJobServiceManagerTest {
         injectMockedApplication()
         assertEquals(NIDJobServiceManager.isSetup, true)
         assertEquals(NIDJobServiceManager.clientKey, "clientKey")
-        assertEquals(NIDJobServiceManager.endpoint, "endpoint")
+        assertEquals(NIDJobServiceManager.endpoint, "https://test.com")
         assertNotNull(NIDJobServiceManager.jobCaptureEvents)
     }
 
@@ -129,7 +129,7 @@ class NIDJobServiceManagerTest {
         val sharedPreferences = mockk<SharedPreferences>()
         every {sharedPreferences.getString(any(), any())} returns "test"
         every { application.getSharedPreferences(any(), any()) } returns sharedPreferences
-        NIDJobServiceManager.startJob(application, "clientKey", "endpoint")
+        NIDJobServiceManager.startJob(application, "clientKey")
     }
 
     private fun getMockEventSender(isSuccess: Boolean,
