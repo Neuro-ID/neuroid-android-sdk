@@ -37,7 +37,6 @@ class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
     private var firstTime = true
-    private var endpoint = ENDPOINT_PRODUCTION
     internal var sessionID = ""
     internal var clientID = ""
     internal var userID = ""
@@ -427,7 +426,7 @@ class NeuroID private constructor(
             saveIntegrationHealthEvents()
         }
         application?.let {
-            nidJobServiceManager.startJob(it, clientKey, endpoint)
+            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -676,7 +675,7 @@ class NeuroID private constructor(
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
-                nidJobServiceManager.startJob(it, clientKey, endpoint)
+                nidJobServiceManager.startJob(it, clientKey)
             } else {
                 nidJobServiceManager.restart()
             }
