@@ -5,6 +5,7 @@ import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -37,9 +38,10 @@ object NIDServiceTracker {
         key: String,
         context: Application,
         events: Set<String>? = null,
-        eventReportCallback: NIDResponseCallBack
+        eventReportCallback: NIDResponseCallBack,
+        dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
     ) {
-        val listEvents = (events ?: getDataStoreInstance().getAllEvents()).sortedBy {
+        val listEvents = (events ?: dataStoreManager.getAllEvents()).sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
         }

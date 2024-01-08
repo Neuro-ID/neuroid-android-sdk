@@ -2,6 +2,8 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,14 +18,14 @@ import java.util.concurrent.TimeUnit
 
 object NIDJobServiceManager {
 
-    private var jobCaptureEvents: Job? = null
+    internal var jobCaptureEvents: Job? = null
     var isSendEventsNowEnabled = true
 
     @Volatile
     var userActive = true
-    private var clientKey = ""
+    internal var clientKey = ""
     private var application: Application? = null
-    private var endpoint: String = ""
+    internal var endpoint: String = ""
 
     internal var isSetup: Boolean = false
 
@@ -90,17 +92,18 @@ object NIDJobServiceManager {
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
      * set here to show what timeouts are available in the OKHttp client.
      */
-    suspend fun sendEventsNow(logger: NIDLogWrapper, forceSendEvents: Boolean = false) {
+    suspend fun sendEventsNow(logger: NIDLogWrapper, forceSendEvents: Boolean = false,
+                              eventSender: NIDEventSender = getServiceAPI(),
+                              dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
+    ) {
         if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
             application?.let {
-                var eventSender = getServiceAPI()
-
                 NIDServiceTracker.sendEventToServer(
                     eventSender,
                     clientKey,
                     it,
                     null,
-                    object : NIDResponseCallBack {
+                    object: NIDResponseCallBack {
                         override fun onSuccess(code: Int) {
                             // noop!
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
@@ -113,7 +116,9 @@ object NIDJobServiceManager {
                             userActive = isRetry
                             logger.e(msg = "network failure, sendEventsNow() failed userActive: $userActive $message")
                         }
-                    })
+                    },
+                    dataStoreManager
+                )
             } ?: run {
                 userActive = false
             }
