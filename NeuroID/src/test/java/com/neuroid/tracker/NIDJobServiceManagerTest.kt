@@ -52,7 +52,7 @@ class NIDJobServiceManagerTest {
 
     @Test
     fun testGetApiService() {
-        NIDJobServiceManager.endpoint = "https://test.com"
+        NIDJobServiceManager.endpoint = Constants.productionEndpoint.displayName
         assertNotNull(NIDJobServiceManager.getServiceAPI())
     }
 
