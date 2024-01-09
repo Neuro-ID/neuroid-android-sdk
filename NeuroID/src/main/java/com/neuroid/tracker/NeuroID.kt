@@ -98,7 +98,6 @@ class NeuroID private constructor(
     companion object {
         var showLogs: Boolean = true
         var isSDKStarted = false
-        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/"
 
         private var singleton: NeuroID? = null
 
