@@ -9,6 +9,7 @@ import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -31,7 +32,7 @@ class NIDJobServiceManagerTest {
         injectMockedApplication()
         assertEquals(NIDJobServiceManager.isSetup, true)
         assertEquals(NIDJobServiceManager.clientKey, "clientKey")
-        assertEquals(NIDJobServiceManager.endpoint, "https://test.com")
+        assertEquals(NIDJobServiceManager.endpoint,Constants.productionEndpoint.displayName)
         assertNotNull(NIDJobServiceManager.jobCaptureEvents)
     }
 
