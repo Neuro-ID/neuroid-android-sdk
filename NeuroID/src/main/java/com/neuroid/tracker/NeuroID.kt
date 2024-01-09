@@ -173,8 +173,8 @@ class NeuroID private constructor(
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
         val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
-        return if (result) {
-            this.registeredUserID = registeredUserId
+        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
+            this.registeredUserID = result.sessionID
             true
         } else {
             false
@@ -185,21 +185,21 @@ class NeuroID private constructor(
         val result = setGenericUserID(
             SET_USER_ID, userId
         )
-        return if (result) {
-            this.userID = userId
+        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
+            this.userID = result.sessionID
             true
         } else {
             false
         }
     }
 
-    internal fun setGenericUserID(type: String, genericUserId: String): Boolean {
+    internal fun setGenericUserID(type: String, genericUserId: String): SessionIDOriginResult {
         try {
             val result = getOriginResult(genericUserId)
             sendOriginEvent(result)
 
             if (result.originCode == NID_ORIGIN_CODE_FAIL) {
-                return false
+                return result
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -225,10 +225,10 @@ class NeuroID private constructor(
             } else {
                 dataStore.queueEvent(genericUserIdEvent)
             }
-            return true
+            return result
         } catch (exception: Exception) {
             NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
-            return false
+            return SessionIDOriginResult("", NID_ORIGIN_CODE_FAIL, "")
         }
     }
 
