@@ -37,7 +37,6 @@ class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
     private var firstTime = true
-    private var endpoint = ENDPOINT_PRODUCTION
     internal var sessionID = ""
     internal var clientID = ""
     internal var userID = ""
@@ -99,7 +98,6 @@ class NeuroID private constructor(
     companion object {
         var showLogs: Boolean = true
         var isSDKStarted = false
-        const val ENDPOINT_PRODUCTION = "https://receiver.neuroid.cloud/"
 
         private var singleton: NeuroID? = null
 
@@ -175,8 +173,8 @@ class NeuroID private constructor(
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
         val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
-        return if (result) {
-            this.registeredUserID = registeredUserId
+        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
+            this.registeredUserID = result.sessionID
             true
         } else {
             false
@@ -187,21 +185,21 @@ class NeuroID private constructor(
         val result = setGenericUserID(
             SET_USER_ID, userId
         )
-        return if (result) {
-            this.userID = userId
+        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
+            this.userID = result.sessionID
             true
         } else {
             false
         }
     }
 
-    internal fun setGenericUserID(type: String, genericUserId: String): Boolean {
+    internal fun setGenericUserID(type: String, genericUserId: String): SessionIDOriginResult {
         try {
             val result = getOriginResult(genericUserId)
             sendOriginEvent(result)
 
             if (result.originCode == NID_ORIGIN_CODE_FAIL) {
-                return false
+                return result
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -227,10 +225,10 @@ class NeuroID private constructor(
             } else {
                 dataStore.queueEvent(genericUserIdEvent)
             }
-            return true
+            return result
         } catch (exception: Exception) {
             NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
-            return false
+            return SessionIDOriginResult("", NID_ORIGIN_CODE_FAIL, "")
         }
     }
 
@@ -427,7 +425,7 @@ class NeuroID private constructor(
             saveIntegrationHealthEvents()
         }
         application?.let {
-            nidJobServiceManager.startJob(it, clientKey, endpoint)
+            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -676,7 +674,7 @@ class NeuroID private constructor(
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
-                nidJobServiceManager.startJob(it, clientKey, endpoint)
+                nidJobServiceManager.startJob(it, clientKey)
             } else {
                 nidJobServiceManager.restart()
             }

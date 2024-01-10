@@ -9,6 +9,7 @@ import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -31,7 +32,7 @@ class NIDJobServiceManagerTest {
         injectMockedApplication()
         assertEquals(NIDJobServiceManager.isSetup, true)
         assertEquals(NIDJobServiceManager.clientKey, "clientKey")
-        assertEquals(NIDJobServiceManager.endpoint, "endpoint")
+        assertEquals(NIDJobServiceManager.endpoint,Constants.productionEndpoint.displayName)
         assertNotNull(NIDJobServiceManager.jobCaptureEvents)
     }
 
@@ -51,7 +52,7 @@ class NIDJobServiceManagerTest {
 
     @Test
     fun testGetApiService() {
-        NIDJobServiceManager.endpoint = "https://test.com"
+        NIDJobServiceManager.endpoint = Constants.productionEndpoint.displayName
         assertNotNull(NIDJobServiceManager.getServiceAPI())
     }
 
@@ -129,7 +130,7 @@ class NIDJobServiceManagerTest {
         val sharedPreferences = mockk<SharedPreferences>()
         every {sharedPreferences.getString(any(), any())} returns "test"
         every { application.getSharedPreferences(any(), any()) } returns sharedPreferences
-        NIDJobServiceManager.startJob(application, "clientKey", "endpoint")
+        NIDJobServiceManager.startJob(application, "clientKey")
     }
 
     private fun getMockEventSender(isSuccess: Boolean,

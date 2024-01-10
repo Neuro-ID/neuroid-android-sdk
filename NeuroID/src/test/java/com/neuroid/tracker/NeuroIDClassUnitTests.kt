@@ -855,6 +855,45 @@ open class NeuroIDClassUnitTests {
         }
     }
 
+    @Test
+    fun testSetRegisteredUserId_not_empty() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            it.setRegisteredUserID("gdsgdsgsd")
+            assertEquals(it.getRegisteredUserID(), "gdsgdsgsd")
+        }
+    }
+
+    @Test
+    fun testSetRegisteredUserId_empty() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            it.setRegisteredUserID("")
+            // should be random id
+            assertNotEquals(it.getRegisteredUserID(), "")
+        }
+    }
+
+    @Test
+    fun testSetUserId_not_empty() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            it.setUserID("gdsgdsgsdzzzz")
+            assertEquals(it.getUserID(), "gdsgdsgsdzzzz")
+        }
+    }
+
+    @Test
+    fun testSetUserId_empty() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            it.setUserID("")
+            // should be random id
+            assertNotEquals(it.getUserID(), "")
+        }
+    }
+
+
     fun unsetDefaultMockedLogger() {
         val log = mockk<NIDLogWrapper>()
         every {log.d(any(), any()) } just runs

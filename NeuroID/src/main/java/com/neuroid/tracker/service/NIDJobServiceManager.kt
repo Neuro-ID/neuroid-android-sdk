@@ -4,6 +4,7 @@ import android.app.Application
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,7 @@ object NIDJobServiceManager {
     var userActive = true
     internal var clientKey = ""
     private var application: Application? = null
-    internal var endpoint: String = ""
+    internal var endpoint = Constants.productionEndpoint.displayName
 
     internal var isSetup: Boolean = false
 
@@ -33,10 +34,8 @@ object NIDJobServiceManager {
     fun startJob(
         application: Application,
         clientKey: String,
-        endpoint: String
     ) {
         this.clientKey = clientKey
-        this.endpoint = endpoint
         this.application = application
         jobCaptureEvents = createJobServer()
         NIDSensorHelper.initSensorHelper(application, NIDLogWrapper())
