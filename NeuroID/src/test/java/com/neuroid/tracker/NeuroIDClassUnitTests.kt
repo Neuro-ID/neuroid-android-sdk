@@ -751,6 +751,7 @@ open class NeuroIDClassUnitTests {
             it.clientKey = "dummyKey"
             val (started, id) = it.startSession()
             assertEquals(true, started)
+            assertNotEquals("", id)
         }
     }
 
