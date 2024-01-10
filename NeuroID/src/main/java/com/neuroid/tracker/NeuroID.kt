@@ -584,7 +584,7 @@ class NeuroID private constructor(
             stopSession()
         }
 
-        val finalSessionID = if (sessionID != null && sessionID != "") {
+        var finalSessionID = if (sessionID != null && sessionID != "") {
             sessionID
         } else {
             // getOriginResult() will generate the UUID
@@ -608,6 +608,10 @@ class NeuroID private constructor(
         resumeCollection()
 
         dataStore.saveAndClearAllQueuedEvents()
+
+        // we need to set finalSessionID with the set random user id
+        // if a sessionID was not passed in
+        finalSessionID = getUserID()
 
         return SessionStartResult(true, finalSessionID)
     }
