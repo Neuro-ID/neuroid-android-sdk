@@ -184,7 +184,11 @@ class NeuroID private constructor(
         }
     }
 
-    fun setUserID(userId: String, checkForEmpty: Boolean = true): Boolean {
+    fun setUserID(userID: String): Boolean {
+        return setUserID(userID, true)
+    }
+
+    private fun setUserID(userId: String, checkForEmpty: Boolean): Boolean {
         if (checkForEmpty && !validateUserId(userId)) {
             return false
         }
