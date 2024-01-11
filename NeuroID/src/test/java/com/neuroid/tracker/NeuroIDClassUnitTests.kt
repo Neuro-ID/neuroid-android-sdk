@@ -27,7 +27,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 
 
 enum class TestLogLevel {
@@ -825,7 +827,7 @@ open class NeuroIDClassUnitTests {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
             val sessionID = "gasdgasdgdsgds"
-            val result = it.getOriginResult(sessionID)
+            val result = it.getOriginResult(sessionID, true, true)
             assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
             assertEquals(result.originCode, NID_ORIGIN_CODE_CUSTOMER)
             assertEquals(result.sessionID, sessionID)
@@ -837,10 +839,9 @@ open class NeuroIDClassUnitTests {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
             val badSessionID = "gasdgas dgdsgds"
-            val result = it.getOriginResult(badSessionID)
-            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            val result = it.getOriginResult(badSessionID, false, true)
+            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
             assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
-            assertNotEquals(result.sessionID, badSessionID)
         }
     }
 
@@ -849,10 +850,20 @@ open class NeuroIDClassUnitTests {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
             val emptySessionID = ""
-            val result = it.getOriginResult(emptySessionID)
+            val result = it.getOriginResult(emptySessionID, true, false)
             assertEquals(result.origin, NID_ORIGIN_NID_SET)
             assertEquals(result.originCode, NID_ORIGIN_CODE_NID)
-            assertNotEquals(result.sessionID, emptySessionID)
+        }
+    }
+
+    @Test
+    fun testGetOriginResult_NID_SET_EMPTY_SESSION_ID() {
+        unsetDefaultMockedLogger()
+        NeuroID.getInstance()?.let {
+            val emptySessionID = ""
+            val result = it.getOriginResult(emptySessionID, false, false)
+            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
         }
     }
 
@@ -860,7 +871,8 @@ open class NeuroIDClassUnitTests {
     fun testSetRegisteredUserId_not_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setRegisteredUserID("gdsgdsgsd")
+            val result = it.setRegisteredUserID("gdsgdsgsd")
+            assertTrue(result)
             assertEquals(it.getRegisteredUserID(), "gdsgdsgsd")
         }
     }
@@ -869,9 +881,10 @@ open class NeuroIDClassUnitTests {
     fun testSetRegisteredUserId_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setRegisteredUserID("")
-            // should be random id
-            assertNotEquals(it.getRegisteredUserID(), "")
+            it.setRegisteredUserID("gdsgdsgsd")
+            val result = it.setRegisteredUserID("")
+            assertFalse(result)
+            assertEquals("gdsgdsgsd", it.getRegisteredUserID())
         }
     }
 
@@ -879,7 +892,8 @@ open class NeuroIDClassUnitTests {
     fun testSetUserId_not_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setUserID("gdsgdsgsdzzzz")
+            val result = it.setUserID("gdsgdsgsdzzzz")
+            assertTrue(result)
             assertEquals(it.getUserID(), "gdsgdsgsdzzzz")
         }
     }
@@ -888,17 +902,18 @@ open class NeuroIDClassUnitTests {
     fun testSetUserId_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setUserID("")
-            // should be random id
-            assertNotEquals(it.getUserID(), "")
+            it.setUserID("gdsgdsgsdzzzz")
+            val result = it.setUserID("")
+            assertFalse(result)
+            assertEquals("gdsgdsgsdzzzz", it.getUserID())
         }
     }
 
 
     fun unsetDefaultMockedLogger() {
         val log = mockk<NIDLogWrapper>()
-        every {log.d(any(), any()) } just runs
-        every {log.e(any(), any()) } just runs
+        every { log.d(any(), any()) } just runs
+        every { log.e(any(), any()) } just runs
         NeuroID.getInstance()?.setLoggerInstance(log)
     }
 

@@ -172,48 +172,70 @@ class NeuroID private constructor(
     }
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
-        val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
-        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
-            this.registeredUserID = result.sessionID
-            true
-        } else {
-            false
-        }
-    }
-
-    fun setUserID(userId: String): Boolean {
-        val result = setGenericUserID(
-            SET_USER_ID, userId
+        val validID = setGenericUserID(
+            SET_REGISTERED_USER_ID,
+            registeredUserId,
         )
-        return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
-            this.userID = result.sessionID
-            true
-        } else {
-            false
+
+        if (!validID) {
+            return false
         }
+
+        this.registeredUserID = registeredUserId
+        return true;
     }
 
-    internal fun setGenericUserID(type: String, genericUserId: String): SessionIDOriginResult {
-        try {
-            val result = getOriginResult(genericUserId)
-            sendOriginEvent(result)
+    fun setUserID(userID: String): Boolean {
+        return setUserID(userID, true)
+    }
 
-            if (result.originCode == NID_ORIGIN_CODE_FAIL) {
-                return result
+    private fun setUserID(userId: String, userGenerated: Boolean): Boolean {
+        val validID = setGenericUserID(
+            SET_USER_ID,
+            userId,
+            userGenerated
+        )
+
+        if (!validID) {
+            return false
+        }
+
+        this.userID = userId
+        return true;
+    }
+
+    internal fun setGenericUserID(
+        type: String,
+        genericUserId: String,
+        userGenerated: Boolean = true
+    ): Boolean {
+        try {
+            val validID = validateUserId(genericUserId)
+            val originRes =
+                getOriginResult(
+                    genericUserId,
+                    validID = validID,
+                    userGenerated = userGenerated
+                )
+            sendOriginEvent(originRes)
+
+            if (!validID) {
+                return false
             }
+
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
             application?.let {
                 when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(result.sessionID)
+                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
                     SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        result.sessionID
+                        genericUserId
                     )
                 }
             }
             val genericUserIdEvent = NIDEventModel(
                 type = type,
-                uid = result.sessionID,
+                uid = genericUserId,
                 ts = System.currentTimeMillis(),
                 gyro = gyroData,
                 accel = accelData
@@ -225,10 +247,11 @@ class NeuroID private constructor(
             } else {
                 dataStore.queueEvent(genericUserIdEvent)
             }
-            return result
+
+            return true
         } catch (exception: Exception) {
             NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
-            return SessionIDOriginResult("", NID_ORIGIN_CODE_FAIL, "")
+            return false;
         }
     }
 
@@ -572,7 +595,7 @@ class NeuroID private constructor(
         registeredUserID = ""
     }
 
-    fun startSession(sessionID: String = ""): SessionStartResult {
+    fun startSession(sessionID: String? = null): SessionStartResult {
         if (clientKey == "") {
             NIDLog.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
@@ -584,14 +607,13 @@ class NeuroID private constructor(
             stopSession()
         }
 
-        var finalSessionID = if (sessionID != null && sessionID != "") {
-            sessionID
-        } else {
-            // getOriginResult() will generate the UUID
-            ""
-        }
+        var finalSessionID = sessionID ?: generateUniqueHexId();
 
-        if (!setUserID(finalSessionID)) {
+        if (!setUserID(
+                finalSessionID,
+                sessionID != null
+            )
+        ) {
             return SessionStartResult(false, "")
         }
 
@@ -649,21 +671,31 @@ class NeuroID private constructor(
             )
     }
 
-    internal fun getOriginResult(sessionID: String): SessionIDOriginResult {
-        var origin = NID_ORIGIN_NID_SET
-        var originCode = NID_ORIGIN_CODE_NID
-        var finalSessionID = generateUniqueHexId()
-        if (sessionID != "") {
-            if (validateUserId(sessionID)) {
-                finalSessionID = sessionID
-                origin = NID_ORIGIN_CUSTOMER_SET
-                originCode = NID_ORIGIN_CODE_CUSTOMER
-            } else {
-                originCode = NID_ORIGIN_CODE_FAIL
-            }
+    internal fun getOriginResult(
+        sessionID: String,
+        validID: Boolean,
+        userGenerated: Boolean
+    ): SessionIDOriginResult {
+        var origin = if (userGenerated) {
+            NID_ORIGIN_CUSTOMER_SET
+        } else {
+            NID_ORIGIN_NID_SET
         }
-        return SessionIDOriginResult(origin, originCode, finalSessionID)
+
+        var originCode = if (validID) {
+            if (
+                userGenerated
+            ) {
+                NID_ORIGIN_CODE_CUSTOMER
+            } else {
+                NID_ORIGIN_CODE_NID
+            }
+        } else {
+            NID_ORIGIN_CODE_FAIL
+        }
+        return SessionIDOriginResult(origin, originCode, sessionID)
     }
+
 
     fun pauseCollection() {
         isSDKStarted = false
