@@ -172,6 +172,9 @@ class NeuroID private constructor(
     }
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
+        if (!validateUserId(registeredUserId)) {
+            return false
+        }
         val result = setGenericUserID(SET_REGISTERED_USER_ID, registeredUserId)
         return if (result.originCode != NID_ORIGIN_CODE_FAIL) {
             this.registeredUserID = result.sessionID
@@ -181,7 +184,10 @@ class NeuroID private constructor(
         }
     }
 
-    fun setUserID(userId: String): Boolean {
+    fun setUserID(userId: String, checkForEmpty: Boolean = true): Boolean {
+        if (checkForEmpty && !validateUserId(userId)) {
+            return false
+        }
         val result = setGenericUserID(
             SET_USER_ID, userId
         )
@@ -591,7 +597,7 @@ class NeuroID private constructor(
             ""
         }
 
-        if (!setUserID(finalSessionID)) {
+        if (!setUserID(finalSessionID, false)) {
             return SessionStartResult(false, "")
         }
 
@@ -659,6 +665,7 @@ class NeuroID private constructor(
                 origin = NID_ORIGIN_CUSTOMER_SET
                 originCode = NID_ORIGIN_CODE_CUSTOMER
             } else {
+                origin = NID_ORIGIN_CUSTOMER_SET
                 originCode = NID_ORIGIN_CODE_FAIL
             }
         }

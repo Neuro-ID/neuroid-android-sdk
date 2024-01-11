@@ -27,7 +27,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 
 
 enum class TestLogLevel {
@@ -838,7 +840,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.let {
             val badSessionID = "gasdgas dgdsgds"
             val result = it.getOriginResult(badSessionID)
-            assertEquals(result.origin, NID_ORIGIN_NID_SET)
+            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
             assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
             assertNotEquals(result.sessionID, badSessionID)
         }
@@ -860,7 +862,8 @@ open class NeuroIDClassUnitTests {
     fun testSetRegisteredUserId_not_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setRegisteredUserID("gdsgdsgsd")
+            val result = it.setRegisteredUserID("gdsgdsgsd")
+            assertTrue(result)
             assertEquals(it.getRegisteredUserID(), "gdsgdsgsd")
         }
     }
@@ -869,9 +872,10 @@ open class NeuroIDClassUnitTests {
     fun testSetRegisteredUserId_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setRegisteredUserID("")
-            // should be random id
-            assertNotEquals(it.getRegisteredUserID(), "")
+            it.setRegisteredUserID("gdsgdsgsd")
+            val result = it.setRegisteredUserID("")
+            assertFalse(result)
+            assertEquals("gdsgdsgsd", it.getRegisteredUserID())
         }
     }
 
@@ -879,7 +883,8 @@ open class NeuroIDClassUnitTests {
     fun testSetUserId_not_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setUserID("gdsgdsgsdzzzz")
+            val result = it.setUserID("gdsgdsgsdzzzz")
+            assertTrue(result)
             assertEquals(it.getUserID(), "gdsgdsgsdzzzz")
         }
     }
@@ -888,9 +893,10 @@ open class NeuroIDClassUnitTests {
     fun testSetUserId_empty() {
         unsetDefaultMockedLogger()
         NeuroID.getInstance()?.let {
-            it.setUserID("")
-            // should be random id
-            assertNotEquals(it.getUserID(), "")
+            it.setUserID("gdsgdsgsdzzzz")
+            val result = it.setUserID("")
+            assertFalse(result)
+            assertEquals("gdsgdsgsdzzzz", it.getUserID())
         }
     }
 
