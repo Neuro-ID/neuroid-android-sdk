@@ -32,10 +32,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
+    @Volatile
+    // used to notify resumeCollection() to continue after pauseCollection() completes
+    internal var countDownLatch:CountDownLatch? = null
+
     private var firstTime = true
     internal var sessionID = ""
     internal var clientID = ""
@@ -696,17 +702,24 @@ class NeuroID private constructor(
         return SessionIDOriginResult(origin, originCode, sessionID)
     }
 
-
+    @Synchronized
     fun pauseCollection() {
+        countDownLatch = CountDownLatch(1)
         isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
             nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
             nidJobServiceManager.stopJob()
             saveIntegrationHealthEvents()
+            countDownLatch?.countDown()
         }
     }
 
+    @Synchronized
     fun resumeCollection() {
+        // allow blocking for a max of 2 sec, else this could block forever
+        // if something bad happens in pauseCollection() that doesn't trigger
+        // the countdown
+        countDownLatch?.await(2000, TimeUnit.MILLISECONDS)
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
