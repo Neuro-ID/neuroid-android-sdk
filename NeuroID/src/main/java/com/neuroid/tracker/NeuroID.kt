@@ -704,13 +704,9 @@ class NeuroID private constructor(
     fun pauseCollection() {
         isSDKStarted = false
         pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-                nidJobServiceManager.stopJob()
-                saveIntegrationHealthEvents()
-            } finally {
-                pauseCollectionJob = null
-            }
+            nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+            nidJobServiceManager.stopJob()
+            saveIntegrationHealthEvents()
         }
     }
 
