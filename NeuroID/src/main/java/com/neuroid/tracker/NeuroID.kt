@@ -40,7 +40,7 @@ class NeuroID private constructor(
 ) {
     @Volatile
     // used to notify resumeCollection() to continue after pauseCollection() completes
-    internal var countDownLatch:CountDownLatch? = null
+    private var countDownLatch:CountDownLatch? = null
 
     private var firstTime = true
     internal var sessionID = ""
@@ -707,10 +707,13 @@ class NeuroID private constructor(
         countDownLatch = CountDownLatch(1)
         isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
-            nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-            nidJobServiceManager.stopJob()
-            saveIntegrationHealthEvents()
-            countDownLatch?.countDown()
+            try {
+                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                nidJobServiceManager.stopJob()
+                saveIntegrationHealthEvents()
+            } finally {
+                countDownLatch?.countDown()
+            }
         }
     }
 
