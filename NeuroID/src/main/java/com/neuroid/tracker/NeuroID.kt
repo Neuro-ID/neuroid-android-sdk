@@ -29,18 +29,16 @@ import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
     @Volatile
-    // used to notify resumeCollection() to continue after pauseCollection() completes
-    private var countDownLatch:CountDownLatch? = null
+    private var pauseCollectionJob: Job? = null
 
     private var firstTime = true
     internal var sessionID = ""
@@ -704,30 +702,32 @@ class NeuroID private constructor(
 
     @Synchronized
     fun pauseCollection() {
-        countDownLatch = CountDownLatch(1)
         isSDKStarted = false
-        CoroutineScope(Dispatchers.IO).launch {
+        pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
             } finally {
-                countDownLatch?.countDown()
+                pauseCollectionJob = null
             }
         }
     }
 
     @Synchronized
     fun resumeCollection() {
-        // allow blocking for a max of 2 sec, else this could block forever
-        // if something bad happens in pauseCollection() that doesn't trigger
-        // the countdown
-        countDownLatch?.await(2000, TimeUnit.MILLISECONDS)?.let {
-            if (!it) {
-                NIDLog.e("pauseCollection() Issue", "pauseCollection() " +
-                        "didn't complete within 2 seconds. Unblock and continue. ")
+        if (pauseCollectionJob?.isCompleted == true ||
+            pauseCollectionJob?.isCancelled == true ||
+            pauseCollectionJob == null) {
+            resumeCollectionCompletion()
+        } else {
+            pauseCollectionJob?.invokeOnCompletion {
+                resumeCollectionCompletion()
             }
         }
+    }
+
+    private fun resumeCollectionCompletion() {
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
