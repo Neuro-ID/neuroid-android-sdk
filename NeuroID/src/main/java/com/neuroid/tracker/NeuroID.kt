@@ -722,7 +722,12 @@ class NeuroID private constructor(
         // allow blocking for a max of 2 sec, else this could block forever
         // if something bad happens in pauseCollection() that doesn't trigger
         // the countdown
-        countDownLatch?.await(2000, TimeUnit.MILLISECONDS)
+        countDownLatch?.await(2000, TimeUnit.MILLISECONDS)?.let {
+            if (!it) {
+                NIDLog.e("pauseCollection() Issue", "pauseCollection() " +
+                        "didn't complete within 2 seconds. Unblock and continue. ")
+            }
+        }
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
