@@ -29,6 +29,7 @@ import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -36,6 +37,9 @@ import org.json.JSONObject
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
+    @Volatile
+    private var pauseCollectionJob: Job? = null
+
     private var firstTime = true
     internal var sessionID = ""
     internal var clientID = ""
@@ -696,17 +700,34 @@ class NeuroID private constructor(
         return SessionIDOriginResult(origin, originCode, sessionID)
     }
 
-
+    @Synchronized
     fun pauseCollection() {
         isSDKStarted = false
-        CoroutineScope(Dispatchers.IO).launch {
-            nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-            nidJobServiceManager.stopJob()
-            saveIntegrationHealthEvents()
+        if (pauseCollectionJob == null ||
+            pauseCollectionJob?.isCancelled == true ||
+            pauseCollectionJob?.isCompleted == true) {
+            pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
+                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                nidJobServiceManager.stopJob()
+                saveIntegrationHealthEvents()
+            }
         }
     }
 
+    @Synchronized
     fun resumeCollection() {
+        if (pauseCollectionJob?.isCompleted == true ||
+            pauseCollectionJob?.isCancelled == true ||
+            pauseCollectionJob == null) {
+            resumeCollectionCompletion()
+        } else {
+            pauseCollectionJob?.invokeOnCompletion {
+                resumeCollectionCompletion()
+            }
+        }
+    }
+
+    private fun resumeCollectionCompletion() {
         isSDKStarted = true
         application?.let {
             if (!nidJobServiceManager.isSetup) {
