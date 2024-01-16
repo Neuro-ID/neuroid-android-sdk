@@ -597,6 +597,10 @@ class NeuroID private constructor(
     fun clearSessionVariables() {
         userID = ""
         registeredUserID = ""
+        this.getApplicationContext()?.let {
+            NIDSharedPrefsDefaults(it).setUserId("")
+            NIDSharedPrefsDefaults(it).setRegisteredUserId("")
+        }
     }
 
     fun startSession(sessionID: String? = null): SessionStartResult {
