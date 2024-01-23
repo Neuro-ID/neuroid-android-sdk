@@ -9,9 +9,30 @@ import java.io.InputStreamReader
 
 class RootHelper {
 
-    private companion object {
+    internal companion object {
         const val BINARY_SU = "su"
         const val BINARY_BUSYBOX = "busybox"
+
+        var emulatorFiles = listOf(
+            File("ueventd.android_x86.rc"),
+            File("x86.prop"),
+            File("ueventd.ttVM_x86.rc"),
+            File("init.ttVM_x86.rc"),
+            File("fstab.ttVM_x86"),
+            File("fstab.vbox86"),
+            File("init.vbox86.rc"),
+            File("ueventd.vbox86.rc"),
+            File("fstab.andy"),
+            File("ueventd.andy.rc"),
+            File("fstab.nox"),
+            File("init.nox.rc"),
+            File("ueventd.nox.rc"),
+            File("/dev/socket/genyd"),
+            File("/dev/socket/baseband_genyd"),
+            File("/dev/socket/qemud"),
+            File("/dev/qemu_pipe")
+        )
+
         val suPaths = listOf(
             "/data/local/",
             "/data/local/bin/",
@@ -92,6 +113,13 @@ class RootHelper {
             }
         }
         return result
+    }
+
+    private fun isEmulatorFilesPresent(): Boolean {
+        emulatorFiles.forEach { path ->
+            return path.exists()
+        }
+        return false
     }
 
     private fun getPaths(): List<String> {
@@ -183,13 +211,29 @@ class RootHelper {
                 || Build.MODEL.contains("Emulator", true)
                 || Build.DEVICE.contains("Emulator", true)
                 || Build.MODEL.contains("Android SDK built for x86")
-                || Build.BOARD == "QC_Reference_Phone" && !Build.MANUFACTURER.equals(
-            "Xiaomi",
-            ignoreCase = true
-        )
+                || Build.BOARD == "QC_Reference_Phone" && !Build.MANUFACTURER.equals("Xiaomi")
+                || Build.BOARD.lowercase().contains("nox")
+
+                // hardware check for vbox, nox, google
+                || Build.HARDWARE == "goldfish"
+                || Build.HARDWARE == "vbox86"
+                || Build.HARDWARE.lowercase().contains("nox")
+
                 || Build.MANUFACTURER.contains("Genymotion")
+
+                // pickup on secondary  manufacturer string for genymotion
+                || Build.MANUFACTURER.contains("Genymobile")
+
                 || Build.HOST.startsWith("Build")
                 || Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")
-                || Build.PRODUCT == "google_sdk")
+
+                // products (looking for vbox, nox and any x86 based emulators on win11, mac intel)
+                || Build.PRODUCT == "google_sdk"
+                || Build.PRODUCT == "sdk_x86"
+                || Build.PRODUCT == "vbox86p"
+                || Build.PRODUCT.lowercase().contains("nox")
+
+                // sim file check (in case we miss anything above)
+                || isEmulatorFilesPresent())
     }
 }
