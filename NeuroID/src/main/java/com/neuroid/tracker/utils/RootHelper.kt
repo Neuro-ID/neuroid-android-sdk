@@ -211,7 +211,8 @@ class RootHelper {
                 || Build.MODEL.contains("Emulator", true)
                 || Build.DEVICE.contains("Emulator", true)
                 || Build.MODEL.contains("Android SDK built for x86")
-                || Build.BOARD == "QC_Reference_Phone" && !Build.MANUFACTURER.equals("Xiaomi")
+                || Build.BOARD == "QC_Reference_Phone" && !Build.MANUFACTURER.equals(
+            "Xiaomi", ignoreCase = true)
                 || Build.BOARD.lowercase().contains("nox")
 
                 // hardware check for vbox, nox, google
