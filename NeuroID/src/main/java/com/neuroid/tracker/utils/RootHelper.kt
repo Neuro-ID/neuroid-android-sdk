@@ -117,7 +117,9 @@ class RootHelper {
 
     private fun isEmulatorFilesPresent(): Boolean {
         emulatorFiles.forEach { path ->
-            return path.exists()
+           if (path.exists()) {
+               return true
+           }
         }
         return false
     }
