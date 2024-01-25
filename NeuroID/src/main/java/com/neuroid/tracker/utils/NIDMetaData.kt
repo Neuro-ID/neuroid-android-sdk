@@ -47,6 +47,7 @@ class NIDMetaData(context: Context) {
         isWifiOn = getWifiStatus(context)
         isSimulator = RootHelper().isProbablyEmulator()
 
+        NIDLog.i(tag = "TESTING", msg = "INIT METADATA")
         gpsCoordinates = getCoordinates(context);
     }
 
@@ -101,6 +102,8 @@ class NIDMetaData(context: Context) {
             authorizationStatus = "unknown"
         )
         val location = getLocation(context)
+        NIDLog.i(tag = "TESTING", msg = "post check - ${location?.longitude} - ${location}")
+
         location?.let {
             val longitude = it.longitude
             val latitude = it.latitude
@@ -112,6 +115,8 @@ class NIDMetaData(context: Context) {
                 "authorizedAlways"
             )
         }
+
+        NIDLog.i(tag = "TESTING", msg = "FINAL - ${locationObj.longitude}")
 
         return locationObj
     }
@@ -128,9 +133,20 @@ class NIDMetaData(context: Context) {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
+            NIDLog.i(tag = "TESTING", msg = "NO ACCESS GRANTED ${ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED} - ${ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED}")
             // Request the permissions
             return null
         }
+
+        NIDLog.i(tag = "TESTING", msg = " ACCESS GRANTED ${locationManager}");
+
+
 
         return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
     }
