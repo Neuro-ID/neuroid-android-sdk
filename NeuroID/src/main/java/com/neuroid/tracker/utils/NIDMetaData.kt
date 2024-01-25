@@ -8,7 +8,16 @@ import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
+import com.neuroid.tracker.models.NIDLocation
 import org.json.JSONObject
+
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+
+import androidx.core.app.ActivityCompat
 
 
 class NIDMetaData(context: Context) {
@@ -26,6 +35,7 @@ class NIDMetaData(context: Context) {
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
+    private val gpsCoordinates: NIDLocation
 
 
     init {
@@ -36,6 +46,8 @@ class NIDMetaData(context: Context) {
         isJailBreak = RootHelper().isRooted(context)
         isWifiOn = getWifiStatus(context)
         isSimulator = RootHelper().isProbablyEmulator()
+
+        gpsCoordinates = getCoordinates(context);
     }
 
     private fun getScreenResolution(context: Context): String = try {
@@ -82,6 +94,47 @@ class NIDMetaData(context: Context) {
         }
     }
 
+    fun getCoordinates(context: Context): NIDLocation {
+        var locationObj = NIDLocation(
+            latitude = -1.0,
+            longitude = -1.0,
+            authorizationStatus = "unknown"
+        )
+        val location = getLocation(context)
+        location?.let {
+            val longitude = it.longitude
+            val latitude = it.latitude
+            println("Longitude: $longitude, Latitude: $latitude")
+
+            locationObj = NIDLocation(
+                it.longitude,
+                it.latitude,
+                "authorizedAlways"
+            )
+        }
+
+        return locationObj
+    }
+
+
+    fun getLocation(context: Context): Location? {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Request the permissions
+            return null
+        }
+
+        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+    }
+
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("brand", brand)
@@ -98,6 +151,7 @@ class NIDMetaData(context: Context) {
         jsonObject.put("isJailBreak", isJailBreak)
         jsonObject.put("isWifiOn", isWifiOn)
         jsonObject.put("isSimulator", isSimulator)
+        jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         return jsonObject
     }
 
