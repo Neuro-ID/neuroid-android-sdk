@@ -102,53 +102,42 @@ class NIDMetaData(context: Context) {
             authorizationStatus = "unknown"
         )
         val location = getLocation(context)
-        NIDLog.i(tag = "TESTING", msg = "post check - ${location?.longitude} - ${location}")
+        NIDLog.d(tag = "TESTING", msg = "post check - ${location?.longitude} - ${location}")
 
         location?.let {
-            val longitude = it.longitude
-            val latitude = it.latitude
-            println("Longitude: $longitude, Latitude: $latitude")
-
             locationObj = NIDLocation(
                 it.longitude,
                 it.latitude,
                 "authorizedAlways"
             )
         }
-
-        NIDLog.i(tag = "TESTING", msg = "FINAL - ${locationObj.longitude}")
-
         return locationObj
     }
 
 
     fun getLocation(context: Context): Location? {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            NIDLog.i(tag = "TESTING", msg = "NO ACCESS GRANTED ${ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED} - ${ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED}")
-            // Request the permissions
+            // need to request the permissions, return null
             return null
         }
 
-        NIDLog.i(tag = "TESTING", msg = " ACCESS GRANTED ${locationManager}");
-
-
-
-        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        // we got permission so get location
+        NIDLog.d(tag = "TESTING", msg = " ACCESS GRANTED $locationManager")
+        // get GPS location first, we might have it if called earlier by others
+        var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if (location == null) {
+            // get network location if GPS is not ready or available
+            location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+        }
+        return location
     }
 
     fun toJson(): JSONObject {
