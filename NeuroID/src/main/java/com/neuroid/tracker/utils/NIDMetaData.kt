@@ -117,8 +117,8 @@ class NIDMetaData(context: Context) {
             val location = locationManager.getLastKnownLocation(provider)
             if (location != null) {
                 if (location.accuracy < smallestAccuracyMeters) {
-                    gpsCoordinates.longitude = location.latitude
-                    gpsCoordinates.latitude = location.longitude
+                    gpsCoordinates.longitude = location.longitude
+                    gpsCoordinates.latitude = location.latitude
                     gpsCoordinates.authorizationStatus = "authorizedAlways"
                     smallestAccuracyMeters = location.accuracy
                 }
