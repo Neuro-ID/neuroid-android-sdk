@@ -15,12 +15,14 @@ import org.json.JSONObject
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 
 import androidx.core.app.ActivityCompat
 
 
 class NIDMetaData(context: Context) {
+    private var locationListener: LocationListener? = null
     private val brand = Build.BRAND
     private var device = Build.DEVICE
     private var display = Build.DISPLAY
@@ -35,8 +37,7 @@ class NIDMetaData(context: Context) {
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
-    private val gpsCoordinates: NIDLocation
-
+    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, "none")
 
     init {
         displayResolution = getScreenResolution(context)
@@ -46,9 +47,7 @@ class NIDMetaData(context: Context) {
         isJailBreak = RootHelper().isRooted(context)
         isWifiOn = getWifiStatus(context)
         isSimulator = RootHelper().isProbablyEmulator()
-
-        NIDLog.i(tag = "TESTING", msg = "INIT METADATA")
-        gpsCoordinates = getCoordinates(context);
+        getLocation(context)
     }
 
     private fun getScreenResolution(context: Context): String = try {
@@ -95,27 +94,7 @@ class NIDMetaData(context: Context) {
         }
     }
 
-    fun getCoordinates(context: Context): NIDLocation {
-        var locationObj = NIDLocation(
-            latitude = -1.0,
-            longitude = -1.0,
-            authorizationStatus = "unknown"
-        )
-        val location = getLocation(context)
-        NIDLog.d(tag = "TESTING", msg = "post check - ${location?.longitude} - ${location}")
-
-        location?.let {
-            locationObj = NIDLocation(
-                it.longitude,
-                it.latitude,
-                "authorizedAlways"
-            )
-        }
-        return locationObj
-    }
-
-
-    fun getLocation(context: Context): Location? {
+    internal fun getLocation(context: Context) {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -124,20 +103,54 @@ class NIDMetaData(context: Context) {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // need to request the permissions, return null
-            return null
+            // need to request the permissions, return
+            return
         }
 
+        // setup location manager
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        // we got permission so get location
-        NIDLog.d(tag = "TESTING", msg = " ACCESS GRANTED $locationManager")
-        // get GPS location first, we might have it if called earlier by others
-        var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        if (location == null) {
-            // get network location if GPS is not ready or available
-            location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+
+        // get last position if available, take highest accuracy from available providers
+        val providers = locationManager.getProviders(true)
+        var smallestAccuracyMeters = Float.MAX_VALUE
+        for (provider in providers) {
+            val location = locationManager.getLastKnownLocation(provider)
+            if (location != null) {
+                if (location.accuracy < smallestAccuracyMeters) {
+                    gpsCoordinates.longitude = location.latitude
+                    gpsCoordinates.latitude = location.longitude
+                    gpsCoordinates.authorizationStatus = "authorizedAlways"
+                    smallestAccuracyMeters = location.accuracy
+                }
+            }
         }
-        return location
+
+        // unregister existing location listener, just in case
+        locationListener?.let {
+            locationManager.removeUpdates(it)
+        }
+
+        // setup new location listener, just in case
+        locationListener = LocationListener { location ->
+            gpsCoordinates.longitude = location.latitude
+            gpsCoordinates.latitude = location.longitude
+            gpsCoordinates.authorizationStatus = "authorizedAlways"
+        }
+
+        // register new listener, 1 minute min time interval and 10 meter min distance interval
+        // use GPS, highest accuracy
+        locationListener?.let {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                60000L, 10F, it)
+        }
+        NIDLog.d(tag = "TESTING", msg = "post check - ${this.gpsCoordinates}")
+    }
+
+    internal fun unregisterLocationListener(context: Context) {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationListener?.let {
+            locationManager.removeUpdates(it)
+        }
     }
 
     fun toJson(): JSONObject {
