@@ -65,9 +65,7 @@ class NeuroID private constructor(
 
     init {
         application?.let {
-            NIDLog.i(tag = "TESTING", msg = "NEW metadata obj")
             metaData = NIDMetaData(it.applicationContext)
-            NIDLog.i(tag = "TESTING", msg = "POST NEW metadata obj ${metaData.toString()}")
         }
 
         if (!validateClientKey(clientKey)) {
