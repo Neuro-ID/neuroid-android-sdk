@@ -286,12 +286,6 @@ class NeuroID private constructor(
         }
     }
 
-    fun syncLocation() {
-        application?.let {
-            metaData?.getLocation(it)
-        }
-    }
-
     @Deprecated("setEnvironment is deprecated and no longer required")
     fun setEnvironment(environment: String) {
         NIDLog.i(
@@ -446,9 +440,6 @@ class NeuroID private constructor(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
             return false
-        }
-        application?.let {
-            metaData?.getLocation(it)
         }
         isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
@@ -714,9 +705,6 @@ class NeuroID private constructor(
 
     @Synchronized
     fun pauseCollection() {
-        application?.let {
-            metaData?.unregisterLocationListener(it)
-        }
         isSDKStarted = false
         if (pauseCollectionJob == null ||
             pauseCollectionJob?.isCancelled == true ||
@@ -731,9 +719,6 @@ class NeuroID private constructor(
 
     @Synchronized
     fun resumeCollection() {
-        application?.let {
-            metaData?.getLocation(it)
-        }
         if (pauseCollectionJob?.isCompleted == true ||
             pauseCollectionJob?.isCancelled == true ||
             pauseCollectionJob == null) {

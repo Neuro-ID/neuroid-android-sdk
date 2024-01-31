@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
@@ -49,10 +50,6 @@ class MainActivity : AppCompatActivity() {
         if (!isLocationPermissionGiven()) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
-        } else {
-            // since permission is given after SDK start, we need to
-            // resync the location
-            NeuroID.getInstance()?.syncLocation()
         }
     }
 
@@ -73,9 +70,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode) {
             LOCATION_REQUEST_CODE -> {
-                // since permission is given after SDK start, we need to
-                // resync the location
-                NeuroID.getInstance()?.syncLocation()
+                Log.d("main_activity", "location grantResults ${grantResults[0]} ${grantResults[1]}")
             }
         }
     }

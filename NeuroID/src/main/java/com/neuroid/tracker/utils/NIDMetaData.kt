@@ -15,13 +15,12 @@ import org.json.JSONObject
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 
 import androidx.core.app.ActivityCompat
 
-class NIDMetaData(context: Context) {
+class NIDMetaData(val context: Context) {
     private var locationListener: LocationListener? = null
     private val brand = Build.BRAND
     private var device = Build.DEVICE
@@ -126,34 +125,9 @@ class NIDMetaData(context: Context) {
             }
         }
 
-        // unregister existing location listener, just in case
-        locationListener?.let {
-            locationManager.removeUpdates(it)
-        }
-
-        // setup new location listener, just in case
-        locationListener = LocationListener { location ->
-            gpsCoordinates.longitude = location.latitude
-            gpsCoordinates.latitude = location.longitude
-            gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
-        }
-
-        // register new listener, 1 minute min time interval and 10 meter min distance interval
-        // use GPS, highest accuracy
-        locationListener?.let {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                60000L, 10F, it)
-        }
         NIDLog.d(tag = "TESTING", msg = "post check - ${this.gpsCoordinates}")
     }
 
-    @SuppressLint("MissingPermission")
-    internal fun unregisterLocationListener(context: Context) {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        locationListener?.let {
-            locationManager.removeUpdates(it)
-        }
-    }
 
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
@@ -171,6 +145,7 @@ class NIDMetaData(context: Context) {
         jsonObject.put("isJailBreak", isJailBreak)
         jsonObject.put("isWifiOn", isWifiOn)
         jsonObject.put("isSimulator", isSimulator)
+        getLocation(context)
         jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         return jsonObject
     }
