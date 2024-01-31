@@ -124,8 +124,6 @@ class NIDMetaData(val context: Context) {
                 }
             }
         }
-
-        NIDLog.d(tag = "TESTING", msg = "post check - ${this.gpsCoordinates}")
     }
 
 
