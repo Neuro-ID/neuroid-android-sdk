@@ -1,5 +1,6 @@
 package com.sample.neuroid.us
 
+import android.os.Looper
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -49,6 +50,7 @@ class ComponentsTest {
      */
     @Test
     fun test01ValidateCheckBox() = runTest {
+        Looper.prepare()
         NeuroID.getInstance()?.start()
         NIDLog.d("----> UITest", "-------------------------------------------------")
 

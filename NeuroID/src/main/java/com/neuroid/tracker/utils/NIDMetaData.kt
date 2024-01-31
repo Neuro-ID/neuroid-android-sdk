@@ -14,12 +14,10 @@ import org.json.JSONObject
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 
 import androidx.core.app.ActivityCompat
-
 
 class NIDMetaData(context: Context) {
     private var locationListener: LocationListener? = null
