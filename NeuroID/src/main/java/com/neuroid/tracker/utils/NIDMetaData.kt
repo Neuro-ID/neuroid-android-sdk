@@ -13,7 +13,9 @@ import org.json.JSONObject
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 
@@ -35,7 +37,7 @@ class NIDMetaData(context: Context) {
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
-    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, "none")
+    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
 
     init {
         displayResolution = getScreenResolution(context)
@@ -92,6 +94,7 @@ class NIDMetaData(context: Context) {
         }
     }
 
+    @SuppressLint("MissingPermission")
     internal fun getLocation(context: Context) {
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -101,7 +104,7 @@ class NIDMetaData(context: Context) {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // need to request the permissions, return
+            gpsCoordinates.authorizationStatus = LOCATION_DENIED
             return
         }
 
@@ -117,7 +120,7 @@ class NIDMetaData(context: Context) {
                 if (location.accuracy < smallestAccuracyMeters) {
                     gpsCoordinates.longitude = location.longitude
                     gpsCoordinates.latitude = location.latitude
-                    gpsCoordinates.authorizationStatus = "authorizedAlways"
+                    gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
                     smallestAccuracyMeters = location.accuracy
                 }
             }
@@ -132,7 +135,7 @@ class NIDMetaData(context: Context) {
         locationListener = LocationListener { location ->
             gpsCoordinates.longitude = location.latitude
             gpsCoordinates.latitude = location.longitude
-            gpsCoordinates.authorizationStatus = "authorizedAlways"
+            gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
         }
 
         // register new listener, 1 minute min time interval and 10 meter min distance interval
@@ -144,6 +147,7 @@ class NIDMetaData(context: Context) {
         NIDLog.d(tag = "TESTING", msg = "post check - ${this.gpsCoordinates}")
     }
 
+    @SuppressLint("MissingPermission")
     internal fun unregisterLocationListener(context: Context) {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationListener?.let {
@@ -173,5 +177,10 @@ class NIDMetaData(context: Context) {
 
     override fun toString(): String = toJson().toString()
 
+    companion object{
+        const val LOCATION_DENIED = "denied"
+        const val LOCATION_UNKNOWN = "unknown"
+        const val LOCATION_AUTHORIZED_ALWAYS = "authorizedAlways"
+    }
 
 }
