@@ -471,6 +471,7 @@ class NeuroID private constructor(
 
     fun stop() {
         pauseCollection()
+        nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
     }
 
     fun closeSession() {
@@ -728,7 +729,6 @@ class NeuroID private constructor(
                 nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
-                nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
             }
         }
     }
@@ -766,7 +766,7 @@ class NeuroID private constructor(
 
         pauseCollection()
         clearSessionVariables()
-
+        nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
         return true
     }
 }

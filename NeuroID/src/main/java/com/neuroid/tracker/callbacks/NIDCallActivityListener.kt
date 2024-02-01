@@ -83,20 +83,13 @@ fun registerCustomTelephonyCallback(context: Context) {
         NIDLog.d(msg = "SDK < 31")
         telephony.listen(object : PhoneStateListener() {
             override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-                NIDLog.d(msg = "CURRENT CALL STATE: $state")
                 when (state) {
                     TelephonyManager.CALL_STATE_IDLE -> {
-                        NIDLog.d(msg = "No call")
                         getDataStoreInstance().saveEvent(
                             NIDEventModel(
                                 type = CALL_IN_PROGRESS, cp = false, ts = System.currentTimeMillis()
                             )
                         )
-                    }
-
-                    TelephonyManager.CALL_STATE_RINGING -> {
-                        NIDLog.d(msg = "Incoming call")
-                        // Incoming call
                     }
 
                     // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
