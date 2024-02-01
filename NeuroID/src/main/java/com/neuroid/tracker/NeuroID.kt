@@ -471,7 +471,7 @@ class NeuroID private constructor(
 
     fun stop() {
         pauseCollection()
-        nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
+        nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
     }
 
     fun closeSession() {

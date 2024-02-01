@@ -20,11 +20,12 @@ import com.neuroid.tracker.utils.NIDLog
 class NIDCallActivityListener : BroadcastReceiver() {
     lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
+    private val isReceiverRegistered = false
 
     internal fun setCallActivityListener(context: Context) {
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.READ_PHONE_STATE
-            ) == PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
             intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
@@ -42,7 +43,9 @@ class NIDCallActivityListener : BroadcastReceiver() {
     }
 
     fun unregisterCallActivityListener(context: Context?) {
-        context?.unregisterReceiver(this)
+        if (isReceiverRegistered){
+            context?.unregisterReceiver(this)
+        }
     }
 }
 
@@ -53,7 +56,6 @@ fun registerCustomTelephonyCallback(context: Context) {
         telephony.registerTelephonyCallback(
             context.mainExecutor, CustomTelephonyCallback(object : CallBack {
                 override fun callStateChanged(state: Int) {
-                    NIDLog.d(msg = "CURRENT CALL STATE: $state")
                     when (state) {
                     // No activity
                         0 -> {
@@ -67,6 +69,7 @@ fun registerCustomTelephonyCallback(context: Context) {
                         }
                     //  At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                         2 -> {
+                            NIDLog.d(msg = "Call in progress")
                             getDataStoreInstance().saveEvent(
                                 NIDEventModel(
                                     type = CALL_IN_PROGRESS,
