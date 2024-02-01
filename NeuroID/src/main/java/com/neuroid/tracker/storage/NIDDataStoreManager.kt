@@ -135,6 +135,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
                     LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
+                    CALL_IN_PROGRESS -> contextString = "cp=${event.cp}, ts=${event.ts}}"
                     else -> {}
                 }
 

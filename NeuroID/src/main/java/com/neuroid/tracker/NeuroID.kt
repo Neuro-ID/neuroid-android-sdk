@@ -1,10 +1,13 @@
 package com.neuroid.tracker
 
+import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -14,6 +17,7 @@ import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.callbacks.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -62,6 +66,8 @@ class NeuroID private constructor(
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
     internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
+
+    internal var nidCallActivityListener: NIDCallActivityListener? = null
 
     init {
         application?.let {
@@ -456,6 +462,10 @@ class NeuroID private constructor(
         }
         dataStore.saveAndClearAllQueuedEvents()
 
+        // set call activity listener
+        nidCallActivityListener = NIDCallActivityListener()
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
         return true
     }
 
@@ -643,6 +653,10 @@ class NeuroID private constructor(
         // if a sessionID was not passed in
         finalSessionID = getUserID()
 
+        // set call activity listener
+        nidCallActivityListener = NIDCallActivityListener()
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
         return SessionStartResult(true, finalSessionID)
     }
 
@@ -714,6 +728,7 @@ class NeuroID private constructor(
                 nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
+                nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
             }
         }
     }

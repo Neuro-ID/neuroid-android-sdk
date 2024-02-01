@@ -59,6 +59,7 @@ const val CONTEXT_MENU = "CONTEXT_MENU"
 const val ADVANCED_DEVICE_REQUEST = "ADVANCED_DEVICE_REQUEST"
 const val ANDROID_URI ="android://"
 const val SET_VARIABLE = "SET_VARIABLE"
+const val CALL_IN_PROGRESS = "CALL_IN_PROGRESS"
 
 // NID origin codes
 const val NID_ORIGIN_NID_SET = "nid"
