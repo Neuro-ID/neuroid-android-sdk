@@ -9,7 +9,7 @@ on:
     types:
       - closed
     branches:
-      - master
+      - release/3.0
 
 permissions:
   contents: write

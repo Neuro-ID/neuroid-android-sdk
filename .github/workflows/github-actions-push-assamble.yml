@@ -1,7 +1,7 @@
 # ******************************************************************
 # This workflow triggers Dev Android and React Native Sandbox Apps
-# to update their NeuroID Android SDK versions to the latest master branch
-# merge (master-SNAPSHOT) on https://jitpack.io/#neuro-id/neuroid-android-sdk
+# to update their NeuroID Android SDK versions to the latest release/3.0 branch
+# merge (release-3.0-SNAPSHOT) on https://jitpack.io/#neuro-id/neuroid-android-sdk
 # ******************************************************************
 name: Deploy Dev Sandbox Apps
 on:
@@ -9,7 +9,7 @@ on:
     types:
       - closed
     branches:
-      - master
+      - release/3.0
 
 env:
   GIT_HASH: ${{github.sha}}
@@ -52,7 +52,7 @@ jobs:
              -H "Accept: application/vnd.github.v3+json" \
              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
              https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox/dispatches \
-             -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
+             -d '{"event_type":"publish-dev","client_payload":{"version":"release-3.0-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
 
       - name: Trigger Android Sandbox Layout Dev Deployment
         run: |
@@ -61,7 +61,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
             https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
-            -d '{"event_type":"publish-dev","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
+            -d '{"event_type":"publish-dev","client_payload":{"version":"release-3.0-SNAPSHOT", "message": "${{ github.event.head_commit.message }}"}}'
 
       - name: Trigger ReactNative Sandbox Dev Deployment
         run: |
@@ -70,7 +70,7 @@ jobs:
              -H "Accept: application/vnd.github.v3+json" \
              -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
              https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk/dispatches \
-             -d '{"event_type":"publish-dev-android","client_payload":{"version":"master-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
+             -d '{"event_type":"publish-dev-android","client_payload":{"version":"release-3.0-SNAPSHOT", "message": "${{ github.event.commit.message }}"}}'
 
   notifications:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           SLACK_CHANNEL: ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: "Failed to update Dev Android and ReactNative Sandbox apps on master branch update"
+          SLACK_MESSAGE: "Failed to update Dev Android and ReactNative Sandbox apps on release/3.0 branch update"
           SLACK_TITLE: Failed Dev Android and ReactNative Sandbox Update
           SLACK_USERNAME: rtBot
           SLACK_WEBHOOK: ${{ secrets.MOBILE_SLACK_WEBHOOK }}

@@ -31,7 +31,13 @@ on:
         required: true
         default: "patch"
         type: choice
-        options: ["major", "minor", "patch"]
+        options: ["patch"]
+      patch_number:
+        description: >
+          Enter a patch number to override the default of incrementing the last patch number by 1.
+        required: false
+        default: "0"
+        type: string
 
 permissions:
   pull-requests: write
@@ -78,7 +84,11 @@ jobs:
           elif [ "$update_type" = "patch" ]; then
             patch_version=$((patch_version + 1))
           fi  
-          
+
+          if [ "${{ inputs.patch_number }}" != "0" ]; then
+            patch_version=${{ inputs.patch_number }}
+          fi
+
           package_version=$major_version.$minor_version.$patch_version
           echo "PACKAGE_VERSION=$package_version" >> $GITHUB_ENV
           echo "MAJOR_VERSION=$major_version" >> $GITHUB_ENV
@@ -116,7 +126,7 @@ jobs:
             const title = 'Update To Version: ${{ env.PACKAGE_VERSION }}';
             const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}';
             const headBranch = '${{ env.BRANCH_NAME }}';
-            const baseBranch = 'master';
+            const baseBranch = 'release/3.0';
             
             const createPullRequest = async () => {
               const response = await github.rest.pulls.create({

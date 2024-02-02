@@ -8,7 +8,7 @@ name: Auto Release Android SDK
 on:
   push:
     branches:
-      - master
+      - release/3.0
     paths:
       - version.properties
 
