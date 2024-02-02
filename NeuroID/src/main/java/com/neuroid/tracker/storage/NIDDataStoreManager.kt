@@ -25,12 +25,11 @@ import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel): Job
-    suspend fun getAllEvents(): Set<String>
+    fun saveEvent(event: NIDEventModel)
+    fun getAllEvents(): Set<String>
+    fun getAllEventsList(): List<String>
     fun addViewIdExclude(id: String)
-    suspend fun clearEvents()
-    fun resetJsonPayload()
-    fun getJsonPayload(context: Context): String
+    fun clearEvents()
     fun queueEvent(event: NIDEventModel)
     fun saveAndClearAllQueuedEvents()
 }
@@ -44,23 +43,17 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 }
 
 internal object NIDDataStoreManagerImp : NIDDataStoreManager {
-    private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
-    private const val NID_STRING_EVENTS = "NID_STRING_EVENTS"
-    private const val NID_STRING_JSON_PAYLOAD = "NID_STRING_JSON_PAYLOAD"
-    private var sharedPref: SharedPreferences? = null
     private val listNonActiveEvents = listOf(
         USER_INACTIVE, WINDOW_BLUR //Block screen
     )
     internal val listIdsExcluded = arrayListOf<String>()
     internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
+    private var eventsList = mutableListOf<NIDEventModel>()
 
     private var ioDispatcher = CoroutineScope(Dispatchers.IO)
 
     fun init(context: Context, newDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
         ioDispatcher = newDispatcher
-        ioDispatcher.launch {
-            sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
-        }
     }
 
     // Queue events that are set before sdk is started
@@ -71,220 +64,133 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
     @Synchronized
     override fun saveAndClearAllQueuedEvents() {
-        if (queuedEvents.isNotEmpty()) {
-            queuedEvents.forEach { event -> getDataStoreInstance().saveEvent(event) }
-            queuedEvents.clear()
+        eventsList.addAll(queuedEvents)
+        queuedEvents.clear()
+    }
+
+    @Synchronized
+    override fun saveEvent(event: NIDEventModel) {
+        if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
+            if (NIDJobServiceManager.userActive.not()) {
+                NIDJobServiceManager.userActive = true
+                NIDJobServiceManager.restart()
+            }
+
+            if (!listNonActiveEvents.contains(event.type)) {
+                NIDTimerActive.restartTimerActive()
+            }
+
+            eventsList.add(event)
+
+            logQueuedEvent(event)
+        }
+
+        when (event.type) {
+            BLUR -> {
+                ioDispatcher.launch {
+                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
+                }
+            }
+            CLOSE_SESSION -> {
+                ioDispatcher.launch {
+                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                }
+            }
         }
     }
 
     @Synchronized
-    override fun saveEvent(event: NIDEventModel): Job {
-        val job = ioDispatcher.launch {
-            if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-                val strEvent = event.getOwnJson()
-                saveJsonPayload(strEvent, "\"${event.type}\"")
-
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
-                }
-
-                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-                    NIDTimerActive.restartTimerActive()
-                }
-
-                val lastEvents = getStringSet(NID_STRING_EVENTS)
-                val newEvents = LinkedHashSet<String>()
-                newEvents.addAll(lastEvents)
-                newEvents.add(strEvent)
-                putStringSet(NID_STRING_EVENTS, newEvents)
-
-                var contextString: String? = ""
-                when (event.type) {
-                    SET_USER_ID -> contextString = "uid=${event.uid}"
-                    CREATE_SESSION -> contextString =
-                        "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
-                    APPLICATION_SUBMIT -> contextString = ""
-                    TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
-                    "SET_CHECKPOINT" -> contextString = ""
-                    "STATE_CHANGE" -> contextString = event.url ?: ""
-                    KEY_UP -> contextString = "tg=${event.tg}"
-                    KEY_DOWN -> contextString = "tg=${event.tg}"
-                    INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
-                    FOCUS -> contextString = ""
-                    BLUR -> contextString = ""
-                    MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
-                    "CLICK" -> contextString = ""
-                    REGISTER_TARGET -> contextString =
-                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
-                    "DEREGISTER_TARGET" -> contextString = ""
-                    TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    CLOSE_SESSION -> contextString = ""
-                    SET_VARIABLE -> contextString = event.v ?: ""
-                    CUT -> contextString = ""
-                    COPY -> contextString = ""
-                    PASTE -> contextString = ""
-                    WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
-                    SELECT_CHANGE -> contextString = "tg=${event.tg}"
-                    WINDOW_LOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_BLUR -> contextString = "meta=${event.metadata}"
-                    WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
-                    CONTEXT_MENU -> contextString = "meta=${event.metadata}"
-                    ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
-                    LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
-                    else -> {}
-                }
-
-                NIDLog.d(
-                    Constants.debugEventTag.displayName,
-                    "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
-                )
-
-                NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
-            }
-
-            when (event.type) {
-                BLUR -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
-                }
-                CLOSE_SESSION -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(),true)
-                }
-            }
-        }
-
-        return job
-    }
-
-    override suspend fun getAllEvents(): Set<String> {
-        val lastEvents = getStringSet(NID_STRING_EVENTS, emptySet())
+    override fun getAllEvents(): Set<String> {
+        val lastEvents = eventsList
         clearEvents()
 
-        return lastEvents.map {
-            it.replace(
-                "\"gyro\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"gyro\":{\"x\":${NIDSensorHelper.valuesGyro.axisX},\"y\":${NIDSensorHelper.valuesGyro.axisY},\"z\":${NIDSensorHelper.valuesGyro.axisZ}}"
-            ).replace(
-                "\"accel\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"accel\":{\"x\":${NIDSensorHelper.valuesAccel.axisX},\"y\":${NIDSensorHelper.valuesAccel.axisY},\"z\":${NIDSensorHelper.valuesAccel.axisZ}}"
-            )
-        }.toSet()
+        return toJsonList(lastEvents).toSet()
     }
 
+    @Synchronized
+    override fun getAllEventsList(): List<String> {
+        val lastEvents = eventsList
+        clearEvents()
+
+        return toJsonList(lastEvents)
+    }
+
+    @Synchronized
     override fun addViewIdExclude(id: String) {
         if (listIdsExcluded.none { it == id }) {
             listIdsExcluded.add(id)
         }
     }
 
-    override suspend fun clearEvents() {
-        putStringSet(NID_STRING_EVENTS, emptySet())
+    @Synchronized
+    override fun clearEvents() {
+        eventsList = mutableListOf<NIDEventModel>()
     }
 
-    override fun resetJsonPayload() {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(NID_STRING_JSON_PAYLOAD, emptySet())
-                apply()
+    private fun logQueuedEvent(event: NIDEventModel) {
+        var contextString: String? = ""
+        when (event.type) {
+            SET_USER_ID -> contextString = "uid=${event.uid}"
+            CREATE_SESSION -> contextString =
+                "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+            APPLICATION_SUBMIT -> contextString = ""
+            TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
+            "SET_CHECKPOINT" -> contextString = ""
+            "STATE_CHANGE" -> contextString = event.url ?: ""
+            KEY_UP -> contextString = "tg=${event.tg}"
+            KEY_DOWN -> contextString = "tg=${event.tg}"
+            INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
+            FOCUS -> contextString = ""
+            BLUR -> contextString = ""
+            MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
+            "CLICK" -> contextString = ""
+            REGISTER_TARGET -> contextString =
+                "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
+            "DEREGISTER_TARGET" -> contextString = ""
+            TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
+            TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
+            TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
+            CLOSE_SESSION -> contextString = ""
+            SET_VARIABLE -> contextString = event.v ?: ""
+            CUT -> contextString = ""
+            COPY -> contextString = ""
+            PASTE -> contextString = ""
+            WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
+            SELECT_CHANGE -> contextString = "tg=${event.tg}"
+            WINDOW_LOAD -> contextString = "meta=${event.metadata}"
+            WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
+            WINDOW_BLUR -> contextString = "meta=${event.metadata}"
+            WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
+            CONTEXT_MENU -> contextString = "meta=${event.metadata}"
+            ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
+            LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
+            else -> {}
+        }
+
+        NIDLog.d(
+            Constants.debugEventTag.displayName,
+            "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
+        )
+
+        NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
+    }
+
+    private fun toJsonList(events: MutableList<NIDEventModel>) : List<String> {
+        val jsonList = mutableListOf<String>()
+        while (events.isNotEmpty()) {
+            val event = events.removeAt(0)
+            event.accel?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
             }
-        }
-    }
-
-    override fun getJsonPayload(context: Context): String {
-        return createPayload(context)
-    }
-
-    private suspend fun putStringSet(key: String, stringSet: Set<String>) {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(key, stringSet)
-                apply()
+            event.gyro?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
             }
+            jsonList.add(event.getOwnJson())
         }
-    }
-
-    private suspend fun getStringSet(key: String, default: Set<String> = emptySet()): Set<String> {
-        return sharedPref?.getStringSet(key, default) ?: default
-    }
-
-    private fun saveJsonPayload(event: String, eventType: String) {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
-        var shouldAdd = true
-        jsonSet.forEach {
-            if (it.contains(eventType)) {
-                shouldAdd = false
-            }
-        }
-
-        if (shouldAdd) {
-            val newEvents = LinkedHashSet<String>()
-            newEvents.addAll(jsonSet)
-            newEvents.add(event)
-
-            sharedPref?.let {
-                with(it.edit()) {
-                    putStringSet(NID_STRING_JSON_PAYLOAD, newEvents)
-                    apply()
-                }
-            }
-        }
-    }
-
-    private fun createPayload(context: Context): String {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
-
-        val listEvents = jsonSet.sortedBy {
-            val event = JSONObject(it)
-            event.getLong("ts")
-        }
-
-        if (listEvents.isEmpty()) {
-            return ""
-        } else {
-            val listJson = listEvents.map {
-                if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(
-                        it.replace(
-                            "\"url\":\"\"",
-                            "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
-                        )
-                    )
-                } else {
-                    JSONObject(it)
-                }
-            }
-
-            val jsonListEvents = JSONArray(listJson)
-
-            return getContentJson(context, jsonListEvents).replace("\\/", "/")
-        }
-    }
-
-    private fun getContentJson(
-        context: Context, events: JSONArray
-    ): String {
-        val sharedDefaults = NIDSharedPrefsDefaults(context)
-
-        val jsonBody = JSONObject().apply {
-            put("siteId", NIDServiceTracker.siteId)
-            put("userId", sharedDefaults.getUserId())
-            put("clientId", sharedDefaults.getClientId())
-            put("identityId", sharedDefaults.getUserId())
-            put("registeredUserId", sharedDefaults.getRegisteredUserId())
-            put("pageTag", NIDServiceTracker.screenActivityName)
-            put("pageId", NIDServiceTracker.rndmId)
-            put("tabId", NIDServiceTracker.rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", "$ANDROID_URI${NIDServiceTracker.screenActivityName}")
-            put("jsVersion", "5.0.0")
-            put("sdkVersion", NIDVersion.getSDKVersion())
-            put("environment", NIDServiceTracker.environment)
-            put("jsonEvents", events)
-        }
-
-        return jsonBody.toString()
+        return jsonList
     }
 }

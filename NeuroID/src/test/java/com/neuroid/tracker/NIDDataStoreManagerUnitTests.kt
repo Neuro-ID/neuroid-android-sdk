@@ -204,12 +204,4 @@ class NIDDataStoreManagerUnitTests {
         Assert.assertEquals(0, storedObj.count())
     }
 
-    // Necessary to Test?
-//    resetJsonPayload
-//    getJsonPayload
-//    putStringSet
-//    getStringSet
-//    saveJsonPayload
-//    createPayload
-//    getContentJson
 }

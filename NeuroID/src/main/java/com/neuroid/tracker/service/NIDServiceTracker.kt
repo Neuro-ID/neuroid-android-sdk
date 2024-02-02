@@ -41,10 +41,10 @@ object NIDServiceTracker {
         eventReportCallback: NIDResponseCallBack,
         dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
     ) {
-        val listEvents = (events ?: dataStoreManager.getAllEvents()).sortedBy {
+        val listEvents = events?.sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
-        }
+        } ?: getDataStoreInstance().getAllEventsList()
 
         if (listEvents.isEmpty().not()) {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()

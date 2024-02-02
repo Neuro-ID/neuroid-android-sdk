@@ -545,8 +545,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-//    getJsonPayLoad - not sure how to mock
-//    resetJsonPayLoad - not sure how to mock
 
     //    captureEvent - not sure how to mock Application context
     @Test
