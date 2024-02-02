@@ -1,26 +1,19 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
-import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.LinkedList
 import java.util.Queue
 

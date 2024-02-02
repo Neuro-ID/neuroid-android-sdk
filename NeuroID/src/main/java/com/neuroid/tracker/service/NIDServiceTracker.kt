@@ -44,7 +44,7 @@ object NIDServiceTracker {
         val listEvents = events?.sortedBy {
             val event = JSONObject(it)
             event.getLong("ts")
-        } ?: getDataStoreInstance().getAllEventsList()
+        } ?: dataStoreManager.getAllEventsList()
 
         if (listEvents.isEmpty().not()) {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()

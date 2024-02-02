@@ -110,7 +110,7 @@ class NIDJobServiceManagerTest {
     private fun getMockedDatastoreManager (): NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         val events = "{\"siteId\":\"guns_452\",\"userId\":\"1693537992533\"}"
-        coEvery {dataStoreManager.getAllEvents()} returns setOf(events)
+        coEvery {dataStoreManager.getAllEventsList()} returns listOf(events)
         return dataStoreManager
     }
 
