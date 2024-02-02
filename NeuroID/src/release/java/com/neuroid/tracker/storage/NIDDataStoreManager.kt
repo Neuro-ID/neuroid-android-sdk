@@ -1,7 +1,6 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -22,9 +21,10 @@ import org.json.JSONObject
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
-    suspend fun getAllEvents(): Set<String>
+    fun getAllEvents(): Set<String>
+    fun getAllEventsList(): List<String>
     fun addViewIdExclude(id: String)
-    suspend fun clearEvents()
+    fun clearEvents()
     fun resetJsonPayload()
     fun getJsonPayload(context: Context): String
 }
@@ -38,181 +38,130 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 }
 
 private object NIDDataStoreManagerImp : NIDDataStoreManager {
-    private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
-    private const val NID_STRING_EVENTS = "NID_STRING_EVENTS"
-    private const val NID_STRING_JSON_PAYLOAD = "NID_STRING_JSON_PAYLOAD"
-    private var sharedPref: SharedPreferences? = null
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
         WINDOW_BLUR //Block screen
     )
     private val listIdsExcluded = arrayListOf<String>()
+    private var eventsList = mutableListOf<NIDEventModel>()
 
     fun init(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
-        }
     }
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-                val strEvent = event.getOwnJson()
-                saveJsonPayload(strEvent, "\"${event.type}\"")
+        if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
 
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
-                }
-
-                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-                    NIDTimerActive.restartTimerActive()
-                }
-                val lastEvents = getStringSet(NID_STRING_EVENTS)
-                val newEvents = LinkedHashSet<String>()
-                newEvents.addAll(lastEvents)
-                newEvents.add(strEvent)
-                putStringSet(NID_STRING_EVENTS, newEvents)
-
-                var contextString: String? = ""
-                when (event.type) {
-                    SET_USER_ID -> contextString = "uid=${event.uid}"
-                    CREATE_SESSION -> contextString =
-                        "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
-                    APPLICATION_SUBMIT -> contextString = ""
-                    TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
-                    "SET_CHECKPOINT" -> contextString = ""
-                    "STATE_CHANGE" -> contextString = event.url ?: ""
-                    KEY_UP -> contextString = "tg=${event.tg}"
-                    KEY_DOWN -> contextString = "tg=${event.tg}"
-                    INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
-                    FOCUS -> contextString = ""
-                    BLUR -> contextString = ""
-                    MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
-                    "CLICK" -> contextString = ""
-                    REGISTER_TARGET -> contextString =
-                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
-                    "DEREGISTER_TARGET" -> contextString = ""
-                    TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    CLOSE_SESSION -> contextString = ""
-                    "SET_VARIABLE" -> contextString = event.v ?: ""
-                    CUT -> contextString = ""
-                    COPY -> contextString = ""
-                    PASTE -> contextString = ""
-                    WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
-                    SELECT_CHANGE -> contextString = "tg=${event.tg}"
-                    WINDOW_LOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_BLUR -> contextString = "meta=${event.metadata}"
-                    WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
-                    CONTEXT_MENU -> contextString = "meta=${event.metadata}"
-                    else -> {}
-                }
-
-
-                NIDLog.d(
-                    Constants.debugEventTag.displayName,
-                    "Event: ${event.type} - ${event.tgs} - ${contextString}"
-                )
-                NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
+            if (NIDJobServiceManager.userActive.not()) {
+                NIDJobServiceManager.userActive = true
+                NIDJobServiceManager.restart()
             }
 
+            if (!listNonActiveEvents.contains(event.type)) {
+                NIDTimerActive.restartTimerActive()
+            }
+
+            eventsList.add(event)
+
+            var contextString: String? = ""
             when (event.type) {
-                BLUR -> {
+                SET_USER_ID -> contextString = "uid=${event.uid}"
+                CREATE_SESSION -> contextString =
+                    "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+                APPLICATION_SUBMIT -> contextString = ""
+                TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
+                "SET_CHECKPOINT" -> contextString = ""
+                "STATE_CHANGE" -> contextString = event.url ?: ""
+                KEY_UP -> contextString = "tg=${event.tg}"
+                KEY_DOWN -> contextString = "tg=${event.tg}"
+                INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
+                FOCUS -> contextString = ""
+                BLUR -> contextString = ""
+                MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
+                "CLICK" -> contextString = ""
+                REGISTER_TARGET -> contextString =
+                    "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
+                "DEREGISTER_TARGET" -> contextString = ""
+                TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
+                TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
+                TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
+                CLOSE_SESSION -> contextString = ""
+                "SET_VARIABLE" -> contextString = event.v ?: ""
+                CUT -> contextString = ""
+                COPY -> contextString = ""
+                PASTE -> contextString = ""
+                WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
+                SELECT_CHANGE -> contextString = "tg=${event.tg}"
+                WINDOW_LOAD -> contextString = "meta=${event.metadata}"
+                WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
+                WINDOW_BLUR -> contextString = "meta=${event.metadata}"
+                WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
+                CONTEXT_MENU -> contextString = "meta=${event.metadata}"
+                else -> {}
+            }
+
+            NIDLog.d(
+                Constants.debugEventTag.displayName,
+                "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
+            )
+
+            NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
+        }
+
+        when (event.type) {
+            BLUR -> {
+                CoroutineScope(Dispatchers.IO).launch {
                     NIDJobServiceManager.sendEventsNow()
                 }
-                CLOSE_SESSION -> {
+            }
+            CLOSE_SESSION -> {
+                CoroutineScope(Dispatchers.IO).launch {
                     NIDJobServiceManager.sendEventsNow(true)
                 }
             }
         }
     }
 
-    override suspend fun getAllEvents(): Set<String> {
-        val lastEvents = getStringSet(NID_STRING_EVENTS, emptySet())
+    @Synchronized
+    override fun getAllEvents(): Set<String> {
+        val lastEvents = eventsList
         clearEvents()
 
-        return lastEvents.map {
-            it.replace(
-                "\"gyro\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"gyro\":{\"x\":${NIDSensorHelper.valuesGyro.axisX},\"y\":${NIDSensorHelper.valuesGyro.axisY},\"z\":${NIDSensorHelper.valuesGyro.axisZ}}"
-            ).replace(
-                "\"accel\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"accel\":{\"x\":${NIDSensorHelper.valuesAccel.axisX},\"y\":${NIDSensorHelper.valuesAccel.axisY},\"z\":${NIDSensorHelper.valuesAccel.axisZ}}"
-            )
-        }.toSet()
+        return toJsonList(lastEvents).toSet()
     }
 
+    @Synchronized
+    override fun getAllEventsList(): List<String> {
+        val lastEvents = eventsList
+        clearEvents()
+
+        return toJsonList(lastEvents)
+    }
+
+    @Synchronized
     override fun addViewIdExclude(id: String) {
         if (listIdsExcluded.none { it == id }) {
             listIdsExcluded.add(id)
         }
     }
 
-    override suspend fun clearEvents() {
-        putStringSet(NID_STRING_EVENTS, emptySet())
+    @Synchronized
+    override fun clearEvents() {
+        eventsList = mutableListOf()
     }
 
+    @Synchronized
     override fun resetJsonPayload() {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(NID_STRING_JSON_PAYLOAD, emptySet())
-                apply()
-            }
-        }
+        clearEvents()
     }
 
+    @Synchronized
     override fun getJsonPayload(context: Context): String {
-        return createPayload(context)
+        val listEvents = eventsList.map { e -> e.getOwnJson() }
+        return createPayload(listEvents, context)
     }
 
-    private suspend fun putStringSet(key: String, stringSet: Set<String>) {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(key, stringSet)
-                apply()
-            }
-        }
-    }
-
-    private suspend fun getStringSet(key: String, default: Set<String> = emptySet()): Set<String> {
-        return sharedPref?.getStringSet(key, default) ?: default
-    }
-
-    private fun saveJsonPayload(event: String, eventType: String) {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
-        var shouldAdd = true
-        jsonSet.forEach {
-            if (it.contains(eventType)) {
-                shouldAdd = false
-            }
-        }
-
-        if (shouldAdd) {
-            val newEvents = LinkedHashSet<String>()
-            newEvents.addAll(jsonSet)
-            newEvents.add(event)
-
-            sharedPref?.let {
-                with(it.edit()) {
-                    putStringSet(NID_STRING_JSON_PAYLOAD, newEvents)
-                    apply()
-                }
-            }
-        }
-    }
-
-    private fun createPayload(context: Context): String {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
-
-        val listEvents = jsonSet.sortedBy {
-            val event = JSONObject(it)
-            event.getLong("ts")
-        }
-
+    private fun createPayload(listEvents: List<String>, context: Context): String {
         if (listEvents.isEmpty()) {
             return ""
         } else {
@@ -259,5 +208,24 @@ private object NIDDataStoreManagerImp : NIDDataStoreManager {
         }
 
         return jsonBody.toString()
+    }
+
+    private fun toJsonList(events: MutableList<NIDEventModel>) : List<String> {
+        val jsonList = mutableListOf<String>()
+        while (events.isNotEmpty()) {
+            val event = events.removeAt(0)
+            event.accel?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
+            }
+            event.gyro?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
+            }
+            jsonList.add(event.getOwnJson())
+        }
+        return jsonList
     }
 }
