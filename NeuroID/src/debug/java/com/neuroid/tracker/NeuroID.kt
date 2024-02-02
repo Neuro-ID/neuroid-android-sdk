@@ -184,12 +184,7 @@ class NeuroID private constructor(
 
     fun getFirstTS(): Long = timestamp
 
-    fun getJsonPayLoad(context: Context): String {
-        return getDataStoreInstance().getJsonPayload(context)
-    }
-
     fun resetJsonPayLoad() {
-        getDataStoreInstance().resetJsonPayload()
     }
 
     fun captureEvent(eventName: String, tgs: String) {
