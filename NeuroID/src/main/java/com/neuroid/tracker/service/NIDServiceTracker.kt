@@ -68,18 +68,7 @@ object NIDServiceTracker {
                 "application/json"
             )
 
-            val listJson = listEvents.map {
-                if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(
-                        it.replace(
-                            "\"url\":\"\"",
-                            "\"url\":\"$ANDROID_URI$firstScreenName\""
-                        )
-                    )
-                } else {
-                    JSONObject(it)
-                }
-            }
+            val listJson = listEvents.map {JSONObject(it)}
 
             val jsonListEvents = JSONArray(listJson)
 

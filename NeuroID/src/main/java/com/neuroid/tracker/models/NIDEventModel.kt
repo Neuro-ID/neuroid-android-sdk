@@ -46,7 +46,7 @@ data class NIDEventModel(
     val p: String? = null,
     val dnt: Boolean? = null,
     val tch: Boolean? = null,
-    val url: String? = null,
+    var url: String? = null,
     val ns: String? = null,
     val jsl: List<String>? = null,
     val jsv: String? = null,

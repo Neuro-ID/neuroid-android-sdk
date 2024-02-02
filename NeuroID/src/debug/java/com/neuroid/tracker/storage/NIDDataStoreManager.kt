@@ -9,6 +9,7 @@ import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -87,18 +88,6 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         if (!listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
             // this event has been excluded and should not be saved
             return
-        }
-
-        event.gyro?.let {
-            it.x = NIDSensorHelper.getGyroscopeInfo().x
-            it.y = NIDSensorHelper.getGyroscopeInfo().y
-            it.z = NIDSensorHelper.getGyroscopeInfo().z
-        }
-
-        event.accel?.let {
-            it.x = NIDSensorHelper.getAccelerometerInfo().x
-            it.y = NIDSensorHelper.getAccelerometerInfo().y
-            it.z = NIDSensorHelper.getAccelerometerInfo().z
         }
 
         eventsList.add(event)
@@ -218,8 +207,21 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         try {
             val jsonList = mutableListOf<String>()
             while (!list.isEmpty()) {
-                jsonList.add(list.removeAt(0).getOwnJson())
-            }
+                val event = list.removeAt(0)
+                event.accel?.let {
+                    it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
+                    it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
+                    it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
+                }
+                event.gyro?.let {
+                    it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
+                    it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
+                    it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
+                }
+                if (event.type == "CREATE_SESSION" && event.url == "") {
+                    event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
+                }
+                jsonList.add(event.getOwnJson())            }
             return jsonList
         } catch (exception: OutOfMemoryError) {
             list.clear()
