@@ -40,6 +40,7 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
     var activityManager: ActivityManager? = null
     var bufferSize = 0
+    val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getOwnJson())
 
     fun init(context: Context) {
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -56,7 +57,7 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
         if (eventsList.isNotEmpty() &&
-            (eventsList.last().type == "LOW_MEMORY" || eventsList.last().type == "queue full")) {
+            (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
             return
         }
         val memInfo = getMemInfo()
@@ -165,8 +166,6 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         NIDEventModel(
             type = type,
             ts = System.currentTimeMillis(),
-            gyro = NIDSensorHelper.getGyroscopeInfo(),
-            accel = NIDSensorHelper.getAccelerometerInfo(),
             attrs = attrJSON
         )
 
@@ -196,7 +195,7 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
     }
 
     private fun getMemInfo(): MemoryInfo {
-        val memoryInfo = ActivityManager.MemoryInfo()
+        val memoryInfo = MemoryInfo()
         // check the memory check cost
         activityManager?.getMemoryInfo(memoryInfo)
         println("kurt_test memory: ${memoryInfo.threshold/1000000} ${memoryInfo.lowMemory} ${memoryInfo.availMem/1000000} ${memoryInfo.totalMem/1000000}")
@@ -225,8 +224,8 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
             return jsonList
         } catch (exception: OutOfMemoryError) {
             list.clear()
+            return oomList
         }
-        return mutableListOf()
     }
 
     override fun addViewIdExclude(id: String) {
