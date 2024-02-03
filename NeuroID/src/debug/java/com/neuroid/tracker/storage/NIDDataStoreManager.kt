@@ -13,6 +13,7 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
+import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +23,7 @@ import org.json.JSONObject
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
     fun getAllEvents(): Set<String>
-    fun getAllEventsList(): List<String>
+    fun getAllEventsList(): List<JSONObject>
     fun addViewIdExclude(id: String)
     fun clearEvents()
     fun resetJsonPayload()
@@ -40,7 +41,7 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
     var activityManager: ActivityManager? = null
     var bufferSize = 0
-    val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getOwnJson())
+    val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getJSONObject())
 
     fun init(context: Context) {
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -135,11 +136,11 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     override fun getAllEvents(): Set<String> {
         val previousEventsList = eventsList
         clearEvents()
-        return toJsonList(previousEventsList).toSet()
+        return toJsonList(previousEventsList).map{it.toString()}.toSet()
     }
 
     @Synchronized
-    override fun getAllEventsList(): List<String> {
+    override fun getAllEventsList(): List<JSONObject> {
         val previousEventsList = eventsList
         clearEvents()
         return toJsonList(previousEventsList)
@@ -219,9 +220,9 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         return memoryInfo
     }
 
-    private fun toJsonList(list: MutableList<NIDEventModel>): List<String> {
+    private fun toJsonList(list: MutableList<NIDEventModel>): List<JSONObject> {
         try {
-            val jsonList = mutableListOf<String>()
+            val jsonList = mutableListOf<JSONObject>()
             while (!list.isEmpty()) {
                 val event = list.removeAt(0)
                 event.accel?.let {
@@ -237,7 +238,8 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 if (event.type == "CREATE_SESSION" && event.url == "") {
                     event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
                 }
-                jsonList.add(event.getOwnJson())            }
+                jsonList.add(event.getJSONObject())
+            }
             return jsonList
         } catch (exception: OutOfMemoryError) {
             list.clear()
