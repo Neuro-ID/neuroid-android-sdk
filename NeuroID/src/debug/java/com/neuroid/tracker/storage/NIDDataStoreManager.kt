@@ -30,14 +30,14 @@ interface NIDDataStoreManager {
 }
 
 fun initDataStoreCtx(context: Context) {
-    NIDDataStoreManagerInMemory.init(context)
+    NIDDataStoreManagerImp.init(context)
 }
 
 fun getDataStoreInstance(): NIDDataStoreManager {
-    return NIDDataStoreManagerInMemory
+    return NIDDataStoreManagerImp
 }
 
-private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
+private object NIDDataStoreManagerImp: NIDDataStoreManager {
     var activityManager: ActivityManager? = null
     var bufferSize = 0
     val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getOwnJson())
