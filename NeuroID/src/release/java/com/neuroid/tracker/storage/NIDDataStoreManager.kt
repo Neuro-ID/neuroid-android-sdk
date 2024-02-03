@@ -134,7 +134,7 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         }
         NIDLog.d(
             Constants.debugEventTag.displayName,
-            "EVENT: ${event.type} - ${event.tgs} - $contextString"
+            "Event: ${event.type} - ${event.tgs} - $contextString"
         )
 
         if (NIDJobServiceManager.userActive.not()) {
