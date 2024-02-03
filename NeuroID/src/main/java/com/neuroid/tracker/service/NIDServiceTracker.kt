@@ -51,7 +51,7 @@ object NIDServiceTracker {
             event.getLong("ts")
         } ?: getDataStoreInstance().getAllEventsList()
 
-        if (listEvents.isEmpty().not()) {
+        if (listEvents.isNotEmpty()) {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
 

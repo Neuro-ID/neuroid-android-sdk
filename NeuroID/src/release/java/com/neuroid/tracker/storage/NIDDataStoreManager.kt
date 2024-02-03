@@ -56,6 +56,10 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
+
+        // TODO: this got dropped!!!!!
+        // if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
+
         if (eventsList.isNotEmpty() &&
             (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
             return
@@ -92,6 +96,15 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         }
 
         eventsList.add(event)
+
+        if (NIDJobServiceManager.userActive.not()) {
+            NIDJobServiceManager.userActive = true
+            NIDJobServiceManager.restart()
+        }
+
+        if (listNonActiveEvents.contains(event.type)) {
+            NIDTimerActive.restartTimerActive()
+        }
 
         // for debug
         var contextString: String? = ""
@@ -135,15 +148,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
             Constants.debugEventTag.displayName,
             "Event: ${event.type} - ${event.tgs} - $contextString"
         )
-
-        if (NIDJobServiceManager.userActive.not()) {
-            NIDJobServiceManager.userActive = true
-            NIDJobServiceManager.restart()
-        }
-
-        if (listNonActiveEvents.contains(event.type)) {
-            NIDTimerActive.restartTimerActive()
-        }
 
         when (event.type) {
             BLUR -> {
