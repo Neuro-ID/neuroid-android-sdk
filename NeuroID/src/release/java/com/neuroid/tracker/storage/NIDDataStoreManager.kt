@@ -194,6 +194,61 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         clearEvents()
     }
 
+    @Synchronized
+    override fun getJsonPayload(context: Context): String {
+        val listEvents = eventsList.map { e -> e.getOwnJson() }
+        return createPayload(listEvents, context)
+    }
+
+    private fun createPayload(listEvents: List<String>, context: Context): String {
+        if (listEvents.isEmpty()) {
+            return ""
+        } else {
+            val listJson = listEvents.map {
+                if (it.contains("\"CREATE_SESSION\"")) {
+                    JSONObject(
+                        it.replace(
+                            "\"url\":\"\"",
+                            "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
+                        )
+                    )
+                } else {
+                    JSONObject(it)
+                }
+            }
+
+            val jsonListEvents = JSONArray(listJson)
+
+            return getContentJson(context, jsonListEvents)
+                .replace("\\/", "/")
+        }
+    }
+
+    private fun getContentJson(
+        context: Context,
+        events: JSONArray
+    ): String {
+        val sharedDefaults = NIDSharedPrefsDefaults(context)
+
+        val jsonBody = JSONObject().apply {
+            put("siteId", NIDServiceTracker.siteId)
+            put("userId", sharedDefaults.getUserId())
+            put("clientId", sharedDefaults.getClientId())
+            put("identityId", sharedDefaults.getUserId())
+            put("pageTag", NIDServiceTracker.screenActivityName)
+            put("pageId", NIDServiceTracker.rndmId)
+            put("tabId", NIDServiceTracker.rndmId)
+            put("responseId", sharedDefaults.generateUniqueHexId())
+            put("url", "$ANDROID_URI${NIDServiceTracker.screenActivityName}")
+            put("jsVersion", "5.0.0")
+            put("sdkVersion", NIDVersion.getSDKVersion())
+            put("environment", NIDServiceTracker.environment)
+            put("jsonEvents", events)
+        }
+
+        return jsonBody.toString()
+    }
+
     private fun getMemInfo(): MemoryInfo {
         val memoryInfo = MemoryInfo()
         // check the memory check cost
@@ -232,9 +287,5 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         if (listIdsExcluded.none { it == id }) {
             listIdsExcluded.add(id)
         }
-    }
-
-    override fun getJsonPayload(context: Context): String {
-        TODO("Not yet implemented")
     }
 }
