@@ -57,97 +57,56 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
 
-        // TODO: this got dropped!!!!!
-        // if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
+        if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
 
-        if (eventsList.isNotEmpty() &&
-            (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
-            return
-        }
-        val memInfo = getMemInfo()
-        if (memInfo.lowMemory) {
-            val metadataObj = JSONObject()
-            metadataObj.put("isLowMemory", memInfo.lowMemory)
-            metadataObj.put("total", memInfo.totalMem)
-            metadataObj.put("available", memInfo.availMem)
-            metadataObj.put("threshold", memInfo.threshold)
-            val attrJSON = JSONArray().put(metadataObj)
-            eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
+            if (eventsList.isNotEmpty() &&
+                (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
+                return
+            }
+            val memInfo = getMemInfo()
+            if (memInfo.lowMemory) {
+                val metadataObj = JSONObject()
+                metadataObj.put("isLowMemory", memInfo.lowMemory)
+                metadataObj.put("total", memInfo.totalMem)
+                metadataObj.put("available", memInfo.availMem)
+                metadataObj.put("threshold", memInfo.threshold)
+                val attrJSON = JSONArray().put(metadataObj)
+                eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
 
-            return
-        }
-        if (eventsList.size > 2000) {
-            val metadataObj = JSONObject()
-            metadataObj.put("isLowMemory", memInfo.lowMemory)
-            metadataObj.put("total", memInfo.totalMem)
-            metadataObj.put("available", memInfo.availMem)
-            metadataObj.put("threshold", memInfo.threshold)
-            val attrJSON = JSONArray().put(metadataObj)
-            eventsList.add(generateEvent(FULL_BUFFER, attrJSON))
-            return
-        }
-        println("kurt_test: events count: ${eventsList.size}")
-        bufferSize += event.getOwnJson().length
-        println("kurt_test bufferSize: $bufferSize")
-        println("-----------------")
-        if (!listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-            // this event has been excluded and should not be saved
-            return
-        }
+                return
+            }
+            if (eventsList.size > 2000) {
+                val metadataObj = JSONObject()
+                metadataObj.put("isLowMemory", memInfo.lowMemory)
+                metadataObj.put("total", memInfo.totalMem)
+                metadataObj.put("available", memInfo.availMem)
+                metadataObj.put("threshold", memInfo.threshold)
+                val attrJSON = JSONArray().put(metadataObj)
+                eventsList.add(generateEvent(FULL_BUFFER, attrJSON))
+                return
+            }
+            println("kurt_test: events count: ${eventsList.size}")
+            bufferSize += event.getOwnJson().length
+            println("kurt_test bufferSize: $bufferSize")
+            println("-----------------")
+            if (!listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
+                // this event has been excluded and should not be saved
+                return
+            }
 
-        eventsList.add(event)
+            eventsList.add(event)
 
-        if (NIDJobServiceManager.userActive.not()) {
-            NIDJobServiceManager.userActive = true
-            NIDJobServiceManager.restart()
+            if (NIDJobServiceManager.userActive.not()) {
+                NIDJobServiceManager.userActive = true
+                NIDJobServiceManager.restart()
+            }
+
+            if (listNonActiveEvents.contains(event.type)) {
+                NIDTimerActive.restartTimerActive()
+            }
+
+            logEvent(event)
         }
-
-        if (listNonActiveEvents.contains(event.type)) {
-            NIDTimerActive.restartTimerActive()
-        }
-
-        // for debug
-        var contextString: String? = ""
-        when (event.type) {
-            SET_USER_ID -> contextString = "uid=${event.uid}"
-            CREATE_SESSION -> contextString =
-                "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
-            APPLICATION_SUBMIT -> contextString = ""
-            TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
-            "SET_CHECKPOINT" -> contextString = ""
-            "STATE_CHANGE" -> contextString = event.url ?: ""
-            KEY_UP -> contextString = "tg=${event.tg}"
-            KEY_DOWN -> contextString = "tg=${event.tg}"
-            INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
-            FOCUS -> contextString = ""
-            BLUR -> contextString = ""
-            MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
-            "CLICK" -> contextString = ""
-            REGISTER_TARGET -> contextString =
-                "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
-            "DEREGISTER_TARGET" -> contextString = ""
-            TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
-            TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
-            TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
-            CLOSE_SESSION -> contextString = ""
-            "SET_VARIABLE" -> contextString = event.v ?: ""
-            CUT -> contextString = ""
-            COPY -> contextString = ""
-            PASTE -> contextString = ""
-            WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
-            SELECT_CHANGE -> contextString = "tg=${event.tg}"
-            WINDOW_LOAD -> contextString = "meta=${event.metadata}"
-            WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
-            WINDOW_BLUR -> contextString = "meta=${event.metadata}"
-            WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
-            CONTEXT_MENU -> contextString = "meta=${event.metadata}"
-            else -> {}
-        }
-
-        NIDLog.d(
-            Constants.debugEventTag.displayName,
-            "Event: ${event.type} - ${event.tgs} - $contextString"
-        )
 
         when (event.type) {
             BLUR -> {
@@ -290,5 +249,50 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         if (listIdsExcluded.none { it == id }) {
             listIdsExcluded.add(id)
         }
+    }
+
+    private fun logEvent(event: NIDEventModel) {
+        // for debug
+        var contextString: String? = ""
+        when (event.type) {
+            SET_USER_ID -> contextString = "uid=${event.uid}"
+            CREATE_SESSION -> contextString =
+                "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+            APPLICATION_SUBMIT -> contextString = ""
+            TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
+            "SET_CHECKPOINT" -> contextString = ""
+            "STATE_CHANGE" -> contextString = event.url ?: ""
+            KEY_UP -> contextString = "tg=${event.tg}"
+            KEY_DOWN -> contextString = "tg=${event.tg}"
+            INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
+            FOCUS -> contextString = ""
+            BLUR -> contextString = ""
+            MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
+            "CLICK" -> contextString = ""
+            REGISTER_TARGET -> contextString =
+                "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
+            "DEREGISTER_TARGET" -> contextString = ""
+            TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
+            TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
+            TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
+            CLOSE_SESSION -> contextString = ""
+            "SET_VARIABLE" -> contextString = event.v ?: ""
+            CUT -> contextString = ""
+            COPY -> contextString = ""
+            PASTE -> contextString = ""
+            WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
+            SELECT_CHANGE -> contextString = "tg=${event.tg}"
+            WINDOW_LOAD -> contextString = "meta=${event.metadata}"
+            WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
+            WINDOW_BLUR -> contextString = "meta=${event.metadata}"
+            WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
+            CONTEXT_MENU -> contextString = "meta=${event.metadata}"
+            else -> {}
+        }
+
+        NIDLog.d(
+            Constants.debugEventTag.displayName,
+            "Event: ${event.type} - ${event.tgs} - $contextString"
+        )
     }
 }
