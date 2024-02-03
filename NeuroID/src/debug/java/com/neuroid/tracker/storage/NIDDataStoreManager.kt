@@ -99,6 +99,7 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
             SET_USER_ID -> contextString = "uid=${event.uid}"
             CREATE_SESSION -> contextString =
                 "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+
             APPLICATION_SUBMIT -> contextString = ""
             TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
             "SET_CHECKPOINT" -> contextString = ""
@@ -112,6 +113,7 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
             "CLICK" -> contextString = ""
             REGISTER_TARGET -> contextString =
                 "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
+
             "DEREGISTER_TARGET" -> contextString = ""
             TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
             TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
@@ -130,7 +132,6 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
             CONTEXT_MENU -> contextString = "meta=${event.metadata}"
             else -> {}
         }
-
         NIDLog.d(
             Constants.debugEventTag.displayName,
             "Event: ${event.type} - ${event.tgs} - $contextString"
