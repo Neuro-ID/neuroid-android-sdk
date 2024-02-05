@@ -71,7 +71,8 @@ object NIDServiceTracker {
             val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
             val stopLoopService = listEvents.last().get("type") == USER_INACTIVE
-            NIDLog.d("NeuroID", "payload Json::: $data")
+
+            NIDLog.d("NeuroID", "payload: ${listEvents.size} events; ${data.length} bytes")
 
             var retryAttempts = 0
             while (retryAttempts < MAX_RETRY_ATTEMPTS) {

@@ -3,6 +3,7 @@ package com.neuroid.tracker.storage
 import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.content.Context
+import com.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -40,7 +41,8 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
     var activityManager: ActivityManager? = null
-    var bufferSize = 0
+
+    // a static result to return if OOM condition is encountered
     val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getJSONObject())
 
     fun init(context: Context) {
@@ -84,10 +86,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 eventsList.add(generateEvent(FULL_BUFFER, attrJSON))
                 return
             }
-            if (!listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-                // this event has been excluded and should not be saved
-                return
-            }
 
             eventsList.add(event)
 
@@ -96,7 +94,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 NIDJobServiceManager.restart()
             }
 
-            if (listNonActiveEvents.contains(event.type)) {
+            if (!listNonActiveEvents.contains(event.type)) {
                 NIDTimerActive.restartTimerActive()
             }
 
@@ -115,8 +113,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 }
             }
         }
-
-        NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
     }
 
     fun generateEvent(type: String, attrJSON: JSONArray ) =
@@ -130,7 +126,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     override fun getAllEvents(): Set<String> {
         val previousEventsList = eventsList
         clearEvents()
-
         return toJsonList(previousEventsList).map{it.toString()}.toSet()
     }
 
@@ -144,7 +139,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     @Synchronized
     override fun clearEvents() {
         eventsList = mutableListOf<NIDEventModel>()
-        bufferSize = 0
     }
 
     @Synchronized
@@ -249,6 +243,12 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     }
 
     private fun logEvent(event: NIDEventModel) {
+        NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
+
+        if (!BuildConfig.DEBUG) {
+            return
+        }
+
         // for debug
         var contextString: String? = ""
         when (event.type) {

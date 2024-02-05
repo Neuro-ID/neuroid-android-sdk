@@ -13,7 +13,6 @@ import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
