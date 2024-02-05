@@ -40,6 +40,9 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 }
 
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
+
+    const val EVENT_BUFFER_MAX_COUNT = 2000
+
     var activityManager: ActivityManager? = null
 
     // a static result to return if OOM condition is encountered
@@ -65,26 +68,9 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
                 return
             }
-            val memInfo = getMemInfo()
-            if (memInfo.lowMemory) {
-                val metadataObj = JSONObject()
-                metadataObj.put("isLowMemory", memInfo.lowMemory)
-                metadataObj.put("total", memInfo.totalMem)
-                metadataObj.put("available", memInfo.availMem)
-                metadataObj.put("threshold", memInfo.threshold)
-                val attrJSON = JSONArray().put(metadataObj)
-                eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
 
-                return
-            }
-            if (eventsList.size > 2000) {
-                val metadataObj = JSONObject()
-                metadataObj.put("isLowMemory", memInfo.lowMemory)
-                metadataObj.put("total", memInfo.totalMem)
-                metadataObj.put("available", memInfo.availMem)
-                metadataObj.put("threshold", memInfo.threshold)
-                val attrJSON = JSONArray().put(metadataObj)
-                eventsList.add(generateEvent(FULL_BUFFER, attrJSON))
+            if (eventsList.size > EVENT_BUFFER_MAX_COUNT) {
+                eventsList.add(generateEvent(FULL_BUFFER, JSONArray().put(JSONObject())))
                 return
             }
 
@@ -124,11 +110,31 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         )
 
     override fun getAllEvents(): Set<String> {
+        val memInfo = getMemInfo()
+        if (memInfo.lowMemory) {
+            val metadataObj = JSONObject()
+            metadataObj.put("isLowMemory", memInfo.lowMemory)
+            metadataObj.put("total", memInfo.totalMem)
+            metadataObj.put("available", memInfo.availMem)
+            metadataObj.put("threshold", memInfo.threshold)
+            val attrJSON = JSONArray().put(metadataObj)
+            eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
+        }
         val previousEventsList = swapEvents()
         return toJsonList(previousEventsList).map{it.toString()}.toSet()
     }
 
     override fun getAllEventsList(): List<JSONObject> {
+        val memInfo = getMemInfo()
+        if (memInfo.lowMemory) {
+            val metadataObj = JSONObject()
+            metadataObj.put("isLowMemory", memInfo.lowMemory)
+            metadataObj.put("total", memInfo.totalMem)
+            metadataObj.put("available", memInfo.availMem)
+            metadataObj.put("threshold", memInfo.threshold)
+            val attrJSON = JSONArray().put(metadataObj)
+            eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
+        }
         val previousEventsList = swapEvents()
         return toJsonList(previousEventsList)
     }
