@@ -57,5 +57,6 @@ const val RATING_BAR_CHANGE = "RATING_BAR_CHANGE"
 const val CONTEXT_MENU = "CONTEXT_MENU"
 const val LOW_MEMORY = "LOW_MEMORY"
 const val FULL_BUFFER = "FULL_BUFFER"
+const val OUT_OF_MEMORY = "OUT_OF_MEMORY"
 
 const val ANDROID_URI ="android://"

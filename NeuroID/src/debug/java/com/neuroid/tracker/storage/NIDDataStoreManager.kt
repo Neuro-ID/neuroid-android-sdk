@@ -45,7 +45,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     var activityManager: ActivityManager? = null
 
     // a static result to return if OOM condition is encountered
-    val oomList = listOf(NIDEventModel(type="oom", ts=System.currentTimeMillis()).getJSONObject())
+    val oomList = listOf(NIDEventModel(type=OUT_OF_MEMORY, ts=System.currentTimeMillis()).getJSONObject())
 
     fun init(context: Context) {
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
