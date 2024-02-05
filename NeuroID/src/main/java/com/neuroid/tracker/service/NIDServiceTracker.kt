@@ -46,12 +46,10 @@ object NIDServiceTracker {
         context: Application,
         events: Set<String>? = null
     ): Pair<Int, Boolean> {
-        val listEvents = events?.sortedBy {
-            val event = JSONObject(it)
-            event.getLong("ts")
-        } ?: getDataStoreInstance().getAllEventsList()
+        val listEvents = events?.map{JSONObject(it)}?.sortedBy{it.getLong("ts")}
+            ?: getDataStoreInstance().getAllEventsList()
 
-        if (listEvents.isEmpty().not()) {
+        if (listEvents.isNotEmpty()) {
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
             // Allow for override of this URL in config
 
@@ -68,13 +66,11 @@ object NIDServiceTracker {
                 "application/json"
             )
 
-            val listJson = listEvents.map {JSONObject(it)}
-
-            val jsonListEvents = JSONArray(listJson)
+            val jsonListEvents = JSONArray(listEvents)
 
             val data = getContentJson(context, jsonListEvents)
                 .replace("\\/", "/")
-            val stopLoopService = listEvents.last().contains(USER_INACTIVE)
+            val stopLoopService = listEvents.last().get("type") == USER_INACTIVE
             NIDLog.d("NeuroID", "payload Json::: $data")
 
             var retryAttempts = 0

@@ -42,6 +42,5 @@ class MyApplicationDemo : MultiDexApplication() {
 
         NeuroID.getInstance()?.start()
         NeuroID.getInstance()?.setUserID(configHelper.userId)
-
     }
 }
