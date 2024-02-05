@@ -55,6 +55,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     )
     private val listIdsExcluded = arrayListOf<String>()
 
+    // buffer of captured events, all accesses must be synchronized
     private var eventsList = mutableListOf<NIDEventModel>()
 
     @Synchronized
@@ -122,28 +123,32 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
             attrs = attrJSON
         )
 
-    @Synchronized
     override fun getAllEvents(): Set<String> {
-        val previousEventsList = eventsList
-        clearEvents()
+        val previousEventsList = swapEvents()
         return toJsonList(previousEventsList).map{it.toString()}.toSet()
     }
 
-    @Synchronized
     override fun getAllEventsList(): List<JSONObject> {
-        val previousEventsList = eventsList
-        clearEvents()
+        val previousEventsList = swapEvents()
         return toJsonList(previousEventsList)
     }
 
-    @Synchronized
     override fun clearEvents() {
-        eventsList = mutableListOf<NIDEventModel>()
+        swapEvents()
     }
 
+    /**
+     * Synchronize the fetching of the current event list and its replacement with a new event list.
+     */
     @Synchronized
+    private fun swapEvents(): MutableList<NIDEventModel> {
+        val previousEventsList = eventsList
+        eventsList = mutableListOf<NIDEventModel>()
+        return previousEventsList
+    }
+
     override fun resetJsonPayload() {
-        clearEvents()
+        swapEvents()
     }
 
     @Synchronized
@@ -236,6 +241,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         }
     }
 
+    @Synchronized
     override fun addViewIdExclude(id: String) {
         if (listIdsExcluded.none { it == id }) {
             listIdsExcluded.add(id)
