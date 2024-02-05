@@ -51,7 +51,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
-        WINDOW_BLUR
+        WINDOW_BLUR //Block screen
     )
     private val listIdsExcluded = arrayListOf<String>()
 
