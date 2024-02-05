@@ -50,6 +50,8 @@ object NIDSensorHelper {
     }
 
     fun restartSensors() {
+        // need to unregister the listeners before restarting the sensors.
+        stopSensors()
         listener = NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {

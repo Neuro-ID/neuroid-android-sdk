@@ -82,10 +82,6 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
             eventsList.add(generateEvent(FULL_BUFFER, attrJSON))
             return
         }
-        println("kurt_test: events count: ${eventsList.size}")
-        bufferSize += event.getOwnJson().length
-        println("kurt_test bufferSize: $bufferSize")
-        println("-----------------")
         if (!listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
             // this event has been excluded and should not be saved
             return
@@ -198,12 +194,12 @@ private object NIDDataStoreManagerInMemory: NIDDataStoreManager {
         val memoryInfo = MemoryInfo()
         // check the memory check cost
         activityManager?.getMemoryInfo(memoryInfo)
-        println("kurt_test memory: ${memoryInfo.threshold/1000000} ${memoryInfo.lowMemory} ${memoryInfo.availMem/1000000} ${memoryInfo.totalMem/1000000}")
         return memoryInfo
     }
 
     private fun toJsonList(list: MutableList<NIDEventModel>): List<String> {
         try {
+            NIDSensorHelper.restartSensors()
             val jsonList = mutableListOf<String>()
             while (!list.isEmpty()) {
                 val event = list.removeAt(0)
