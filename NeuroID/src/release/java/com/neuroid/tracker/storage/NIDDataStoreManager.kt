@@ -41,7 +41,7 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
-    const val EVENT_BUFFER_MAX_COUNT = 2000
+    const val EVENT_BUFFER_MAX_COUNT = 1999
 
     var activityManager: ActivityManager? = null
 
