@@ -84,6 +84,9 @@ class NeuroID private constructor(
                 NIDServiceTracker.environment = "TEST"
             }
         }
+        // set call activity listener
+        nidCallActivityListener = NIDCallActivityListener()
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
     }
 
     @Synchronized
@@ -462,10 +465,6 @@ class NeuroID private constructor(
         }
         dataStore.saveAndClearAllQueuedEvents()
 
-        // set call activity listener
-        nidCallActivityListener = NIDCallActivityListener()
-        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
-
         return true
     }
 
@@ -654,10 +653,6 @@ class NeuroID private constructor(
         // if a sessionID was not passed in
         finalSessionID = getUserID()
 
-        // set call activity listener
-        nidCallActivityListener = NIDCallActivityListener()
-        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
-
         return SessionStartResult(true, finalSessionID)
     }
 
@@ -763,10 +758,8 @@ class NeuroID private constructor(
                 type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
             )
         )
-
         pauseCollection()
         clearSessionVariables()
-        nidCallActivityListener?.unregisterCallActivityListener(getApplicationContext())
         return true
     }
 }
