@@ -1,7 +1,5 @@
 package com.neuroid.tracker.storage
 
-import android.app.ActivityManager
-import android.app.ActivityManager.MemoryInfo
 import android.content.Context
 import com.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.NeuroID
@@ -32,7 +30,6 @@ interface NIDDataStoreManager {
 }
 
 fun initDataStoreCtx(context: Context) {
-    NIDDataStoreManagerImp.init(context)
 }
 
 fun getDataStoreInstance(): NIDDataStoreManager {
@@ -41,15 +38,6 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
     const val EVENT_BUFFER_MAX_COUNT = 1999
-
-    var activityManager: ActivityManager? = null
-
-    // a static result to return if OOM condition is encountered
-    val oomList = listOf(NIDEventModel(type=OUT_OF_MEMORY, ts=System.currentTimeMillis()).getJSONObject())
-
-    fun init(context: Context) {
-        activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    }
 
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
@@ -63,17 +51,18 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
         if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-            if (eventsList.isNotEmpty() &&
-                (eventsList.last().type == LOW_MEMORY || eventsList.last().type == FULL_BUFFER)) {
-                return
-            }
+            val lastEventType = if (eventsList.isEmpty()) { "" } else { eventsList.last().type }
 
-            if (eventsList.size > EVENT_BUFFER_MAX_COUNT) {
-                eventsList.add(generateEvent(FULL_BUFFER, JSONArray().put(JSONObject())))
-                return
+            if (lastEventType == LOW_MEMORY || lastEventType == FULL_BUFFER) {
+                // no new events should be captured, drop the new event
+            } else if (eventsList.size > EVENT_BUFFER_MAX_COUNT) {
+                // add a full buffer event and drop the new event
+                eventsList.add(NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()))
+            } else {
+                // capture the event
+                eventsList.add(event)
+                logEvent(event)
             }
-
-            eventsList.add(event)
 
             if (NIDJobServiceManager.userActive.not()) {
                 NIDJobServiceManager.userActive = true
@@ -83,8 +72,6 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
             if (!listNonActiveEvents.contains(event.type)) {
                 NIDTimerActive.restartTimerActive()
             }
-
-            logEvent(event)
         }
 
         when (event.type) {
@@ -101,39 +88,15 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         }
     }
 
-    fun generateEvent(type: String, attrJSON: JSONArray ) =
-        NIDEventModel(
-            type = type,
-            ts = System.currentTimeMillis(),
-            attrs = attrJSON
-        )
-
     override fun getAllEvents(): Set<String> {
-        val memInfo = getMemInfo()
-        if (memInfo.lowMemory) {
-            val metadataObj = JSONObject()
-            metadataObj.put("isLowMemory", memInfo.lowMemory)
-            metadataObj.put("total", memInfo.totalMem)
-            metadataObj.put("available", memInfo.availMem)
-            metadataObj.put("threshold", memInfo.threshold)
-            val attrJSON = JSONArray().put(metadataObj)
-            eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
-        }
         val previousEventsList = swapEvents()
         return toJsonList(previousEventsList).map{it.toString()}.toSet()
     }
 
+    /**
+     * Return the currently captured events, resetting the eventList to a new empty list.
+     */
     override fun getAllEventsList(): List<JSONObject> {
-        val memInfo = getMemInfo()
-        if (memInfo.lowMemory) {
-            val metadataObj = JSONObject()
-            metadataObj.put("isLowMemory", memInfo.lowMemory)
-            metadataObj.put("total", memInfo.totalMem)
-            metadataObj.put("available", memInfo.availMem)
-            metadataObj.put("threshold", memInfo.threshold)
-            val attrJSON = JSONArray().put(metadataObj)
-            eventsList.add(generateEvent(LOW_MEMORY, attrJSON))
-        }
         val previousEventsList = swapEvents()
         return toJsonList(previousEventsList)
     }
@@ -211,39 +174,30 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         return jsonBody.toString()
     }
 
-    private fun getMemInfo(): MemoryInfo {
-        val memoryInfo = MemoryInfo()
-        // check the memory check cost
-        activityManager?.getMemoryInfo(memoryInfo)
-        return memoryInfo
-    }
-
+    /**
+     * Convert a list of NIDEventModel to a list of JSONObject.  The provided list will be cleared
+     * during the conversion.  Where necessary, events are updated to fill in missing values.
+     */
     private fun toJsonList(list: MutableList<NIDEventModel>): List<JSONObject> {
-        try {
-            NIDSensorHelper.restartSensors()
-            val jsonList = mutableListOf<JSONObject>()
-            while (!list.isEmpty()) {
-                val event = list.removeAt(0)
-                event.accel?.let {
-                    it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
-                    it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
-                    it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
-                }
-                event.gyro?.let {
-                    it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
-                    it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
-                    it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
-                }
-                if (event.type == "CREATE_SESSION" && event.url == "") {
-                    event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
-                }
-                jsonList.add(event.getJSONObject())
+        val jsonList = mutableListOf<JSONObject>()
+        while (list.isNotEmpty()) {
+            val event = list.removeAt(0)
+            event.accel?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
             }
-            return jsonList
-        } catch (exception: OutOfMemoryError) {
-            list.clear()
-            return oomList
+            event.gyro?.let {
+                it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
+                it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
+                it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
+            }
+            if (event.type == "CREATE_SESSION" && event.url == "") {
+                event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
+            }
+            jsonList.add(event.getJSONObject())
         }
+        return jsonList
     }
 
     @Synchronized
@@ -253,6 +207,9 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         }
     }
 
+    /**
+     * Debug logging for captured events.
+     */
     private fun logEvent(event: NIDEventModel) {
         NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
 
