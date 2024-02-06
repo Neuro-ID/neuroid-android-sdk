@@ -13,6 +13,7 @@ import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
+import com.neuroid.tracker.events.CallInProgress
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -32,6 +33,13 @@ class NIDCallActivityListener : BroadcastReceiver() {
             context.registerReceiver(this, intentFilter)
         } else {
             NIDLog.d(msg = "Permission to listen to call status not found")
+            getDataStoreInstance().saveEvent(
+                NIDEventModel(
+                    type = CALL_IN_PROGRESS,
+                    cp = CallInProgress.UNAUTHORIZED.state,
+                    ts = System.currentTimeMillis()
+                )
+            )
         }
     }
 
@@ -43,7 +51,7 @@ class NIDCallActivityListener : BroadcastReceiver() {
     }
 
     fun unregisterCallActivityListener(context: Context?) {
-        if (isReceiverRegistered){
+        if (isReceiverRegistered) {
             context?.unregisterReceiver(this)
         }
     }
@@ -57,23 +65,23 @@ fun registerCustomTelephonyCallback(context: Context) {
             context.mainExecutor, CustomTelephonyCallback(object : CallBack {
                 override fun callStateChanged(state: Int) {
                     when (state) {
-                    // No activity
+                        // No activity
                         0 -> {
                             getDataStoreInstance().saveEvent(
                                 NIDEventModel(
                                     type = CALL_IN_PROGRESS,
-                                    cp = false,
+                                    cp = CallInProgress.INACTIVE.state,
                                     ts = System.currentTimeMillis()
                                 )
                             )
                         }
-                    //  At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
+                        //  At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                         2 -> {
                             NIDLog.d(msg = "Call in progress")
                             getDataStoreInstance().saveEvent(
                                 NIDEventModel(
                                     type = CALL_IN_PROGRESS,
-                                    cp = true,
+                                    cp = CallInProgress.ACTIVE.state,
                                     ts = System.currentTimeMillis()
                                 )
                             )
@@ -90,7 +98,9 @@ fun registerCustomTelephonyCallback(context: Context) {
                     TelephonyManager.CALL_STATE_IDLE -> {
                         getDataStoreInstance().saveEvent(
                             NIDEventModel(
-                                type = CALL_IN_PROGRESS, cp = false, ts = System.currentTimeMillis()
+                                type = CALL_IN_PROGRESS,
+                                cp = CallInProgress.INACTIVE.state,
+                                ts = System.currentTimeMillis()
                             )
                         )
                     }
@@ -100,7 +110,9 @@ fun registerCustomTelephonyCallback(context: Context) {
                         NIDLog.d(msg = "Call in progress")
                         getDataStoreInstance().saveEvent(
                             NIDEventModel(
-                                type = CALL_IN_PROGRESS, cp = true, ts = System.currentTimeMillis()
+                                type = CALL_IN_PROGRESS,
+                                cp = CallInProgress.ACTIVE.state,
+                                ts = System.currentTimeMillis()
                             )
                         )
 

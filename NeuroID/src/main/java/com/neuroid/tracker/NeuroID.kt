@@ -465,6 +465,8 @@ class NeuroID private constructor(
         }
         dataStore.saveAndClearAllQueuedEvents()
 
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
         return true
     }
 
@@ -644,6 +646,8 @@ class NeuroID private constructor(
             createSession()
             saveIntegrationHealthEvents()
         }
+
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
 
         resumeCollection()
 

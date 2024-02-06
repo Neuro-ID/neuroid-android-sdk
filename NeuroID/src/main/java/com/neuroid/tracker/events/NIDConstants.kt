@@ -67,3 +67,9 @@ const val NID_ORIGIN_CUSTOMER_SET = "customer"
 const val NID_ORIGIN_CODE_FAIL = "400"
 const val NID_ORIGIN_CODE_NID = "200"
 const val NID_ORIGIN_CODE_CUSTOMER = "201"
+
+enum class CallInProgress(val state: String){
+    ACTIVE("true"),
+    INACTIVE("false"),
+    UNAUTHORIZED("unauthorized")
+}
