@@ -760,6 +760,7 @@ class NeuroID private constructor(
         )
         pauseCollection()
         clearSessionVariables()
+        nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
         return true
     }
 }
