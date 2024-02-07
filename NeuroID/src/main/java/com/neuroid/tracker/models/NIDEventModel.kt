@@ -46,7 +46,7 @@ data class NIDEventModel(
     val p: String? = null,
     val dnt: Boolean? = null,
     val tch: Boolean? = null,
-    var url: String? = null,
+    val url: String? = null,
     val ns: String? = null,
     val jsl: List<String>? = null,
     val jsv: String? = null,
@@ -151,9 +151,9 @@ data class NIDEventModel(
 }
 
 data class NIDSensorModel(
-    var x: Float?,
-    var y: Float?,
-    var z: Float?
+    val x: Float?,
+    val y: Float?,
+    val z: Float?
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()
