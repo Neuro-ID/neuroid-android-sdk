@@ -282,7 +282,7 @@ class NeuroID private constructor(
     fun stop() {
         this.isSDKStarted = false
         CoroutineScope(Dispatchers.IO).launch {
-            NIDJobServiceManager.sendEventsNow(true)
+            NIDJobServiceManager.sendEvents(true)
             NIDJobServiceManager.stopJob()
             saveIntegrationHealthEvents()
         }

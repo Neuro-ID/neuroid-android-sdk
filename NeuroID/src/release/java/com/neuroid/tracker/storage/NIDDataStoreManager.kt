@@ -78,14 +78,10 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
         when (event.type) {
             BLUR -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    NIDJobServiceManager.sendEventsNow()
-                }
+                NIDJobServiceManager.sendEvents()
             }
             CLOSE_SESSION -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    NIDJobServiceManager.sendEventsNow(true)
-                }
+                NIDJobServiceManager.sendEvents(true)
             }
         }
     }

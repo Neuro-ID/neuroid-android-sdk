@@ -13,9 +13,6 @@ import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -78,14 +75,10 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
         when (event.type) {
             BLUR -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    NIDJobServiceManager.sendEventsNow()
-                }
+                NIDJobServiceManager.sendEvents()
             }
             CLOSE_SESSION -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    NIDJobServiceManager.sendEventsNow(true)
-                }
+                NIDJobServiceManager.sendEvents(true)
             }
         }
     }
