@@ -6,6 +6,7 @@ import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.LOW_MEMORY
+import com.neuroid.tracker.events.OUT_OF_MEMORY
 import com.neuroid.tracker.events.USER_INACTIVE
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.models.NIDEventModel
@@ -55,7 +56,7 @@ object NIDServiceTracker {
         initializeStaticPayload(context)
 
         var data = ""
-        var stopLoopService = false;
+        var stopLoopService = false
 
         try {
             val listEvents = getEvents(context, events)
@@ -159,7 +160,7 @@ object NIDServiceTracker {
                 JSONArray(
                     listOf(
                         NIDEventModel(
-                            type = "OUT_OF_MEMORY",
+                            type = OUT_OF_MEMORY,
                             ts = System.currentTimeMillis()
                         ).getJSONObject()
                     )

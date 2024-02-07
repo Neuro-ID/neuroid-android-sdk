@@ -195,7 +195,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
                 it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
                 it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
             }
-            if (event.type == "CREATE_SESSION" && event.url == "") {
+            if (event.type == CREATE_SESSION && event.url == "") {
                 event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
             }
             jsonList.add(event.getJSONObject())
