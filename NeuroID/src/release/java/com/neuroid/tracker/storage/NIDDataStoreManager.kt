@@ -181,20 +181,44 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
     private fun toJsonList(list: MutableList<NIDEventModel>): List<JSONObject> {
         val jsonList = mutableListOf<JSONObject>()
         while (list.isNotEmpty()) {
-            val event = list.removeAt(0)
-            event.accel?.let {
-                it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
-                it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY
-                it.z = it.z ?:NIDSensorHelper.valuesAccel.axisZ
+            var event = list.removeAt(0)
+
+            var updateEvent = false
+
+            // if the accelerometer values are null, use the current values
+            var accel = event.accel
+            accel?.let {
+                if (it.x == null && it.y == null && it.z == null) {
+                    updateEvent = true
+                    accel = NIDSensorHelper.getAccelerometerInfo()
+                }
             }
-            event.gyro?.let {
-                it.x = it.x ?: NIDSensorHelper.valuesGyro.axisX
-                it.y = it.y ?: NIDSensorHelper.valuesGyro.axisY
-                it.z = it.z ?:NIDSensorHelper.valuesGyro.axisZ
+
+            // if the gyro values are null, use the current values
+            var gyro = event.gyro
+            gyro?.let {
+                if (it.x == null && it.y == null && it.z == null) {
+                    updateEvent = true
+                    gyro = NIDSensorHelper.getGyroscopeInfo()
+                }
             }
-            if (event.type == CREATE_SESSION && event.url == "") {
-                event.url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
+
+            // update the url for create session events if not set
+            var url = event.url
+            if (event.type == CREATE_SESSION && url == "") {
+                updateEvent = true
+                url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
             }
+
+            if (updateEvent) {
+                // update the event
+                event = event.copy(
+                    accel = accel,
+                    gyro = gyro,
+                    url = url
+                )
+            }
+
             jsonList.add(event.getJSONObject())
         }
         return jsonList
