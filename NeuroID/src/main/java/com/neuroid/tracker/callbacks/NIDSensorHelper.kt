@@ -50,8 +50,6 @@ object NIDSensorHelper {
     }
 
     fun restartSensors() {
-        // need to unregister the listeners before restarting the sensors.
-        stopSensors()
         listener = NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
@@ -61,10 +59,13 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-                    firstValuesGyro.axisX = it.axisX
-                    firstValuesGyro.axisY = it.axisY
-                    firstValuesGyro.axisZ = it.axisZ
-                    firstValuesGyro.status = NIDSensorStatus.AVAILABLE
+
+                    if (firstValuesGyro.axisX == null) {
+                        firstValuesGyro.axisX = it.axisX
+                        firstValuesGyro.axisY = it.axisY
+                        firstValuesGyro.axisZ = it.axisZ
+                        firstValuesGyro.status = NIDSensorStatus.AVAILABLE
+                    }
                 }
                 Sensor.TYPE_ACCELEROMETER -> {
                     nidSensors.accelerometer =
@@ -73,10 +74,13 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-                    firstValuesAccel.axisX = it.axisX
-                    firstValuesAccel.axisY = it.axisY
-                    firstValuesAccel.axisZ = it.axisZ
-                    firstValuesAccel.status = NIDSensorStatus.AVAILABLE
+
+                    if (firstValuesAccel.axisX == null) {
+                        firstValuesAccel.axisX = it.axisX
+                        firstValuesAccel.axisY = it.axisY
+                        firstValuesAccel.axisZ = it.axisZ
+                        firstValuesAccel.status = NIDSensorStatus.AVAILABLE
+                    }
                 }
             }
         }
