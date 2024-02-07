@@ -182,6 +182,9 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
         val jsonList = mutableListOf<JSONObject>()
         while (list.isNotEmpty()) {
             val event = list.removeAt(0)
+
+            // consider moving this to saveEvent()
+            // to get the values when collected, not when sent (~5 sec after collected)
             event.accel?.let {
                 it.x = it.x ?: NIDSensorHelper.valuesAccel.axisX
                 it.y = it.y ?: NIDSensorHelper.valuesAccel.axisY

@@ -61,13 +61,10 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-
-                    if (firstValuesGyro.axisX == null) {
-                        firstValuesGyro.axisX = it.axisX
-                        firstValuesGyro.axisY = it.axisY
-                        firstValuesGyro.axisZ = it.axisZ
-                        firstValuesGyro.status = NIDSensorStatus.AVAILABLE
-                    }
+                    firstValuesGyro.axisX = it.axisX
+                    firstValuesGyro.axisY = it.axisY
+                    firstValuesGyro.axisZ = it.axisZ
+                    firstValuesGyro.status = NIDSensorStatus.AVAILABLE
                 }
                 Sensor.TYPE_ACCELEROMETER -> {
                     nidSensors.accelerometer =
@@ -76,13 +73,10 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-
-                    if (firstValuesAccel.axisX == null) {
-                        firstValuesAccel.axisX = it.axisX
-                        firstValuesAccel.axisY = it.axisY
-                        firstValuesAccel.axisZ = it.axisZ
-                        firstValuesAccel.status = NIDSensorStatus.AVAILABLE
-                    }
+                    firstValuesAccel.axisX = it.axisX
+                    firstValuesAccel.axisY = it.axisY
+                    firstValuesAccel.axisZ = it.axisZ
+                    firstValuesAccel.status = NIDSensorStatus.AVAILABLE
                 }
             }
         }
