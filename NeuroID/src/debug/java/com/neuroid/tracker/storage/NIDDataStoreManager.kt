@@ -55,9 +55,11 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
             if (lastEventType == LOW_MEMORY || lastEventType == FULL_BUFFER) {
                 // no new events should be captured, drop the new event
+                NIDLog.w("NeuroID", "Data store buffer ${lastEventType}, ${event.type} dropped")
             } else if (eventsList.size > EVENT_BUFFER_MAX_COUNT) {
                 // add a full buffer event and drop the new event
                 eventsList.add(NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()))
+                NIDLog.w("NeuroID", "Data store buffer ${FULL_BUFFER}, ${event.type} dropped")
             } else {
                 // capture the event
                 eventsList.add(event)
