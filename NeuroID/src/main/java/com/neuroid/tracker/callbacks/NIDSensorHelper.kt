@@ -57,6 +57,9 @@ object NIDSensorHelper {
     }
 
     fun restartSensors(nSensors: NIDSensors = nidSensors) {
+        // need to unregister the listeners before restarting the sensors.
+        stopSensors()
+
         listener = getNIDGenListener(nSensors, firstValuesGyro, firstValuesAccel)
 
         gyroscopeSensor?.let {
