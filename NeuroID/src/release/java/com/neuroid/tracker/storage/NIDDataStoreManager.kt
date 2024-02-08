@@ -39,6 +39,11 @@ fun getDataStoreInstance(): NIDDataStoreManager {
 private object NIDDataStoreManagerImp: NIDDataStoreManager {
     const val EVENT_BUFFER_MAX_COUNT = 1999
 
+    private val alwaysSaveEvents = listOf(
+        CREATE_SESSION,
+        CLOSE_SESSION
+    )
+
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
         WINDOW_BLUR //Block screen
@@ -50,7 +55,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
-        if (NIDJobServiceManager.isStopped() && event.type != CLOSE_SESSION) {
+        if (NIDJobServiceManager.isStopped() && alwaysSaveEvents.contains(event.type).not()) {
             return
         }
 
