@@ -264,6 +264,9 @@ class NeuroID private constructor(
     }
 
     fun start() {
+        application?.let {
+            NIDJobServiceManager.startJob(it, clientKey, endpoint)
+        }
         this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -273,16 +276,13 @@ class NeuroID private constructor(
             createSession()
             saveIntegrationHealthEvents()
         }
-        application?.let {
-            NIDJobServiceManager.startJob(it, clientKey, endpoint)
-        }
     }
 
     fun stop() {
         this.isSDKStarted = false
+        NIDJobServiceManager.stopJob()
         CoroutineScope(Dispatchers.IO).launch {
             NIDJobServiceManager.sendEventsNow(true)
-            NIDJobServiceManager.stopJob()
             saveIntegrationHealthEvents()
         }
     }

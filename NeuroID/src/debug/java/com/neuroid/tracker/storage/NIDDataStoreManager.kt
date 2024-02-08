@@ -50,7 +50,7 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
-        if (NIDJobServiceManager.isStopped() && event.type != CLOSE_SESSION) {
+        if (NIDJobServiceManager.isStopped()) {
             return
         }
 
