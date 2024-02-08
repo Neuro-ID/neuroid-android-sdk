@@ -50,6 +50,10 @@ private object NIDDataStoreManagerImp: NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
+        if (NIDJobServiceManager.isStopped() && event.type != CLOSE_SESSION) {
+            return
+        }
+
         if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
             val lastEventType = if (eventsList.isEmpty()) { "" } else { eventsList.last().type }
 

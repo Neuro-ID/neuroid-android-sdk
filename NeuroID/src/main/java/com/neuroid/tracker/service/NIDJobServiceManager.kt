@@ -50,7 +50,7 @@ object NIDJobServiceManager {
     }
 
     suspend fun sendEventsNow(forceSendEvents: Boolean = false) {
-        if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
+        if (isSendEventsNowEnabled && (forceSendEvents || !isStopped())) {
             application?.let {
                 val response = NIDServiceTracker.sendEventToServer(clientKey, endpoint, it)
                 if (response.second) {
