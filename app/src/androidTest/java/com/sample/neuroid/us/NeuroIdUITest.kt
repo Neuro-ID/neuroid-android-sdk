@@ -35,13 +35,14 @@ class NeuroIdUITest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.start()
     }
 
     @After
     fun resetDispatchers() = runTest {
         getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.stop()
     }
 
     /**
@@ -50,8 +51,9 @@ class NeuroIdUITest {
     @Test
     fun test01ValidateCreateSession() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.start()
         delay(500)
+        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.start()
 
         val eventType = "\"type\":\"CREATE_SESSION\""
         val events = getDataStoreInstance().getAllEvents()

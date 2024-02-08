@@ -36,11 +36,11 @@ class ComponentsTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
-        NeuroID.getInstance()?.stop()
     }
 
     @After
     fun resetDispatchers() = runTest {
+        NeuroID.getInstance()?.stop()
         getDataStoreInstance().clearEvents()
     }
 

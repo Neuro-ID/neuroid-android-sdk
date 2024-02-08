@@ -34,8 +34,14 @@ class TextUnitTest {
     @ExperimentalCoroutinesApi
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.start()
+    }
+
+    @After
+    fun resetDispatchers() = runTest {
+        NeuroID.getInstance()?.stop()
+        getDataStoreInstance().clearEvents()
     }
 
     /**

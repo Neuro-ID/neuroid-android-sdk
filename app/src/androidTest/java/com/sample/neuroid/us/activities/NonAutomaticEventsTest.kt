@@ -35,9 +35,13 @@ class NonAutomaticEventsTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
-        NeuroID.getInstance()?.stop()
     }
 
+    @After
+    fun resetDispatchers() = runTest {
+        NeuroID.getInstance()?.stop()
+        getDataStoreInstance().clearEvents()
+    }
 
     /**
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class

@@ -33,7 +33,6 @@ class LifeCycleTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
-        NeuroID.getInstance()?.stop()
     }
 
     /**
