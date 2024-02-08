@@ -34,6 +34,7 @@ class NIDJobServiceManagerTest {
         assertEquals(NIDJobServiceManager.clientKey, "clientKey")
         assertEquals(NIDJobServiceManager.endpoint,Constants.productionEndpoint.displayName)
         assertNotNull(NIDJobServiceManager.jobCaptureEvents)
+        assertNotNull(NIDJobServiceManager.gyroCadenceJob)
     }
 
     @Test
@@ -41,6 +42,7 @@ class NIDJobServiceManagerTest {
         injectMockedApplication()
         NIDJobServiceManager.stopJob()
         assertEquals(NIDJobServiceManager.jobCaptureEvents, null)
+        assertEquals(NIDJobServiceManager.gyroCadenceJob, null)
         assertEquals(NIDJobServiceManager.isStopped(), true)
     }
 
@@ -48,6 +50,7 @@ class NIDJobServiceManagerTest {
     fun testRestart() {
         NIDJobServiceManager.restart()
         assertNotNull(NIDJobServiceManager.jobCaptureEvents)
+        assertNotNull(NIDJobServiceManager.gyroCadenceJob)
     }
 
     @Test

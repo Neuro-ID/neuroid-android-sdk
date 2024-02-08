@@ -3,6 +3,7 @@ package com.neuroid.tracker
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.core.content.getSystemService
 import com.neuroid.tracker.callbacks.NIDSensorData
@@ -61,6 +62,7 @@ class SensorHelperTests {
             )
         } returns true
         every { sensorManager.requestTriggerSensor(any(), any()) } returns true
+        every { sensorManager.unregisterListener(any<SensorEventListener>()) } returns Unit
 
         return Pair(sensor, sensorManager)
     }
