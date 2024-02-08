@@ -1,7 +1,11 @@
 package com.neuroid.tracker.service
 
 import android.app.Application
+import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.events.CADENCE_READING_ACCEL
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.Constants
@@ -13,14 +17,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import org.json.JSONArray
+import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object NIDJobServiceManager {
-
     internal var jobCaptureEvents: Job? = null
     var isSendEventsNowEnabled = true
+
+    internal var gyroCadenceJob: Job? = null
 
     @Volatile
     var userActive = true
@@ -39,6 +46,8 @@ object NIDJobServiceManager {
         this.application = application
         jobCaptureEvents = createJobServer()
         NIDSensorHelper.initSensorHelper(application, NIDLogWrapper())
+
+        gyroCadenceJob = createGyroJobServer()
         this.isSetup = true
     }
 
@@ -47,6 +56,9 @@ object NIDJobServiceManager {
         NIDSensorHelper.stopSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = null
+
+        gyroCadenceJob?.cancel()
+        gyroCadenceJob = null
     }
 
     @Synchronized
@@ -59,6 +71,9 @@ object NIDJobServiceManager {
         NIDSensorHelper.restartSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()
+
+        gyroCadenceJob?.cancel()
+        gyroCadenceJob = createGyroJobServer()
     }
 
     private fun createJobServer(): Job {
@@ -66,6 +81,29 @@ object NIDJobServiceManager {
             while (userActive && isActive) {
                 delay(5000L)
                 sendEventsNow(NIDLogWrapper())
+            }
+        }
+    }
+
+    private fun createGyroJobServer(): Job {
+        return CoroutineScope(Dispatchers.IO).launch {
+            while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
+                delay(NeuroID.GYRO_SAMPLE_INTERVAL)
+
+                val gyroData = NIDSensorHelper.getGyroscopeInfo()
+                val accelData = NIDSensorHelper.getAccelerometerInfo()
+                val attrsObj = JSONObject().put("interval", "${1000 * GYRO_SAMPLE_INTERVAL}s")
+
+                NeuroID.getInstance()?.dataStore?.saveEvent(
+                    NIDEventModel(
+                        type = CADENCE_READING_ACCEL,
+                        ts = System.currentTimeMillis(),
+                        gyro = gyroData,
+                        accel = accelData,
+                        attrs = JSONArray().put(attrsObj)
+                    )
+                )
+
             }
         }
     }
@@ -92,8 +130,8 @@ object NIDJobServiceManager {
      * set here to show what timeouts are available in the OKHttp client.
      */
     suspend fun sendEventsNow(logger: NIDLogWrapper, forceSendEvents: Boolean = false,
-                              eventSender: NIDEventSender = getServiceAPI(),
-                              dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
+                                       eventSender: NIDEventSender = getServiceAPI(),
+                                       dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
     ) {
         if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
             application?.let {

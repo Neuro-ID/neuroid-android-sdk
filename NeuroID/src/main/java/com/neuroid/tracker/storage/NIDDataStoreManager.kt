@@ -135,12 +135,13 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
                     LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
+                    CADENCE_READING_ACCEL -> contextString = "accel=${event.accel?.toString()}, gyro=${event.gyro?.toString()}"
                     else -> {}
                 }
 
                 NIDLog.d(
                     Constants.debugEventTag.displayName,
-                    "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
+                    "EVENT: ${event.type} - ${event.tgs} - $contextString"
                 )
 
                 NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)

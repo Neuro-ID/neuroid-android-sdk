@@ -103,6 +103,9 @@ class NeuroID private constructor(
         var showLogs: Boolean = true
         var isSDKStarted = false
 
+        internal val GYRO_SAMPLE_INTERVAL = 200L
+        internal val captureGyroCadence = true
+
         private var singleton: NeuroID? = null
 
         @JvmStatic
