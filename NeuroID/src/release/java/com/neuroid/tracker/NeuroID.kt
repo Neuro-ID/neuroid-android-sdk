@@ -268,7 +268,6 @@ class NeuroID private constructor(
         application?.let {
             NIDJobServiceManager.startJob(it, clientKey, endpoint)
         }
-        assert(!NIDJobServiceManager.isStopped())
         this.isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
