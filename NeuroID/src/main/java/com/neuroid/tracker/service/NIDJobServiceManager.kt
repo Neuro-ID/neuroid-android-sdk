@@ -95,7 +95,7 @@ object NIDJobServiceManager {
                               eventSender: NIDEventSender = getServiceAPI(),
                               dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
     ) {
-        if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
+        if (isSendEventsNowEnabled || (forceSendEvents && !isStopped())) {
             application?.let {
                 NIDServiceTracker.sendEventToServer(
                     eventSender,

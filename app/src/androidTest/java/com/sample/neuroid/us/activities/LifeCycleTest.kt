@@ -13,6 +13,7 @@ import com.sample.neuroid.us.NIDSchema
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -33,7 +34,19 @@ class LifeCycleTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
+    }
+
+    @After
+    fun resetDispatchers() = runTest {
+        getDataStoreInstance().clearEvents()
         NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     /**

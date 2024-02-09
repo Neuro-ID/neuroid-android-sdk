@@ -136,7 +136,7 @@ class NIDDataStoreManagerUnitTests {
             )
         )
 
-        job.invokeOnCompletion {
+        job?.invokeOnCompletion {
             Assert.assertEquals(1, storedObj.count())
             Assert.assertEquals(true, storedObj.firstOrNull()?.contains("INPUT"))
         }

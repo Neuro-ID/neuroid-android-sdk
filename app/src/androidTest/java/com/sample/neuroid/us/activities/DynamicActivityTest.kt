@@ -8,6 +8,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.NIDSchema
@@ -16,6 +17,7 @@ import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.core.Is.`is`
+import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -34,13 +36,25 @@ class DynamicActivityTest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
+        NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
+    }
+
+    @After
+    fun resetDispatchers() = runTest {
+        getDataStoreInstance().clearEvents()
         NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(2000)
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())

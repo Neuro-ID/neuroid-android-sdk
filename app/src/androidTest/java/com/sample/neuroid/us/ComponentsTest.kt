@@ -36,12 +36,19 @@ class ComponentsTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
-        NeuroID.getInstance()?.stop()
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
     }
 
     @After
     fun resetDispatchers() = runTest {
         getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     /**
@@ -49,10 +56,7 @@ class ComponentsTest {
      */
     @Test
     fun test01ValidateCheckBox() = runTest {
-        NeuroID.getInstance()?.start()
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -75,8 +79,6 @@ class ComponentsTest {
     fun test02ValidateRadioChange() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
-
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(500)
@@ -97,8 +99,6 @@ class ComponentsTest {
     @Test
     fun test03ValidateSwitch() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -125,8 +125,6 @@ class ComponentsTest {
     fun test04ValidateToggle() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
-
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(500)
@@ -151,8 +149,6 @@ class ComponentsTest {
     @Test
     fun test05ValidateRatingBar() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
