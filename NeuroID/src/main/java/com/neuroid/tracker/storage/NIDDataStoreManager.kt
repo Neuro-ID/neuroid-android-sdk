@@ -8,11 +8,9 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -84,9 +82,11 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
 
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
+                NeuroID.getInstance()?.nidJobServiceManager.let {
+                    if (it?.userActive == false){
+                        it.userActive = true
+                        it.restart()
+                    }
                 }
 
                 if (!listNonActiveEvents.any { strEvent.contains(it) }) {
@@ -149,10 +149,10 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
             when (event.type) {
                 BLUR -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
+                    NeuroID.getInstance()?.nidJobServiceManager?.sendEventsNow()
                 }
                 CLOSE_SESSION -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(),true)
+                    NeuroID.getInstance()?.nidJobServiceManager?.sendEventsNow(true)
                 }
             }
         }

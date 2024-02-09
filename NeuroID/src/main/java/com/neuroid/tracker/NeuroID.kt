@@ -60,7 +60,7 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
+    internal var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
     init {
@@ -78,6 +78,12 @@ class NeuroID private constructor(
                 NIDServiceTracker.environment = "TEST"
             }
         }
+
+        nidJobServiceManager = NIDJobServiceManager(
+            NIDLog,
+            dataStore
+        )
+
     }
 
     @Synchronized
@@ -714,7 +720,7 @@ class NeuroID private constructor(
             pauseCollectionJob?.isCancelled == true ||
             pauseCollectionJob?.isCompleted == true) {
             pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                nidJobServiceManager.sendEventsNow( true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
             }

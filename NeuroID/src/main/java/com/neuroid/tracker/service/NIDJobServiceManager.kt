@@ -23,19 +23,24 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-object NIDJobServiceManager {
-    internal var jobCaptureEvents: Job? = null
-    var isSendEventsNowEnabled = true
-
-    internal var gyroCadenceJob: Job? = null
-
+class NIDJobServiceManager(
+    private var logger:NIDLogWrapper,
+    private var dataStore:NIDDataStoreManager
+)
+{
     @Volatile
     var userActive = true
-    internal var clientKey = ""
-    private var application: Application? = null
-    internal var endpoint = Constants.productionEndpoint.displayName
+    var isSendEventsNowEnabled = true
 
+    internal var jobCaptureEvents: Job? = null
+    internal var gyroCadenceJob: Job? = null
+
+    internal var clientKey = ""
+    internal var endpoint = Constants.productionEndpoint.displayName
     internal var isSetup: Boolean = false
+
+    private var application: Application? = null
+
 
     @Synchronized
     fun startJob(
@@ -45,7 +50,7 @@ object NIDJobServiceManager {
         this.clientKey = clientKey
         this.application = application
         jobCaptureEvents = createJobServer()
-        NIDSensorHelper.initSensorHelper(application, NIDLogWrapper())
+        NIDSensorHelper.initSensorHelper(application, logger)
 
         gyroCadenceJob = createGyroJobServer()
         this.isSetup = true
@@ -80,7 +85,7 @@ object NIDJobServiceManager {
         return CoroutineScope(Dispatchers.IO).launch {
             while (userActive && isActive) {
                 delay(5000L)
-                sendEventsNow(NIDLogWrapper())
+                sendEventsNow()
             }
         }
     }
@@ -94,7 +99,7 @@ object NIDJobServiceManager {
                 val accelData = NIDSensorHelper.getAccelerometerInfo()
                 val attrsObj = JSONObject().put("interval", "${1000 * GYRO_SAMPLE_INTERVAL}s")
 
-                NeuroID.getInstance()?.dataStore?.saveEvent(
+                dataStore.saveEvent(
                     NIDEventModel(
                         type = CADENCE_READING_ACCEL,
                         ts = System.currentTimeMillis(),
@@ -118,7 +123,7 @@ object NIDJobServiceManager {
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .callTimeout(0, TimeUnit.SECONDS)
                     .writeTimeout(10, TimeUnit.SECONDS)
-                    .addInterceptor(LoggerIntercepter(NIDLogWrapper())).build()
+                    .addInterceptor(LoggerIntercepter(logger)).build()
             )
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -129,9 +134,9 @@ object NIDJobServiceManager {
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
      * set here to show what timeouts are available in the OKHttp client.
      */
-    suspend fun sendEventsNow(logger: NIDLogWrapper, forceSendEvents: Boolean = false,
-                                       eventSender: NIDEventSender = getServiceAPI(),
-                                       dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
+    suspend fun sendEventsNow(
+        forceSendEvents: Boolean = false,
+        eventSender: NIDEventSender = getServiceAPI(),
     ) {
         if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
             application?.let {
@@ -154,7 +159,7 @@ object NIDJobServiceManager {
                             logger.e(msg = "network failure, sendEventsNow() failed userActive: $userActive $message")
                         }
                     },
-                    dataStoreManager
+                    dataStore
                 )
             } ?: run {
                 userActive = false
