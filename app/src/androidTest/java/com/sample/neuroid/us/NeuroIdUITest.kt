@@ -15,6 +15,7 @@ import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.*
+import org.junit.Assert.assertFalse
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.mockito.Mockito.*
@@ -34,13 +35,20 @@ class NeuroIdUITest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
     }
 
     @After
     fun resetDispatchers() = runTest {
         getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     /**
@@ -49,9 +57,6 @@ class NeuroIdUITest {
     @Test
     fun test01ValidateCreateSession() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.start()
-        delay(500)
-
         val eventType = "\"type\":\"CREATE_SESSION\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateEvents(events, eventType)
@@ -67,7 +72,6 @@ class NeuroIdUITest {
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(1000) //Wait a half second for create the MainActivity View
-
         val eventType = "\"type\":\"REGISTER_TARGET\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateEvents(events, eventType, -1)
@@ -79,9 +83,7 @@ class NeuroIdUITest {
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
-        delay(500)
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
         val eventType = "\"type\":\"SET_USER_ID\""
@@ -95,9 +97,7 @@ class NeuroIdUITest {
      */
     @Test
     fun test03aValidateSetRegisteredUserId() = runTest {
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
-        delay(500)
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
         delay(500)
         val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
@@ -112,8 +112,6 @@ class NeuroIdUITest {
     @Test
     fun test04ValidateLifecycleStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(2000) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         val eventType = "\"type\":\"WINDOW_LOAD\""
@@ -128,8 +126,6 @@ class NeuroIdUITest {
     @Test
     fun test05ValidateLifecycleResume() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         val eventType = "\"type\":\"WINDOW_FOCUS\""
@@ -144,8 +140,6 @@ class NeuroIdUITest {
     @Test
     fun test06ValidateLifecyclePause() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(500)
@@ -161,8 +155,6 @@ class NeuroIdUITest {
     @Test
     fun test07ValidateLifecycleStop() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(500)
@@ -179,8 +171,6 @@ class NeuroIdUITest {
     @Test
     fun test08ValidateTouchStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
@@ -201,8 +191,6 @@ class NeuroIdUITest {
     @Test
     fun test09ValidateTouchEnd() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
@@ -233,7 +221,6 @@ class NeuroIdUITest {
     @Test
     fun test12ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
@@ -255,7 +242,6 @@ class NeuroIdUITest {
     @Test
     fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
@@ -274,7 +260,8 @@ class NeuroIdUITest {
      */
     @Test
     fun test14ValidateSetUserId() = runTest {
-        getDataStoreInstance().clearEvents()
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setUserID("UUID123")
         delay(500)
@@ -291,10 +278,11 @@ class NeuroIdUITest {
     */
     @Test
     fun test15ValidateSetRegisteredUserId() = runTest {
-        getDataStoreInstance().clearEvents()
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
-        delay(500)
+        delay(1500)
         NeuroID.getInstance()?.start()
         delay(500)
         val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""

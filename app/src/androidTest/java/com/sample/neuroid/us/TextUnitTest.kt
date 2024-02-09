@@ -34,8 +34,20 @@ class TextUnitTest {
     @ExperimentalCoroutinesApi
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
+    }
+
+    @After
+    fun resetDispatchers() = runTest {
+        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     /**
@@ -44,7 +56,6 @@ class TextUnitTest {
     @Test
     fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
@@ -65,7 +76,6 @@ class TextUnitTest {
     @Test
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
         getDataStoreInstance().clearEvents()
@@ -90,7 +100,6 @@ class TextUnitTest {
     @Test
     fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())

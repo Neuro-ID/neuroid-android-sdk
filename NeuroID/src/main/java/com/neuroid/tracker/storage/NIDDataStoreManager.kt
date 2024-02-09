@@ -25,7 +25,7 @@ import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel): Job
+    fun saveEvent(event: NIDEventModel): Job?
     suspend fun getAllEvents(): Set<String>
     fun addViewIdExclude(id: String)
     suspend fun clearEvents()
@@ -78,7 +78,10 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     @Synchronized
-    override fun saveEvent(event: NIDEventModel): Job {
+    override fun saveEvent(event: NIDEventModel): Job? {
+        if (NIDJobServiceManager.isStopped()) {
+            return null
+        }
         val job = ioDispatcher.launch {
             if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
                 val strEvent = event.getOwnJson()
@@ -104,6 +107,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     SET_USER_ID -> contextString = "uid=${event.uid}"
                     CREATE_SESSION -> contextString =
                         "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
+
                     APPLICATION_SUBMIT -> contextString = ""
                     TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
                     "SET_CHECKPOINT" -> contextString = ""
@@ -117,6 +121,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     "CLICK" -> contextString = ""
                     REGISTER_TARGET -> contextString =
                         "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
+
                     "DEREGISTER_TARGET" -> contextString = ""
                     TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
                     TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
@@ -150,12 +155,12 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                 BLUR -> {
                     NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
                 }
+
                 CLOSE_SESSION -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(),true)
+                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
                 }
             }
         }
-
         return job
     }
 

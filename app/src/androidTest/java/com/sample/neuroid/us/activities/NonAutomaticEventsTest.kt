@@ -35,7 +35,19 @@ class NonAutomaticEventsTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         NIDJobServiceManager.isSendEventsNowEnabled = false
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
+    }
+
+    @After
+    fun resetDispatchers() = runTest {
+        getDataStoreInstance().clearEvents()
         NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
 
@@ -45,7 +57,6 @@ class NonAutomaticEventsTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500)
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_submit))
             .perform(ViewActions.click())
@@ -63,7 +74,6 @@ class NonAutomaticEventsTest {
     @Test
     fun test02ValidateFormSubmitSuccess() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_success))
             .perform(ViewActions.click())
@@ -81,7 +91,6 @@ class NonAutomaticEventsTest {
     @Test
     fun test03ValidateFormSubmitFailure() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_failure))
             .perform(ViewActions.click())
