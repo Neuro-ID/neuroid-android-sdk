@@ -46,7 +46,7 @@ class NIDJobServiceManagerTest {
 
         assertEquals(nidJobServiceManager.isSetup, true)
         assertEquals(nidJobServiceManager.clientKey, "clientKey")
-        assertEquals(nidJobServiceManager.endpoint,Constants.productionEndpoint.displayName)
+        assertEquals(nidJobServiceManager.endpoint, Constants.productionEndpoint.displayName)
         assertNotNull(nidJobServiceManager.jobCaptureEvents)
         assertNotNull(nidJobServiceManager.gyroCadenceJob)
     }
