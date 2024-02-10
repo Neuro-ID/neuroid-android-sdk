@@ -60,7 +60,6 @@ class NonAutomaticEventsTest {
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_submit))
             .perform(ViewActions.click())
-        delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT\""
         val events = getDataStoreInstance().getAllEvents()
@@ -77,7 +76,6 @@ class NonAutomaticEventsTest {
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_success))
             .perform(ViewActions.click())
-        delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT_SUCCESS\""
         val events = getDataStoreInstance().getAllEvents()
@@ -94,7 +92,6 @@ class NonAutomaticEventsTest {
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_failure))
             .perform(ViewActions.click())
-        delay(600)
 
         val eventType = "\"type\":\"APPLICATION_SUBMIT_FAILURE\""
         val events = getDataStoreInstance().getAllEvents()

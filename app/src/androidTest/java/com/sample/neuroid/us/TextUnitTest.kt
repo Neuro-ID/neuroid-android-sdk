@@ -59,10 +59,8 @@ class TextUnitTest {
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        delay(500)
 
         val eventType = "\"type\":\"FOCUS\""
         val events = getDataStoreInstance().getAllEvents()
@@ -79,14 +77,11 @@ class TextUnitTest {
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
         getDataStoreInstance().clearEvents()
-        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        delay(600)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_password_field))
             .perform(ViewActions.click())
-        delay(600)
 
         val eventType = "\"type\":\"BLUR\""
         val events = getDataStoreInstance().getAllEvents()
@@ -103,14 +98,11 @@ class TextUnitTest {
         getDataStoreInstance().clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        delay(500)
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
-        delay(500)
 
         val eventType = "\"type\":\"INPUT\""
         val events = getDataStoreInstance().getAllEvents()

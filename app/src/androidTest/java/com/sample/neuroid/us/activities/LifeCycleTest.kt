@@ -57,11 +57,8 @@ class LifeCycleTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
-        delay(500)
         device.setOrientationNatural()
-        delay(500)
         val eventType = "\"type\":\"WINDOW_ORIENTATION_CHANGE\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateSchema(events)
