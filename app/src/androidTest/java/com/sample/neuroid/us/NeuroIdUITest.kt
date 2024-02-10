@@ -15,7 +15,6 @@ import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.*
-import org.junit.Assert.assertFalse
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.mockito.Mockito.*
@@ -71,7 +70,6 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(1000) //Wait a half second for create the MainActivity View
         val eventType = "\"type\":\"REGISTER_TARGET\""
         val events = getDataStoreInstance().getAllEvents()
         NIDSchema().validateEvents(events, eventType, -1)
@@ -142,9 +140,7 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
         Espresso.pressBack()
-        delay(500)
         //TODO Check This event behavior
         NIDSchema().validateSchema(getDataStoreInstance().getAllEvents())
     }
@@ -157,9 +153,7 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
         Espresso.pressBack()
-        delay(500)
 
         //TODO Check This event behavior
         NIDSchema().validateSchema(getDataStoreInstance().getAllEvents())
@@ -173,11 +167,9 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         getDataStoreInstance().clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
 
         val eventType = "\"type\":\"TOUCH_START\""
         val events = getDataStoreInstance().getAllEvents()
@@ -193,11 +185,9 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         getDataStoreInstance().clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
 
         val eventType = "\"type\":\"TOUCH_END\""
         val events = getDataStoreInstance().getAllEvents()
@@ -223,10 +213,8 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
         val eventType = "\"type\":\"WINDOW_RESIZE\""
         val events = getDataStoreInstance().getAllEvents()
@@ -244,10 +232,8 @@ class NeuroIdUITest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
         val eventType = "\"type\":\"REGISTER_TARGET\""
         val events = getDataStoreInstance().getAllEvents()
@@ -282,7 +268,7 @@ class NeuroIdUITest {
         NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
-        delay(1500)
+        delay(500)
         NeuroID.getInstance()?.start()
         delay(500)
         val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
