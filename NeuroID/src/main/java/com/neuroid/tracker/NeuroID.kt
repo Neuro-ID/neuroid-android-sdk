@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.view.View
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -12,9 +14,11 @@ import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDNetworkInfo
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -63,6 +67,8 @@ class NeuroID private constructor(
     internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
+    private var networkInfo: NIDNetworkInfo? = null
+
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
@@ -78,6 +84,10 @@ class NeuroID private constructor(
                 NIDServiceTracker.environment = "TEST"
             }
         }
+
+        // register network listener here.
+        application?.registerReceiver(NIDNetworkListener(),
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
     }
 
     @Synchronized
@@ -85,7 +95,6 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
-
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
@@ -123,6 +132,20 @@ class NeuroID private constructor(
         }
 
         fun getInstance(): NeuroID? = singleton
+    }
+
+    /**
+     * is the device connected to some kind of network (WIFI/ MobileData/ Ethernet/ Etc?)
+     */
+    internal fun isConnected(): Boolean {
+        this.networkInfo?.let {nidNetworkInfo ->
+            return nidNetworkInfo.isConnected
+        }
+        return false
+    }
+
+    internal fun setNIDNetworkInfo(nidNetworkInfo: NIDNetworkInfo) {
+        this.networkInfo = nidNetworkInfo
     }
 
     internal fun setLoggerInstance(logger: NIDLogWrapper) {

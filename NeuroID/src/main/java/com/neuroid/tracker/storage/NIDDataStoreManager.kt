@@ -79,8 +79,15 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel): Job? {
+        // need to restart the job manager once we get network back.
         if (NIDJobServiceManager.isStopped()) {
-            return null
+            NeuroID.getInstance()?.let { nidInstance ->
+                if (!nidInstance.isConnected()) {
+                    return null
+                } else {
+                    NIDJobServiceManager.restart()
+                }
+            }
         }
         val job = ioDispatcher.launch {
             if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
@@ -140,6 +147,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
                     LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
+                    NETWORK_STATE -> contextString = "iswifi=${event.isWifi}, isconnected=${event.isConnected}"
                     else -> {}
                 }
 

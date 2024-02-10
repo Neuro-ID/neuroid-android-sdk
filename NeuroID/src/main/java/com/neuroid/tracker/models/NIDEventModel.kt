@@ -58,6 +58,8 @@ data class NIDEventModel(
     val m: String? = null,
     val level: String? = null,
     val c: Boolean? = null,
+    val isWifi: Boolean? = null,
+    val isConnected: Boolean? = null
 
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
@@ -145,6 +147,12 @@ data class NIDEventModel(
             }
             metadata?.let {
                 jsonObject.put("metadata", it)
+            }
+            isWifi?.let {
+                jsonObject.put("iswifi", it)
+            }
+            isConnected?.let {
+                jsonObject.put("isconnected", it)
             }
         }
 
