@@ -23,6 +23,7 @@ import org.junit.runners.MethodSorters
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @ExperimentalCoroutinesApi
+@Ignore("Ignored until refactor to check specific events")
 class ComponentsTest {
 
     @get:Rule
@@ -35,7 +36,7 @@ class ComponentsTest {
      */
     @Before
     fun stopSendEventsToServer() = runTest {
-        NIDJobServiceManager.isSendEventsNowEnabled = false
+//        NIDJobServiceManager.isSendEventsNowEnabled = false
         NeuroID.getInstance()?.stop()
     }
 

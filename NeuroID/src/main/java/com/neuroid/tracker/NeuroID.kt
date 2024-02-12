@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -160,6 +161,11 @@ class NeuroID private constructor(
 
     internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
         nidJobServiceManager = serviceManager
+    }
+
+    @VisibleForTesting
+    fun setTestURL(endpoint: String){
+        nidJobServiceManager.endpoint = endpoint
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
