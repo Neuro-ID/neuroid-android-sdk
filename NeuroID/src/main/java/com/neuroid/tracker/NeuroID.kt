@@ -94,8 +94,7 @@ class NeuroID private constructor(
             application?.registerReceiver(
                 NIDNetworkListener(
                     connectivityManager,
-                    getDataStoreInstance(),
-                    Calendar.getInstance()),
+                    getDataStoreInstance()),
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
         }

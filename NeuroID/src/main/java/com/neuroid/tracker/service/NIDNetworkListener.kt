@@ -19,8 +19,7 @@ import java.util.Calendar
  * requires android.permission.ACCESS_NETWORK_STATE, see manifest
  */
 class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
-                         private val dataStoreManager: NIDDataStoreManager,
-                         private val calendar: Calendar): BroadcastReceiver() {
+                         private val dataStoreManager: NIDDataStoreManager): BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
@@ -38,7 +37,7 @@ class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
             isConnected = activeNetworkInfo.isConnectedOrConnecting()
         }
         val networkEvent = NIDEventModel(
-            ts = calendar.timeInMillis,
+            ts = System.currentTimeMillis(),
             type = NETWORK_STATE,
             isConnected = isConnected,
             isWifi = isWifi)
