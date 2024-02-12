@@ -200,7 +200,7 @@ class SensorHelperTests {
         NIDSensorHelper.initSensorHelper(context, logger, nidSensors)
 
         // is it the proper sensor?
-        verify { logger.i("NIDSensorHelper", "Sensor:gyro 4") }
+        verify { logger.i("NeuroID SensorHelper", "Sensor:gyro 4") }
         // did we register the listener?
         verifySensorPair(sensorPair)
     }
@@ -216,7 +216,7 @@ class SensorHelperTests {
         NIDSensorHelper.initSensorHelper(context, logger, nidSensors)
 
         // is it the proper sensor?
-        verify { logger.i("NIDSensorHelper", "Sensor:accel 1") }
+        verify { logger.i("NeuroID SensorHelper", "Sensor:accel 1") }
         // did we register the listener?
         verifySensorPair(sensorPair)
     }

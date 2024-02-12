@@ -155,7 +155,7 @@ class NIDJobServiceManager(
                         }
 
                         override fun onFailure(code: Int, message: String, isRetry: Boolean) {
-                            logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: $isRetry $message")
+                            logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },
                     dataStore

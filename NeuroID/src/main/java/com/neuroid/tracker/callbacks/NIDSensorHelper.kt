@@ -55,6 +55,7 @@ object NIDSensorHelper {
     // only called by unit tests, do not call outside of tests
     internal fun resetSensorManager() {
         sensorManager = null
+        sensorActive = false
     }
 
 

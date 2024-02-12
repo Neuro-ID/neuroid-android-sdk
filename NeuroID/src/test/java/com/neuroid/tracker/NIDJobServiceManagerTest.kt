@@ -2,6 +2,8 @@ package com.neuroid.tracker
 
 import android.app.Application
 import android.content.SharedPreferences
+import android.hardware.Sensor
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.service.NIDApiService
@@ -144,8 +146,8 @@ class NIDJobServiceManagerTest {
                 forceSendEvents = true,
                 eventSender = eventSender,
             )
-            verify (exactly = 2) {logger.e(msg="network failure, sendEventsNow() failed userActive: true your request is junk, fix it!")}
-            verify (exactly = 1) {logger.e(msg="network failure, sendEventsNow() failed userActive: false your request is junk, fix it!")}
+            verify (exactly = 2) {logger.e(msg="network failure, sendEventsNow() failed retrylimitHit: false your request is junk, fix it!")}
+            verify (exactly = 1) {logger.e(msg="network failure, sendEventsNow() failed retrylimitHit: true your request is junk, fix it!")}
         }
     }
 
@@ -178,6 +180,7 @@ class NIDJobServiceManagerTest {
         val sensorManager = mockk<SensorManager>()
         every {sensorManager.getSensorList(any())} returns listOf()
         every {sensorManager.unregisterListener(any<NIDSensorGenListener>())} just runs
+        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())}
 
         val application = mockk<Application>()
         every{application.getSystemService(any())} returns sensorManager
