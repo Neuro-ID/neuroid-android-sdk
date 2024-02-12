@@ -9,7 +9,8 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDNetworkInfo
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import java.util.Calendar
 
 /**
  * Need to use the deprecated NetworkInfo to be compliant with API21,
@@ -17,31 +18,31 @@ import com.neuroid.tracker.storage.getDataStoreInstance
  *
  * requires android.permission.ACCESS_NETWORK_STATE, see manifest
  */
-class NIDNetworkListener: BroadcastReceiver() {
+class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
+                         private val dataStoreManager: NIDDataStoreManager,
+                         private val calendar: Calendar): BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        intent?.let { safeIntent ->
-            context?.let {safeContext ->
-                if (ConnectivityManager.CONNECTIVITY_ACTION == safeIntent.action) {
-                   NeuroID.getInstance()?.setNIDNetworkInfo(isConnected(safeContext))
-                }
+        intent?.let {
+            if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
+               NeuroID.getInstance()?.setNIDNetworkInfo(onNetworkAction())
             }
         }
     }
 
-    private fun isConnected(context: Context): NIDNetworkInfo {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = cm.getActiveNetworkInfo()
+    private fun onNetworkAction(): NIDNetworkInfo {
+        val activeNetworkInfo = connectivityManager.getActiveNetworkInfo()
         var isWifi = false
         var isConnected = false
         activeNetworkInfo?.let {
             isWifi =   activeNetworkInfo.type == TYPE_WIFI
             isConnected = activeNetworkInfo.isConnectedOrConnecting()
         }
-        val networkEvent = NIDEventModel(ts = System.currentTimeMillis(),
-            type= NETWORK_STATE,
+        val networkEvent = NIDEventModel(
+            ts = calendar.timeInMillis,
+            type = NETWORK_STATE,
             isConnected = isConnected,
             isWifi = isWifi)
-        getDataStoreInstance().saveEvent(networkEvent)
+        dataStoreManager.saveEvent(networkEvent)
         return NIDNetworkInfo(isConnected, isWifi)
     }
 

@@ -37,6 +37,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
@@ -85,9 +86,19 @@ class NeuroID private constructor(
             }
         }
 
-        // register network listener here.
-        application?.registerReceiver(NIDNetworkListener(),
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+        // register network listener here. >=API24 will not receive if registered
+        // in the manifest so we do it here for full compatibility
+        application?.let {
+            val connectivityManager =
+                it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            application?.registerReceiver(
+                NIDNetworkListener(
+                    connectivityManager,
+                    getDataStoreInstance(),
+                    Calendar.getInstance()),
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
     }
 
     @Synchronized
