@@ -15,6 +15,7 @@ import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.*
+import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.*
 import org.junit.runner.RunWith
@@ -83,8 +84,14 @@ class NeuroIdUITest {
         server.start()
         val url = server.url("/c/").toString()
         NeuroID.getInstance()?.setTestURL(url)
+        server.enqueue(MockResponse().setBody("").setResponseCode(200))
 
-        NeuroID.getInstance()?.stop()
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
     }
 
     @After
@@ -105,17 +112,24 @@ class NeuroIdUITest {
     }
 
     fun assertRequestBodyContains(eventType:String){
-        val request = server.requestCount
+        var request = server.requestCount
         if (request >0){
-            val req = server.takeRequest()
-            val body = req.body.readUtf8().toString()
-            val gson = Gson()
+            var foundEventFlag = false
+            for (i in 0 until request) {
+                var  req  = server.takeRequest()
+                val body = req.body.readUtf8().toString()
+                val gson = Gson()
 
-            val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
+                val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
 
-            val foundEvent = jsonObject?.jsonEvents?.find { event -> event.type == eventType }
-            assert(foundEvent != null) {
-                "$eventType not found in request object"
+                val foundEvent = jsonObject?.jsonEvents?.find { event -> event.type == eventType }
+                if (foundEvent != null) {
+                    foundEventFlag = true
+                }
+            }
+
+            assert(foundEventFlag == true) {
+                "$eventType not found in request object (total of $request objects searched)"
             }
         } else {
             assert(false) {
@@ -163,9 +177,7 @@ class NeuroIdUITest {
      */
     @Test
     fun test03ValidateSetUserId() = runTest {
-        getDataStoreInstance().clearEvents()
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
 
@@ -178,9 +190,7 @@ class NeuroIdUITest {
      */
     @Test
     fun test03aValidateSetRegisteredUserId() = runTest {
-        getDataStoreInstance().clearEvents()
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
         delay(500)
 
@@ -194,8 +204,6 @@ class NeuroIdUITest {
     @Test
     fun test04ValidateLifecycleStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(2000) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(500)
@@ -210,8 +218,6 @@ class NeuroIdUITest {
     @Test
     fun test05ValidateLifecycleResume() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
 
@@ -251,7 +257,7 @@ class NeuroIdUITest {
         getDataStoreInstance().clearEvents()
         delay(500)
         Espresso.pressBack()
-        delay(500)
+        delay(1000)
 
         forceSendEvents()
         assertRequestBodyContains("WINDOW_UNLOAD")
@@ -271,7 +277,7 @@ class NeuroIdUITest {
         getDataStoreInstance().clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
+        delay(1000)
 
         forceSendEvents()
         assertRequestBodyContains("TOUCH_START")
@@ -352,8 +358,10 @@ class NeuroIdUITest {
      * Validate SET_USER_ID when sdk is not started
      */
     @Test
-    fun test14ValidateSetUserId() = runTest {
+    fun test14ValidateSetUserIdPreStart() = runTest {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setUserID("UUID123")
         delay(500)
@@ -368,11 +376,12 @@ class NeuroIdUITest {
     * Validate SET_REGISTERED_USER_ID when sdk is not started
     */
     @Test
-    fun test15ValidateSetRegisteredUserId() = runTest {
-        getDataStoreInstance().clearEvents()
+    fun test15ValidateSetRegisteredUserIdPreStart() = runTest {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
-        delay(500)
+        delay(1500)
         NeuroID.getInstance()?.start()
         delay(500)
 

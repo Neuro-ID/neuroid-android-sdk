@@ -23,7 +23,7 @@ import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel): Job
+    fun saveEvent(event: NIDEventModel): Job?
     suspend fun getAllEvents(): Set<String>
     fun addViewIdExclude(id: String)
     suspend fun clearEvents()
@@ -76,7 +76,10 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     @Synchronized
-    override fun saveEvent(event: NIDEventModel): Job {
+    override fun saveEvent(event: NIDEventModel): Job? {
+        if (NeuroID.getInstance()?.nidJobServiceManager?.isStopped() == true) {
+            return null
+        }
         val job = ioDispatcher.launch {
             if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
                 val strEvent = event.getOwnJson()
@@ -156,7 +159,6 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                 }
             }
         }
-
         return job
     }
 

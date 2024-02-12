@@ -141,7 +141,7 @@ class NIDJobServiceManager(
         forceSendEvents: Boolean = false,
         eventSender: NIDEventSender = getServiceAPI(),
     ) {
-        if (forceSendEvents || (isSendEventsNowEnabled && !isStopped())) {
+        if (isSendEventsNowEnabled && (forceSendEvents || !isStopped())) {
             application?.let {
                 NIDServiceTracker.sendEventToServer(
                     eventSender,
@@ -155,11 +155,7 @@ class NIDJobServiceManager(
                         }
 
                         override fun onFailure(code: Int, message: String, isRetry: Boolean) {
-                            // if isRetry = false, then the retry probably hit the retry limit so we
-                            // kill the job manager, isRetry = true if the retry
-                            // logic is still trying.
-                            userActive = isRetry
-                            logger.e(msg = "network failure, sendEventsNow() failed userActive: $userActive $message")
+                            logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: $isRetry $message")
                         }
                     },
                     dataStore
