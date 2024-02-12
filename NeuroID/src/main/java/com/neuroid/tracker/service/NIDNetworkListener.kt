@@ -10,7 +10,6 @@ import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDNetworkInfo
 import com.neuroid.tracker.storage.NIDDataStoreManager
-import java.util.Calendar
 
 /**
  * Need to use the deprecated NetworkInfo to be compliant with API21,

@@ -37,7 +37,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Calendar
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
