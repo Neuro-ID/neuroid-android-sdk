@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -60,7 +61,7 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
+    internal var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
     init {
@@ -78,6 +79,12 @@ class NeuroID private constructor(
                 NIDServiceTracker.environment = "TEST"
             }
         }
+
+        nidJobServiceManager = NIDJobServiceManager(
+            NIDLog,
+            dataStore
+        )
+
     }
 
     @Synchronized
@@ -102,6 +109,9 @@ class NeuroID private constructor(
     companion object {
         var showLogs: Boolean = true
         var isSDKStarted = false
+
+        internal val GYRO_SAMPLE_INTERVAL = 200L
+        internal val captureGyroCadence = true
 
         private var singleton: NeuroID? = null
 
@@ -151,6 +161,11 @@ class NeuroID private constructor(
 
     internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
         nidJobServiceManager = serviceManager
+    }
+
+    @VisibleForTesting
+    fun setTestURL(endpoint: String){
+        nidJobServiceManager.endpoint = endpoint
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
@@ -699,7 +714,7 @@ class NeuroID private constructor(
             pauseCollectionJob?.isCancelled == true ||
             pauseCollectionJob?.isCompleted == true) {
             pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                nidJobServiceManager.sendEventsNow(true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
             }
