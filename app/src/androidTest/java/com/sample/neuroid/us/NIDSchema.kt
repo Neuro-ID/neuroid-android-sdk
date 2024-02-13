@@ -9,6 +9,8 @@ import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDResponseCallBack
 import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
@@ -57,22 +59,23 @@ class NIDSchema {
             )
         validateSchema(json)
 
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        NIDServiceTracker.sendEventToServer(
-           NIDJobServiceManager.getServiceAPI(),
-            "key_live_suj4CX90v0un2k1ufGrbItT5",
-            application,
-            eventList,
-            object: NIDResponseCallBack {
-                override fun onSuccess(code: Int) {
-                    assertEquals(json, 200, code)
-                }
-
-                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
-                    assert(false)
-                }
-            }
-        )
+        // Commenting out because tests shouldn't send traffic to prod. Will put back in once dev url is available
+//        val application = ApplicationProvider.getApplicationContext<Application>()
+//        NIDServiceTracker.sendEventToServer(
+//           NIDJobServiceManager(NIDLogWrapper(), NIDDataStoreManager).getServiceAPI(),
+//            "key_live_suj4CX90v0un2k1ufGrbItT5",
+//            application,
+//            eventList,
+//            object: NIDResponseCallBack {
+//                override fun onSuccess(code: Int) {
+//                    assertEquals(json, 200, code)
+//                }
+//
+//                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
+//                    assert(false)
+//                }
+//            }
+//        )
     }
 
     private fun validateSchema(json: String) {

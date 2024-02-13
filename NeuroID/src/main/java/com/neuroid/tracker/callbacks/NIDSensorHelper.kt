@@ -8,7 +8,7 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 object NIDSensorHelper {
-    private const val TAG = "NIDSensorHelper"
+    private const val TAG = "NeuroID SensorHelper"
     private var sensorManager: SensorManager? = null
     private var gyroscopeSensor: Sensor? = null
     private var accelerometerSensor: Sensor? = null
@@ -16,6 +16,12 @@ object NIDSensorHelper {
     private val firstValuesAccel = NIDSensorData("Accelerometer")
     private val nidSensors: NIDSensors = NIDSensors()
     private var listener: NIDSensorGenListener? = null
+
+    private var sensorActive = false
+
+    fun isSensorActive():Boolean {
+        return  sensorActive
+    }
 
     fun initSensorHelper(context: Context, logger: NIDLogWrapper, nSensors: NIDSensors = nidSensors) {
         initSensorManager(context)
@@ -49,21 +55,31 @@ object NIDSensorHelper {
     // only called by unit tests, do not call outside of tests
     internal fun resetSensorManager() {
         sensorManager = null
+        sensorActive = false
     }
 
 
     fun stopSensors() {
         sensorManager?.unregisterListener(listener)
+        sensorActive = false
     }
 
     fun restartSensors(nSensors: NIDSensors = nidSensors) {
+        if (sensorActive) {
+            return
+        }
+        // need to unregister the listeners before restarting the sensors.
+        stopSensors()
+
         listener = getNIDGenListener(nSensors, firstValuesGyro, firstValuesAccel)
 
         gyroscopeSensor?.let {
             sensorManager?.registerListener(listener, it, 10_000, 10_000)
+            sensorActive = true
         }
         accelerometerSensor?.let {
             sensorManager?.registerListener(listener, it, 10_000, 10_000)
+            sensorActive = true
         }
     }
 
@@ -80,12 +96,11 @@ object NIDSensorHelper {
                             axisY = it.axisY,
                             axisZ = it.axisZ
                         )
-                    if (fvGyro.axisX == null) {
-                        fvGyro.axisX = it.axisX
-                        fvGyro.axisY = it.axisY
-                        fvGyro.axisZ = it.axisZ
-                        fvGyro.status = NIDSensorStatus.AVAILABLE
-                    }
+
+                    fvGyro.axisX = it.axisX
+                    fvGyro.axisY = it.axisY
+                    fvGyro.axisZ = it.axisZ
+                    fvGyro.status = NIDSensorStatus.AVAILABLE
                 }
                 Sensor.TYPE_ACCELEROMETER -> {
                     nSensors.accelerometer =
@@ -95,12 +110,10 @@ object NIDSensorHelper {
                             axisZ = it.axisZ
                         )
 
-                    if (fvAccel.axisX == null) {
-                        fvAccel.axisX = it.axisX
-                        fvAccel.axisY = it.axisY
-                        fvAccel.axisZ = it.axisZ
-                        fvAccel.status = NIDSensorStatus.AVAILABLE
-                    }
+                    fvAccel.axisX = it.axisX
+                    fvAccel.axisY = it.axisY
+                    fvAccel.axisZ = it.axisZ
+                    fvAccel.status = NIDSensorStatus.AVAILABLE
                 }
             }
         }
