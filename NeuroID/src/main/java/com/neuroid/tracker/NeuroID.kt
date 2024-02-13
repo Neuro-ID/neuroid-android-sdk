@@ -726,7 +726,7 @@ class NeuroID private constructor(
             pauseCollectionJob?.isCancelled == true ||
             pauseCollectionJob?.isCompleted == true) {
             pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow( true)
+                nidJobServiceManager.sendEventsNow(true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
             }
