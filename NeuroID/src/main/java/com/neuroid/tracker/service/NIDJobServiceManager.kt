@@ -93,9 +93,6 @@ class NIDJobServiceManager(
     private fun createGyroJobServer(): Job {
         return CoroutineScope(Dispatchers.IO).launch {
             while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
-                if(NIDSensorHelper.isSensorActive()){
-                    NIDSensorHelper.restartSensors()
-                }
                 delay(NeuroID.GYRO_SAMPLE_INTERVAL)
 
                 val gyroData = NIDSensorHelper.getGyroscopeInfo()
