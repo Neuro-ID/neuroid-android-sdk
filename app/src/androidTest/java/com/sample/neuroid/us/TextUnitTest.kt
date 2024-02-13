@@ -43,7 +43,6 @@ class TextUnitTest {
         server.enqueue(MockResponse().setBody("").setResponseCode(200))
         NeuroID.getInstance()?.setTestURL(url)
 
-        NeuroID.getInstance()?.stop()
         NeuroID.getInstance()?.isStopped()?.let {
             if (it) {
                 NeuroID.getInstance()?.start()
