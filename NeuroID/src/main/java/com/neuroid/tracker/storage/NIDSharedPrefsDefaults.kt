@@ -43,27 +43,6 @@ class NIDSharedPrefsDefaults(
         return this.getClientId()
     }
 
-    fun setUserId(userId: String) {
-        putString(NID_UID, userId)
-    }
-
-    fun setRegisteredUserId(userId: String) {
-        putString(NID_REG_UID, userId)
-    }
-
-    fun getRegisteredUserId(): Any {
-        val uid = getString(NID_REG_UID)
-
-        return uid.ifBlank { JSONObject.NULL }
-    }
-
-    // Must be set to null string
-    fun getUserId(): Any? {
-        val uid = getString(NID_UID)
-
-        return uid.ifBlank { JSONObject.NULL }
-    }
-
     /**
      * Shared device salt used for all strings
      */

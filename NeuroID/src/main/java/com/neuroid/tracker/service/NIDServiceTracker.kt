@@ -2,6 +2,7 @@ package com.neuroid.tracker.service
 
 import android.app.Application
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
@@ -72,18 +73,30 @@ object NIDServiceTracker {
         }
     }
 
+    @VisibleForTesting
     suspend fun getContentJson(
         context: Context,
         events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
+        val userID:String? = if(NeuroID.getInstance()?.getUserID() != null) {
+            NeuroID.getInstance()?.getUserID()
+        } else {
+            null
+        }
+        val registeredUserID:String? = if(NeuroID.getInstance()?.getRegisteredUserID() != null) {
+            NeuroID.getInstance()?.getRegisteredUserID()
+        } else {
+            null
+        }
+
         val jsonBody = JSONObject().apply {
             put("siteId", siteId)
-            put("userId", sharedDefaults.getUserId())
+            put("userId", userID)
             put("clientId", sharedDefaults.getClientId())
-            put("identityId", sharedDefaults.getUserId())
-            put("registeredUserId", sharedDefaults.getRegisteredUserId())
+            put("identityId", userID)
+            put("registeredUserId", registeredUserID)
             put("pageTag", screenActivityName)
             put("pageId", rndmId)
             put("tabId", rndmId)

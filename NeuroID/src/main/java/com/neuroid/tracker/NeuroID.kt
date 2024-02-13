@@ -229,14 +229,6 @@ class NeuroID private constructor(
 
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
-                    )
-                }
-            }
             val genericUserIdEvent = NIDEventModel(
                 type = type,
                 uid = genericUserId,
@@ -597,10 +589,6 @@ class NeuroID private constructor(
     fun clearSessionVariables() {
         userID = ""
         registeredUserID = ""
-        this.getApplicationContext()?.let {
-            NIDSharedPrefsDefaults(it).setUserId("")
-            NIDSharedPrefsDefaults(it).setRegisteredUserId("")
-        }
     }
 
     fun startSession(sessionID: String? = null): SessionStartResult {
