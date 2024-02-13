@@ -267,16 +267,28 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     private fun getContentJson(
-        context: Context, events: JSONArray
+        context: Context,
+        events: JSONArray
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
+        val userID:String? = if(NeuroID.getInstance()?.getUserID() != null) {
+            NeuroID.getInstance()?.getUserID()
+        } else {
+            null
+        }
+        val registeredUserID:String? = if(NeuroID.getInstance()?.getRegisteredUserID() != null) {
+            NeuroID.getInstance()?.getRegisteredUserID()
+        } else {
+            null
+        }
+
         val jsonBody = JSONObject().apply {
             put("siteId", NIDServiceTracker.siteId)
-            put("userId", sharedDefaults.getUserId())
+            put("userId", userID)
             put("clientId", sharedDefaults.getClientId())
-            put("identityId", sharedDefaults.getUserId())
-            put("registeredUserId", sharedDefaults.getRegisteredUserId())
+            put("identityId", userID)
+            put("registeredUserId", registeredUserID)
             put("pageTag", NIDServiceTracker.screenActivityName)
             put("pageId", NIDServiceTracker.rndmId)
             put("tabId", NIDServiceTracker.rndmId)
