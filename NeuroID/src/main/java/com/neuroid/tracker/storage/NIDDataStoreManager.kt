@@ -8,11 +8,9 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +77,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
     @Synchronized
     override fun saveEvent(event: NIDEventModel): Job? {
-        if (NIDJobServiceManager.isStopped()) {
+        if (NeuroID.getInstance()?.nidJobServiceManager?.isStopped() == true) {
             return null
         }
         val job = ioDispatcher.launch {
@@ -87,9 +85,11 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                 val strEvent = event.getOwnJson()
                 saveJsonPayload(strEvent, "\"${event.type}\"")
 
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
+                NeuroID.getInstance()?.nidJobServiceManager.let {
+                    if (it?.userActive == false){
+                        it.userActive = true
+                        it.restart()
+                    }
                 }
 
                 if (!listNonActiveEvents.any { strEvent.contains(it) }) {
@@ -107,7 +107,6 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     SET_USER_ID -> contextString = "uid=${event.uid}"
                     CREATE_SESSION -> contextString =
                         "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
-
                     APPLICATION_SUBMIT -> contextString = ""
                     TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
                     "SET_CHECKPOINT" -> contextString = ""
@@ -121,7 +120,6 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     "CLICK" -> contextString = ""
                     REGISTER_TARGET -> contextString =
                         "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
-
                     "DEREGISTER_TARGET" -> contextString = ""
                     TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
                     TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
@@ -140,12 +138,13 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
                     CONTEXT_MENU -> contextString = "meta=${event.metadata}"
                     ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
                     LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
+                    CADENCE_READING_ACCEL -> contextString = "accel=${event.accel?.toString()}, gyro=${event.gyro?.toString()}"
                     else -> {}
                 }
 
                 NIDLog.d(
                     Constants.debugEventTag.displayName,
-                    "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
+                    "EVENT: ${event.type} - ${event.tgs} - $contextString"
                 )
 
                 NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
@@ -153,11 +152,10 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
             when (event.type) {
                 BLUR -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
+                    NeuroID.getInstance()?.nidJobServiceManager?.sendEventsNow()
                 }
-
                 CLOSE_SESSION -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                    NeuroID.getInstance()?.nidJobServiceManager?.sendEventsNow(true)
                 }
             }
         }

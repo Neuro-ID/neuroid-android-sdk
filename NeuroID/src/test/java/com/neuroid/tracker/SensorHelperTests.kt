@@ -3,6 +3,7 @@ package com.neuroid.tracker
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.core.content.getSystemService
 import com.neuroid.tracker.callbacks.NIDSensorData
@@ -61,6 +62,7 @@ class SensorHelperTests {
             )
         } returns true
         every { sensorManager.requestTriggerSensor(any(), any()) } returns true
+        every { sensorManager.unregisterListener(any<SensorEventListener>()) } returns Unit
 
         return Pair(sensor, sensorManager)
     }
@@ -198,7 +200,7 @@ class SensorHelperTests {
         NIDSensorHelper.initSensorHelper(context, logger, nidSensors)
 
         // is it the proper sensor?
-        verify { logger.i("NIDSensorHelper", "Sensor:gyro 4") }
+        verify { logger.i("NeuroID SensorHelper", "Sensor:gyro 4") }
         // did we register the listener?
         verifySensorPair(sensorPair)
     }
@@ -214,7 +216,7 @@ class SensorHelperTests {
         NIDSensorHelper.initSensorHelper(context, logger, nidSensors)
 
         // is it the proper sensor?
-        verify { logger.i("NIDSensorHelper", "Sensor:accel 1") }
+        verify { logger.i("NeuroID SensorHelper", "Sensor:accel 1") }
         // did we register the listener?
         verifySensorPair(sensorPair)
     }
