@@ -4,7 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.getSendingService
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
@@ -54,16 +55,17 @@ class NIDSchema {
 
         // Commenting out because tests shouldn't send traffic to prod. Will put back in once dev url is available
 //        val application = ApplicationProvider.getApplicationContext<Application>()
-//        NIDServiceTracker.sendEventToServer(
-//           NIDJobServiceManager(NIDLogWrapper(), NIDDataStoreManager).getServiceAPI(),
-//            "key_live_suj4CX90v0un2k1ufGrbItT5",
-//            application,
+//        getSendingService(
+//            "", // PUT ENDPOINT WE WANT TO USE (AKA Dev)
+//            NIDLogWrapper(),
+//            application
+//        ).sendTrackerData(
+//            key = "key_live_suj4CX90v0un2k1ufGrbItT5",
 //            eventList,
 //            object: NIDResponseCallBack {
 //                override fun onSuccess(code: Int) {
 //                    assertEquals(json, 200, code)
 //                }
-//
 //                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
 //                    assert(false)
 //                }

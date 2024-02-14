@@ -17,10 +17,12 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -59,7 +61,7 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager
+    internal lateinit var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
     internal var lowMemory:Boolean = false
@@ -67,6 +69,12 @@ class NeuroID private constructor(
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
+
+            nidJobServiceManager = NIDJobServiceManager(
+                NIDLog,
+                dataStore,
+                getSendingService(endpoint, NIDLog, it)
+            )
         }
 
         if (!validateClientKey(clientKey)) {
@@ -80,10 +88,7 @@ class NeuroID private constructor(
             }
         }
 
-        nidJobServiceManager = NIDJobServiceManager(
-            NIDLog,
-            dataStore
-        )
+
 
     }
 
@@ -134,7 +139,7 @@ class NeuroID private constructor(
 
         internal var registeredViews: MutableSet<String> = mutableSetOf()
 
-
+        internal var endpoint = Constants.productionEndpoint.displayName
         private var singleton: NeuroID? = null
 
         @JvmStatic
@@ -186,8 +191,8 @@ class NeuroID private constructor(
     }
 
     @VisibleForTesting
-    fun setTestURL(endpoint: String){
-        nidJobServiceManager.endpoint = endpoint
+    fun setTestURL(newEndpoint: String){
+        endpoint = newEndpoint
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
