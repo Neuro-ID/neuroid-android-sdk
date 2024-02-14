@@ -149,10 +149,6 @@ class NIDSchema {
         javaClass.classLoader?.getResourceAsStream(fileName)
 
     private suspend fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
-        val jsonListEvents = JSONArray(listEvents.map{event ->
-            event.getJSONObject()
-        })
-
-        return NIDServiceTracker.getContentJson(context, jsonListEvents)
+        return NIDServiceTracker.getContentJson(context, listEvents)
     }
 }

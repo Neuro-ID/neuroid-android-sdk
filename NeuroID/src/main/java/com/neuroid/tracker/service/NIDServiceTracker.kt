@@ -46,12 +46,10 @@ object NIDServiceTracker {
         if (oomPayload.isEmpty()) {
             oomPayload = getContentJson(
                 context,
-                JSONArray(
-                    listOf(
-                        NIDEventModel(
-                            type = OUT_OF_MEMORY,
-                            ts = System.currentTimeMillis()
-                        ).getJSONObject()
+                listOf(
+                    NIDEventModel(
+                        type = OUT_OF_MEMORY,
+                        ts = System.currentTimeMillis()
                     )
                 )
             )
@@ -74,11 +72,10 @@ object NIDServiceTracker {
                 return
             }
 
-            val listEvents = events.map { it.getJSONObject() }
 
-            data = getContentJson(context, JSONArray(listEvents))
+            data = getContentJson(context, events)
 
-            NIDLog.d("NeuroID", "payload: ${listEvents.size} events; ${data.length} bytes")
+            NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
@@ -88,9 +85,9 @@ object NIDServiceTracker {
         eventSender.sendTrackerData(data, key, eventReportCallback)
     }
 
-    suspend fun getContentJson(
+     fun getContentJson(
         context: Context,
-        events: JSONArray
+        events: List<NIDEventModel>
     ): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
@@ -105,22 +102,22 @@ object NIDServiceTracker {
             null
         }
 
-        val jsonBody = JSONObject().apply {
-            put("siteId", siteId)
-            put("userId", userID)
-            put("clientId", sharedDefaults.getClientId())
-            put("identityId", userID)
-            put("registeredUserId", registeredUserID)
-            put("pageTag", screenActivityName)
-            put("pageId", rndmId)
-            put("tabId", rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", "$ANDROID_URI$screenActivityName")
-            put("jsVersion", "5.0.0")
-            put("sdkVersion", NIDVersion.getSDKVersion())
-            put("environment", environment)
-            put("jsonEvents", events)
-        }
+        val jsonBody = mapOf(
+            "siteId" to siteId,
+            "userId" to userID,
+            "clientId" to sharedDefaults.getClientId(),
+            "identityId" to userID,
+            "registeredUserId" to registeredUserID,
+            "pageTag" to screenActivityName,
+            "pageId" to rndmId,
+            "tabId" to rndmId,
+            "responseId" to sharedDefaults.generateUniqueHexId(),
+            "url" to "$ANDROID_URI${screenActivityName}",
+            "jsVersion" to "5.0.0",
+            "sdkVersion" to NIDVersion.getSDKVersion(),
+            "environment" to environment,
+            "jsonEvents" to events
+        )
 
         // using this JSON library (already included) does not escape /
         val gson: Gson = GsonBuilder().create()
