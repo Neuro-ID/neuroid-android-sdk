@@ -193,32 +193,6 @@ class NeuroID private constructor(
         return true
     }
 
-    internal fun setLowMemory(
-        lowMemory: Boolean = true,
-        memoryInfo: ActivityManager.MemoryInfo?
-    ):NIDEventModel? {
-        this.lowMemory = lowMemory
-
-        if(lowMemory && memoryInfo != null) {
-            val event = NIDEventModel(
-                type = LOW_MEMORY,
-                ts = System.currentTimeMillis(),
-                attrs = JSONArray().put(JSONObject().apply {
-                    put("isLowMemory", memoryInfo.lowMemory)
-                    put("total", memoryInfo.totalMem)
-                    put("available", memoryInfo.availMem)
-                    put("threshold", memoryInfo.threshold)
-                })
-            )
-
-            // add the low memory event to stop collecting additional events
-            dataStore.saveEvent(event)
-            return event
-        }
-
-        return null
-    }
-
     fun setRegisteredUserID(registeredUserId: String): Boolean {
         val validID = setGenericUserID(
             SET_REGISTERED_USER_ID,

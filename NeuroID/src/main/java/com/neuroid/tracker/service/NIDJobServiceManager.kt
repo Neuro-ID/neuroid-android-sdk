@@ -7,6 +7,7 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.CADENCE_READING_ACCEL
+import com.neuroid.tracker.events.LOW_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.Constants
@@ -167,11 +168,29 @@ class NIDJobServiceManager(
     /**
      * Get the current system memory state.
      */
-    private fun getMemInfo(context: Context): ActivityManager.MemoryInfo {
+    private fun checkMemoryLevel(context: Context): NIDEventModel? {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
-        return memoryInfo
+
+        NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
+
+        if (memoryInfo.lowMemory) {
+            val event = NIDEventModel(
+                type = LOW_MEMORY,
+                ts = System.currentTimeMillis(),
+                attrs = JSONArray().put(JSONObject().apply {
+                    put("isLowMemory", memoryInfo.lowMemory)
+                    put("total", memoryInfo.totalMem)
+                    put("available", memoryInfo.availMem)
+                    put("threshold", memoryInfo.threshold)
+                })
+            )
+
+            return event
+        }
+
+        return null
     }
 
     /**
@@ -182,10 +201,8 @@ class NIDJobServiceManager(
      * 3. get the current list of events from the data store manager
      */
     private fun getEventsToSend(context: Context): List<NIDEventModel> {
-        val memInfo = getMemInfo(context)
+        val lowMemEvent = checkMemoryLevel(context)
 
-        // update the sdk to note low memory and save event
-        val lowMemEvent = NeuroID.getInstance()?.setLowMemory(memInfo.lowMemory, memInfo)
         if (lowMemEvent !=null) {
             // return the low memory event to be sent
             return listOf(lowMemEvent)

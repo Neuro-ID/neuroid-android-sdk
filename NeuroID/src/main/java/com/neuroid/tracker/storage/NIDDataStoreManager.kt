@@ -70,7 +70,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
         if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
             val lastEventType = if (eventsList.isEmpty()) { "" } else { eventsList.last().type }
-            if (NeuroID.getInstance()?.lowMemory == true || lastEventType == LOW_MEMORY || lastEventType == FULL_BUFFER) {
+            if (NeuroID.getInstance()?.lowMemory == true || lastEventType == FULL_BUFFER) {
                 // no new events should be captured, drop the new event
                 NIDLog.w("NeuroID", "Data store buffer ${lastEventType}, ${event.type} dropped")
                 return
