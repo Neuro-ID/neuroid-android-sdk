@@ -478,6 +478,9 @@ class NeuroID private constructor(
             return false
         }
 
+        application?.let {
+            nidJobServiceManager.startJob(it, clientKey)
+        }
         isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -486,9 +489,6 @@ class NeuroID private constructor(
             startIntegrationHealthCheck()
             createSession()
             saveIntegrationHealthEvents()
-        }
-        application?.let {
-            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
