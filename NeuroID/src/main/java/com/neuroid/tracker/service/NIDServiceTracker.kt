@@ -1,6 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
@@ -17,24 +16,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 object NIDServiceTracker {
-    @get:Synchronized
-    @set:Synchronized
-    var screenName = ""
-
-    @get:Synchronized
-    @set:Synchronized
-    var screenActivityName = ""
-
-    @get:Synchronized
-    @set:Synchronized
-    var screenFragName = ""
-
-    var registeredViews: MutableSet<String> = mutableSetOf()
-    
-    var environment = ""
-    var siteId = ""
-    var rndmId = ""
-    var firstScreenName = ""
 
     // a static payload to send if OOM occurs
     private var oomPayload = ""
@@ -106,19 +87,19 @@ object NIDServiceTracker {
         }
 
         val jsonBody = JSONObject().apply {
-            put("siteId", siteId)
+            put("siteId", NeuroID.siteID)
             put("userId", userID)
             put("clientId", sharedDefaults.getClientId())
             put("identityId", userID)
             put("registeredUserId", registeredUserID)
-            put("pageTag", screenActivityName)
-            put("pageId", rndmId)
-            put("tabId", rndmId)
+            put("pageTag", NeuroID.screenActivityName)
+            put("pageId", NeuroID.rndmId)
+            put("tabId", NeuroID.rndmId)
             put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", "$ANDROID_URI$screenActivityName")
+            put("url", "$ANDROID_URI${NeuroID.screenActivityName}")
             put("jsVersion", "5.0.0")
             put("sdkVersion", NIDVersion.getSDKVersion())
-            put("environment", environment)
+            put("environment", NeuroID.environment)
             put("jsonEvents", events)
         }
 
