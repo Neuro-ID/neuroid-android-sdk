@@ -15,11 +15,10 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
-
-import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Job
 
 import org.junit.After
@@ -44,12 +43,6 @@ open class NeuroIDClassUnitTests {
     private var storedEvents = mutableSetOf<NIDEventModel>()
     private var queuedEvents = mutableSetOf<NIDEventModel>()
     private var excludedIds = mutableSetOf<String>()
-
-
-    @MockK
-    lateinit var mockedApplication: Application
-    private lateinit var mockContext: Context
-
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -133,6 +126,15 @@ open class NeuroIDClassUnitTests {
         }
 
         NeuroID.getInstance()?.application = mockedApplication
+    }
+
+    private fun setMockedNIDJobServiceManager() {
+        val mockedNIDJobServiceManager = mockk<NIDJobServiceManager>()
+
+        every { mockedNIDJobServiceManager.startJob(any(), any()) } just runs
+        every { mockedNIDJobServiceManager.isStopped() } returns true
+
+        NeuroID.getInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
     }
 
     private fun clearLogCounts() {
@@ -598,6 +600,8 @@ open class NeuroIDClassUnitTests {
     //    start
     @Test
     fun testStart_success() {
+        setMockedNIDJobServiceManager()
+
         NeuroID.isSDKStarted = false
         NeuroID.getInstance()?.clientKey = "abcd"
         val value = NeuroID.getInstance()?.start()
@@ -608,6 +612,8 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStart_failure() {
+        setMockedNIDJobServiceManager()
+
         setNeuroIDMockedLogger(
             errorMessage = "Missing Client Key - please call configure prior to calling start"
         )
@@ -628,6 +634,8 @@ open class NeuroIDClassUnitTests {
     //    stop
     @Test
     fun testStop() {
+        setMockedNIDJobServiceManager()
+
         NeuroID.isSDKStarted = true
 
         NeuroID.getInstance()?.stop()
@@ -641,6 +649,8 @@ open class NeuroIDClassUnitTests {
     //    isStopped
     @Test
     fun testIsStopped_true() {
+        setMockedNIDJobServiceManager()
+
         val expectedValue = true
         NeuroID.isSDKStarted = !expectedValue
 
@@ -651,6 +661,8 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testIsStopped_false() {
+        setMockedNIDJobServiceManager()
+
         val expectedValue = false
         NeuroID.isSDKStarted = !expectedValue
 
@@ -744,6 +756,7 @@ open class NeuroIDClassUnitTests {
     //    startSession
     @Test
     fun testStartSession_success_no_id() {
+        setMockedNIDJobServiceManager()
         setMockedDataStore()
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -755,6 +768,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_success_id() {
+        setMockedNIDJobServiceManager()
         setMockedDataStore()
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -766,6 +780,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_failure_clientKey() {
+        setMockedNIDJobServiceManager()
         setNeuroIDMockedLogger(
             errorMessage = "Missing Client Key - please call configure prior to calling start"
         )
@@ -781,6 +796,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_failure_userID() {
+        setMockedNIDJobServiceManager()
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -795,6 +811,7 @@ open class NeuroIDClassUnitTests {
     //    pauseCollection
     @Test
     fun testPauseCollection() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             it.pauseCollection()
             assertEquals(false, NeuroID.isSDKStarted)
@@ -802,7 +819,9 @@ open class NeuroIDClassUnitTests {
     }
 
     //    resumeCollection
+    @Test
     fun testResumeCollection() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             it.resumeCollection()
             assertEquals(true, NeuroID.isSDKStarted)
@@ -810,7 +829,9 @@ open class NeuroIDClassUnitTests {
     }
 
     //    stopSession
+    @Test
     fun testStopSession() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             val stopped = it.stopSession()
             assertEquals(true, stopped)
