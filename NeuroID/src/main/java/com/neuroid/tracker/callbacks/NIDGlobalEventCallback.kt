@@ -14,10 +14,10 @@ import android.view.SearchEvent
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLog
@@ -244,7 +244,7 @@ private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
     val text = view.text.toString()
 
     // do a check to see if we have registered this Field yet
-    if (!NIDServiceTracker.registeredViews.contains(idName)) {
+    if (!NeuroID.registeredViews.contains(idName)) {
         NIDLog.d(
             msg="Late registration: registeringView $simpleJavaClassName"
         )
@@ -252,7 +252,7 @@ private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
         val guid =
             UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
         registerComponent(view, guid, NIDLogWrapper(), getDataStoreInstance(), "targetInteractionEvent")
-        NIDServiceTracker.registeredViews.add(idName);
+        NeuroID.registeredViews.add(idName);
     } else {
         NIDLog.d(
             msg="view already registered: registeringView $simpleJavaClassName tag: $idName"

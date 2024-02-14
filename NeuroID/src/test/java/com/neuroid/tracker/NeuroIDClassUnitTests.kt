@@ -15,7 +15,6 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
@@ -360,7 +359,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetScreenName() {
         val expectedValue = "myScreen"
-        NIDServiceTracker.screenName = expectedValue
+        NeuroID.screenName = expectedValue
 
         val value = NeuroID.getInstance()?.getScreenName()
 
@@ -383,11 +382,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironment() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironment"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironment("MYENV")
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -396,11 +395,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironmentProduction_true() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironmentProduction(true)
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -408,11 +407,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironmentProduction_false() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironmentProduction(false)
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -421,7 +420,7 @@ open class NeuroIDClassUnitTests {
     fun testGetEnvironment() {
 
         val expectedValue = "MyEnv"
-        NIDServiceTracker.environment = expectedValue
+        NeuroID.environment = expectedValue
 
 
         val value = NeuroID.getInstance()?.getEnvironment()
@@ -435,11 +434,11 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setSiteId"))
 
         val expectedValue = "TestSiteId"
-        NIDServiceTracker.siteId = "DifferentSiteID"
+        NeuroID.siteID = "DifferentSiteID"
 
         NeuroID.getInstance()?.setSiteId(expectedValue)
 
-        assertEquals(expectedValue, NIDServiceTracker.siteId)
+        assertEquals(expectedValue, NeuroID.siteID)
         assertInfoCount(1)
     }
 
@@ -449,7 +448,7 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("getSiteId"))
 
         val expectedValue = ""
-        NIDServiceTracker.siteId = "TestSiteId"
+        NeuroID.siteID = "TestSiteId"
 
         val value = NeuroID.getInstance()?.getSiteId()
 
@@ -526,7 +525,7 @@ open class NeuroIDClassUnitTests {
     fun testGetTabId() {
         val expectedValue = "MyRNDID"
 
-        NIDServiceTracker.rndmId = expectedValue
+        NeuroID.rndmId = expectedValue
 
         val value = NeuroID.getInstance()?.getTabId()
 

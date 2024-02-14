@@ -17,7 +17,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
@@ -75,9 +74,9 @@ class NeuroID private constructor(
             clientKey = ""
         } else {
             if (clientKey.contains("_live_")) {
-                NIDServiceTracker.environment = "LIVE"
+                environment = "LIVE"
             } else {
-                NIDServiceTracker.environment = "TEST"
+                environment = "TEST"
             }
         }
 
@@ -113,6 +112,28 @@ class NeuroID private constructor(
 
         internal val GYRO_SAMPLE_INTERVAL = 200L
         internal val captureGyroCadence = true
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenName = ""
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenActivityName = ""
+
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenFragName = ""
+
+
+        internal var environment = ""
+        internal var siteID = ""
+        internal var rndmId = "mobile"
+        internal var firstScreenName = ""
+
+        internal var registeredViews: MutableSet<String> = mutableSetOf()
+
 
         private var singleton: NeuroID? = null
 
@@ -280,13 +301,13 @@ class NeuroID private constructor(
             return false
         }
 
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        screenName = screen.replace("\\s".toRegex(), "%20")
         createMobileMetadata()
 
         return true
     }
 
-    fun getScreenName(): String = NIDServiceTracker.screenName
+    fun getScreenName(): String = screenName
 
     fun excludeViewByTestID(id: String) {
         application?.let {
@@ -308,14 +329,15 @@ class NeuroID private constructor(
         )
     }
 
-    fun getEnvironment(): String = NIDServiceTracker.environment
+    fun getEnvironment(): String = environment
 
     @Deprecated("getSiteId is deprecated and no longer required")
     fun setSiteId(siteId: String) {
         NIDLog.i(
             msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
         )
-        NIDServiceTracker.siteId = siteId
+
+        siteID = siteId
     }
 
     @Deprecated("getSiteId is deprecated")
@@ -349,7 +371,7 @@ class NeuroID private constructor(
         nidActivityCallbacks.forceStart(activity)
     }
 
-    internal fun getTabId(): String = NIDServiceTracker.rndmId
+    internal fun getTabId(): String = rndmId
 
     internal fun getFirstTS(): Long = timestamp
 
@@ -446,7 +468,6 @@ class NeuroID private constructor(
             nidJobServiceManager.startJob(it, clientKey)
         }
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -628,7 +649,6 @@ class NeuroID private constructor(
         resumeCollection()
 
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {

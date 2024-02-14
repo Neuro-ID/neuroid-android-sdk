@@ -1,6 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
@@ -15,24 +14,6 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
 
 object NIDServiceTracker {
-    @get:Synchronized
-    @set:Synchronized
-    var screenName = ""
-
-    @get:Synchronized
-    @set:Synchronized
-    var screenActivityName = ""
-
-    @get:Synchronized
-    @set:Synchronized
-    var screenFragName = ""
-
-    var registeredViews: MutableSet<String> = mutableSetOf()
-    
-    var environment = ""
-    var siteId = ""
-    var rndmId = ""
-    var firstScreenName = ""
 
     // a static payload to send if OOM occurs
     private var oomPayload = ""
