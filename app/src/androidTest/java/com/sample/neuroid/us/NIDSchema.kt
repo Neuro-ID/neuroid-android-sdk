@@ -1,16 +1,10 @@
 package com.sample.neuroid.us
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.neuroid.tracker.events.ANDROID_URI
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDResponseCallBack
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
@@ -50,7 +44,7 @@ class NIDSchema {
     }
 
     suspend fun validateSchema(
-        eventList: Set<String>,
+        eventList: List<NIDEventModel>,
     ) {
         val json =
             getJsonData(
@@ -154,23 +148,11 @@ class NIDSchema {
     private fun getInputStreamFromResource(fileName: String) =
         javaClass.classLoader?.getResourceAsStream(fileName)
 
-    private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
-        val listJson = listEvents.map {
-            if (it.contains("\"CREATE_SESSION\"")) {
-                JSONObject(
-                    it.replace(
-                        "\"url\":\"\"",
-                        "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
-                    )
-                )
-            } else {
-                JSONObject(it)
-            }
-        }
-
-        val jsonListEvents = JSONArray(listJson)
+    private suspend fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
+        val jsonListEvents = JSONArray(listEvents.map{event ->
+            event.getJSONObject()
+        })
 
         return NIDServiceTracker.getContentJson(context, jsonListEvents)
-            .replace("\\/", "/")
     }
 }

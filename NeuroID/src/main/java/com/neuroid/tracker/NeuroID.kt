@@ -1,6 +1,7 @@
 package com.neuroid.tracker
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
@@ -63,6 +64,8 @@ class NeuroID private constructor(
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
     internal var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
+
+    internal var lowMemory:Boolean = false
 
     init {
         application?.let {
@@ -188,6 +191,32 @@ class NeuroID private constructor(
         }
 
         return true
+    }
+
+    internal fun setLowMemory(
+        lowMemory: Boolean = true,
+        memoryInfo: ActivityManager.MemoryInfo?
+    ):NIDEventModel? {
+        this.lowMemory = lowMemory
+
+        if(lowMemory && memoryInfo != null) {
+            val event = NIDEventModel(
+                type = LOW_MEMORY,
+                ts = System.currentTimeMillis(),
+                attrs = JSONArray().put(JSONObject().apply {
+                    put("isLowMemory", memoryInfo.lowMemory)
+                    put("total", memoryInfo.totalMem)
+                    put("available", memoryInfo.availMem)
+                    put("threshold", memoryInfo.threshold)
+                })
+            )
+
+            // add the low memory event to stop collecting additional events
+            dataStore.saveEvent(event)
+            return event
+        }
+
+        return null
     }
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
@@ -359,14 +388,6 @@ class NeuroID private constructor(
     internal fun getTabId(): String = NIDServiceTracker.rndmId
 
     internal fun getFirstTS(): Long = timestamp
-
-    internal fun getJsonPayLoad(context: Context): String {
-        return dataStore.getJsonPayload(context)
-    }
-
-    internal fun resetJsonPayLoad() {
-        dataStore.resetJsonPayload()
-    }
 
     internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {

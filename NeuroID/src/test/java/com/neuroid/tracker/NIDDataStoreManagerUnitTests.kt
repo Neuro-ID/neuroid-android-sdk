@@ -28,14 +28,6 @@ import org.junit.Test
 class NIDDataStoreManagerUnitTests {
 
     private lateinit var mockContext: Context
-    private lateinit var mockSharedPreferences: SharedPreferences
-    private lateinit var mockEditor: SharedPreferences.Editor
-
-    private var storedObj = mutableSetOf<String>()
-
-    // used only for getAllEvents because we intentionally are looking at previously stored
-    //  and the function passes [] by default which clears out anything stored in our mocks
-    private var dontClearStored = false
 
     private fun mockDataStore(testScheduler: TestCoroutineScheduler): NIDDataStoreManagerImp {
         val dispatcher = StandardTestDispatcher(testScheduler)
@@ -45,36 +37,7 @@ class NIDDataStoreManagerUnitTests {
 
     @Before
     fun setUp() {
-        // Mock the context and sharedPreferences before each test
         mockContext = spyk()
-        mockSharedPreferences = mockk()
-        every {
-            mockContext.getSharedPreferences(
-                "NID_SHARED_PREF_FILE",
-                Context.MODE_PRIVATE
-            )
-        } returns mockSharedPreferences
-
-        mockEditor = spyk()
-
-        every { mockSharedPreferences.getStringSet(any(), any()) } answers {
-            storedObj
-        }
-        every { mockSharedPreferences.edit().putStringSet(any(), any()) } answers {
-            val eventArray: Set<String> = args[1] as Set<String>
-
-            if (eventArray.isEmpty() && !dontClearStored) {
-                storedObj.clear()
-            } else {
-                val filteredEvents = eventArray.filter { it.isNotBlank() }
-                filteredEvents.forEach {
-                    storedObj.add(it)
-                }
-            }
-
-            mockEditor
-        }
-        every { mockSharedPreferences.edit().apply() } returns Unit
     }
 
     @After
@@ -120,7 +83,9 @@ class NIDDataStoreManagerUnitTests {
         advanceUntilIdle()
 
         Assert.assertEquals(0, dataStore.queuedEvents.count())
-//        Assert.assertEquals(1, storedObj.count()) // Should store obj but issues with testing coroutine
+
+        val events = dataStore.getAllEvents()
+        Assert.assertEquals(1, events.count())
     }
 
     //     saveEvent
@@ -129,41 +94,44 @@ class NIDDataStoreManagerUnitTests {
         val dataStore = mockDataStore(testScheduler)
         advanceUntilIdle()
 
-        val job = dataStore.saveEvent(
+      dataStore.saveEvent(
             NIDEventModel(
                 type = INPUT,
                 ts = System.currentTimeMillis()
             )
         )
 
-        job?.invokeOnCompletion {
-            Assert.assertEquals(1, storedObj.count())
-            Assert.assertEquals(true, storedObj.firstOrNull()?.contains("INPUT"))
-        }
+        advanceUntilIdle()
+
+        val events = dataStore.getAllEvents()
+        Assert.assertEquals(1, events.count())
+        Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
     }
 
     //    getAllEvents
     @Test
     fun testGetAllEvents() = runTest {
-        dontClearStored = true
         val dataStore = mockDataStore(testScheduler)
         advanceUntilIdle()
 
-        println("stored og $storedObj")
-
-        storedObj.add("test")
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = INPUT,
+                ts = System.currentTimeMillis()
+            )
+        )
         advanceUntilIdle()
 
-        println("stored post $storedObj")
-
-        val events = dataStore.getAllEvents()
+        var events = dataStore.getAllEvents()
         advanceUntilIdle()
 
-        println("stored post post $storedObj $events")
         Assert.assertEquals(1, events.count())
-        Assert.assertEquals(true, events.contains("test"))
+        Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
 
-        dontClearStored = false
+        advanceUntilIdle()
+
+        events = dataStore.getAllEvents()
+        Assert.assertEquals(0, events.count())
     }
 
     //    addViewIdExclude
@@ -196,20 +164,17 @@ class NIDDataStoreManagerUnitTests {
         val dataStore = mockDataStore(testScheduler)
         advanceUntilIdle()
 
-        storedObj.add("test")
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = INPUT,
+                ts = System.currentTimeMillis()
+            )
+        )
 
         dataStore.clearEvents()
         advanceUntilIdle()
 
-        Assert.assertEquals(0, storedObj.count())
+        val events = dataStore.getAllEvents()
+        Assert.assertEquals(0, events.count())
     }
-
-    // Necessary to Test?
-//    resetJsonPayload
-//    getJsonPayload
-//    putStringSet
-//    getStringSet
-//    saveJsonPayload
-//    createPayload
-//    getContentJson
 }

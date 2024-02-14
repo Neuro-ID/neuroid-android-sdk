@@ -61,6 +61,10 @@ data class NIDEventModel(
 
 ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
+        return getJSONObject().toString()
+    }
+
+    fun getJSONObject(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
         this.apply {
@@ -148,7 +152,7 @@ data class NIDEventModel(
             }
         }
 
-        return jsonObject.toString()
+        return jsonObject
     }
 
     override fun compareTo(other: NIDEventModel): Int {
@@ -157,9 +161,9 @@ data class NIDEventModel(
 }
 
 data class NIDSensorModel(
-    val x: Float?,
-    val y: Float?,
-    val z: Float?
+    var x: Float?,
+    var y: Float?,
+    var z: Float?
 ) {
     fun getJsonObject(): JSONObject {
         val jsonObject = JSONObject()

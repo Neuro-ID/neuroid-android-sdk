@@ -1,13 +1,14 @@
 package com.neuroid.tracker.service
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.CADENCE_READING_ACCEL
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
@@ -136,7 +137,7 @@ class NIDJobServiceManager(
      */
     suspend fun sendEventsNow(
         forceSendEvents: Boolean = false,
-        eventSender: NIDEventSender = getServiceAPI(),
+        eventSender: NIDEventSender = getServiceAPI()
     ) {
         if (isSendEventsNowEnabled && (forceSendEvents || !isStopped())) {
             application?.let {
@@ -144,7 +145,7 @@ class NIDJobServiceManager(
                     eventSender,
                     clientKey,
                     it,
-                    null,
+                    getEventsToSend(it),
                     object: NIDResponseCallBack {
                         override fun onSuccess(code: Int) {
                             // noop!
@@ -155,11 +156,41 @@ class NIDJobServiceManager(
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },
-                    dataStore
                 )
             } ?: run {
                 userActive = false
             }
         }
+    }
+
+
+    /**
+     * Get the current system memory state.
+     */
+    private fun getMemInfo(context: Context): ActivityManager.MemoryInfo {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        return memoryInfo
+    }
+
+    /**
+     * Get the events that should be sent.  The 3 scenarios are:
+     * 1. if provided, the set of string encoded events should be used and converted to the correct
+     * structure
+     * 2. if system memory is low, create a low memory event and return that
+     * 3. get the current list of events from the data store manager
+     */
+    private fun getEventsToSend(context: Context): List<NIDEventModel> {
+        val memInfo = getMemInfo(context)
+
+        // update the sdk to note low memory and save event
+        val lowMemEvent = NeuroID.getInstance()?.setLowMemory(memInfo.lowMemory, memInfo)
+        if (lowMemEvent !=null) {
+            // return the low memory event to be sent
+            return listOf(lowMemEvent)
+        }
+
+        return dataStore.getAllEvents()
     }
 }

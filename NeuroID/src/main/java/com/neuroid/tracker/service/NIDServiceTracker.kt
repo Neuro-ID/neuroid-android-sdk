@@ -1,13 +1,16 @@
 package com.neuroid.tracker.service
 
+import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.events.OUT_OF_MEMORY
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
-import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
 import org.json.JSONArray
@@ -33,43 +36,56 @@ object NIDServiceTracker {
     var rndmId = ""
     var firstScreenName = ""
 
+    // a static payload to send if OOM occurs
+    private var oomPayload = ""
+
+    /**
+     * Create a payload that can be used in the event of an OOM error without additional allocations.
+     */
+    private suspend fun initializeStaticPayload(context: Context) {
+        if (oomPayload.isEmpty()) {
+            oomPayload = getContentJson(
+                context,
+                JSONArray(
+                    listOf(
+                        NIDEventModel(
+                            type = OUT_OF_MEMORY,
+                            ts = System.currentTimeMillis()
+                        ).getJSONObject()
+                    )
+                )
+            )
+        }
+    }
+
     suspend fun sendEventToServer(
         eventSender: NIDEventSender,
         key: String,
         context: Application,
-        events: Set<String>? = null,
+        events: List<NIDEventModel>,
         eventReportCallback: NIDResponseCallBack,
-        dataStoreManager: NIDDataStoreManager = getDataStoreInstance()
     ) {
-        val listEvents = (events ?: dataStoreManager.getAllEvents()).sortedBy {
-            val event = JSONObject(it)
-            event.getLong("ts")
-        }
+        initializeStaticPayload(context)
 
-        if (listEvents.isEmpty().not()) {
-            NeuroID.getInstance()?.saveIntegrationHealthEvents()
-            // Allow for override of this URL in config
-            val listJson = listEvents.map {
-                if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(
-                        it.replace(
-                            "\"url\":\"\"",
-                            "\"url\":\"$ANDROID_URI$firstScreenName\""
-                        )
-                    )
-                } else {
-                    JSONObject(it)
-                }
+        var data = ""
+        try {
+            if(events.isEmpty()) {
+                // nothing to send
+                return
             }
 
-            val jsonListEvents = JSONArray(listJson)
+            val listEvents = events.map { it.getJSONObject() }
 
-            val data = getContentJson(context, jsonListEvents)
-                .replace("\\/", "/")
-            NIDLog.d(msg="payload Json::: $data")
+            data = getContentJson(context, JSONArray(listEvents))
 
-            eventSender.sendTrackerData(data, key, eventReportCallback)
+            NIDLog.d("NeuroID", "payload: ${listEvents.size} events; ${data.length} bytes")
+            NeuroID.getInstance()?.saveIntegrationHealthEvents()
+        } catch (exception: OutOfMemoryError) {
+            // make a best effort attempt to continue and send an out of memory event
+            data = oomPayload
         }
+
+        eventSender.sendTrackerData(data, key, eventReportCallback)
     }
 
     suspend fun getContentJson(
@@ -95,6 +111,8 @@ object NIDServiceTracker {
             put("jsonEvents", events)
         }
 
-        return jsonBody.toString()
+        // using this JSON library (already included) does not escape /
+        val gson: Gson = GsonBuilder().create()
+        return gson.toJson(jsonBody)
     }
 }

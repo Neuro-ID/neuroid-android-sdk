@@ -1,11 +1,14 @@
 package com.neuroid.tracker
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDApiService
 import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -164,8 +167,8 @@ class NIDJobServiceManagerTest {
 
     private fun getMockedDatastoreManager (): NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
-        val events = "{\"siteId\":\"guns_452\",\"userId\":\"1693537992533\"}"
-        coEvery {dataStoreManager.getAllEvents()} returns setOf(events)
+        val event = NIDEventModel(type = "TEST_EVENT", ts=1)
+        coEvery {dataStoreManager.getAllEvents()} returns listOf(event)
         return dataStoreManager
     }
 
@@ -188,6 +191,10 @@ class NIDJobServiceManagerTest {
         val sharedPreferences = mockk<SharedPreferences>()
         every {sharedPreferences.getString(any(), any())} returns "test"
         every { application.getSharedPreferences(any(), any()) } returns sharedPreferences
+
+        val activityManager = mockk<ActivityManager>()
+        every {application.getSystemService(Context.ACTIVITY_SERVICE)} returns activityManager
+        every {activityManager.getMemoryInfo(any())} just runs
 
         return application
     }
