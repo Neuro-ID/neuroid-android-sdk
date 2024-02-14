@@ -194,11 +194,9 @@ class NIDJobServiceManager(
     }
 
     /**
-     * Get the events that should be sent.  The 3 scenarios are:
-     * 1. if provided, the set of string encoded events should be used and converted to the correct
-     * structure
-     * 2. if system memory is low, create a low memory event and return that
-     * 3. get the current list of events from the data store manager
+     * Get the events that should be sent.  The 2 scenarios are:
+     * 1. if system memory is low, create a low memory event and return that
+     * 2. get the current list of events from the data store manager
      */
     private fun getEventsToSend(context: Context): List<NIDEventModel> {
         val lowMemEvent = checkMemoryLevel(context)
