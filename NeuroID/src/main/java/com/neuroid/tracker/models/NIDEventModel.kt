@@ -1,11 +1,12 @@
 package com.neuroid.tracker.models
 
+import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
 import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
-    val attrs: JSONArray? = null,
+    val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
     val tgs: String? = null,
     val touches: List<String>? = null,
@@ -53,13 +54,13 @@ data class NIDEventModel(
     val uid: String? = null,
     val o: String? = null,
     var rts: String? = null,
-    val metadata: JSONObject? = null,
+    val metadata: NIDMetaData? = null,
     val rid: String? = null,
     val m: String? = null,
     val level: String? = null,
     val c: Boolean? = null,
 
-) : Comparable<NIDEventModel> {
+    ) : Comparable<NIDEventModel> {
     fun getOwnJson(): String {
         return getJSONObject().toString()
     }

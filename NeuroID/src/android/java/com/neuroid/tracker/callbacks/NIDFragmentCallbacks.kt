@@ -27,13 +27,6 @@ class NIDFragmentCallbacks(
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-
-            val metadataObj = JSONObject()
-            metadataObj.put("component", "fragment")
-            metadataObj.put("lifecycle", "attached")
-            metadataObj.put("className", "${f::class.java.simpleName}")
-            val attrJSON = JSONArray().put(metadataObj)
-
             getDataStoreInstance()
                 .saveEvent(
                     NIDEventModel(
@@ -41,7 +34,13 @@ class NIDFragmentCallbacks(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        attrs = attrJSON
+                        attrs = listOf(
+                            mapOf(
+                                "component" to "fragment",
+                                "lifecycle" to "attached",
+                                "className" to "${f::class.java.simpleName}"
+                            )
+                        )
                     )
                 )
         }

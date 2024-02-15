@@ -26,9 +26,11 @@ class NIDEventModelUnitTest {
         val event = NIDEventModel(
             type = "TEST_TYPE",
             ts = 1,
-            attrs = JSONArray().put(
-                        JSONObject().put("key", "value")
-                    ),
+            attrs = listOf(
+                mapOf(
+                    "key" to "value"
+                )
+            ),
             tg = mapOf("key1" to "value1", "key2" to "value2"),
             dnt = false
             )

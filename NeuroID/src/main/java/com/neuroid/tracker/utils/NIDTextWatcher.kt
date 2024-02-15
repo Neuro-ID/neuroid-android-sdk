@@ -53,11 +53,7 @@ class NIDTextWatcher(
                     val gyroData = NIDSensorHelper.getGyroscopeInfo()
                     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-                    val metadataObj = JSONObject()
                     if (pastedText.isNotEmpty()) {
-                        metadataObj.put("clipboardText", "S~C~~${pastedText.length}")
-
-                        val attrJSON = JSONArray().put(metadataObj)
                         NeuroID.getInstance()?.dataStore
                             ?.saveEvent(
                                 NIDEventModel(
@@ -72,7 +68,11 @@ class NIDTextWatcher(
                                     hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
                                     gyro = gyroData,
                                     accel = accelData,
-                                    attrs = attrJSON
+                                    attrs = listOf(
+                                        mapOf(
+                                            "clipboardText" to "S~C~~${pastedText.length}"
+                                        )
+                                    )
                                 )
                             )
                     }

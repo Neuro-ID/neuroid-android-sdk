@@ -1,17 +1,12 @@
 package com.neuroid.tracker
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkAll
-import io.mockk.verify
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.StandardTestDispatcher

@@ -38,6 +38,7 @@ class NIDJobServiceManager(
     internal var isSetup: Boolean = false
 
     private var application: Application? = null
+    private var activityManager: ActivityManager? = null
 
 
     @Synchronized
@@ -51,6 +52,7 @@ class NIDJobServiceManager(
         NIDSensorHelper.initSensorHelper(application, logger)
 
         gyroCadenceJob = createGyroJobServer()
+        activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         this.isSetup = true
     }
 
@@ -95,7 +97,6 @@ class NIDJobServiceManager(
 
                 val gyroData = NIDSensorHelper.getGyroscopeInfo()
                 val accelData = NIDSensorHelper.getAccelerometerInfo()
-                val attrsObj = JSONObject().put("interval", "${1000 * GYRO_SAMPLE_INTERVAL}s")
 
                 dataStore.saveEvent(
                     NIDEventModel(
@@ -103,7 +104,11 @@ class NIDJobServiceManager(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        attrs = JSONArray().put(attrsObj)
+                        attrs = listOf(
+                            mapOf(
+                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
+                            )
+                        )
                     )
                 )
 
@@ -144,9 +149,15 @@ class NIDJobServiceManager(
      * Get the current system memory state.
      */
     private fun checkMemoryLevel(context: Context): NIDEventModel? {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
+
+        // shouldn't ever be null because it is initialized with startJob, but putting this here as a safety check
+        if (activityManager == null) {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            activityManager.getMemoryInfo(memoryInfo)
+        } else {
+            activityManager?.getMemoryInfo(memoryInfo)
+        }
 
         NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
 
@@ -154,12 +165,14 @@ class NIDJobServiceManager(
             val event = NIDEventModel(
                 type = LOW_MEMORY,
                 ts = System.currentTimeMillis(),
-                attrs = JSONArray().put(JSONObject().apply {
-                    put("isLowMemory", memoryInfo.lowMemory)
-                    put("total", memoryInfo.totalMem)
-                    put("available", memoryInfo.availMem)
-                    put("threshold", memoryInfo.threshold)
-                })
+                attrs = listOf(
+                    mapOf(
+                        "isLowMemory" to memoryInfo.lowMemory,
+                        "total" to  memoryInfo.totalMem,
+                        "available" to  memoryInfo.availMem,
+                        "threshold" to  memoryInfo.threshold,
+                    )
+                )
             )
 
             return event

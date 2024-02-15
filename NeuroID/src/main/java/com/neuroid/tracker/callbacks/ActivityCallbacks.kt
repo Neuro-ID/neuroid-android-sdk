@@ -48,12 +48,6 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "paused")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -61,7 +55,13 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "paused",
+                            "className" to "${activity::class.java.simpleName}"
+                        )
+                    )
                 )
             )
     }
@@ -83,12 +83,6 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "destroyed")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-
         NIDLog.d( msg="Activity - Destroyed - Window Unload")
         getDataStoreInstance()
             .saveEvent(
@@ -97,7 +91,13 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "destroyed",
+                            "className" to "${activity::class.java.simpleName}"
+                        )
+                    )
                 )
             )
     }

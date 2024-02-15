@@ -193,25 +193,30 @@ fun createAtrrJSON(
     guid: String,
     activityOrFragment: String = "",
     parent: String = "",
-    metaData: JSONObject
-): JSONArray {
-    val idJson = JSONObject()
-        .put("n", "guid")
-        .put("v", guid)
+    metaData: Map<String, Any>
+): List<Map<String, Any>> {
+    val idJson = mapOf<String, Any>(
+        "n" to "guid",
+        "v" to guid
+    )
 
-    val classJson = JSONObject()
-        .put("n", "screenHierarchy")
-        .put("v", "${view.getParents(logger)}${NeuroID.screenName}")
+    val classJson = mapOf<String, Any>(
+        "n" to "screenHierarchy",
+        "v" to "${view.getParents(logger)}${NeuroID.screenName}"
+    )
 
     val parentData =
-        JSONObject()
-            .put("parentClass", parent)
-            .put("component", activityOrFragment)
+        mapOf<String, Any>(
+            "parentClass" to parent,
+            "component" to activityOrFragment
+        )
 
-    return JSONArray()
-        .put(idJson)
-        .put(classJson)
-        .put(parentData).put(metaData)
+    return listOf(
+        idJson,
+        classJson,
+        parentData,
+        metaData
+    )
 }
 
 fun registerFinalComponent(
@@ -222,7 +227,7 @@ fun registerFinalComponent(
     et: String,
     v: String,
     simpleName: String,
-    attrJson: JSONArray
+    attrJson: List<Map<String, Any>>
 ) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -264,7 +269,7 @@ data class ComponentValuesResult(
     val idName: String,
     val et: String,
     val v: String,
-    val metaData: JSONObject
+    val metaData: Map<String, Any>
 )
 
 fun isCommonAndroidComponent(view: View): ComponentValuesResult {
@@ -272,7 +277,7 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
     var idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
-    val metaData = JSONObject()
+    val metaData = mutableMapOf<String, Any>()
 
     when (view) {
         is EditText -> {
