@@ -99,7 +99,6 @@ class NIDJobServiceManager(
 
                 val gyroData = NIDSensorHelper.getGyroscopeInfo()
                 val accelData = NIDSensorHelper.getAccelerometerInfo()
-                val attrsObj = JSONObject().put("interval", "${1000 * GYRO_SAMPLE_INTERVAL}s")
 
                 dataStore.saveEvent(
                     NIDEventModel(
@@ -107,7 +106,11 @@ class NIDJobServiceManager(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        attrs = JSONArray().put(attrsObj)
+                        attrs = listOf(
+                            mapOf(
+                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
+                            )
+                        )
                     )
                 )
 
@@ -179,12 +182,14 @@ class NIDJobServiceManager(
             val event = NIDEventModel(
                 type = LOW_MEMORY,
                 ts = System.currentTimeMillis(),
-                attrs = JSONArray().put(JSONObject().apply {
-                    put("isLowMemory", memoryInfo.lowMemory)
-                    put("total", memoryInfo.totalMem)
-                    put("available", memoryInfo.availMem)
-                    put("threshold", memoryInfo.threshold)
-                })
+                attrs = listOf(
+                    mapOf(
+                        "isLowMemory" to memoryInfo.lowMemory,
+                        "total" to  memoryInfo.totalMem,
+                        "available" to  memoryInfo.availMem,
+                        "threshold" to  memoryInfo.threshold,
+                    )
+                )
             )
 
             return event

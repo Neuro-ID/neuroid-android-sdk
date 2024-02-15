@@ -538,7 +538,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
+                    metadata = metaData
                 )
             )
             createMobileMetadata()
@@ -559,7 +559,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
+                    metadata = metaData,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
@@ -579,7 +579,11 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
+                    attrs = listOf(
+                        mapOf(
+                            "isRN" to isRN
+                        )
+                    )
                 )
             )
         }
