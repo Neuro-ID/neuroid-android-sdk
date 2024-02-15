@@ -42,6 +42,7 @@ class NIDJobServiceManager(
     internal var isSetup: Boolean = false
 
     private var application: Application? = null
+    private var activityManager: ActivityManager? = null
 
 
     @Synchronized
@@ -55,6 +56,7 @@ class NIDJobServiceManager(
         NIDSensorHelper.initSensorHelper(application, logger)
 
         gyroCadenceJob = createGyroJobServer()
+        activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         this.isSetup = true
     }
 
@@ -172,9 +174,15 @@ class NIDJobServiceManager(
      * Get the current system memory state.
      */
     private fun checkMemoryLevel(context: Context): NIDEventModel? {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
+
+        // shouldn't ever be null because it is initialized with startJob, but putting this here as a safety check
+        if (activityManager == null) {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            activityManager.getMemoryInfo(memoryInfo)
+        } else {
+            activityManager?.getMemoryInfo(memoryInfo)
+        }
 
         NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
 
