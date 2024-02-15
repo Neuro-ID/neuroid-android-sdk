@@ -195,6 +195,12 @@ class NeuroID private constructor(
     @VisibleForTesting
     fun setTestURL(newEndpoint: String){
         endpoint = newEndpoint
+
+        application?.let {
+            nidJobServiceManager.setTestEventSender(
+                getSendingService(endpoint, NIDLog, it)
+            )
+        }
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {

@@ -83,12 +83,9 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
                 return
             }
 
-            val listEvents = events.map { it.getJSONObject() }
-
             data = getRequestPayloadJSON(events)
 
-            NIDLog.d("NeuroID", "payload: ${listEvents.size} events; ${data.length} bytes")
-            println("TESTING ABOUT TO SEND DATA payload: ${listEvents.size} events; ${data.length} bytes")
+            NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
             NeuroID.getInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event

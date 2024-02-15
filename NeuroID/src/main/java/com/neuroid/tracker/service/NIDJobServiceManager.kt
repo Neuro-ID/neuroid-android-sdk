@@ -3,6 +3,7 @@ package com.neuroid.tracker.service
 import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -181,5 +182,10 @@ class NIDJobServiceManager(
         }
 
         return dataStore.getAllEvents()
+    }
+
+    @VisibleForTesting
+    internal fun setTestEventSender(eventSender: NIDSendingService){
+        this.eventSender = eventSender
     }
 }

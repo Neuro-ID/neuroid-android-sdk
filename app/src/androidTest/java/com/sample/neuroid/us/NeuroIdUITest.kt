@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
@@ -20,33 +21,6 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-
-
-data class Event(
-    val type: String,
-    val attrs: List<Attribute>,
-    val ts: Long,
-    val gyro: Gyro?,
-    val accel: Accel?
-)
-
-data class Attribute(
-    val component: String,
-    val lifecycle: String,
-    val className: String
-)
-
-data class Gyro(
-    val x: Int,
-    val y: Int,
-    val z: Int
-)
-
-data class Accel(
-    val x: Double,
-    val y: Double,
-    val z: Double
-)
 
 data class ResponseData(
     val siteId: String,
@@ -62,7 +36,7 @@ data class ResponseData(
     val jsVersion: String,
     val sdkVersion: String,
     val environment: String,
-    val jsonEvents: List<Event>
+    val jsonEvents: List<NIDEventModel>
 )
 
 /**
@@ -118,8 +92,8 @@ class NeuroIdUITest {
             for (i in 0 until request) {
                 var  req  = server.takeRequest()
                 val body = req.body.readUtf8().toString()
-                val gson = Gson()
 
+                val gson = Gson()
                 val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
 
                 val foundEvent = jsonObject?.jsonEvents?.find { event -> event.type == eventType }
