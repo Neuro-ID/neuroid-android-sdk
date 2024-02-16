@@ -5,7 +5,6 @@ import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random
@@ -102,7 +101,7 @@ class NIDSharedPrefsDefaults(
         return "$timeNow.$numRnd"
     }
 
-    private fun putString(key: String, value: String) {
+    internal fun putString(key: String, value: String) {
         CoroutineScope(Dispatchers.IO).launch {
             sharedPref?.let {
                 with(it.edit()) {
@@ -113,47 +112,8 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    private fun getString(key: String, default: String = ""): String {
+    internal fun getString(key: String, default: String = ""): String {
         return sharedPref?.getString(key, "") ?: default
-    }
-
-    private fun putLong(key: String, value: Long) {
-        CoroutineScope(Dispatchers.IO).launch {
-            sharedPref?.let {
-                with(it.edit()) {
-                    putLong(key, value)
-                    apply()
-                }
-            }
-        }
-    }
-
-    private fun getLong(key: String, default: Long = 0): Long {
-        return sharedPref?.getLong(key, 0) ?: default
-    }
-
-    fun cacheRequestId(fpjsRequestId: String) {
-        putString(NID_RID, fpjsRequestId)
-    }
-
-    // Save 24 hr expiration timestamp for cached Request Id
-    fun cacheRequestIdExpirationTimestamp() {
-        val currentTimeMillis = System.currentTimeMillis()
-        val twentyFourHoursInMillis = 24 * 60 * 60 * 1000
-        putLong(NID_RID_TS_EXP, twentyFourHoursInMillis + currentTimeMillis)
-    }
-
-    fun getCachedRequestId(): String {
-        return getString(NID_RID)
-    }
-
-    fun hasRequestIdExpired(): Boolean {
-        val nidRidExpirationTimestamp = getLong(NID_RID_TS_EXP)
-        val currentTimestamp = System.currentTimeMillis()
-        if (currentTimestamp > nidRidExpirationTimestamp) {
-            return true
-        }
-        return false
     }
 
     companion object {
@@ -166,8 +126,6 @@ class NIDSharedPrefsDefaults(
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
         private const val NID_DEVICE_SALT = "NID_DEVICE_SALT"
-        private const val NID_RID = "NID_RID_KEY"
-        private const val NID_RID_TS_EXP = "NID_RID_TS_EXP"
 
 
         fun getHexRandomID(): String = List(12) {
