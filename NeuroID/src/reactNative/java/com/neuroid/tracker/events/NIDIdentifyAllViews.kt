@@ -25,7 +25,7 @@ fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
     var idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
-    val metaData = JSONObject()
+    val metaData = mutableMapOf<String, Any>()
 
     when (view) {
         is ReactEditText -> {

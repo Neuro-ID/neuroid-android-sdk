@@ -52,7 +52,7 @@ class NIDTouchEventManager(
             }
 
             var v = ""
-            val metadataObj = JSONObject()
+            val metadataObj = mutableMapOf<String, Any>()
 
             when (currentView) {
                 is EditText -> {
@@ -76,14 +76,19 @@ class NIDTouchEventManager(
                 }
             }
 
-            var motionValues = JSONObject()
+            var motionValues = mapOf<String, Any>()
             try {
                 motionValues = generateMotionEventValues(motionEvent)
             } catch (ex: Exception) {
                 NIDLog.d(msg="TouchEventManager - no motion error: ${ex.printStackTrace()}")
             }
-            val rawAction = JSONObject().put("rawAction", it.action)
-            val attrJSON = JSONArray().put(rawAction).put(metadataObj).put(motionValues)
+
+            val rawAction = mapOf("rawAction" to it.action)
+            val attrJSON = listOf(
+                rawAction,
+                metadataObj,
+                motionValues
+            )
 
             when (it.action) {
                 ACTION_DOWN -> {
