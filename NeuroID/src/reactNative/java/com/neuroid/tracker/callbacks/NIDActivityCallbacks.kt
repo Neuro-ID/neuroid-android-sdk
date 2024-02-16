@@ -62,11 +62,6 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
             auxOrientation = orientation
         }
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "postCreated")
-        metadataObj.put("className", "$currentActivityName")
-        val attrJSON = JSONArray().put(metadataObj)
         NIDLog.d(msg="Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
@@ -75,7 +70,13 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "postCreated",
+                            "className" to currentActivityName
+                        )
+                    )
                 )
             )
     }
@@ -86,12 +87,6 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "resumed")
-        metadataObj.put("className", "${activity::class.java.name}")
-        val attrJSON = JSONArray().put(metadataObj)
-
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -99,7 +94,13 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "resumed",
+                            "className" to activity::class.java.name
+                        )
+                    )
                 )
             )
     }

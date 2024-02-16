@@ -39,7 +39,13 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        metadata = jsonObject
+                        attrs = listOf(
+                            mapOf(
+                                "component" to "fragment",
+                                "lifecycle" to "attached",
+                                "className" to "${f::class.java.simpleName}"
+                            )
+                        )
                     )
                 )
 

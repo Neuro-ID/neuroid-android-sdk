@@ -45,7 +45,7 @@ abstract class TouchEventManager {
 
         metadataObj.put("pressure", 0)
         if (motionEvent?.pressure != null) {
-            metadataObj["pressure"] = motionEvent?.pressure as Int
+            metadataObj["pressure"] = motionEvent?.pressure as Float
         }
         metadataObj.put("hSize", motionEvent.historySize)
         metadataObj.put("size", size)
