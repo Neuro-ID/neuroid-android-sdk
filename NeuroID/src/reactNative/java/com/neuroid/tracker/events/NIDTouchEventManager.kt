@@ -12,6 +12,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.models.NIDTouchModel
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -105,7 +106,11 @@ class NIDTouchEventManager(
                                         "sender" to nameView,
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     v = v,
                                     attrs = attrJSON
@@ -126,7 +131,11 @@ class NIDTouchEventManager(
                                     "sender" to nameView,
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    NIDTouchModel(
+                                        0f,
+                                        it.x,
+                                        it.y
+                                    )
                                 ),
                                 v = v,
                                 attrs = attrJSON
@@ -152,7 +161,11 @@ class NIDTouchEventManager(
                                         "sender" to nameView,
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     v = v,
                                     attrs = attrJSON
