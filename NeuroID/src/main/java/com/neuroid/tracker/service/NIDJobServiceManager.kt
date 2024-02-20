@@ -56,6 +56,7 @@ class NIDJobServiceManager(
 
         gyroCadenceJob = createGyroJobServer()
         activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        this.userActive = true
         this.isSetup = true
     }
 
