@@ -11,8 +11,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONArray
-import org.json.JSONObject
 
 abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
     var activitiesStarted = 0

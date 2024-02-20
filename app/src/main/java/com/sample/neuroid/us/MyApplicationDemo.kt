@@ -41,6 +41,6 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
         NeuroID.getInstance()?.setUserID(configHelper.userId)
         NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
-        NeuroID.getInstance()?.start()
+        NeuroID.getInstance()?.startSession("testSession")
     }
 }

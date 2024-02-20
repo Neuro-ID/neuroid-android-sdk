@@ -18,8 +18,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDJobServiceManager(
     private var logger:NIDLogWrapper,
@@ -53,6 +51,7 @@ class NIDJobServiceManager(
 
         gyroCadenceJob = createGyroJobServer()
         activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        this.userActive = true
         this.isSetup = true
     }
 
@@ -73,6 +72,7 @@ class NIDJobServiceManager(
 
     @Synchronized
     fun restart() {
+        this.userActive = true
         NIDSensorHelper.restartSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()

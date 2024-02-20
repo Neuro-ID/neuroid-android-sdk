@@ -34,8 +34,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
@@ -659,6 +657,8 @@ class NeuroID private constructor(
             return SessionStartResult(false, "")
         }
 
+        resumeCollection()
+
         isSDKStarted = true
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
@@ -667,8 +667,6 @@ class NeuroID private constructor(
             createSession()
             saveIntegrationHealthEvents()
         }
-
-        resumeCollection()
 
         dataStore.saveAndClearAllQueuedEvents()
 

@@ -5,7 +5,6 @@ import android.content.res.Resources
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random

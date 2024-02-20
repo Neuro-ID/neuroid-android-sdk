@@ -9,7 +9,6 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONObject
 
 class NIDFragmentCallbacks : FragmentCallbacks(false) {
     var listFragment = arrayListOf<String>()
@@ -26,11 +25,6 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "fragment")
-            jsonObject.put("lifecycle", "attached")
-            jsonObject.put("className", "${f::class.java.simpleName}")
 
             getDataStoreInstance()
                 .saveEvent(
