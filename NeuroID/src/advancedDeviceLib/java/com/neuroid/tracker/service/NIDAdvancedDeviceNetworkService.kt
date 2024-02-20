@@ -1,34 +1,37 @@
 package com.neuroid.tracker.service
 
-import com.google.gson.Gson
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.models.ADVKeyNetworkResponse
+import com.neuroid.tracker.utils.Base64Decoder
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.getRetroFitInstance
-import okhttp3.ResponseBody
 import retrofit2.Call
 
 interface ADVNetworkService {
-    fun getADVKey(
+    fun getNIDAdvancedDeviceAccessKey(
         key: String
     ):ADVKeyFunctionResponse
 }
 
-class NIDAdvancedDeviceNetworkService(private var apiService: NIDAdvancedDeviceApiService, private val logger: NIDLogWrapper):ADVNetworkService {
+class NIDAdvancedDeviceNetworkService(
+    private var apiService: NIDAdvancedDeviceApiService,
+    private val logger: NIDLogWrapper,
+    private val b64Decoder: Base64Decoder = Base64Decoder()
+):ADVNetworkService {
     companion object {
         const val RETRY_COUNT = 3
         const val TIMEOUT = 2L // 2000L = 2 sec?
     }
 
-    override fun getADVKey(
+    override fun getNIDAdvancedDeviceAccessKey(
         key: String
         ):ADVKeyFunctionResponse {
-        val call = apiService.getADVKey(key)
+        val call = apiService.getNIDAdvancedDeviceAccessKey(key)
         return retryRequests(call)
     }
 
     internal fun retryRequests(
-        call: Call<ResponseBody>
+        call: Call<ADVKeyNetworkResponse>
     ):ADVKeyFunctionResponse {
         try {
             var finalResponse = ADVKeyFunctionResponse(
@@ -49,45 +52,37 @@ class NIDAdvancedDeviceNetworkService(private var apiService: NIDAdvancedDeviceA
                 if (response.code() == NIDEventSender.HTTP_SUCCESS) {
                     val responseBody = response.body()
 
-                    // Shouldn't be possible
+                    // Shouldn't be possible but retrofit says body can be null
                     if (responseBody == null) {
                         finalResponse = ADVKeyFunctionResponse(
                             "",
                             false,
                             message = "advanced signal not available: responseCode ${response.code()}"
                         )
-
-                        response.body()?.close()
                         break
                     }
 
-                    val bodyString = responseBody.string()
-
-                    // close the response since we have the body
-                    response.body()?.close()
-
-                    val gson = Gson()
-                    val bodyJson = gson.fromJson(bodyString, ADVKeyNetworkResponse::class.java)
-
-                    if(bodyJson.status != "OK") {
+                    if(responseBody.status != "OK") {
                         finalResponse = ADVKeyFunctionResponse(
                             "",
                             false,
-                            message = "advanced signal not available: status ${bodyJson.status}"
+                            message = "advanced signal not available: status ${responseBody.status}"
                         )
                         break
                     }
 
+                    val key = b64Decoder.decodeBase64(
+                        responseBody.key
+                    )
+
                     finalResponse = ADVKeyFunctionResponse(
-                        bodyJson.key,
+                        key,
                         true,
                     )
                     break
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times
                     retryCount ++
-                    response.body()?.close()
-
                     logger.d(tag = "NeuroID ADV", msg = "Failed to get API key from NeuroID: ${response.message()} - Code: ${response.code()}. Retrying: ${retryCount < RETRY_COUNT}")
                     finalResponse = ADVKeyFunctionResponse(
                         "",

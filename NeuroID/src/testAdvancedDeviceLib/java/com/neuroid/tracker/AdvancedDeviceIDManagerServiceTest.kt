@@ -128,7 +128,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetRemoteID_fpjs_failure(){
+    fun testGetRemoteID_fpjs_failure() {
         val errorMessage = "FPJS Failure"
         val fullErrorMessage = "Reached maximum number of retries (${NIDAdvancedDeviceNetworkService.RETRY_COUNT}) to get Advanced Device Signal Request ID:$errorMessage"
 
@@ -145,15 +145,17 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
-        advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
+        val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
 
-        verify (exactly = 1){
-            mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 1")
-            mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 2")
-            mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 3")
+        job?.invokeOnCompletion {
+            verify (exactly = 1){
+                mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 1")
+                mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 2")
+                mockedLogger.d(msg="Error retrieving Advanced Device Signal Request ID:$errorMessage: 3")
 
-            mockedDataStore.saveEvent(any())
-            mockedLogger.e(msg=fullErrorMessage)
+                mockedDataStore.saveEvent(any())
+                mockedLogger.e(msg=fullErrorMessage)
+            }
         }
     }
 
@@ -174,14 +176,16 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
-        advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
+        val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
 
-        verify (exactly = 1){
-            mockedLogger.d(msg="Generating Request ID for Advanced Device Signals: $validRID")
-            mockedDataStore.saveEvent(any())
-            mockedLogger.d(msg="Caching Request ID: $validRID")
+        job?.invokeOnCompletion {
+            verify (exactly = 1){
+                mockedLogger.d(msg="Generating Request ID for Advanced Device Signals: $validRID")
+                mockedDataStore.saveEvent(any())
+                mockedLogger.d(msg="Caching Request ID: $validRID")
 
-            mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+                mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+            }
         }
     }
 
@@ -278,7 +282,7 @@ class AdvancedDeviceIDManagerServiceTest {
     ): ADVNetworkService {
     val mockedADVNetworkService = mockk<ADVNetworkService>()
 
-    every { mockedADVNetworkService.getADVKey(any()) } returns ADVKeyFunctionResponse(
+    every { mockedADVNetworkService.getNIDAdvancedDeviceAccessKey(any()) } returns ADVKeyFunctionResponse(
             key,
             success,
             message,

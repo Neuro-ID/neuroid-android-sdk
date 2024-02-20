@@ -12,10 +12,16 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 interface AdvancedDeviceIDManagerService {
     fun getCachedID():Boolean
-    fun getRemoteID(clientKey: String, remoteUrl: String)
+    fun getRemoteID(clientKey: String, remoteUrl: String):Job?
 }
 
 internal class AdvancedDeviceIDManager(
@@ -67,9 +73,9 @@ internal class AdvancedDeviceIDManager(
     override fun getRemoteID(
         clientKey:String,
         remoteUrl:String
-    ){
+    ): Job? {
         // Retrieving the API key from NeuroID
-        val nidKeyResponse = advNetworkService.getADVKey(clientKey)
+        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey)
 
         // if no key exit early
         if(!nidKeyResponse.success) {
@@ -85,7 +91,7 @@ internal class AdvancedDeviceIDManager(
                         m=nidKeyResponse.message
                     )
                 )
-            return
+            return null
         }
 
         // Call FPJS with our key
@@ -95,75 +101,96 @@ internal class AdvancedDeviceIDManager(
             FingerprintJSFactory(applicationContext = context)
                 .createInstance(
                     Configuration(
-                        apiKey = clientKey,
+                        apiKey = nidKeyResponse.key,
                         endpointUrl = remoteUrl
                     )
                 )
         }
 
-        var maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
-        var retryCount = 0
-        while (retryCount < maxRetryCount) {
-            // Two Callbacks - Success & Error
-            //  - If Success - capture ID and cache, end loop
-            //  - If Failure - retry until max retry, then log failure in event
-            fpjsClient.getVisitorId(
-                listener = { result ->
+        val remoteIDJob = CoroutineScope(Dispatchers.IO).launch {
+            var maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
+            var retryCount = 0
+
+            while (retryCount < maxRetryCount) {
+                // returns a Bool - success, String - key OR error message
+                val requestResponse = getVisitorId(fpjsClient)
+
+                // If Success - capture ID and cache, end loop
+                if (requestResponse.first) {
                     logger.d(
-                        msg = "Generating Request ID for Advanced Device Signals: ${result.requestId}"
+                        msg = "Generating Request ID for Advanced Device Signals: ${requestResponse.second}"
                     )
 
                     dataStoreManager.saveEvent(
                         NIDEventModel(
                             type = ADVANCED_DEVICE_REQUEST,
-                            rid = result.requestId,
+                            rid = requestResponse.second,
                             ts = System.currentTimeMillis(),
                             c = false
                         )
                     )
-                    // Cache request Id for 24 hours
-                    logger.d(
-                        msg = "Caching Request ID: ${result.requestId}"
-                    )
 
-                    // Convert the Map to a JSON String
+                    logger.d(
+                        msg = "Caching Request ID: ${requestResponse.second}"
+                    )
+                    // Cache request Id for 24 hours
+                    //  and convert the Map to a JSON String
                     val gson = Gson()
                     val cachedValueString = gson.toJson(
                         mapOf(
-                            "key" to result.requestId,
+                            "key" to requestResponse.second,
                             "exp" to (24 * 60 * 60 * 1000) + System.currentTimeMillis() // 24 hours from now
                         )
                     )
-
                     sharedPrefs.putString(NID_RID, cachedValueString)
+
                     // end while loop
-                    retryCount = maxRetryCount + 1
-                },
-                errorListener = { error ->
-                    retryCount += 1
-                    logger.d(
-                        msg = "Error retrieving Advanced Device Signal Request ID:${error.description}: $retryCount"
-                    )
-                    Thread.sleep(5000)
-
-                    if (!(retryCount < maxRetryCount)) {
-                        val msg =
-                            "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${error.description}"
-
-                        dataStoreManager.saveEvent(
-                            NIDEventModel(
-                                type = LOG,
-                                ts = System.currentTimeMillis(),
-                                level = "error",
-                                m = msg
-                            )
-                        )
-                        logger.e(
-                            msg = msg
-                        )
-                    }
+                    break
                 }
-            )
+
+                // If Failure - retry until max retry, then log failure in event
+                retryCount += 1
+                logger.d(
+                    msg = "Error retrieving Advanced Device Signal Request ID:${requestResponse.second}: $retryCount"
+                )
+                Thread.sleep(5000)
+
+                if (!(retryCount < maxRetryCount)) {
+                    val msg =
+                        "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${requestResponse.second}"
+
+                    dataStoreManager.saveEvent(
+                        NIDEventModel(
+                            type = LOG,
+                            ts = System.currentTimeMillis(),
+                            level = "error",
+                            m = msg
+                        )
+                    )
+                    logger.e(
+                        msg = msg
+                    )
+                }
+            }
         }
+
+        return remoteIDJob
+    }
+
+    private suspend fun getVisitorId(fpjsClient: FingerprintJS):Pair<Boolean, String> = suspendCoroutine { continuation ->
+        fpjsClient.getVisitorId(
+            listener = { result ->
+                continuation.resume(Pair(true, result.requestId))
+            },
+            errorListener = { error ->
+                continuation.resume(
+                    Pair(
+                        false,
+                        if(error.description != null){ error.description as String } else {"FPJS Empty Failure"}
+                    )
+                )
+
+            }
+        )
     }
 }
