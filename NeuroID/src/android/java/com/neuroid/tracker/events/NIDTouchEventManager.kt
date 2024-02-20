@@ -18,14 +18,12 @@ import android.widget.Button
 import android.widget.RadioGroup
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.view.children
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -62,7 +60,7 @@ class NIDTouchEventManager(
             }
 
             var v = ""
-            val metadataObj = JSONObject()
+            val metadataObj = mutableMapOf<String, Any>()
 
             when (currentView) {
                 is EditText -> {
@@ -70,7 +68,7 @@ class NIDTouchEventManager(
                 }
                 is RadioButton -> {
                     metadataObj.put("type", "radioButton")
-                    metadataObj.put("id", "${currentView.getIdOrTag()}")
+                    metadataObj.put("id", currentView.getIdOrTag())
 
                     // go up to 3 parents in case a RadioGroup is not the direct parent
                     var rParent = currentView.parent;
@@ -86,15 +84,19 @@ class NIDTouchEventManager(
                 }
             }
 
-            var motionValues = JSONObject()
+            var motionValues = mapOf<String, Any>()
             try {
                 motionValues = generateMotionEventValues(motionEvent)
             } catch (ex: Exception) {
                 NIDLog.d("TouchEventManager","no motion error: ${ex.printStackTrace()}")
             }
 
-            val rawAction = JSONObject().put("rawAction", it.action)
-            val attrJSON = JSONArray().put(rawAction).put(metadataObj).put(motionValues)
+            val rawAction = mapOf("rawAction" to it.action)
+            val attrJSON = listOf(
+                rawAction,
+                metadataObj,
+                motionValues
+            )
 
             when (it.action) {
                 ACTION_DOWN -> {
@@ -113,7 +115,11 @@ class NIDTouchEventManager(
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     gyro = gyroData,
                                     accel = accelData,
@@ -136,7 +142,11 @@ class NIDTouchEventManager(
                                     "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    NIDTouchModel(
+                                        0f,
+                                        it.x,
+                                        it.y
+                                    )
                                 ),
                                 gyro = gyroData,
                                 accel = accelData,
@@ -163,7 +173,11 @@ class NIDTouchEventManager(
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     gyro = gyroData,
                                     accel = accelData,

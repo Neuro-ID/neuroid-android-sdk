@@ -2,15 +2,8 @@ package com.neuroid.tracker.events
 
 import android.view.View
 import android.widget.*
-import androidx.appcompat.widget.SwitchCompat
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.extensions.getIdOrTag
-import com.neuroid.tracker.extensions.getParents
-import org.json.JSONArray
-import org.json.JSONObject
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 
@@ -25,7 +18,7 @@ fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
     var idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
-    val metaData = JSONObject()
+    val metaData = mutableMapOf<String, Any>()
 
     when (view) {
         is ReactEditText -> {

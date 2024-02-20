@@ -8,7 +8,6 @@ import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
-import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.events.registerTargetFromScreen
 import com.neuroid.tracker.events.registerWindowListeners
 import com.neuroid.tracker.models.NIDEventModel
@@ -16,8 +15,6 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDActivityCallbacks: ActivityCallbacks() {
     private var auxOrientation = -1
@@ -70,11 +67,6 @@ class NIDActivityCallbacks: ActivityCallbacks() {
             auxOrientation = orientation
         }
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "postCreated")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
         NIDLog.d( msg="Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
@@ -83,7 +75,13 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "postCreated",
+                            "className" to "${activity::class.java.simpleName}"
+                        )
+                    )
                 )
             )
     }
@@ -94,12 +92,6 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "resumed")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -107,7 +99,13 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "resumed",
+                            "className" to "${activity::class.java.simpleName}"
+                        )
+                    )
                 )
             )
 

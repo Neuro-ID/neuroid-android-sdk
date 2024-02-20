@@ -12,8 +12,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.extensions.getIdOrTag
-import org.json.JSONArray
-import org.json.JSONObject
+import com.neuroid.tracker.models.NIDTouchModel
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup
@@ -52,7 +51,7 @@ class NIDTouchEventManager(
             }
 
             var v = ""
-            val metadataObj = JSONObject()
+            val metadataObj = mutableMapOf<String, Any>()
 
             when (currentView) {
                 is EditText -> {
@@ -76,14 +75,19 @@ class NIDTouchEventManager(
                 }
             }
 
-            var motionValues = JSONObject()
+            var motionValues = mapOf<String, Any>()
             try {
                 motionValues = generateMotionEventValues(motionEvent)
             } catch (ex: Exception) {
                 NIDLog.d(msg="TouchEventManager - no motion error: ${ex.printStackTrace()}")
             }
-            val rawAction = JSONObject().put("rawAction", it.action)
-            val attrJSON = JSONArray().put(rawAction).put(metadataObj).put(motionValues)
+
+            val rawAction = mapOf("rawAction" to it.action)
+            val attrJSON = listOf(
+                rawAction,
+                metadataObj,
+                motionValues
+            )
 
             when (it.action) {
                 ACTION_DOWN -> {
@@ -102,7 +106,11 @@ class NIDTouchEventManager(
                                         "sender" to nameView,
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     v = v,
                                     attrs = attrJSON
@@ -123,7 +131,11 @@ class NIDTouchEventManager(
                                     "sender" to nameView,
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    NIDTouchModel(
+                                        0f,
+                                        it.x,
+                                        it.y
+                                    )
                                 ),
                                 v = v,
                                 attrs = attrJSON
@@ -149,7 +161,11 @@ class NIDTouchEventManager(
                                         "sender" to nameView,
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     v = v,
                                     attrs = attrJSON

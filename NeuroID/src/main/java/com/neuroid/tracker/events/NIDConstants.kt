@@ -60,6 +60,9 @@ const val ADVANCED_DEVICE_REQUEST = "ADVANCED_DEVICE_REQUEST"
 const val ANDROID_URI ="android://"
 const val SET_VARIABLE = "SET_VARIABLE"
 const val CADENCE_READING_ACCEL = "CADENCE_READING_ACCEL"
+const val LOW_MEMORY = "LOW_MEMORY"
+const val FULL_BUFFER = "FULL_BUFFER"
+const val OUT_OF_MEMORY = "OUT_OF_MEMORY"
 
 // NID origin codes
 const val NID_ORIGIN_NID_SET = "nid"

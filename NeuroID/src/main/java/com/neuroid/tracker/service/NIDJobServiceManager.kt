@@ -1,13 +1,15 @@
 package com.neuroid.tracker.service
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.CADENCE_READING_ACCEL
+import com.neuroid.tracker.events.LOW_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
@@ -17,8 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import org.json.JSONArray
-import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -40,6 +40,7 @@ class NIDJobServiceManager(
     internal var isSetup: Boolean = false
 
     private var application: Application? = null
+    private var activityManager: ActivityManager? = null
 
 
     @Synchronized
@@ -47,12 +48,14 @@ class NIDJobServiceManager(
         application: Application,
         clientKey: String,
     ) {
+        this.userActive = true
         this.clientKey = clientKey
         this.application = application
         jobCaptureEvents = createJobServer()
         NIDSensorHelper.initSensorHelper(application, logger)
 
         gyroCadenceJob = createGyroJobServer()
+        activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         this.isSetup = true
     }
 
@@ -73,6 +76,7 @@ class NIDJobServiceManager(
 
     @Synchronized
     fun restart() {
+        this.userActive = true
         NIDSensorHelper.restartSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()
@@ -97,7 +101,6 @@ class NIDJobServiceManager(
 
                 val gyroData = NIDSensorHelper.getGyroscopeInfo()
                 val accelData = NIDSensorHelper.getAccelerometerInfo()
-                val attrsObj = JSONObject().put("interval", "${1000 * GYRO_SAMPLE_INTERVAL}s")
 
                 dataStore.saveEvent(
                     NIDEventModel(
@@ -105,7 +108,11 @@ class NIDJobServiceManager(
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        attrs = JSONArray().put(attrsObj)
+                        attrs = listOf(
+                            mapOf(
+                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
+                            )
+                        )
                     )
                 )
 
@@ -136,7 +143,7 @@ class NIDJobServiceManager(
      */
     suspend fun sendEventsNow(
         forceSendEvents: Boolean = false,
-        eventSender: NIDEventSender = getServiceAPI(),
+        eventSender: NIDEventSender = getServiceAPI()
     ) {
         if (isSendEventsNowEnabled && (forceSendEvents || !isStopped())) {
             application?.let {
@@ -144,7 +151,7 @@ class NIDJobServiceManager(
                     eventSender,
                     clientKey,
                     it,
-                    null,
+                    getEventsToSend(it),
                     object: NIDResponseCallBack {
                         override fun onSuccess(code: Int) {
                             // noop!
@@ -155,11 +162,63 @@ class NIDJobServiceManager(
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },
-                    dataStore
                 )
             } ?: run {
                 userActive = false
             }
         }
+    }
+
+
+    /**
+     * Get the current system memory state.
+     */
+    private fun checkMemoryLevel(context: Context): NIDEventModel? {
+        val memoryInfo = ActivityManager.MemoryInfo()
+
+        // shouldn't ever be null because it is initialized with startJob, but putting this here as a safety check
+        if (activityManager == null) {
+            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            activityManager.getMemoryInfo(memoryInfo)
+        } else {
+            activityManager?.getMemoryInfo(memoryInfo)
+        }
+
+        NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
+
+        if (memoryInfo.lowMemory) {
+            val event = NIDEventModel(
+                type = LOW_MEMORY,
+                ts = System.currentTimeMillis(),
+                attrs = listOf(
+                    mapOf(
+                        "isLowMemory" to memoryInfo.lowMemory,
+                        "total" to  memoryInfo.totalMem,
+                        "available" to  memoryInfo.availMem,
+                        "threshold" to  memoryInfo.threshold,
+                    )
+                )
+            )
+
+            return event
+        }
+
+        return null
+    }
+
+    /**
+     * Get the events that should be sent.  The 2 scenarios are:
+     * 1. if system memory is low, create a low memory event and return that
+     * 2. get the current list of events from the data store manager
+     */
+    private fun getEventsToSend(context: Context): List<NIDEventModel> {
+        val lowMemEvent = checkMemoryLevel(context)
+
+        if (lowMemEvent !=null) {
+            // return the low memory event to be sent
+            return listOf(lowMemEvent)
+        }
+
+        return dataStore.getAllEvents()
     }
 }

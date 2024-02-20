@@ -1,6 +1,7 @@
 package com.neuroid.tracker
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
@@ -32,8 +33,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
@@ -63,6 +62,8 @@ class NeuroID private constructor(
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
     internal var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
+
+    internal var lowMemory:Boolean = false
 
     init {
         application?.let {
@@ -352,14 +353,6 @@ class NeuroID private constructor(
 
     internal fun getFirstTS(): Long = timestamp
 
-    internal fun getJsonPayLoad(context: Context): String {
-        return dataStore.getJsonPayload(context)
-    }
-
-    internal fun resetJsonPayLoad() {
-        dataStore.resetJsonPayload()
-    }
-
     internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
@@ -449,6 +442,9 @@ class NeuroID private constructor(
             return false
         }
 
+        application?.let {
+            nidJobServiceManager.startJob(it, clientKey)
+        }
         isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -457,9 +453,6 @@ class NeuroID private constructor(
             startIntegrationHealthCheck()
             createSession()
             saveIntegrationHealthEvents()
-        }
-        application?.let {
-            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -543,7 +536,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
+                    metadata = metaData
                 )
             )
             createMobileMetadata()
@@ -564,7 +557,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
+                    metadata = metaData,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
@@ -584,7 +577,11 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
+                    attrs = listOf(
+                        mapOf(
+                            "isRN" to isRN
+                        )
+                    )
                 )
             )
         }
@@ -628,6 +625,8 @@ class NeuroID private constructor(
             return SessionStartResult(false, "")
         }
 
+        resumeCollection()
+
         isSDKStarted = true
         NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -637,8 +636,6 @@ class NeuroID private constructor(
             createSession()
             saveIntegrationHealthEvents()
         }
-
-        resumeCollection()
 
         dataStore.saveAndClearAllQueuedEvents()
 
