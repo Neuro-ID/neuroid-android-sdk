@@ -47,7 +47,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(!cachedID)
         verify (exactly = 1){
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, "{\"key\":\"NO_KEY\", \"exp\":0}")
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
         }
     }
 
@@ -61,7 +61,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(!cachedID)
         verify (exactly = 1){
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, "{\"key\":\"NO_KEY\", \"exp\":0}")
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
         }
     }
 
@@ -75,7 +75,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(!cachedID)
         verify (exactly = 1){
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, "{\"key\":\"NO_KEY\", \"exp\":0}")
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
         }
     }
 
@@ -98,7 +98,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(cachedID)
         verify (exactly = 1){
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, "{\"key\":\"NO_KEY\", \"exp\":0}")
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
             mockedDataStore.saveEvent(any())
             mockedLogger.d(msg="Retrieving Request ID for Advanced Device Signals from cache: ${keyValue}")
         }

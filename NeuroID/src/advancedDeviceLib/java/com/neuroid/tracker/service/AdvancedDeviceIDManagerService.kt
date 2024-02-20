@@ -34,10 +34,11 @@ internal class AdvancedDeviceIDManager(
 ): AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
+        internal val defaultCacheValue = "{\"key\":\"NO_KEY\", \"exp\":0}"
     }
 
     override fun getCachedID():Boolean{
-        val existingString = sharedPrefs.getString(NID_RID, "{\"key\":\"NO_KEY\", \"exp\":0}")
+        val existingString = sharedPrefs.getString(NID_RID, defaultCacheValue)
 
         val gson = Gson()
         val type = object : TypeToken<Map<String, Any>>() {}.type
