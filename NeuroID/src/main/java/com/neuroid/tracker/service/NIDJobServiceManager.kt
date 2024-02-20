@@ -19,8 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import org.json.JSONArray
-import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -57,6 +55,7 @@ class NIDJobServiceManager(
 
         gyroCadenceJob = createGyroJobServer()
         activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        this.userActive = true
         this.isSetup = true
     }
 
@@ -77,6 +76,7 @@ class NIDJobServiceManager(
 
     @Synchronized
     fun restart() {
+        this.userActive = true
         NIDSensorHelper.restartSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()
