@@ -174,25 +174,4 @@ class NIDDataStoreManagerUnitTests {
         val events = dataStore.getAllEvents()
         Assert.assertEquals(0, events.count())
     }
-
-    @Test
-    fun testPayload(){
-
-
-       val payload =  NIDServiceTracker.getContentJson(
-            mockContext,
-            listOf(
-                NIDEventModel(
-                    type = "TEST",
-                    tg = hashMapOf(
-                        "attr" to JsonUtils.getAttrJson("my string"),
-                    ),
-                    ts = 1,
-                )
-            )
-        )
-
-        println(payload)
-        assert(false)
-    }
 }
