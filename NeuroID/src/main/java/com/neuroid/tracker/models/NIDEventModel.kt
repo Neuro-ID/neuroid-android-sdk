@@ -9,7 +9,7 @@ data class NIDEventModel(
     val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
     val tgs: String? = null,
-    val touches: List<String>? = null,
+    val touches: List<NIDTouchModel>? = null,
     val key: String? = null,
     val gyro: NIDSensorModel? = null,
     val accel: NIDSensorModel? = null,
@@ -61,11 +61,11 @@ data class NIDEventModel(
     val c: Boolean? = null,
 
     ) : Comparable<NIDEventModel> {
-    fun getOwnJson(): String {
-        return getJSONObject().toString()
+    fun toJSONString(): String {
+        return toJSON().toString()
     }
 
-    fun getJSONObject(): JSONObject {
+    fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
         this.apply {
@@ -77,7 +77,7 @@ data class NIDEventModel(
             touches?.let {
                 val array = JSONArray()
                 it.forEach { item ->
-                    array.put(JSONObject(item))
+                    array.put(item.toJSON())
                 }
                 jsonObject.put("touches", array)
             }
@@ -143,10 +143,10 @@ data class NIDEventModel(
             }
             uid?.let { jsonObject.put("uid", it) }
             gyro?.let {
-                jsonObject.put("gyro", it.getJsonObject())
+                jsonObject.put("gyro", it.toJSON())
             }
             accel?.let {
-                jsonObject.put("accel", it.getJsonObject())
+                jsonObject.put("accel", it.toJSON())
             }
             metadata?.let {
                 jsonObject.put("metadata", it)
@@ -162,15 +162,30 @@ data class NIDEventModel(
 }
 
 data class NIDSensorModel(
-    var x: Float?,
-    var y: Float?,
-    var z: Float?
+    val x: Float?,
+    val y: Float?,
+    val z: Float?
 ) {
-    fun getJsonObject(): JSONObject {
+    fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("x", x ?: JSONObject.NULL)
         jsonObject.put("y", y ?: JSONObject.NULL)
         jsonObject.put("z", z ?: JSONObject.NULL)
+
+        return jsonObject
+    }
+}
+
+data class NIDTouchModel(
+    val tid: Float?,
+    val x: Float?,
+    val y: Float?
+) {
+    fun toJSON(): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("tid", tid ?: JSONObject.NULL)
+        jsonObject.put("x", x ?: JSONObject.NULL)
+        jsonObject.put("y", y ?: JSONObject.NULL)
 
         return jsonObject
     }

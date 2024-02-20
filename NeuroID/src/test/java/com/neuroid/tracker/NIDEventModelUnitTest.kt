@@ -8,7 +8,7 @@ class NIDEventModelUnitTest {
     @Test
     fun testToJSONSimple() {
         val event = NIDEventModel(type = "TEST_TYPE", ts = 1)
-        val result = event.getOwnJson()
+        val result = event.toJSONString()
 
         assertEquals("{\"type\":\"TEST_TYPE\",\"ts\":1}", result)
     }
@@ -26,7 +26,7 @@ class NIDEventModelUnitTest {
             tg = mapOf("key1" to "value1", "key2" to "value2"),
             dnt = false
             )
-        val result = event.getOwnJson()
+        val result = event.toJSONString()
 
         assertEquals("{\"tg\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"dnt\":false,\"type\":\"TEST_TYPE\",\"attrs\":[{\"key\":\"value\"}],\"ts\":1}", result)
     }

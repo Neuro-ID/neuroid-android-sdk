@@ -21,6 +21,7 @@ import androidx.appcompat.widget.SwitchCompat
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 
@@ -114,7 +115,11 @@ class NIDTouchEventManager(
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     gyro = gyroData,
                                     accel = accelData,
@@ -137,7 +142,11 @@ class NIDTouchEventManager(
                                     "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                 ),
                                 touches = listOf(
-                                    "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                    NIDTouchModel(
+                                        0f,
+                                        it.x,
+                                        it.y
+                                    )
                                 ),
                                 gyro = gyroData,
                                 accel = accelData,
@@ -164,7 +173,11 @@ class NIDTouchEventManager(
                                         "sender" to currentView?.javaClass?.simpleName.orEmpty(),
                                     ),
                                     touches = listOf(
-                                        "{\"tid\":0, \"x\":${it.x},\"y\":${it.y}}"
+                                        NIDTouchModel(
+                                            0f,
+                                            it.x,
+                                            it.y
+                                        )
                                     ),
                                     gyro = gyroData,
                                     accel = accelData,
