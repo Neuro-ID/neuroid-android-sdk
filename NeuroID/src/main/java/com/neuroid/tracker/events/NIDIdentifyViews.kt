@@ -199,7 +199,7 @@ fun createAtrrJSON(
 
     val classJson = mapOf<String, Any>(
         "n" to "screenHierarchy",
-        "v" to "${view.getParents(logger)}${NIDServiceTracker.screenName}"
+        "v" to "${view.getParents(logger)}${NeuroID.screenName}"
     )
 
     val parentData =
