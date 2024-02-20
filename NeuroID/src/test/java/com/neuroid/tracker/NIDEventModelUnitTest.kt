@@ -1,14 +1,6 @@
 package com.neuroid.tracker
 
-import android.content.res.Resources
-import android.view.View
-import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDEventModel
-import io.mockk.every
-import io.mockk.mockk
-import org.json.JSONArray
-import org.json.JSONObject
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

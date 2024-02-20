@@ -18,14 +18,11 @@ import android.widget.Button
 import android.widget.RadioGroup
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.view.children
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup

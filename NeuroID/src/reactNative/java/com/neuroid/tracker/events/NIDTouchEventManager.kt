@@ -12,8 +12,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.extensions.getIdOrTag
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDTouchEventManager(
     private val viewParent: ViewGroup

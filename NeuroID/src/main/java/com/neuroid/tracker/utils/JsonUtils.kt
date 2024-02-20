@@ -1,16 +1,29 @@
 package com.neuroid.tracker.utils
 
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import org.json.JSONArray
-import org.json.JSONObject
 
 class JsonUtils {
     companion object {
-        fun getAttrJson(text: String?): JSONArray {
-            val value = JSONObject().put("n", "v").put("v", "S~C~~${text?.length ?: 0}")
+        fun getAttrJson(text: String?): List<Map<String, String>> {
+
+
+            val value =
+                mapOf(
+                    "n" to "v",
+                    "v" to "S~C~~${text?.length ?: 0}"
+                )
+
+            val hashValue = text?.getSHA256withSalt()?.take(8)
             val hash =
-                JSONObject().put("n", "hash").put("v", text?.getSHA256withSalt()?.take(8))
-            return JSONArray().put(value).put(hash)
+                mapOf(
+                    "n" to "hash",
+                    "v" to if (hashValue == null) {""} else {hashValue}
+                )
+
+            return listOf(
+                value,
+                hash
+            )
         }
     }
 }

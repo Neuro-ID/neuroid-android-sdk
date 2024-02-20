@@ -8,7 +8,6 @@ import com.neuroid.tracker.service.NIDServiceTracker
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
-import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Assert.assertEquals

@@ -9,9 +9,6 @@ import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
-import org.json.JSONArray
-import org.json.JSONObject
-
 
 class NIDTextWatcher(
     private val idName: String,

@@ -13,8 +13,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDVersion
-import org.json.JSONArray
-import org.json.JSONObject
 
 object NIDServiceTracker {
     @get:Synchronized
