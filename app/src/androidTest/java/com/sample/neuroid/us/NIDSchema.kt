@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
@@ -150,10 +151,6 @@ class NIDSchema {
         javaClass.classLoader?.getResourceAsStream(fileName)
 
     private fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
-        return getSendingService(
-            "",
-            NIDLogWrapper(),
-            context
-        ).getRequestPayloadJSON(listEvents)
+        return getSendingService("", NIDLogWrapper(), context).getRequestPayloadJSON(listEvents)
     }
 }
