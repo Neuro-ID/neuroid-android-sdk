@@ -15,12 +15,10 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
-
-import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.Job
 
 import org.junit.After
@@ -45,12 +43,6 @@ open class NeuroIDClassUnitTests {
     private var storedEvents = mutableSetOf<NIDEventModel>()
     private var queuedEvents = mutableSetOf<NIDEventModel>()
     private var excludedIds = mutableSetOf<String>()
-
-
-    @MockK
-    lateinit var mockedApplication: Application
-    private lateinit var mockContext: Context
-
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -134,6 +126,15 @@ open class NeuroIDClassUnitTests {
         }
 
         NeuroID.getInstance()?.application = mockedApplication
+    }
+
+    private fun setMockedNIDJobServiceManager() {
+        val mockedNIDJobServiceManager = mockk<NIDJobServiceManager>()
+
+        every { mockedNIDJobServiceManager.startJob(any(), any()) } just runs
+        every { mockedNIDJobServiceManager.isStopped() } returns true
+
+        NeuroID.getInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
     }
 
     private fun clearLogCounts() {
@@ -360,7 +361,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetScreenName() {
         val expectedValue = "myScreen"
-        NIDServiceTracker.screenName = expectedValue
+        NeuroID.screenName = expectedValue
 
         val value = NeuroID.getInstance()?.getScreenName()
 
@@ -383,11 +384,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironment() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironment"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironment("MYENV")
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -396,11 +397,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironmentProduction_true() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironmentProduction(true)
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -408,11 +409,11 @@ open class NeuroIDClassUnitTests {
     fun testSetEnvironmentProduction_false() {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
 
-        NIDServiceTracker.environment = ""
+        NeuroID.environment = ""
 
         NeuroID.getInstance()?.setEnvironmentProduction(false)
 
-        assertEquals("", NIDServiceTracker.environment)
+        assertEquals("", NeuroID.environment)
         assertInfoCount(1)
     }
 
@@ -421,7 +422,7 @@ open class NeuroIDClassUnitTests {
     fun testGetEnvironment() {
 
         val expectedValue = "MyEnv"
-        NIDServiceTracker.environment = expectedValue
+        NeuroID.environment = expectedValue
 
 
         val value = NeuroID.getInstance()?.getEnvironment()
@@ -435,11 +436,11 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setSiteId"))
 
         val expectedValue = "TestSiteId"
-        NIDServiceTracker.siteId = "DifferentSiteID"
+        NeuroID.siteID = "DifferentSiteID"
 
         NeuroID.getInstance()?.setSiteId(expectedValue)
 
-        assertEquals(expectedValue, NIDServiceTracker.siteId)
+        assertEquals(expectedValue, NeuroID.siteID)
         assertInfoCount(1)
     }
 
@@ -449,7 +450,7 @@ open class NeuroIDClassUnitTests {
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("getSiteId"))
 
         val expectedValue = ""
-        NIDServiceTracker.siteId = "TestSiteId"
+        NeuroID.siteID = "TestSiteId"
 
         val value = NeuroID.getInstance()?.getSiteId()
 
@@ -526,7 +527,7 @@ open class NeuroIDClassUnitTests {
     fun testGetTabId() {
         val expectedValue = "MyRNDID"
 
-        NIDServiceTracker.rndmId = expectedValue
+        NeuroID.rndmId = expectedValue
 
         val value = NeuroID.getInstance()?.getTabId()
 
@@ -599,6 +600,8 @@ open class NeuroIDClassUnitTests {
     //    start
     @Test
     fun testStart_success() {
+        setMockedNIDJobServiceManager()
+
         NeuroID.isSDKStarted = false
         NeuroID.getInstance()?.clientKey = "abcd"
         val value = NeuroID.getInstance()?.start()
@@ -609,6 +612,8 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStart_failure() {
+        setMockedNIDJobServiceManager()
+
         setNeuroIDMockedLogger(
             errorMessage = "Missing Client Key - please call configure prior to calling start"
         )
@@ -629,6 +634,8 @@ open class NeuroIDClassUnitTests {
     //    stop
     @Test
     fun testStop() {
+        setMockedNIDJobServiceManager()
+
         NeuroID.isSDKStarted = true
 
         NeuroID.getInstance()?.stop()
@@ -642,6 +649,8 @@ open class NeuroIDClassUnitTests {
     //    isStopped
     @Test
     fun testIsStopped_true() {
+        setMockedNIDJobServiceManager()
+
         val expectedValue = true
         NeuroID.isSDKStarted = !expectedValue
 
@@ -652,6 +661,8 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testIsStopped_false() {
+        setMockedNIDJobServiceManager()
+
         val expectedValue = false
         NeuroID.isSDKStarted = !expectedValue
 
@@ -745,6 +756,7 @@ open class NeuroIDClassUnitTests {
     //    startSession
     @Test
     fun testStartSession_success_no_id() {
+        setMockedNIDJobServiceManager()
         setMockedDataStore()
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -756,6 +768,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_success_id() {
+        setMockedNIDJobServiceManager()
         setMockedDataStore()
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -767,6 +780,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_failure_clientKey() {
+        setMockedNIDJobServiceManager()
         setNeuroIDMockedLogger(
             errorMessage = "Missing Client Key - please call configure prior to calling start"
         )
@@ -782,6 +796,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testStartSession_failure_userID() {
+        setMockedNIDJobServiceManager()
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
         NeuroID.getInstance()?.let {
             it.clientKey = "dummyKey"
@@ -796,6 +811,7 @@ open class NeuroIDClassUnitTests {
     //    pauseCollection
     @Test
     fun testPauseCollection() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             it.pauseCollection()
             assertEquals(false, NeuroID.isSDKStarted)
@@ -803,15 +819,27 @@ open class NeuroIDClassUnitTests {
     }
 
     //    resumeCollection
+    @Test
     fun testResumeCollection() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             it.resumeCollection()
-            assertEquals(true, NeuroID.isSDKStarted)
+
+            if (it.pauseCollectionJob != null) {
+                it.pauseCollectionJob?.invokeOnCompletion {
+                    assertEquals(true, NeuroID.isSDKStarted)
+                }
+            } else {
+                assertEquals(true, NeuroID.isSDKStarted)
+            }
+
         }
     }
 
     //    stopSession
+    @Test
     fun testStopSession() {
+        setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             val stopped = it.stopSession()
             assertEquals(true, stopped)

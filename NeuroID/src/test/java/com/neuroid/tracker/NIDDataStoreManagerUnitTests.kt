@@ -3,9 +3,7 @@ package com.neuroid.tracker
 import android.content.Context
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
-import com.neuroid.tracker.utils.JsonUtils
 
 import io.mockk.spyk
 import io.mockk.unmockkAll

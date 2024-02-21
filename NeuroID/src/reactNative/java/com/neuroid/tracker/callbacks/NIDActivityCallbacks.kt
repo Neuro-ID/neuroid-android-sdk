@@ -2,9 +2,9 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 
@@ -17,14 +17,14 @@ class NIDActivityCallbacks() : ActivityCallbacks() {
         val orientation = activity.resources.configuration.orientation
         val existActivity = listActivities.contains(currentActivityName)
 
-        if (NIDServiceTracker.screenActivityName.isNullOrEmpty()) {
-            NIDServiceTracker.screenActivityName = currentActivityName
+        if (NeuroID.screenActivityName.isNullOrEmpty()) {
+            NeuroID.screenActivityName = currentActivityName
         }
-        if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
-            NIDServiceTracker.screenFragName = ""
+        if (NeuroID.screenFragName.isNullOrEmpty()) {
+            NeuroID.screenFragName = ""
         }
-        if (NIDServiceTracker.screenName.isNullOrEmpty()) {
-            NIDServiceTracker.screenName = "AppInit"
+        if (NeuroID.screenName.isNullOrEmpty()) {
+            NeuroID.screenName = "AppInit"
         }
 
         val changedOrientation = auxOrientation != orientation

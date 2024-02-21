@@ -15,12 +15,12 @@ import android.widget.Switch
 import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParents
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 
@@ -199,7 +199,7 @@ fun createAtrrJSON(
 
     val classJson = mapOf<String, Any>(
         "n" to "screenHierarchy",
-        "v" to "${view.getParents(logger)}${NIDServiceTracker.screenName}"
+        "v" to "${view.getParents(logger)}${NeuroID.screenName}"
     )
 
     val parentData =
@@ -229,13 +229,13 @@ fun registerFinalComponent(
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-    val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+    val pathFrag = if (NeuroID.screenFragName.isEmpty()) {
         ""
     } else {
-        "/${NIDServiceTracker.screenFragName}"
+        "/${NeuroID.screenFragName}"
     }
 
-    val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+    val urlView = ANDROID_URI + NeuroID.screenActivityName + "$pathFrag/" + idName
 
     logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
@@ -247,7 +247,7 @@ fun registerFinalComponent(
                 tg = mapOf("attr" to attrJson),
                 et = "$et::$simpleName",
                 etn = "INPUT",
-                ec = NIDServiceTracker.screenName,
+                ec = NeuroID.screenName,
                 eid = idName,
                 tgs = idName,
                 en = idName,

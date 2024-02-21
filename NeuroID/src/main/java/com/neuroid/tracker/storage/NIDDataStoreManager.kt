@@ -6,7 +6,6 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -144,7 +143,7 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
             var url = item.url
             if (item.type == CREATE_SESSION && url == "") {
                 updateEvent = true
-                url = "$ANDROID_URI${NIDServiceTracker.firstScreenName}"
+                url = "$ANDROID_URI${NeuroID.firstScreenName}"
             }
 
             if (updateEvent) {
