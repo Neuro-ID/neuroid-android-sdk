@@ -162,9 +162,9 @@ data class NIDEventModel(
 }
 
 data class NIDSensorModel(
-    var x: Float?,
-    var y: Float?,
-    var z: Float?
+    val x: Float?,
+    val y: Float?,
+    val z: Float?
 ) {
     fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
