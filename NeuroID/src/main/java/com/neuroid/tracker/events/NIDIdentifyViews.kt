@@ -343,3 +343,50 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
         metaData
     )
 }
+
+fun registerComponent(
+    view: View,
+    guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
+    rts: String? = null,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+
+    val simpleName = view.javaClass.simpleName
+
+    logger.d(
+        "NIDDebug registeredComponent",
+        "view: ${view::class} java: $simpleName"
+    )
+
+    val (idName, et, v, metaData) = verifyComponentType(view)
+
+    logger.d("NIDDebug et at registerComponent", et)
+
+    // early exit if not supported target type
+    if (et.isEmpty()) {
+        return
+    }
+
+    val attrJson = createAtrrJSON(
+        logger,
+        view,
+        guid,
+        activityOrFragment,
+        parent,
+        metaData
+    )
+
+    registerFinalComponent(
+        logger,
+        storeManager,
+        rts,
+        idName,
+        et,
+        v,
+        simpleName,
+        attrJson
+    )
+}

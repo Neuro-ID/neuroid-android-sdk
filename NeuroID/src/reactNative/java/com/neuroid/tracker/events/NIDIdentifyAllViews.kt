@@ -1,11 +1,8 @@
 package com.neuroid.tracker.events
 
 import android.view.View
-import android.widget.*
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.extensions.getIdOrTag
-import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.utils.NIDLogWrapper
 
 import androidx.core.view.children
 import com.facebook.react.views.image.ReactImageView
@@ -53,25 +50,9 @@ fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
     )
 }
 
-fun registerComponent(
-    view: View,
-    guid: String,
-    logger: NIDLogWrapper,
-    storeManager: NIDDataStoreManager,
-    rts: String? = null,
-    activityOrFragment: String = "",
-    parent: String = "",
-) {
-    val simpleName = view.javaClass.simpleName
 
-    logger.d(
-        "NIDDebug registeredComponent",
-        "view: ${view::class} java: $simpleName"
-    )
-
+fun verifyComponentType(view: View):ComponentValuesResult{
     var (idName, et, v, metaData) = isCommonAndroidComponent(view)
-
-    logger.d("NIDDebug et at registerComponent", "$et")
 
     // check if its empty, then check if its a RN element
     if (et.isEmpty()) {
@@ -83,28 +64,10 @@ fun registerComponent(
         metaData = rnMetaData
     }
 
-    // early exit if not supported target type
-    if (et.isEmpty()) {
-        return
-    }
-
-    val attrJson = createAtrrJSON(
-        logger,
-        view,
-        guid,
-        activityOrFragment,
-        parent,
-        metaData
-    )
-
-    registerFinalComponent(
-        logger,
-        storeManager,
-        rts,
+    return ComponentValuesResult(
         idName,
         et,
         v,
-        simpleName,
-        attrJson
+        metaData
     )
 }
