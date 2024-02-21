@@ -18,8 +18,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 class NIDJobServiceManager(
     private var logger:NIDLogWrapper,
@@ -46,6 +48,7 @@ class NIDJobServiceManager(
         application: Application,
         clientKey: String,
     ) {
+        this.userActive = true
         this.clientKey = clientKey
         this.application = application
         jobCaptureEvents = createJobServer()
@@ -73,6 +76,7 @@ class NIDJobServiceManager(
 
     @Synchronized
     fun restart() {
+        this.userActive = true
         NIDSensorHelper.restartSensors()
         jobCaptureEvents?.cancel()
         jobCaptureEvents = createJobServer()

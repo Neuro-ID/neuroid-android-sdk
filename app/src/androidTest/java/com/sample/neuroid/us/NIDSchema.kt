@@ -9,7 +9,6 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
-import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -150,11 +149,7 @@ class NIDSchema {
     private fun getInputStreamFromResource(fileName: String) =
         javaClass.classLoader?.getResourceAsStream(fileName)
 
-    private fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
-        return getSendingService(
-            "",
-            NIDLogWrapper(),
-            context
-        ).getRequestPayloadJSON(listEvents)
+    private suspend fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
+        return NIDServiceTracker.getContentJson(context, listEvents)
     }
 }
