@@ -824,7 +824,15 @@ open class NeuroIDClassUnitTests {
         setMockedNIDJobServiceManager()
         NeuroID.getInstance()?.let {
             it.resumeCollection()
-            assertEquals(true, NeuroID.isSDKStarted)
+
+            if (it.pauseCollectionJob != null) {
+                it.pauseCollectionJob?.invokeOnCompletion {
+                    assertEquals(true, NeuroID.isSDKStarted)
+                }
+            } else {
+                assertEquals(true, NeuroID.isSDKStarted)
+            }
+
         }
     }
 

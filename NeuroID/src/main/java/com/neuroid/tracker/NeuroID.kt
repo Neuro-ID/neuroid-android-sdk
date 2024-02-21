@@ -39,7 +39,7 @@ class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
     @Volatile
-    private var pauseCollectionJob: Job? = null
+    internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
     private var firstTime = true
     internal var sessionID = ""
