@@ -21,6 +21,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         NIDLog.d( msg="Activity - Created")
 
         val currentActivityName = activity::class.java.name
+
         val orientation = activity.resources.configuration.orientation
         if (auxOrientation == -1) {
             auxOrientation = orientation
@@ -43,6 +44,8 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         if (existActivity.not()) {
+            NIDLog.d(msg="onActivityStarted existActivity.not()");
+
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
             NIDLog.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
@@ -64,7 +67,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
             auxOrientation = orientation
         }
 
-        NIDLog.d( msg="Activity - POST Created - Window Load")
+        NIDLog.d(msg="Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -76,7 +79,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                         mapOf(
                             "component" to "activity",
                             "lifecycle" to "postCreated",
-                            "className" to "${activity::class.java.simpleName}"
+                            "className" to currentActivityName
                         )
                     )
                 )
@@ -84,7 +87,9 @@ class NIDActivityCallbacks: ActivityCallbacks() {
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDLog.d( msg="Activity - Resumed")
+        NIDLog.d(msg="Activity - Resumed")
+
+        val currentActivityName = activity::class.java.name
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -100,27 +105,27 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                         mapOf(
                             "component" to "activity",
                             "lifecycle" to "resumed",
-                            "className" to "${activity::class.java.simpleName}"
+                            "className" to currentActivityName
                         )
                     )
                 )
             )
 
-        activitiesStarted++
+        // depending on RN or Android run the following code
+        registrationHelpers {
+            activitiesStarted++
 
-        val currentActivityName = activity::class.java.name
+            registerTargetFromScreen(
+                activity,
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                registerTarget = true,
+                registerListeners = true,
+                activityOrFragment = "activity",
+                parent = currentActivityName
+            )
 
-        registerTargetFromScreen(
-            activity,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            registerTarget = true,
-            registerListeners = true,
-            activityOrFragment = "activity",
-            parent = currentActivityName
-        )
-
-        registerWindowListeners(activity)
+            registerWindowListeners(activity)
+        }
     }
-
 }
