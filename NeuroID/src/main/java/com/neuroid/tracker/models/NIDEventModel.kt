@@ -6,6 +6,7 @@ import org.json.JSONObject
 
 data class NIDEventModel(
     val type: String,
+    val ts: Long = 0, // Default 0 because the DataStore.saveEvent method will always add real timestamp
     val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
     val tgs: String? = null,
@@ -21,7 +22,6 @@ data class NIDEventModel(
     val et: String? = null,
     var eid: String? = null,
     val ct: String? = null,
-    val ts: Long,
     val sm: Int? = null,
     val pd: Int? = null,
     val x: Float? = null,

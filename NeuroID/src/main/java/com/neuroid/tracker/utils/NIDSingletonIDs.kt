@@ -26,8 +26,5 @@ object NIDSingletonIDs {
         saltId = UUID.randomUUID().toString()
         sharedDefaults?.putDeviceSalt(saltId)
         return saltId
-
     }
-
-
 }

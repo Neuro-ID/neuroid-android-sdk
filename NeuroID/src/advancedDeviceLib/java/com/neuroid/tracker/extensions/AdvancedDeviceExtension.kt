@@ -5,11 +5,11 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.neuroid.tracker.service.getADVNetworkService
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.Constants
 
@@ -22,7 +22,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
 
     if (advancedDeviceSignals) {
         getApplicationContext()?.let {
-            getADVSignal(clientKey, it, NIDLog)
+            getADVSignal(clientKey, it, dataStore, logger)
         }
     }
 
@@ -43,7 +43,7 @@ fun NeuroID.startSession(
 
     if (advancedDeviceSignals) {
         getApplicationContext()?.let {
-            getADVSignal(clientKey, it, NIDLog)
+            getADVSignal(clientKey, it, dataStore, logger)
         }
     }
 
@@ -53,6 +53,7 @@ fun NeuroID.startSession(
 internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
+    dataStore:NIDDataStoreManager,
     logger: NIDLogWrapper
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -60,7 +61,7 @@ internal fun getADVSignal(
             applicationContext,
             logger,
             NIDSharedPrefsDefaults(applicationContext),
-            getDataStoreInstance(),
+            dataStore,
             getADVNetworkService(
                 NeuroID.endpoint,
                 logger

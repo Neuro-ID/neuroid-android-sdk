@@ -16,11 +16,11 @@ import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel)
+    fun saveEvent(tempEvent: NIDEventModel)
     fun getAllEvents(): List<NIDEventModel>
     fun addViewIdExclude(id: String)
     fun clearEvents()
-    fun queueEvent(event: NIDEventModel)
+    fun queueEvent(tempEvent: NIDEventModel)
     fun saveAndClearAllQueuedEvents()
 }
 
@@ -51,7 +51,13 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
 
     // Queue events that are set before sdk is started
     @Synchronized
-    override fun queueEvent(event: NIDEventModel) {
+    override fun queueEvent(tempEvent: NIDEventModel) {
+        val event = tempEvent.copy(
+            ts = System.currentTimeMillis(),
+            gyro = NIDSensorHelper.getGyroscopeInfo(),
+            accel = NIDSensorHelper.getAccelerometerInfo()
+        )
+
         queuedEvents.add(event)
     }
 
@@ -62,7 +68,14 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     }
 
     @Synchronized
-    override fun saveEvent(event: NIDEventModel) {
+    override fun saveEvent(tempEvent: NIDEventModel) {
+        // add TS, Gyro, and Accel to every event
+        val event = tempEvent.copy(
+            ts = System.currentTimeMillis(),
+            gyro = NIDSensorHelper.getGyroscopeInfo(),
+            accel = NIDSensorHelper.getAccelerometerInfo()
+        )
+
         if (NeuroID.getInstance()?.nidJobServiceManager?.isStopped() == true) {
             return
         }
@@ -88,7 +101,6 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
             eventsList.add(event)
             logEvent(event)
             NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
-
         }
 
         when (event.type) {

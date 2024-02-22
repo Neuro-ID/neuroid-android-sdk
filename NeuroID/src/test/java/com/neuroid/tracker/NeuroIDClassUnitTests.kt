@@ -3,7 +3,7 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
@@ -15,6 +15,7 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -98,7 +99,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.setLoggerInstance(log)
     }
 
-    fun setMockedDataStore() {
+    fun setMockedDataStore():NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         every { dataStoreManager.saveEvent(any()) } answers {
             storedEvents.add(args[0] as NIDEventModel)
@@ -116,6 +117,8 @@ open class NeuroIDClassUnitTests {
         every { dataStoreManager.saveAndClearAllQueuedEvents() } answers { queuedEvents.clear() }
 
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
+
+        return dataStoreManager
     }
 
     private fun setMockedApplication() {
@@ -265,8 +268,9 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInstance()?.setUserID("myUserID")
 
         assertEquals(true, value)
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === SET_USER_ID)
+        assertEquals(4, storedEvents.count())
+        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
+        assertEquals(1, storedEvents.count { x -> x.type === SET_USER_ID })
     }
 
     @Test
@@ -279,8 +283,9 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInstance()?.setRegisteredUserID("myRegisteredUserID")
 
         assertEquals(true, value)
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === SET_REGISTERED_USER_ID)
+        assertEquals(4, storedEvents.count())
+        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
+        assertEquals(1, storedEvents.count { x -> x.type === SET_REGISTERED_USER_ID })
     }
 
     @Test
@@ -507,7 +512,7 @@ open class NeuroIDClassUnitTests {
     //    registerPageTargets
     @Test
     fun testRegisterPageTargets() {
-        val mockedNIDACB = mockk<NIDActivityCallbacks>()
+        val mockedNIDACB = mockk<ActivityCallbacks>()
         every { mockedNIDACB.forceStart(any()) } just runs
         NeuroID.getInstance()?.setNIDActivityCallbackInstance(mockedNIDACB)
 

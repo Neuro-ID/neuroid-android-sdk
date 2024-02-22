@@ -95,15 +95,9 @@ class NIDJobServiceManager(
             while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
                 delay(NeuroID.GYRO_SAMPLE_INTERVAL)
 
-                val gyroData = NIDSensorHelper.getGyroscopeInfo()
-                val accelData = NIDSensorHelper.getAccelerometerInfo()
-
                 dataStore.saveEvent(
                     NIDEventModel(
                         type = CADENCE_READING_ACCEL,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData,
                         attrs = listOf(
                             mapOf(
                                 "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
@@ -162,20 +156,18 @@ class NIDJobServiceManager(
         NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
 
         if (memoryInfo.lowMemory) {
-            val event = NIDEventModel(
+            return NIDEventModel(
                 type = LOW_MEMORY,
                 ts = System.currentTimeMillis(),
                 attrs = listOf(
-                    mapOf(
+                    mapOf<String, Any>(
                         "isLowMemory" to memoryInfo.lowMemory,
-                        "total" to  memoryInfo.totalMem,
-                        "available" to  memoryInfo.availMem,
-                        "threshold" to  memoryInfo.threshold,
+                        "total" to memoryInfo.totalMem,
+                        "available" to memoryInfo.availMem,
+                        "threshold" to memoryInfo.threshold,
                     )
                 )
             )
-
-            return event
         }
 
         return null

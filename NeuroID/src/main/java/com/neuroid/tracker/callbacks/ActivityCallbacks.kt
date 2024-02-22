@@ -3,65 +3,165 @@ package com.neuroid.tracker.callbacks
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR
+import com.neuroid.tracker.events.WINDOW_FOCUS
+import com.neuroid.tracker.events.WINDOW_LOAD
+import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
-import com.neuroid.tracker.events.registerTargetFromScreen
-import com.neuroid.tracker.events.registerWindowListeners
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 
-abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
-    var activitiesStarted = 0
-    var listActivities = ArrayList<String>()
+class ActivityCallbacks(
+    val dataStore: NIDDataStoreManager,
+    val logger:NIDLogWrapper,
+    val registrationHelper: RegistrationIdentificationHelper
+): ActivityLifecycleCallbacks {
+    private var activitiesStarted = 0
+    private var listActivities = ArrayList<String>()
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        NIDLog.d(msg = "onActivityCreated");
-    }
-
-    abstract override fun onActivityStarted(activity: Activity)
+    private var auxOrientation = -1
+    private var wasChanged = false
 
     /**
      * Option for customers to force start with Activity
      */
     fun forceStart(activity: Activity) {
-        registerTargetFromScreen(
+        registrationHelper.registerTargetFromScreen(
             activity,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
             true,
             true,
             activityOrFragment = "activity",
             parent = activity::class.java.simpleName
         )
         // register listeners for focus, blur and touch events
-        registerWindowListeners(activity)
+        registrationHelper.registerWindowListeners(activity)
     }
-    abstract override fun onActivityResumed(activity: Activity)
 
-    override fun onActivityPaused(activity: Activity) {
-        NIDLog.d( msg="Activity - Paused")
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        NIDLog.d(msg = "onActivityCreated");
+    }
 
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
+     override fun onActivityStarted(activity: Activity) {
+        NIDLog.d( msg="Activity - Created")
 
-        getDataStoreInstance()
-            .saveEvent(
+        val currentActivityName = activity::class.java.name
+
+        val orientation = activity.resources.configuration.orientation
+        if (auxOrientation == -1) {
+            auxOrientation = orientation
+        }
+        val existActivity = listActivities.contains(currentActivityName)
+
+        NeuroID.screenActivityName = currentActivityName
+        if (NeuroID.firstScreenName.isNullOrEmpty()) {
+            NeuroID.firstScreenName = currentActivityName
+        }
+        if (NeuroID.screenFragName.isNullOrEmpty()) {
+            NeuroID.screenFragName = ""
+        }
+        if (NeuroID.screenName.isNullOrEmpty()) {
+            NeuroID.screenName = "AppInit"
+        }
+        wasChanged = auxOrientation != orientation
+
+        if (existActivity.not()) {
+            NIDLog.d(msg="onActivityStarted existActivity.not()");
+
+            val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
+
+            NIDLog.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            fragManager?.registerFragmentLifecycleCallbacks(
+                FragmentCallbacks(
+                    wasChanged,
+                    dataStore,
+                    logger,
+                    registrationHelper
+                ),
+                true
+            )
+        }
+
+        if (wasChanged) {
+            NIDLog.d( msg="Activity - POST Created - Orientation change")
+            dataStore.saveEvent(
                 NIDEventModel(
-                    type = WINDOW_BLUR,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = listOf(
-                        mapOf(
-                            "component" to "activity",
-                            "lifecycle" to "paused",
-                            "className" to "${activity::class.java.simpleName}"
-                        )
+                    type = WINDOW_ORIENTATION_CHANGE,
+                    o = "CHANGED",
+                )
+            )
+            auxOrientation = orientation
+        }
+
+        NIDLog.d(msg="Activity - POST Created - Window Load")
+         dataStore.saveEvent(
+            NIDEventModel(
+                type = WINDOW_LOAD,
+                attrs = listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "postCreated",
+                        "className" to currentActivityName
                     )
                 )
             )
+        )
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+        NIDLog.d( msg="Activity - Paused")
+        val currentActivityName = activity::class.java.name
+
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = WINDOW_BLUR,
+                attrs = listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "paused",
+                        "className" to currentActivityName
+                    )
+                )
+            )
+        )
+    }
+
+    override fun onActivityResumed(activity: Activity) {
+        NIDLog.d(msg="Activity - Resumed")
+
+        val currentActivityName = activity::class.java.name
+
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = WINDOW_FOCUS,
+                attrs = listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "resumed",
+                        "className" to currentActivityName
+                    )
+                )
+            )
+        )
+
+        // depending on RN or Android run the following code
+        registrationHelpers {
+            activitiesStarted++
+
+            registrationHelper.registerTargetFromScreen(
+                activity,
+                registerTarget = true,
+                registerListeners = true,
+                activityOrFragment = "activity",
+                parent = currentActivityName
+            )
+
+            registrationHelper.registerWindowListeners(activity)
+        }
     }
 
     override fun onActivityStopped(activity: Activity) {
@@ -76,24 +176,18 @@ abstract class ActivityCallbacks: ActivityLifecycleCallbacks {
 
     override fun onActivityDestroyed(activity: Activity) {
         NIDLog.d( msg="Activity - Destroyed")
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
         NIDLog.d( msg="Activity - Destroyed - Window Unload")
-        getDataStoreInstance()
-            .saveEvent(
+        dataStore.saveEvent(
                 NIDEventModel(
                     type = WINDOW_UNLOAD,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
                     attrs = listOf(
                         mapOf(
                             "component" to "activity",
                             "lifecycle" to "destroyed",
-                            "className" to "${activity::class.java.simpleName}"
+                            "className" to activityDestroyed
                         )
                     )
                 )

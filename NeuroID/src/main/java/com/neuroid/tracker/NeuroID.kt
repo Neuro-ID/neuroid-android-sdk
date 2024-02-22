@@ -1,16 +1,13 @@
 package com.neuroid.tracker
 
 import android.app.Activity
-import android.app.ActivityManager
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import com.neuroid.tracker.callbacks.NIDActivityCallbacks
-import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.*
-import com.neuroid.tracker.events.identifyView
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
@@ -58,27 +55,33 @@ class NeuroID private constructor(
 
     internal var isRN = false
 
-    internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
+    // Dependency Injections
+    internal var logger: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
-    internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
+    internal var registrationIdentificationHelper:RegistrationIdentificationHelper
+    internal var nidActivityCallbacks: ActivityCallbacks
     internal lateinit var nidJobServiceManager: NIDJobServiceManager
+
     internal var clipboardManager: ClipboardManager? = null
 
     internal var lowMemory:Boolean = false
 
     init {
+        registrationIdentificationHelper = RegistrationIdentificationHelper(dataStore, logger)
+        nidActivityCallbacks = ActivityCallbacks(dataStore, logger, registrationIdentificationHelper)
+
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
 
             nidJobServiceManager = NIDJobServiceManager(
-                NIDLog,
+                logger,
                 dataStore,
-                getSendingService(endpoint, NIDLog, it)
+                getSendingService(endpoint, logger, it)
             )
         }
 
         if (!validateClientKey(clientKey)) {
-            NIDLog.e(msg = "Invalid Client Key")
+            logger.e(msg = "Invalid Client Key")
             clientKey = ""
         } else {
             if (clientKey.contains("_live_")) {
@@ -97,7 +100,6 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
-
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
@@ -162,8 +164,8 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
-    internal fun setLoggerInstance(logger: NIDLogWrapper) {
-        NIDLog = logger
+    internal fun setLoggerInstance(newLogger: NIDLogWrapper) {
+        logger = newLogger
     }
 
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
@@ -182,7 +184,7 @@ class NeuroID private constructor(
         return clipboardManager
     }
 
-    internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
+    internal fun setNIDActivityCallbackInstance(callback: ActivityCallbacks) {
         nidActivityCallbacks = callback
     }
 
@@ -196,7 +198,7 @@ class NeuroID private constructor(
 
         application?.let {
             nidJobServiceManager.setTestEventSender(
-                getSendingService(endpoint, NIDLog, it)
+                getSendingService(endpoint, logger, it)
             )
         }
     }
@@ -216,7 +218,7 @@ class NeuroID private constructor(
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            NIDLog.e(msg = "Invalid UserID")
+            logger.e(msg = "Invalid UserID")
             return false
         }
 
@@ -275,14 +277,9 @@ class NeuroID private constructor(
                 return false
             }
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val genericUserIdEvent = NIDEventModel(
                 type = type,
                 uid = genericUserId,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
             )
             if (isSDKStarted) {
                 dataStore.saveEvent(
@@ -294,7 +291,7 @@ class NeuroID private constructor(
 
             return true
         } catch (exception: Exception) {
-            NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
+            logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
             return false;
         }
     }
@@ -306,9 +303,8 @@ class NeuroID private constructor(
     fun getRegisteredUserID() = registeredUserID
 
     fun setScreenName(screen: String): Boolean {
-
         if (!isSDKStarted) {
-            NIDLog.e(msg = "NeuroID SDK is not started")
+            logger.e(msg = "NeuroID SDK is not started")
             return false
         }
 
@@ -328,14 +324,14 @@ class NeuroID private constructor(
 
     @Deprecated("setEnvironment is deprecated and no longer required")
     fun setEnvironment(environment: String) {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
         )
     }
 
     @Deprecated("setEnvironmentProduction is deprecated and no longer required")
     fun setEnvironmentProduction(prod: Boolean) {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
         )
     }
@@ -344,7 +340,7 @@ class NeuroID private constructor(
 
     @Deprecated("getSiteId is deprecated and no longer required")
     fun setSiteId(siteId: String) {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
         )
 
@@ -353,7 +349,7 @@ class NeuroID private constructor(
 
     @Deprecated("getSiteId is deprecated")
     internal fun getSiteId(): String {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
         )
         return ""
@@ -388,16 +384,10 @@ class NeuroID private constructor(
 
     internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
             dataStore.saveEvent(
                 NIDEventModel(
                     type = eventName,
                     tgs = tgs,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
                 )
             )
         }
@@ -405,21 +395,14 @@ class NeuroID private constructor(
 
     @Deprecated("formSubmit is deprecated and no longer required")
     fun formSubmit() {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
         )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData,
-
-                )
+            )
         )
 
         saveIntegrationHealthEvents()
@@ -427,19 +410,13 @@ class NeuroID private constructor(
 
     @Deprecated("formSubmitSuccess is deprecated and no longer required")
     fun formSubmitSuccess() {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
         )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
             )
         )
 
@@ -448,19 +425,13 @@ class NeuroID private constructor(
 
     @Deprecated("formSubmitFailure is deprecated and no longer required")
     fun formSubmitFailure() {
-        NIDLog.i(
+        logger.i(
             msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
         )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         dataStore.saveEvent(
             NIDEventModel(
                 type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
             )
         )
 
@@ -469,7 +440,7 @@ class NeuroID private constructor(
 
     open fun start(): Boolean {
         if (clientKey == "") {
-            NIDLog.e(
+            logger.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
             return false
@@ -499,7 +470,8 @@ class NeuroID private constructor(
         if (!isStopped()) {
             dataStore.saveEvent(
                 NIDEventModel(
-                    type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
+                    type = CLOSE_SESSION,
+                    ct = "SDK_EVENT"
                 )
             )
             stop()
@@ -516,11 +488,9 @@ class NeuroID private constructor(
     fun isStopped() = !isSDKStarted
 
     internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(
+        registrationIdentificationHelper.identifySingleView(
             view,
             activity.getGUID(),
-            NIDLogWrapper(),
-            dataStore,
             true,
             addListener
         )
@@ -533,11 +503,9 @@ class NeuroID private constructor(
         return this.application?.applicationContext
     }
 
-    private suspend fun createSession() {
+    private fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
             clientID = sharedDefaults.getClientId()
@@ -563,9 +531,6 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
                     metadata = metaData
@@ -576,17 +541,11 @@ class NeuroID private constructor(
     }
 
     private fun createMobileMetadata() {
-        timestamp = System.currentTimeMillis()
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             dataStore.saveEvent(
                 NIDEventModel(
                     type = MOBILE_METADATA_ANDROID,
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
                     metadata = metaData,
@@ -637,7 +596,7 @@ class NeuroID private constructor(
 
     fun startSession(sessionID: String? = null): SessionStartResult {
         if (clientKey == "") {
-            NIDLog.e(
+            logger.e(
                 msg = "Missing Client Key - please call configure prior to calling start"
             )
             return SessionStartResult(false, "")
@@ -679,31 +638,25 @@ class NeuroID private constructor(
 
     private fun sendOriginEvent(originResult: SessionIDOriginResult) {
         // sending these as individual items.
-        getDataStoreInstance()
-            .saveEvent(
+       dataStore.saveEvent(
                 NIDEventModel(
                     type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
                     key = "sessionIdCode",
                     v = originResult.originCode
                 )
             )
 
-        getDataStoreInstance()
-            .saveEvent(
+        dataStore.saveEvent(
                 NIDEventModel(
                     type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
                     key = "sessionIdSource",
                     v = originResult.origin
                 )
             )
 
-        getDataStoreInstance()
-            .saveEvent(
+        dataStore.saveEvent(
                 NIDEventModel(
                     type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
                     key = "sessionId",
                     v = originResult.sessionID
                 )
@@ -776,7 +729,8 @@ class NeuroID private constructor(
     fun stopSession(): Boolean {
         dataStore.saveEvent(
             NIDEventModel(
-                type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
+                type = CLOSE_SESSION,
+                ct = "SDK_EVENT"
             )
         )
 

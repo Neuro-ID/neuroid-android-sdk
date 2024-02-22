@@ -10,7 +10,7 @@ import android.widget.RatingBar
 import android.widget.SeekBar
 import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
-import com.neuroid.tracker.events.identifyView
+import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
@@ -44,7 +44,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -69,7 +71,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -95,7 +99,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -120,7 +126,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -145,7 +153,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0") }
     }
 
@@ -165,7 +175,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -210,7 +222,9 @@ class NIDIdentityAllViewsTest {
         every { dataStoreManager.saveEvent(any()) } answers {
             mockk<Job>()
         }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(dataStoreManager, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12") }
         verify(exactly = 2) {
             logger.d(
@@ -219,5 +233,4 @@ class NIDIdentityAllViewsTest {
             )
         }
     }
-
 }
