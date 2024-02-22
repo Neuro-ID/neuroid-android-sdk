@@ -10,18 +10,21 @@ import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 
-class NIDFragmentCallbacks : FragmentCallbacks(false) {
+class NIDFragmentCallbacks(
+    isChangeOrientation: Boolean
+) : FragmentCallbacks(isChangeOrientation) {
     var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDLog.d(msg="onFragmentAttached ${f::class.java.simpleName}");
+        val className = f::class.java.simpleName
+        NIDLog.d(msg="onFragmentAttached $className");
 
-        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            if (NeuroID.screenName.isNullOrEmpty()) {
+        if (blackListFragments.any { it == className }.not()) {
+            if (NeuroID.screenName.isEmpty()) {
                 NeuroID.screenName = "AppInit"
             }
-            if (NeuroID.screenFragName.isNullOrEmpty()) {
-                NeuroID.screenFragName = f::class.java.simpleName
+            if (NeuroID.screenFragName.isEmpty()) {
+                NeuroID.screenFragName = className
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
@@ -37,7 +40,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                             mapOf(
                                 "component" to "fragment",
                                 "lifecycle" to "attached",
-                                "className" to "${f::class.java.simpleName}"
+                                "className" to className
                             )
                         )
                     )
@@ -61,7 +64,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                         registerTarget = true,
                         registerListeners = false,
                         activityOrFragment = "fragment",
-                        parent = f::class.java.simpleName
+                        parent = className
                     )
                 }
             } else {
@@ -73,7 +76,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                     registerTarget = true,
                     registerListeners = true,
                     activityOrFragment = "fragment",
-                    parent = f::class.java.simpleName
+                    parent = className
                 )
             }
         }

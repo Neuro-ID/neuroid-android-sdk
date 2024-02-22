@@ -271,7 +271,7 @@ data class ComponentValuesResult(
 
 fun isCommonAndroidComponent(view: View): ComponentValuesResult {
     // vars that can change based on the element
-    var idName = view.getIdOrTag()
+    val idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
     val metaData = mutableMapOf<String, Any>()
@@ -291,14 +291,14 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
             v = "${view.isChecked}"
 
             metaData.put("type", "radioButton")
-            metaData.put("id", "$idName")
+            metaData.put("id", idName)
 
             // go up to 3 parents in case a RadioGroup is not the direct parent
             var rParent = view.parent;
             repeat(3) { index ->
                 if (rParent is RadioGroup) {
                     val p = rParent as RadioGroup
-                    metaData.put("rGroupId", "${p.getIdOrTag()}")
+                    metaData.put("rGroupId", p.getIdOrTag())
                     return@repeat
                 } else {
                     rParent = rParent.parent
@@ -341,5 +341,52 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
         et,
         v,
         metaData
+    )
+}
+
+fun registerComponent(
+    view: View,
+    guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
+    rts: String? = null,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+
+    val simpleName = view.javaClass.simpleName
+
+    logger.d(
+        "NIDDebug registeredComponent",
+        "view: ${view::class} java: $simpleName"
+    )
+
+    val (idName, et, v, metaData) = verifyComponentType(view)
+
+    logger.d("NIDDebug et at registerComponent", et)
+
+    // early exit if not supported target type
+    if (et.isEmpty()) {
+        return
+    }
+
+    val attrJson = createAtrrJSON(
+        logger,
+        view,
+        guid,
+        activityOrFragment,
+        parent,
+        metaData
+    )
+
+    registerFinalComponent(
+        logger,
+        storeManager,
+        rts,
+        idName,
+        et,
+        v,
+        simpleName,
+        attrJson
     )
 }
