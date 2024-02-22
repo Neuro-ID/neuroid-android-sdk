@@ -12,14 +12,11 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.getRetroFitInstance
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
 interface NIDSendingService {
     fun sendEvents(
@@ -28,14 +25,10 @@ interface NIDSendingService {
         nidResponseCallback: NIDResponseCallBack
     )
 
-
 // Request Prep Functions
     fun getRequestPayloadJSON(
         events: List<NIDEventModel>
     ): String
-
-
-
 }
 
 /**
@@ -175,18 +168,10 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
 }
 
 fun getSendingService(endpoint:String, logger: NIDLogWrapper, context:Context):NIDSendingService = NIDEventSender(
-    Retrofit.Builder()
-        .baseUrl(endpoint)
-        .client(
-            OkHttpClient.Builder()
-                .readTimeout(10, TimeUnit.SECONDS)
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .callTimeout(0, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(LoggerIntercepter(logger)).build()
-        )
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(NIDApiService::class.java),
+    getRetroFitInstance(
+        endpoint,
+        logger,
+        NIDApiService::class.java
+    ),
     context
 )
