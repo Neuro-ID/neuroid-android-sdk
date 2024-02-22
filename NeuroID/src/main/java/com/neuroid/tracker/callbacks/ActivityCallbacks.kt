@@ -15,6 +15,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
     val dataStore: NIDDataStoreManager,

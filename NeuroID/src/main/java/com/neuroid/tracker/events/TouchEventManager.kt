@@ -14,6 +14,8 @@ import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.detectViewType
+import com.neuroid.tracker.utils.getEtnSenderName
 
 class TouchEventManager(
     private val viewParent: ViewGroup,

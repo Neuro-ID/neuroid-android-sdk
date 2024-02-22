@@ -24,6 +24,8 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTextWatcher
+import com.neuroid.tracker.utils.handleIdentifyAllViews
+import com.neuroid.tracker.utils.verifyComponentType
 import java.util.UUID
 
 // list of text watchers in the entire app
