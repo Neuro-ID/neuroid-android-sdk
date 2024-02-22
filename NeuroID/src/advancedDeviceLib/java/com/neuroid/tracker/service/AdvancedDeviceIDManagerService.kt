@@ -112,6 +112,8 @@ internal class AdvancedDeviceIDManager(
                 CoroutineScope(Dispatchers.IO).launch {
                     val maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
 
+                    var jobComplete = false
+                    var jobErrorMessage = ""
                     for (retryCount in 1..maxRetryCount) {
                         // returns a Bool - success, String - key OR error message
                         val requestResponse = getVisitorId(fpjsClient)
@@ -149,32 +151,33 @@ internal class AdvancedDeviceIDManager(
                             sharedPrefs.putString(NID_RID, cachedValueString)
 
                             // end while loop
+                            jobComplete = true
                             break
                         }
 
                         // If Failure - retry until max retry, then log failure in event
+                        jobErrorMessage = requestResponse.second
                         logger.d(
                                 msg =
-                                        "Error retrieving Advanced Device Signal Request ID:${requestResponse.second}: $retryCount"
+                                        "Error retrieving Advanced Device Signal Request ID:$jobErrorMessage: $retryCount"
                         )
                         Thread.sleep(5000)
-
-                        if (!(retryCount+1 < maxRetryCount)) {
-                            val msg =
-                                    "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID:${requestResponse.second}"
-
-                            dataStoreManager.saveEvent(
-                                    NIDEventModel(
-                                            type = LOG,
-                                            ts = System.currentTimeMillis(),
-                                            level = "error",
-                                            m = msg
-                                    )
-                            )
-                            logger.e(msg = msg)
-                        }
                     }
 
+                    if (!jobComplete) {
+                        val msg =
+                            "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID: $jobErrorMessage"
+
+                        dataStoreManager.saveEvent(
+                            NIDEventModel(
+                                type = LOG,
+                                ts = System.currentTimeMillis(),
+                                level = "error",
+                                m = msg
+                            )
+                        )
+                        logger.e(msg = msg)
+                    }
                 }
 
         return remoteIDJob

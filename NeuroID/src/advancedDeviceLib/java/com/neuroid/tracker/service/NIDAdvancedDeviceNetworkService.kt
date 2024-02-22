@@ -40,15 +40,14 @@ class NIDAdvancedDeviceNetworkService(
                 "Failed to retrieve key from NeuroID"
             )
 
-            var retryCount = 0
-            while (retryCount < RETRY_COUNT) {
+            for (retryCount in 1..RETRY_COUNT) {
                 // retain the existing call and always execute on clones of it so we can retry when
                 // there is a failure!
                 val retryCall = call.clone()
                 val response = retryCall.execute()
+
                 // only allow 200 codes to succeed, everything else is failure, 204 is a failure
                 // which is weird!
-
                 if (response.code() == NIDEventSender.HTTP_SUCCESS) {
                     val responseBody = response.body()
 
@@ -82,7 +81,6 @@ class NIDAdvancedDeviceNetworkService(
                     break
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times
-                    retryCount ++
                     logger.d(tag = "NeuroID ADV", msg = "Failed to get API key from NeuroID: ${response.message()} - Code: ${response.code()}. Retrying: ${retryCount < RETRY_COUNT}")
                     finalResponse = ADVKeyFunctionResponse(
                         "",
