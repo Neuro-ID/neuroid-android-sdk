@@ -1,15 +1,20 @@
 package com.neuroid.tracker
 
+import android.app.ActivityManager
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
+import android.hardware.Sensor
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
+import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDApiService
 import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDResponseCallBack
+import com.neuroid.tracker.service.NIDSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -29,53 +34,80 @@ import retrofit2.Response
 class NIDJobServiceManagerTest {
     @Test
     fun testStartjob() {
-        injectMockedApplication()
-        assertEquals(NIDJobServiceManager.isSetup, true)
-        assertEquals(NIDJobServiceManager.clientKey, "clientKey")
-        assertEquals(NIDJobServiceManager.endpoint,Constants.productionEndpoint.displayName)
-        assertNotNull(NIDJobServiceManager.jobCaptureEvents)
+        val mockedSetup = setupNIDJobServiceManagerMocks()
+        val mockedApplication = mockedSetup.second
+        val nidJobServiceManager = mockedSetup.first
+
+        assertEquals(nidJobServiceManager.jobCaptureEvents, null)
+        assertEquals(nidJobServiceManager.gyroCadenceJob, null)
+        assertEquals(nidJobServiceManager.isSetup, false)
+        assertEquals(nidJobServiceManager.clientKey, "")
+
+
+        nidJobServiceManager.startJob(
+            mockedApplication,
+            "clientKey"
+        )
+
+        assertEquals(nidJobServiceManager.isSetup, true)
+        assertEquals(nidJobServiceManager.clientKey, "clientKey")
+        assertNotNull(nidJobServiceManager.jobCaptureEvents)
+        assertNotNull(nidJobServiceManager.gyroCadenceJob)
     }
 
     @Test
     fun testStopjob() {
-        injectMockedApplication()
-        NIDJobServiceManager.stopJob()
-        assertEquals(NIDJobServiceManager.jobCaptureEvents, null)
-        assertEquals(NIDJobServiceManager.isStopped(), true)
+        val mockedSetup = setupNIDJobServiceManagerMocks()
+        val mockedApplication = mockedSetup.second
+        val nidJobServiceManager = mockedSetup.first
+
+        nidJobServiceManager.startJob(
+            mockedApplication,
+            "clientKey"
+        )
+        assertNotNull(nidJobServiceManager.jobCaptureEvents)
+
+        nidJobServiceManager.stopJob()
+        assertEquals(nidJobServiceManager.jobCaptureEvents, null)
+        assertEquals(nidJobServiceManager.gyroCadenceJob, null)
+        assertEquals(nidJobServiceManager.isStopped(), true)
     }
 
     @Test
     fun testRestart() {
-        NIDJobServiceManager.restart()
-        assertNotNull(NIDJobServiceManager.jobCaptureEvents)
-    }
+        val mockedSetup = setupNIDJobServiceManagerMocks()
+        val nidJobServiceManager = mockedSetup.first
 
-    @Test
-    fun testGetApiService() {
-        NIDJobServiceManager.endpoint = Constants.productionEndpoint.displayName
-        assertNotNull(NIDJobServiceManager.getServiceAPI())
+        assertEquals(nidJobServiceManager.jobCaptureEvents, null)
+        assertEquals(nidJobServiceManager.gyroCadenceJob, null)
+        assertEquals(nidJobServiceManager.isStopped(), true)
+
+        nidJobServiceManager.restart()
+        assertNotNull(nidJobServiceManager.jobCaptureEvents)
+        assertNotNull(nidJobServiceManager.gyroCadenceJob)
+        assertEquals(nidJobServiceManager.isStopped(), false)
     }
 
     @Test
     fun testSendEventsNowSuccess() {
         runTest {
-            injectMockedApplication()
-
-            val dataStoreManager = getMockedDatastoreManager()
-            val logger = getMockedLogger()
-
             //prepare the sender response with a 200 OK, this will trigger the onSuccess() callback
-            val eventSender = getMockEventSender(
+            val mockedSetup = setupNIDJobServiceManagerMocks(
                 true,
                 200,
-                "should not happen")
+                "should not happen"
+            )
+            val logger = mockedSetup.third
+            val mockedApplication = mockedSetup.second
+            val nidJobServiceManager = mockedSetup.first
+            nidJobServiceManager.startJob(
+                mockedApplication,
+                "clientKey"
+            )
 
             // test the thing
-            NIDJobServiceManager.sendEventsNow(
-                logger,
+            nidJobServiceManager.sendEventsNow(
                 forceSendEvents = true,
-                eventSender = eventSender,
-                dataStoreManager = dataStoreManager
             )
             verify(exactly = 1) {logger.d(msg=" network success, sendEventsNow() success userActive: true")}
         }
@@ -85,32 +117,49 @@ class NIDJobServiceManagerTest {
     @Test
     fun testSendEventsNowError() {
         runTest {
-            injectMockedApplication()
-
-            val dataStoreManager = getMockedDatastoreManager()
-            val logger = getMockedLogger()
-
             //prepare the sender response with a 400 error, this will trigger the onError() callback
-            val eventSender = getMockEventSender(
+            val mockedSetup = setupNIDJobServiceManagerMocks(
                 false,
                 400,
-                "your request is junk, fix it!")
+                "your request is junk, fix it!",
+            )
+            val logger = mockedSetup.third
+            val mockedApplication = mockedSetup.second
+            val nidJobServiceManager = mockedSetup.first
+            nidJobServiceManager.startJob(
+                mockedApplication,
+                "clientKey"
+            )
 
             // test the thing
-            NIDJobServiceManager.sendEventsNow(
-                logger, forceSendEvents = true,
-                eventSender = eventSender,
-                dataStoreManager = dataStoreManager
+            nidJobServiceManager.sendEventsNow(
+                forceSendEvents = true,
             )
-            verify (exactly = 2) {logger.e(msg="network failure, sendEventsNow() failed userActive: true your request is junk, fix it!")}
-            verify (exactly = 1) {logger.e(msg="network failure, sendEventsNow() failed userActive: false your request is junk, fix it!")}
+            verify (exactly = 2) {logger.e(msg="network failure, sendEventsNow() failed retrylimitHit: false your request is junk, fix it!")}
+            verify (exactly = 1) {logger.e(msg="network failure, sendEventsNow() failed retrylimitHit: true your request is junk, fix it!")}
         }
+    }
+
+    private fun setupNIDJobServiceManagerMocks(
+        isSuccess: Boolean = true,
+        respCode: Int = 200,
+        respMessage: String = ""
+    ):Triple<NIDJobServiceManager, Application, NIDLogWrapper>{
+        val mockedApplication = getMockedApplication()
+        val logger = getMockedLogger()
+        val nidJobServiceManager = NIDJobServiceManager(
+            logger,
+            getMockedDatastoreManager(),
+            getMockEventSender(isSuccess, respCode, respMessage, mockedApplication)
+        )
+
+        return Triple(nidJobServiceManager, mockedApplication, logger)
     }
 
     private fun getMockedDatastoreManager (): NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
-        val events = "{\"siteId\":\"guns_452\",\"userId\":\"1693537992533\"}"
-        coEvery {dataStoreManager.getAllEvents()} returns setOf(events)
+        val event = NIDEventModel(type = "TEST_EVENT", ts=1)
+        coEvery {dataStoreManager.getAllEvents()} returns listOf(event)
         return dataStoreManager
     }
 
@@ -121,39 +170,53 @@ class NIDJobServiceManagerTest {
         return logger
     }
 
-    private fun injectMockedApplication() {
+    private fun getMockedApplication():Application {
         val sensorManager = mockk<SensorManager>()
         every {sensorManager.getSensorList(any())} returns listOf()
         every {sensorManager.unregisterListener(any<NIDSensorGenListener>())} just runs
+        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())}
+
         val application = mockk<Application>()
         every{application.getSystemService(any())} returns sensorManager
+
         val sharedPreferences = mockk<SharedPreferences>()
         every {sharedPreferences.getString(any(), any())} returns "test"
         every { application.getSharedPreferences(any(), any()) } returns sharedPreferences
-        NIDJobServiceManager.startJob(application, "clientKey")
+
+        val activityManager = mockk<ActivityManager>()
+        every {application.getSystemService(Context.ACTIVITY_SERVICE)} returns activityManager
+        every {activityManager.getMemoryInfo(any())} just runs
+
+        return application
     }
 
     private fun getMockEventSender(isSuccess: Boolean,
                                    respCode: Int,
-                                   respMessage: String): NIDEventSender {
-        val apiService = mockk<NIDApiService>()
-        val call = mockk<Call<ResponseBody>>()
-        val retryClone = mockk<Call<ResponseBody>>()
-        val response = mockk<Response<ResponseBody>>()
+                                   respMessage: String,
+                                   application: Application
+    ): NIDSendingService {
         val responseBody = mockk<ResponseBody>()
         every {responseBody.close()} just Runs
+
+        val response = mockk<Response<ResponseBody>>()
         every {response.isSuccessful} returns isSuccess
         every {response.code()} returns respCode
         every {response.message()} returns respMessage
         every {response.body()} returns responseBody
+
+        val retryClone = mockk<Call<ResponseBody>>()
         every {retryClone.execute()} returns response
+
+        val call = mockk<Call<ResponseBody>>()
         every {call.clone()} returns retryClone
+
+        val apiService = mockk<NIDApiService>()
         every {apiService.sendEvents(any(), any())} returns call
+
         val callback = mockk<NIDResponseCallBack>()
         every { callback.onSuccess(any()) } just Runs
         every { callback.onFailure(any(), any(), any()) } just Runs
-        return NIDEventSender(apiService)
+
+        return NIDEventSender(apiService, application)
     }
-
-
 }

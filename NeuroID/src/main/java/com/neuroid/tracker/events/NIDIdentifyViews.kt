@@ -15,17 +15,14 @@ import android.widget.Switch
 import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.forEach
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParents
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONArray
-import org.json.JSONObject
-
 
 fun identifyAllViews(
     viewParent: ViewGroup,
@@ -193,25 +190,30 @@ fun createAtrrJSON(
     guid: String,
     activityOrFragment: String = "",
     parent: String = "",
-    metaData: JSONObject
-): JSONArray {
-    val idJson = JSONObject()
-        .put("n", "guid")
-        .put("v", guid)
+    metaData: Map<String, Any>
+): List<Map<String, Any>> {
+    val idJson = mapOf<String, Any>(
+        "n" to "guid",
+        "v" to guid
+    )
 
-    val classJson = JSONObject()
-        .put("n", "screenHierarchy")
-        .put("v", "${view.getParents(logger)}${NIDServiceTracker.screenName}")
+    val classJson = mapOf<String, Any>(
+        "n" to "screenHierarchy",
+        "v" to "${view.getParents(logger)}${NeuroID.screenName}"
+    )
 
     val parentData =
-        JSONObject()
-            .put("parentClass", parent)
-            .put("component", activityOrFragment)
+        mapOf<String, Any>(
+            "parentClass" to parent,
+            "component" to activityOrFragment
+        )
 
-    return JSONArray()
-        .put(idJson)
-        .put(classJson)
-        .put(parentData).put(metaData)
+    return listOf(
+        idJson,
+        classJson,
+        parentData,
+        metaData
+    )
 }
 
 fun registerFinalComponent(
@@ -222,18 +224,18 @@ fun registerFinalComponent(
     et: String,
     v: String,
     simpleName: String,
-    attrJson: JSONArray
+    attrJson: List<Map<String, Any>>
 ) {
     val gyroData = NIDSensorHelper.getGyroscopeInfo()
     val accelData = NIDSensorHelper.getAccelerometerInfo()
 
-    val pathFrag = if (NIDServiceTracker.screenFragName.isEmpty()) {
+    val pathFrag = if (NeuroID.screenFragName.isEmpty()) {
         ""
     } else {
-        "/${NIDServiceTracker.screenFragName}"
+        "/${NeuroID.screenFragName}"
     }
 
-    val urlView = ANDROID_URI + NIDServiceTracker.screenActivityName + "$pathFrag/" + idName
+    val urlView = ANDROID_URI + NeuroID.screenActivityName + "$pathFrag/" + idName
 
     logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
@@ -245,7 +247,7 @@ fun registerFinalComponent(
                 tg = mapOf("attr" to attrJson),
                 et = "$et::$simpleName",
                 etn = "INPUT",
-                ec = NIDServiceTracker.screenName,
+                ec = NeuroID.screenName,
                 eid = idName,
                 tgs = idName,
                 en = idName,
@@ -264,15 +266,15 @@ data class ComponentValuesResult(
     val idName: String,
     val et: String,
     val v: String,
-    val metaData: JSONObject
+    val metaData: Map<String, Any>
 )
 
 fun isCommonAndroidComponent(view: View): ComponentValuesResult {
     // vars that can change based on the element
-    var idName = view.getIdOrTag()
+    val idName = view.getIdOrTag()
     var et = ""
     var v = "S~C~~0"
-    val metaData = JSONObject()
+    val metaData = mutableMapOf<String, Any>()
 
     when (view) {
         is EditText -> {
@@ -289,14 +291,14 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
             v = "${view.isChecked}"
 
             metaData.put("type", "radioButton")
-            metaData.put("id", "$idName")
+            metaData.put("id", idName)
 
             // go up to 3 parents in case a RadioGroup is not the direct parent
             var rParent = view.parent;
             repeat(3) { index ->
                 if (rParent is RadioGroup) {
                     val p = rParent as RadioGroup
-                    metaData.put("rGroupId", "${p.getIdOrTag()}")
+                    metaData.put("rGroupId", p.getIdOrTag())
                     return@repeat
                 } else {
                     rParent = rParent.parent
@@ -339,5 +341,52 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
         et,
         v,
         metaData
+    )
+}
+
+fun registerComponent(
+    view: View,
+    guid: String,
+    logger: NIDLogWrapper,
+    storeManager: NIDDataStoreManager,
+    rts: String? = null,
+    activityOrFragment: String = "",
+    parent: String = "",
+) {
+
+    val simpleName = view.javaClass.simpleName
+
+    logger.d(
+        "NIDDebug registeredComponent",
+        "view: ${view::class} java: $simpleName"
+    )
+
+    val (idName, et, v, metaData) = verifyComponentType(view)
+
+    logger.d("NIDDebug et at registerComponent", et)
+
+    // early exit if not supported target type
+    if (et.isEmpty()) {
+        return
+    }
+
+    val attrJson = createAtrrJSON(
+        logger,
+        view,
+        guid,
+        activityOrFragment,
+        parent,
+        metaData
+    )
+
+    registerFinalComponent(
+        logger,
+        storeManager,
+        rts,
+        idName,
+        et,
+        v,
+        simpleName,
+        attrJson
     )
 }

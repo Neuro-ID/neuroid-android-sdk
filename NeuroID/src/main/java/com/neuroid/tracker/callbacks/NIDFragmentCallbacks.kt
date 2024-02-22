@@ -3,34 +3,31 @@ package com.neuroid.tracker.callbacks
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONObject
 
-class NIDFragmentCallbacks : FragmentCallbacks(false) {
+class NIDFragmentCallbacks(
+    isChangeOrientation: Boolean
+) : FragmentCallbacks(isChangeOrientation) {
     var listFragment = arrayListOf<String>()
 
     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
-        NIDLog.d(msg="onFragmentAttached ${f::class.java.simpleName}");
+        val className = f::class.java.simpleName
+        NIDLog.d(msg="onFragmentAttached $className");
 
-        if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
-            if (NIDServiceTracker.screenName.isNullOrEmpty()) {
-                NIDServiceTracker.screenName = "AppInit"
+        if (blackListFragments.any { it == className }.not()) {
+            if (NeuroID.screenName.isEmpty()) {
+                NeuroID.screenName = "AppInit"
             }
-            if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
-                NIDServiceTracker.screenFragName = f::class.java.simpleName
+            if (NeuroID.screenFragName.isEmpty()) {
+                NeuroID.screenFragName = className
             }
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            val jsonObject = JSONObject()
-            jsonObject.put("component", "fragment")
-            jsonObject.put("lifecycle", "attached")
-            jsonObject.put("className", "${f::class.java.simpleName}")
 
             getDataStoreInstance()
                 .saveEvent(
@@ -39,7 +36,13 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                         ts = System.currentTimeMillis(),
                         gyro = gyroData,
                         accel = accelData,
-                        metadata = jsonObject
+                        attrs = listOf(
+                            mapOf(
+                                "component" to "fragment",
+                                "lifecycle" to "attached",
+                                "className" to className
+                            )
+                        )
                     )
                 )
 
@@ -61,7 +64,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                         registerTarget = true,
                         registerListeners = false,
                         activityOrFragment = "fragment",
-                        parent = f::class.java.simpleName
+                        parent = className
                     )
                 }
             } else {
@@ -73,7 +76,7 @@ class NIDFragmentCallbacks : FragmentCallbacks(false) {
                     registerTarget = true,
                     registerListeners = true,
                     activityOrFragment = "fragment",
-                    parent = f::class.java.simpleName
+                    parent = className
                 )
             }
         }

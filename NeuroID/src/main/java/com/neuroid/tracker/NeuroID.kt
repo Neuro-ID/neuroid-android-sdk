@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.NIDActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -19,11 +20,12 @@ import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -35,14 +37,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NeuroID private constructor(
     internal var application: Application?, internal var clientKey: String
 ) {
     @Volatile
-    private var pauseCollectionJob: Job? = null
+    internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
     private var firstTime = true
     internal var sessionID = ""
@@ -64,14 +64,21 @@ class NeuroID private constructor(
     internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
     internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
     internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
+    internal lateinit var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
     private var networkInfo: NIDNetworkInfo? = null
+    internal var lowMemory:Boolean = false
 
     init {
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
+
+            nidJobServiceManager = NIDJobServiceManager(
+                NIDLog,
+                dataStore,
+                getSendingService(endpoint, NIDLog, it)
+            )
         }
 
         if (!validateClientKey(clientKey)) {
@@ -79,9 +86,9 @@ class NeuroID private constructor(
             clientKey = ""
         } else {
             if (clientKey.contains("_live_")) {
-                NIDServiceTracker.environment = "LIVE"
+                environment = "LIVE"
             } else {
-                NIDServiceTracker.environment = "TEST"
+                environment = "TEST"
             }
         }
 
@@ -104,6 +111,7 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
+
                 initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
@@ -121,6 +129,31 @@ class NeuroID private constructor(
         var showLogs: Boolean = true
         var isSDKStarted = false
 
+        internal val GYRO_SAMPLE_INTERVAL = 200L
+        internal val captureGyroCadence = true
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenName = ""
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenActivityName = ""
+
+
+        @get:Synchronized
+        @set:Synchronized
+        internal var screenFragName = ""
+
+
+        internal var environment = ""
+        internal var siteID = ""
+        internal var rndmId = "mobile"
+        internal var firstScreenName = ""
+
+        internal var registeredViews: MutableSet<String> = mutableSetOf()
+
+        internal var endpoint = Constants.productionEndpoint.displayName
         private var singleton: NeuroID? = null
 
         @JvmStatic
@@ -183,6 +216,17 @@ class NeuroID private constructor(
 
     internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
         nidJobServiceManager = serviceManager
+    }
+
+    @VisibleForTesting
+    fun setTestURL(newEndpoint: String){
+        endpoint = newEndpoint
+
+        application?.let {
+            nidJobServiceManager.setTestEventSender(
+                getSendingService(endpoint, NIDLog, it)
+            )
+        }
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
@@ -261,14 +305,6 @@ class NeuroID private constructor(
 
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
-                    )
-                }
-            }
             val genericUserIdEvent = NIDEventModel(
                 type = type,
                 uid = genericUserId,
@@ -304,13 +340,13 @@ class NeuroID private constructor(
             return false
         }
 
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        screenName = screen.replace("\\s".toRegex(), "%20")
         createMobileMetadata()
 
         return true
     }
 
-    fun getScreenName(): String = NIDServiceTracker.screenName
+    fun getScreenName(): String = screenName
 
     fun excludeViewByTestID(id: String) {
         application?.let {
@@ -332,14 +368,15 @@ class NeuroID private constructor(
         )
     }
 
-    fun getEnvironment(): String = NIDServiceTracker.environment
+    fun getEnvironment(): String = environment
 
     @Deprecated("getSiteId is deprecated and no longer required")
     fun setSiteId(siteId: String) {
         NIDLog.i(
             msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
         )
-        NIDServiceTracker.siteId = siteId
+
+        siteID = siteId
     }
 
     @Deprecated("getSiteId is deprecated")
@@ -373,17 +410,9 @@ class NeuroID private constructor(
         nidActivityCallbacks.forceStart(activity)
     }
 
-    internal fun getTabId(): String = NIDServiceTracker.rndmId
+    internal fun getTabId(): String = rndmId
 
     internal fun getFirstTS(): Long = timestamp
-
-    internal fun getJsonPayLoad(context: Context): String {
-        return dataStore.getJsonPayload(context)
-    }
-
-    internal fun resetJsonPayLoad() {
-        dataStore.resetJsonPayload()
-    }
 
     internal fun captureEvent(eventName: String, tgs: String) {
         application?.applicationContext?.let {
@@ -474,17 +503,16 @@ class NeuroID private constructor(
             return false
         }
 
+        application?.let {
+            nidJobServiceManager.startJob(it, clientKey)
+        }
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
             createSession()
             saveIntegrationHealthEvents()
-        }
-        application?.let {
-            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -568,7 +596,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
+                    metadata = metaData
                 )
             )
             createMobileMetadata()
@@ -589,7 +617,7 @@ class NeuroID private constructor(
                     accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
+                    metadata = metaData,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
@@ -609,7 +637,11 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
+                    attrs = listOf(
+                        mapOf(
+                            "isRN" to isRN
+                        )
+                    )
                 )
             )
         }
@@ -629,10 +661,6 @@ class NeuroID private constructor(
     fun clearSessionVariables() {
         userID = ""
         registeredUserID = ""
-        this.getApplicationContext()?.let {
-            NIDSharedPrefsDefaults(it).setUserId("")
-            NIDSharedPrefsDefaults(it).setRegisteredUserId("")
-        }
     }
 
     fun startSession(sessionID: String? = null): SessionStartResult {
@@ -657,8 +685,9 @@ class NeuroID private constructor(
             return SessionStartResult(false, "")
         }
 
+        resumeCollection()
+
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -666,8 +695,6 @@ class NeuroID private constructor(
             createSession()
             saveIntegrationHealthEvents()
         }
-
-        resumeCollection()
 
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -743,7 +770,7 @@ class NeuroID private constructor(
             pauseCollectionJob?.isCancelled == true ||
             pauseCollectionJob?.isCompleted == true) {
             pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
+                nidJobServiceManager.sendEventsNow(true)
                 nidJobServiceManager.stopJob()
                 saveIntegrationHealthEvents()
             }

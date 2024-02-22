@@ -13,8 +13,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONArray
-import org.json.JSONObject
 
 abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecycleCallbacks() {
 
@@ -92,11 +90,6 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
         if (blackListFragments.any { it == f::class.java.simpleName }.not()) {
             val gyroData = NIDSensorHelper.getGyroscopeInfo()
             val accelData = NIDSensorHelper.getAccelerometerInfo()
-            val metadataObj = JSONObject()
-            metadataObj.put("component", "fragment")
-            metadataObj.put("lifecycle", "detached")
-            metadataObj.put("className", "${f::class.java.simpleName}")
-            val attrJSON = JSONArray().put(metadataObj)
             NIDLog.d(
                 msg = "Fragment - Detached - WINDOW UNLOAD ${f::class.java.simpleName}"
             )
@@ -106,7 +99,13 @@ abstract class FragmentCallbacks(isChangeOrientation: Boolean) : FragmentLifecyc
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "fragment",
+                            "lifecycle" to "detached",
+                            "className" to "${f::class.java.simpleName}"
+                        )
+                    )
                 )
             )
         }

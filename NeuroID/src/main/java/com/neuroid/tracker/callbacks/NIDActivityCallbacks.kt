@@ -1,23 +1,17 @@
 package com.neuroid.tracker.callbacks
 
 import android.app.Activity
-import android.app.Application.ActivityLifecycleCallbacks
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.events.WINDOW_BLUR
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
-import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.events.registerTargetFromScreen
 import com.neuroid.tracker.events.registerWindowListeners
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
-import org.json.JSONArray
-import org.json.JSONObject
 
 class NIDActivityCallbacks: ActivityCallbacks() {
     private var auxOrientation = -1
@@ -27,21 +21,22 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         NIDLog.d( msg="Activity - Created")
 
         val currentActivityName = activity::class.java.name
+
         val orientation = activity.resources.configuration.orientation
         if (auxOrientation == -1) {
             auxOrientation = orientation
         }
         val existActivity = listActivities.contains(currentActivityName)
 
-        NIDServiceTracker.screenActivityName = currentActivityName
-        if (NIDServiceTracker.firstScreenName.isNullOrEmpty()) {
-            NIDServiceTracker.firstScreenName = currentActivityName
+        NeuroID.screenActivityName = currentActivityName
+        if (NeuroID.firstScreenName.isNullOrEmpty()) {
+            NeuroID.firstScreenName = currentActivityName
         }
-        if (NIDServiceTracker.screenFragName.isNullOrEmpty()) {
-            NIDServiceTracker.screenFragName = ""
+        if (NeuroID.screenFragName.isNullOrEmpty()) {
+            NeuroID.screenFragName = ""
         }
-        if (NIDServiceTracker.screenName.isNullOrEmpty()) {
-            NIDServiceTracker.screenName = "AppInit"
+        if (NeuroID.screenName.isNullOrEmpty()) {
+            NeuroID.screenName = "AppInit"
         }
         wasChanged = auxOrientation != orientation
 
@@ -49,6 +44,8 @@ class NIDActivityCallbacks: ActivityCallbacks() {
         val accelData = NIDSensorHelper.getAccelerometerInfo()
 
         if (existActivity.not()) {
+            NIDLog.d(msg="onActivityStarted existActivity.not()");
+
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
             NIDLog.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
@@ -70,12 +67,7 @@ class NIDActivityCallbacks: ActivityCallbacks() {
             auxOrientation = orientation
         }
 
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "postCreated")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
-        NIDLog.d( msg="Activity - POST Created - Window Load")
+        NIDLog.d(msg="Activity - POST Created - Window Load")
         getDataStoreInstance()
             .saveEvent(
                 NIDEventModel(
@@ -83,22 +75,24 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "postCreated",
+                            "className" to currentActivityName
+                        )
+                    )
                 )
             )
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDLog.d( msg="Activity - Resumed")
+        NIDLog.d(msg="Activity - Resumed")
+
+        val currentActivityName = activity::class.java.name
 
         val gyroData = NIDSensorHelper.getGyroscopeInfo()
         val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        val metadataObj = JSONObject()
-        metadataObj.put("component", "activity")
-        metadataObj.put("lifecycle", "resumed")
-        metadataObj.put("className", "${activity::class.java.simpleName}")
-        val attrJSON = JSONArray().put(metadataObj)
 
         getDataStoreInstance()
             .saveEvent(
@@ -107,25 +101,31 @@ class NIDActivityCallbacks: ActivityCallbacks() {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "component" to "activity",
+                            "lifecycle" to "resumed",
+                            "className" to currentActivityName
+                        )
+                    )
                 )
             )
 
-        activitiesStarted++
+        // depending on RN or Android run the following code
+        registrationHelpers {
+            activitiesStarted++
 
-        val currentActivityName = activity::class.java.name
+            registerTargetFromScreen(
+                activity,
+                NIDLogWrapper(),
+                getDataStoreInstance(),
+                registerTarget = true,
+                registerListeners = true,
+                activityOrFragment = "activity",
+                parent = currentActivityName
+            )
 
-        registerTargetFromScreen(
-            activity,
-            NIDLogWrapper(),
-            getDataStoreInstance(),
-            registerTarget = true,
-            registerListeners = true,
-            activityOrFragment = "activity",
-            parent = currentActivityName
-        )
-
-        registerWindowListeners(activity)
+            registerWindowListeners(activity)
+        }
     }
-
 }

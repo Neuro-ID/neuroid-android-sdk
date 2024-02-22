@@ -10,8 +10,6 @@ import com.neuroid.tracker.events.CUT
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import org.json.JSONArray
-import org.json.JSONObject
 
 abstract class NIDContextMenuCallBacks(
     actionCallBack: ActionMode.Callback?
@@ -77,12 +75,6 @@ private fun saveEvent(option: Int, item: String) {
         else -> ""
     }
 
-    val metadataObj = JSONObject()
-    metadataObj.put("option", "$option")
-    metadataObj.put("item", "$item")
-    metadataObj.put("type", "$type")
-    val attrJSON = JSONArray().put(metadataObj)
-
     if (type.isNotEmpty()) {
         getDataStoreInstance()
             .saveEvent(
@@ -91,7 +83,13 @@ private fun saveEvent(option: Int, item: String) {
                     ts = System.currentTimeMillis(),
                     gyro = gyroData,
                     accel = accelData,
-                    attrs = attrJSON
+                    attrs = listOf(
+                        mapOf(
+                            "option" to "$option",
+                            "item" to item,
+                            "type" to type
+                        )
+                    )
                 )
             )
     }
