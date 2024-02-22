@@ -213,7 +213,7 @@ class NIDTouchEventManager(private val viewParent: ViewGroup) : TouchEventManage
                 }
                 MotionEvent.ACTION_MOVE -> {
                     shouldSaveEvent = true
-                    eventType = TOUCH_START
+                    eventType = TOUCH_MOVE
                 }
                 MotionEvent.ACTION_UP -> {
                     if (lastTypeOfView > 0) {
@@ -221,7 +221,7 @@ class NIDTouchEventManager(private val viewParent: ViewGroup) : TouchEventManage
                         lastViewName = ""
 
                         shouldSaveEvent = true
-                        eventType = TOUCH_START
+                        eventType = TOUCH_END
                     }
                 }
             }
