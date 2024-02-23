@@ -16,6 +16,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.unmockkAll
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.Test
 import java.util.Calendar
@@ -73,5 +75,6 @@ class NIDNetworkListenerTest {
 
         verify { dataStoreManager.saveEvent(networkEvent) }
         verify { neuroID.setNIDNetworkInfo(NIDNetworkInfo(isConnectedAssert, isWifiAssert))}
+        unmockkAll()
     }
 }
