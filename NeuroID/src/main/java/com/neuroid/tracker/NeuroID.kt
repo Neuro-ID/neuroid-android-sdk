@@ -100,7 +100,7 @@ class NeuroID private constructor(
             application?.registerReceiver(
                 NIDNetworkListener(
                     connectivityManager,
-                    getDataStoreInstance()),
+                    getDataStoreInstance(), this),
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
         }
