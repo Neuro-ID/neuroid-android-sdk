@@ -67,8 +67,8 @@ class NeuroID private constructor(
     internal lateinit var nidJobServiceManager: NIDJobServiceManager
     internal var clipboardManager: ClipboardManager? = null
 
-    private var networkInfo: NIDNetworkInfo? = null
     internal var lowMemory:Boolean = false
+    internal var isConnected = false
 
     init {
         application?.let {
@@ -174,20 +174,6 @@ class NeuroID private constructor(
         }
 
         fun getInstance(): NeuroID? = singleton
-    }
-
-    /**
-     * is the device connected to some kind of network (WIFI/ MobileData/ Ethernet/ Etc?)
-     */
-    internal fun isConnected(): Boolean {
-        this.networkInfo?.let {nidNetworkInfo ->
-            return nidNetworkInfo.isConnected
-        }
-        return false
-    }
-
-    internal fun setNIDNetworkInfo(nidNetworkInfo: NIDNetworkInfo) {
-        this.networkInfo = nidNetworkInfo
     }
 
     internal fun setLoggerInstance(logger: NIDLogWrapper) {

@@ -8,7 +8,6 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.NetworkInfo
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDNetworkInfo
 import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import io.mockk.every
@@ -17,7 +16,6 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
-import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.Test
 import java.util.Calendar
@@ -53,7 +51,7 @@ class NIDNetworkListenerTest {
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
         val neuroID = mockk<NeuroID>()
-        every {neuroID.setNIDNetworkInfo(any())} just runs
+        every {neuroID.isConnected = any()} just runs
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType
         every { networkInfo.isConnectedOrConnecting } returns isConnectedOrConnecting
@@ -74,7 +72,7 @@ class NIDNetworkListenerTest {
             isWifi = isWifiAssert)
 
         verify { dataStoreManager.saveEvent(networkEvent) }
-        verify { neuroID.setNIDNetworkInfo(NIDNetworkInfo(isConnectedAssert, isWifiAssert))}
+        verify { neuroID.isConnected = isConnectedAssert}
         unmockkAll()
     }
 }
