@@ -22,7 +22,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
 
     if (advancedDeviceSignals) {
         getApplicationContext()?.let {
-            getADVSignal(clientKey, it, dataStore, logger)
+            getADVSignal(clientKey, it, this, logger)
         }
     }
 
@@ -43,7 +43,7 @@ fun NeuroID.startSession(
 
     if (advancedDeviceSignals) {
         getApplicationContext()?.let {
-            getADVSignal(clientKey, it, dataStore, logger)
+            getADVSignal(clientKey, it, this, logger)
         }
     }
 
@@ -53,7 +53,7 @@ fun NeuroID.startSession(
 internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
-    dataStore:NIDDataStoreManager,
+    neuroID: NeuroID,
     logger: NIDLogWrapper
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -61,7 +61,7 @@ internal fun getADVSignal(
             applicationContext,
             logger,
             NIDSharedPrefsDefaults(applicationContext),
-            dataStore,
+            neuroID,
             getADVNetworkService(
                 NeuroID.endpoint,
                 logger

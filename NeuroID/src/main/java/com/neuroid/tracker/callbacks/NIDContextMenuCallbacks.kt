@@ -3,16 +3,15 @@ package com.neuroid.tracker.callbacks
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.COPY
 import com.neuroid.tracker.events.CUT
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 
 abstract class NIDContextMenuCallBacks(
-    val dataStore: NIDDataStoreManager,
+    val neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
 ) : ActionMode.Callback {
     val wrapper = actionCallBack
@@ -40,15 +39,13 @@ abstract class NIDContextMenuCallBacks(
         }
 
         if (type.isNotEmpty()) {
-            this.dataStore.saveEvent(
-                NIDEventModel(
-                    type = CONTEXT_MENU,
-                    attrs = listOf(
-                        mapOf(
-                            "option" to "$option",
-                            "item" to item,
-                            "type" to type
-                        )
+            neuroID.captureEvent(
+                type = CONTEXT_MENU,
+                attrs = listOf(
+                    mapOf(
+                        "option" to "$option",
+                        "item" to item,
+                        "type" to type
                     )
                 )
             )
@@ -58,9 +55,9 @@ abstract class NIDContextMenuCallBacks(
 
 // This is the callback for the context menu that appears when text is already in field
 class NIDTextContextMenuCallbacks(
-    dataStore: NIDDataStoreManager,
+    neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
-) : NIDContextMenuCallBacks(dataStore, actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
 
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
@@ -76,9 +73,9 @@ class NIDTextContextMenuCallbacks(
 
 // This is the callback for the context menu that appears when the text field is empty (only available in later API versions)
 class NIDLongPressContextMenuCallbacks(
-    dataStore: NIDDataStoreManager,
+    neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
-) : NIDContextMenuCallBacks(dataStore, actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
 

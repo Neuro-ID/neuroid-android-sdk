@@ -20,9 +20,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class NIDJobServiceManager(
-    private var logger:NIDLogWrapper,
+    private var neuroID: NeuroID,
     private var dataStore:NIDDataStoreManager,
-    private var eventSender: NIDSendingService
+    private var eventSender: NIDSendingService,
+    private var logger:NIDLogWrapper
 )
 {
     @Volatile
@@ -95,17 +96,14 @@ class NIDJobServiceManager(
             while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
                 delay(NeuroID.GYRO_SAMPLE_INTERVAL)
 
-                dataStore.saveEvent(
-                    NIDEventModel(
-                        type = CADENCE_READING_ACCEL,
-                        attrs = listOf(
-                            mapOf(
-                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
-                            )
+                neuroID.captureEvent(
+                    type = CADENCE_READING_ACCEL,
+                    attrs = listOf(
+                        mapOf(
+                            "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
                         )
                     )
                 )
-
             }
         }
     }

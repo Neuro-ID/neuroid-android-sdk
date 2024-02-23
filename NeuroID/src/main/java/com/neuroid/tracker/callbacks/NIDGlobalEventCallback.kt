@@ -17,18 +17,16 @@ import androidx.annotation.RequiresApi
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import java.util.*
 
 class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
     private val eventManager: TouchEventManager,
     private val viewMainContainer: View,
-    internal val dataStore:NIDDataStoreManager,
+    internal val neuroID: NeuroID,
     internal val logger:NIDLogWrapper,
     internal val singleTargetListenerRegister:SingleTargetListenerRegister
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
@@ -73,32 +71,28 @@ class NIDGlobalEventCallback(
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
 
-            dataStore.saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_RESIZE,
-                        w = currentWidth,
-                        h = currentHeight
-                    )
-                )
+            neuroID.captureEvent(
+                type = WINDOW_RESIZE,
+                w = currentWidth,
+                h = currentHeight
+            )
         }
     }
 
     private fun registerTextChangeEvent(actualText: String) {
-        dataStore.saveEvent(
-                NIDEventModel(
-                    type = TEXT_CHANGE,
-                    tg = hashMapOf(
-                        "attr" to getAttrJson(actualText),
-                        "etn" to lastEditText?.getIdOrTag().orEmpty(),
-                        "et" to "text"
-                    ),
-                    tgs = lastEditText?.getIdOrTag().orEmpty(),
-                    sm = 0,
-                    pd = 0,
-                    v = "S~C~~${actualText.length}",
-                    hv = actualText.getSHA256withSalt().take(8)
-                )
-            )
+        neuroID.captureEvent(
+            type = TEXT_CHANGE,
+            tg = hashMapOf(
+                "attr" to getAttrJson(actualText),
+                "etn" to lastEditText?.getIdOrTag().orEmpty(),
+                "et" to "text"
+            ),
+            tgs = lastEditText?.getIdOrTag().orEmpty(),
+            sm = 0,
+            pd = 0,
+            v = "S~C~~${actualText.length}",
+            hv = actualText.getSHA256withSalt().take(8)
+        )
     }
 
     //WindowCallback
@@ -248,14 +242,12 @@ class NIDGlobalEventCallback(
             )
         }
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = type,
-                tg = hashMapOf(
-                    "attr" to getAttrJson(text),
-                ),
-                tgs = idName
-            )
+        neuroID.captureEvent(
+            type = type,
+            tg = hashMapOf(
+                "attr" to getAttrJson(text),
+            ),
+            tgs = idName
         )
     }
 }

@@ -6,12 +6,10 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
 class NIDTextWatcher(
-    val dataStore: NIDDataStoreManager,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     private val idName: String,
     val className: String? = "",
@@ -49,20 +47,18 @@ class NIDTextWatcher(
                     lastPastedHashValue = sequence?.toString()?.hashCode().toString()
 
                     if (pastedText.isNotEmpty()) {
-                        dataStore.saveEvent(
-                                NIDEventModel(
-                                    type = PASTE,
-                                    tg = hashMapOf(
-                                        "attr" to getAttrJson(sequence.toString()),
-                                        "et" to "text"
-                                    ),
-                                    tgs = idName,
-                                    v = "S~C~~${sequence?.length}",
-                                    hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                                    attrs = listOf(
-                                        mapOf(
-                                            "clipboardText" to "S~C~~${pastedText.length}"
-                                        )
+                        neuroID.captureEvent(
+                                type = PASTE,
+                                tg = hashMapOf(
+                                    "attr" to getAttrJson(sequence.toString()),
+                                    "et" to "text"
+                                ),
+                                tgs = idName,
+                                v = "S~C~~${sequence?.length}",
+                                hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                                attrs = listOf(
+                                    mapOf(
+                                        "clipboardText" to "S~C~~${pastedText.length}"
                                     )
                                 )
                             )
@@ -80,19 +76,17 @@ class NIDTextWatcher(
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
             logger.d(msg = "Activity - after text ${sequence.toString()}")
 
-            dataStore.saveEvent(
-                    NIDEventModel(
-                        type = INPUT,
-                        tg = hashMapOf(
-                            "attr" to getAttrJson(sequence.toString()),
-                            "etn" to INPUT,
-                            "et" to "text"
-                        ),
-                        tgs = idName,
-                        v = "S~C~~${sequence?.length}",
-                        hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                    )
-                )
+            neuroID.captureEvent(
+                type = INPUT,
+                tg = hashMapOf(
+                    "attr" to getAttrJson(sequence.toString()),
+                    "etn" to INPUT,
+                    "et" to "text"
+                ),
+                tgs = idName,
+                v = "S~C~~${sequence?.length}",
+                hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+            )
         }
     }
 }

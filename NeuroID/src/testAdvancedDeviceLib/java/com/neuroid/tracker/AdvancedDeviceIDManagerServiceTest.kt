@@ -91,15 +91,15 @@ class AdvancedDeviceIDManagerServiceTest {
         }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
-        val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
 
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
         assert(cachedID)
+        verifyCaptureEvent(mockedNID, 1)
         verify (exactly = 1){
             mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
-            mockedDataStore.saveEvent(any())
             mockedLogger.d(msg="Retrieving Request ID for Advanced Device Signals from cache: ${keyValue}")
         }
     }
@@ -116,13 +116,13 @@ class AdvancedDeviceIDManagerServiceTest {
             assert(e.m == errorMessage) { "Expected event m value to be $errorMessage, found ${e.m}" }
         }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
         advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
 
+        verifyCaptureEvent(mockedNID, 1)
         verify (exactly = 1){
-            mockedDataStore.saveEvent(any())
             mockedLogger.e(msg="Failed to get API key from NeuroID: $errorMessage")
         }
     }
@@ -198,6 +198,7 @@ class AdvancedDeviceIDManagerServiceTest {
         fpjsResponse:Pair<String?, String?> = Pair(null, null),
         saveEventTest:(e:NIDEventModel)->Unit = {},
     ):Map<String, Any>{
+        val mockedNeuroID = getMockedNeuroID()
         val mockedApplication = getMockedApplication()
         val mockedSharedPreferences = getMockedSharedPrefs(AdvancedDeviceIDManager.NID_RID, sharedPrefGetValue)
         val mockedLogger = getMockedLogger()
@@ -213,13 +214,14 @@ class AdvancedDeviceIDManagerServiceTest {
             mockedApplication,
             mockedLogger,
             mockedSharedPreferences,
-            mockedDataStore,
+            mockedNeuroID,
             mockedNetworkService,
             mockedFPJSClient
         )
 
         return mapOf(
             "advancedDeviceIDManagerService" to advancedDeviceIDManagerService,
+            "mockedNeuroID" to mockedNeuroID,
             "mockedNetworkService" to mockedNetworkService,
             "mockedDataStore" to mockedDataStore,
             "mockedLogger" to mockedLogger,
@@ -227,6 +229,71 @@ class AdvancedDeviceIDManagerServiceTest {
             "mockedApplication" to mockedApplication,
             "mockedFPJSClient" to mockedFPJSClient
         )
+    }
+
+    private fun getMockedNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
+        every {
+            nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        } just runs
+
+        return nidMock
     }
 
     private fun getMockedSharedPrefs(key:String, getValue:String = "" ):NIDSharedPrefsDefaults {
@@ -239,8 +306,6 @@ class AdvancedDeviceIDManagerServiceTest {
 
     private fun getMockedDatastoreManager (saveEventTest:(e:NIDEventModel)->Unit = {}): NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
-        val event = NIDEventModel(type = "TEST_EVENT", ts=1)
-        coEvery {dataStoreManager.getAllEvents()} returns listOf(event)
         every { dataStoreManager.saveEvent(any()) } answers {
             saveEventTest(args[0] as NIDEventModel)
             mockk<Job>()
@@ -311,5 +376,68 @@ class AdvancedDeviceIDManagerServiceTest {
         }
 
         return mockedFPJSClient
+    }
+
+
+    private fun verifyCaptureEvent(nidMock: NeuroID, count:Int = 1){
+        verify(exactly = count) {
+            nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 }

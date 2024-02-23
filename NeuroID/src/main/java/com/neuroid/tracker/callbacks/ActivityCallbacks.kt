@@ -11,14 +11,11 @@ import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
-    val dataStore: NIDDataStoreManager,
+    val neuroID: NeuroID,
     val logger:NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper
 ): ActivityLifecycleCallbacks {
@@ -44,11 +41,11 @@ class ActivityCallbacks(
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        NIDLog.d(msg = "onActivityCreated");
+        logger.d(msg = "onActivityCreated");
     }
 
      override fun onActivityStarted(activity: Activity) {
-        NIDLog.d( msg="Activity - Created")
+        logger.d( msg="Activity - Created")
 
         val currentActivityName = activity::class.java.name
 
@@ -71,15 +68,15 @@ class ActivityCallbacks(
         wasChanged = auxOrientation != orientation
 
         if (existActivity.not()) {
-            NIDLog.d(msg="onActivityStarted existActivity.not()");
+            logger.d(msg="onActivityStarted existActivity.not()");
 
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-            NIDLog.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            logger.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
             fragManager?.registerFragmentLifecycleCallbacks(
                 FragmentCallbacks(
                     wasChanged,
-                    dataStore,
+                    neuroID,
                     logger,
                     registrationHelper
                 ),
@@ -88,63 +85,54 @@ class ActivityCallbacks(
         }
 
         if (wasChanged) {
-            NIDLog.d( msg="Activity - POST Created - Orientation change")
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = WINDOW_ORIENTATION_CHANGE,
-                    o = "CHANGED",
-                )
+            logger.d( msg="Activity - POST Created - Orientation change")
+            neuroID.captureEvent(
+                type = WINDOW_ORIENTATION_CHANGE,
+                o = "CHANGED",
             )
             auxOrientation = orientation
         }
 
-        NIDLog.d(msg="Activity - POST Created - Window Load")
-         dataStore.saveEvent(
-            NIDEventModel(
-                type = WINDOW_LOAD,
-                attrs = listOf(
-                    mapOf(
-                        "component" to "activity",
-                        "lifecycle" to "postCreated",
-                        "className" to currentActivityName
-                    )
-                )
-            )
-        )
+         logger.d(msg="Activity - POST Created - Window Load")
+         neuroID.captureEvent(
+             type = WINDOW_LOAD,
+             attrs = listOf(
+                 mapOf(
+                     "component" to "activity",
+                     "lifecycle" to "postCreated",
+                     "className" to currentActivityName
+                 )
+             )
+         )
     }
 
     override fun onActivityPaused(activity: Activity) {
-        NIDLog.d( msg="Activity - Paused")
+        logger.d( msg="Activity - Paused")
         val currentActivityName = activity::class.java.name
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = WINDOW_BLUR,
-                attrs = listOf(
-                    mapOf(
-                        "component" to "activity",
-                        "lifecycle" to "paused",
-                        "className" to currentActivityName
-                    )
+        neuroID.captureEvent(
+            type = WINDOW_BLUR,
+            attrs = listOf(
+                mapOf(
+                    "component" to "activity",
+                    "lifecycle" to "paused",
+                    "className" to currentActivityName
                 )
             )
         )
     }
 
     override fun onActivityResumed(activity: Activity) {
-        NIDLog.d(msg="Activity - Resumed")
-
+        logger.d(msg="Activity - Resumed")
         val currentActivityName = activity::class.java.name
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = WINDOW_FOCUS,
-                attrs = listOf(
-                    mapOf(
-                        "component" to "activity",
-                        "lifecycle" to "resumed",
-                        "className" to currentActivityName
-                    )
+        neuroID.captureEvent(
+            type = WINDOW_FOCUS,
+            attrs = listOf(
+                mapOf(
+                    "component" to "activity",
+                    "lifecycle" to "resumed",
+                    "className" to currentActivityName
                 )
             )
         )
@@ -166,32 +154,30 @@ class ActivityCallbacks(
     }
 
     override fun onActivityStopped(activity: Activity) {
-        NIDLog.d( msg="Activity - Stopped")
+        logger.d( msg="Activity - Stopped")
         activitiesStarted--
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
         // No Operation
-        NIDLog.d( msg="Activity - Save Instance")
+        logger.d( msg="Activity - Save Instance")
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        NIDLog.d( msg="Activity - Destroyed")
+        logger.d( msg="Activity - Destroyed")
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
-        NIDLog.d( msg="Activity - Destroyed - Window Unload")
-        dataStore.saveEvent(
-                NIDEventModel(
-                    type = WINDOW_UNLOAD,
-                    attrs = listOf(
-                        mapOf(
-                            "component" to "activity",
-                            "lifecycle" to "destroyed",
-                            "className" to activityDestroyed
-                        )
-                    )
+        logger.d( msg="Activity - Destroyed - Window Unload")
+        neuroID.captureEvent(
+            type = WINDOW_UNLOAD,
+            attrs = listOf(
+                mapOf(
+                    "component" to "activity",
+                    "lifecycle" to "destroyed",
+                    "className" to activityDestroyed
                 )
             )
+        )
     }
 }

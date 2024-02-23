@@ -20,8 +20,6 @@ import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParents
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.handleIdentifyAllViews
@@ -31,10 +29,13 @@ import java.util.UUID
 // list of text watchers in the entire app
 val textWatchers = mutableListOf<TextWatcher>()
 
-class RegistrationIdentificationHelper(val dataStore: NIDDataStoreManager, val logger: NIDLogWrapper){
-    val additionalListeners:AdditionalListeners = AdditionalListeners(dataStore, logger)
+class RegistrationIdentificationHelper(
+    val neuroID:NeuroID,
+    val logger: NIDLogWrapper
+){
+    val additionalListeners:AdditionalListeners = AdditionalListeners(neuroID, logger)
     val singleTargetListenerRegister:SingleTargetListenerRegister =
-        SingleTargetListenerRegister(dataStore, logger, additionalListeners)
+        SingleTargetListenerRegister(neuroID, logger, additionalListeners)
 
     fun registerTargetFromScreen(
         activity: Activity,
@@ -75,11 +76,11 @@ class RegistrationIdentificationHelper(val dataStore: NIDDataStoreManager, val l
                 callBack,
                 TouchEventManager(
                     viewMainContainer as ViewGroup,
-                    dataStore,
+                    neuroID,
                     logger
                 ),
                 viewMainContainer,
-                dataStore,
+                neuroID,
                 logger,
                 singleTargetListenerRegister
             )
@@ -207,7 +208,7 @@ class RegistrationIdentificationHelper(val dataStore: NIDDataStoreManager, val l
 }
 
 class SingleTargetListenerRegister(
-    val dataStore: NIDDataStoreManager,
+    val neuroID:NeuroID,
     val logger: NIDLogWrapper,
     val additionalListeners:AdditionalListeners
 ) {
@@ -223,7 +224,7 @@ class SingleTargetListenerRegister(
                 "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
             )
             // add Text Change watcher
-            val textWatcher = NIDTextWatcher(dataStore, logger,  idName, simpleClassName)
+            val textWatcher = NIDTextWatcher(neuroID, logger,  idName, simpleClassName)
             // first we have to clear the text watcher that is currently in the EditText
             for (watcher in textWatchers) {
                 view.removeTextChangedListener(watcher)
@@ -237,7 +238,7 @@ class SingleTargetListenerRegister(
             // add original action menu watcher
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(dataStore, actionCallback)
+                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(neuroID, actionCallback)
             }
 
             // if later api version, add additional action menu watcher
@@ -363,22 +364,20 @@ class SingleTargetListenerRegister(
 
         logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = REGISTER_TARGET,
-                attrs = attrJson,
-                tg = mapOf("attr" to attrJson),
-                et = "$et::$simpleName",
-                etn = "INPUT",
-                ec = NeuroID.screenName,
-                eid = idName,
-                tgs = idName,
-                en = idName,
-                v = v,
-                hv = v.getSHA256withSalt().take(8),
-                url = urlView,
-                rts = rts
-            )
+        neuroID.captureEvent(
+            type = REGISTER_TARGET,
+            attrs = attrJson,
+            tg = mapOf("attr" to attrJson),
+            et = "$et::$simpleName",
+            etn = "INPUT",
+            ec = NeuroID.screenName,
+            eid = idName,
+            tgs = idName,
+            en = idName,
+            v = v,
+            hv = v.getSHA256withSalt().take(8),
+            url = urlView,
+            rts = rts
         )
     }
 
@@ -412,7 +411,7 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val dataStore: NIDDataStoreManager, val logger: NIDLogWrapper){
+class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
     internal fun addSelectOnSelect(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
@@ -426,17 +425,15 @@ class AdditionalListeners(val dataStore: NIDDataStoreManager, val logger: NIDLog
                 p3: Long
             ) {
                 lastSelectListener?.onItemSelected(adapter, viewList, position, p3)
-                dataStore.saveEvent(
-                    NIDEventModel(
-                        type = SELECT_CHANGE,
-                        tg = hashMapOf(
-                            "etn" to simpleClassName,
-                            "tgs" to idName,
-                            "sender" to simpleClassName
-                        ),
-                        tgs = idName,
-                        v = "$position"
-                    )
+                neuroID.captureEvent(
+                    type = SELECT_CHANGE,
+                    tg = hashMapOf(
+                        "etn" to simpleClassName,
+                        "tgs" to idName,
+                        "sender" to simpleClassName
+                    ),
+                    tgs = idName,
+                    v = "$position"
                 )
             }
 
@@ -453,16 +450,14 @@ class AdditionalListeners(val dataStore: NIDDataStoreManager, val logger: NIDLog
         return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = SELECT_CHANGE,
-                    tg = hashMapOf(
-                        "etn" to "INPUT",
-                        "et" to "text"
-                    ),
-                    tgs = idName,
-                    v = "$position"
-                )
+            neuroID.captureEvent(
+                type = SELECT_CHANGE,
+                tg = hashMapOf(
+                    "etn" to "INPUT",
+                    "et" to "text"
+                ),
+                tgs = idName,
+                v = "$position"
             )
         }
     }
@@ -472,7 +467,7 @@ class AdditionalListeners(val dataStore: NIDDataStoreManager, val logger: NIDLog
         val actionInsertionCallback = view.customInsertionActionModeCallback
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
-                NIDLongPressContextMenuCallbacks(dataStore, actionInsertionCallback)
+                NIDLongPressContextMenuCallbacks(neuroID, actionInsertionCallback)
         }
     }
 

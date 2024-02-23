@@ -1,16 +1,13 @@
-package com.neuroid.tracker
+package com.neuroid.tracker.storage
 
 import android.content.Context
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManagerImp
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 import io.mockk.spyk
 import io.mockk.unmockkAll
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
@@ -24,9 +21,8 @@ class NIDDataStoreManagerUnitTests {
 
     private lateinit var mockContext: Context
 
-    private fun mockDataStore(testScheduler: TestCoroutineScheduler): NIDDataStoreManagerImp {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        return NIDDataStoreManagerImp(CoroutineScope(dispatcher))
+    private fun mockDataStore(): NIDDataStoreManagerImp {
+        return NIDDataStoreManagerImp(NIDLogWrapper())
     }
 
     @Before
@@ -43,7 +39,7 @@ class NIDDataStoreManagerUnitTests {
     //    queueEvent
     @Test
     fun testQueueEvent() = runTest {
-        val dataStore = mockDataStore(testScheduler)
+        val dataStore = mockDataStore()
         advanceUntilIdle()
 
         Assert.assertEquals(0, dataStore.queuedEvents.count())
@@ -61,7 +57,7 @@ class NIDDataStoreManagerUnitTests {
     //    saveAndClearAllQueuedEvents
     @Test
     fun testSaveAndClearAllQueuedEvents() = runTest {
-        val dataStore = mockDataStore(testScheduler)
+        val dataStore = mockDataStore()
         advanceUntilIdle()
 
         dataStore.queuedEvents.add(
@@ -85,7 +81,7 @@ class NIDDataStoreManagerUnitTests {
     //     saveEvent
     @Test
     fun testSaveEvent() = runTest {
-        val dataStore = mockDataStore(testScheduler)
+        val dataStore = mockDataStore()
         advanceUntilIdle()
 
       dataStore.saveEvent(
@@ -105,7 +101,7 @@ class NIDDataStoreManagerUnitTests {
     //    getAllEvents
     @Test
     fun testGetAllEvents() = runTest {
-        val dataStore = mockDataStore(testScheduler)
+        val dataStore = mockDataStore()
         advanceUntilIdle()
 
         dataStore.saveEvent(
@@ -128,34 +124,10 @@ class NIDDataStoreManagerUnitTests {
         Assert.assertEquals(0, events.count())
     }
 
-    //    addViewIdExclude
-    @Test
-    fun testAddViewIdExclude_single() = runTest {
-        val dataStore = mockDataStore(testScheduler)
-        advanceUntilIdle()
-
-        dataStore.addViewIdExclude("excludeMe")
-        Assert.assertEquals(1, dataStore.listIdsExcluded.count())
-        Assert.assertEquals("excludeMe", dataStore.listIdsExcluded[0])
-    }
-
-    @Test
-    fun testAddViewIdExclude_double() = runTest {
-        val dataStore = mockDataStore(testScheduler)
-        advanceUntilIdle()
-
-        dataStore.addViewIdExclude("excludeMe")
-        Assert.assertEquals(1, dataStore.listIdsExcluded.count())
-        Assert.assertEquals("excludeMe", dataStore.listIdsExcluded[0])
-
-        dataStore.addViewIdExclude("excludeMe")
-        Assert.assertEquals(1, dataStore.listIdsExcluded.count())
-    }
-
     //    clearEvents
     @Test
     fun testClearEvents() = runTest {
-        val dataStore = mockDataStore(testScheduler)
+        val dataStore = mockDataStore()
         advanceUntilIdle()
 
         dataStore.saveEvent(

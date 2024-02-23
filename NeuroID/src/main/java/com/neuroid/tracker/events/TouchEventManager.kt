@@ -1,6 +1,5 @@
 package com.neuroid.tracker.events
 
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -8,10 +7,9 @@ import android.widget.*
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.extensions.getIdOrTag
-import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDTouchModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.detectViewType
@@ -19,7 +17,7 @@ import com.neuroid.tracker.utils.getEtnSenderName
 
 class TouchEventManager(
     private val viewParent: ViewGroup,
-    internal  val dataStore:NIDDataStoreManager,
+    internal  val neuroID: NeuroID,
     internal val logger: NIDLogWrapper
 ) {
     private var lastView: View? = null
@@ -99,20 +97,18 @@ class TouchEventManager(
             }
 
             if(shouldSaveEvent && eventType.isNotEmpty()) {
-                dataStore.saveEvent(
-                    NIDEventModel(
-                        type = eventType,
-                        tgs = nameView,
-                        tg =
-                        hashMapOf(
-                            "etn" to etnSenderName,
-                            "tgs" to nameView,
-                            "sender" to etnSenderName,
-                        ),
-                        touches = listOf(NIDTouchModel(0f, it.x, it.y)),
-                        v = v,
-                        attrs = attrJSON
-                    )
+                neuroID.captureEvent(
+                    type = eventType,
+                    tgs = nameView,
+                    tg =
+                    hashMapOf(
+                        "etn" to etnSenderName,
+                        "tgs" to nameView,
+                        "sender" to etnSenderName,
+                    ),
+                    touches = listOf(NIDTouchModel(0f, it.x, it.y)),
+                    v = v,
+                    attrs = attrJSON
                 )
             }
 
