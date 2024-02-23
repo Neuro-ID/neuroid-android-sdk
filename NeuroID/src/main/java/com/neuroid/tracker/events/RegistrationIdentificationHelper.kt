@@ -247,23 +247,60 @@ class SingleTargetListenerRegister(
         }
 
         // additional subclasses to be captured
-        if (view is AutoCompleteTextView || view is Spinner || view is AbsSpinner) {
-            val castView =  view as AdapterView<*>
-            val lastClickListener = castView.onItemClickListener
-            castView.onItemClickListener = null
-            castView.onItemClickListener =
-                additionalListeners.addSelectOnClickListener(
-                    idName,
-                    lastClickListener
-                )
+        when (view) {
+            is AutoCompleteTextView -> {
+                val lastClickListener = view.onItemClickListener
+                view.onItemClickListener = null
+                view.onItemClickListener =
+                    additionalListeners.addSelectOnClickListener(
+                        idName,
+                        lastClickListener
+                    )
 
-            val lastSelectListener = castView.onItemSelectedListener
-            castView.onItemSelectedListener = null
-            castView.onItemSelectedListener = additionalListeners.addSelectOnSelect(
-                idName,
-                lastSelectListener,
-                simpleClassName
-            )
+                val lastSelectListener = view.onItemSelectedListener
+                view.onItemSelectedListener = null
+                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
+                    idName,
+                    lastSelectListener,
+                    simpleClassName
+                )
+            }
+
+            is Spinner -> {
+                val lastClickListener = view.onItemClickListener
+                view.onItemClickListener = null
+                view.onItemClickListener =
+                    additionalListeners.addSelectOnClickListener(
+                        idName,
+                        lastClickListener
+                    )
+
+                val lastSelectListener = view.onItemSelectedListener
+                view.onItemSelectedListener = null
+                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
+                    idName,
+                    lastSelectListener,
+                    simpleClassName
+                )
+            }
+
+            is AbsSpinner -> {
+                val lastClickListener = view.onItemClickListener
+                view.onItemClickListener = null
+                view.onItemClickListener =
+                    additionalListeners.addSelectOnClickListener(
+                        idName,
+                        lastClickListener
+                    )
+
+                val lastSelectListener = view.onItemSelectedListener
+                view.onItemSelectedListener = null
+                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
+                    idName,
+                    lastSelectListener,
+                    simpleClassName
+                )
+            }
         }
     }
 

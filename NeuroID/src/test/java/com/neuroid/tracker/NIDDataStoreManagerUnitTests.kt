@@ -26,8 +26,7 @@ class NIDDataStoreManagerUnitTests {
 
     private fun mockDataStore(testScheduler: TestCoroutineScheduler): NIDDataStoreManagerImp {
         val dispatcher = StandardTestDispatcher(testScheduler)
-        NIDDataStoreManagerImp.init(mockContext, CoroutineScope(dispatcher))
-        return NIDDataStoreManagerImp
+        return NIDDataStoreManagerImp(CoroutineScope(dispatcher))
     }
 
     @Before

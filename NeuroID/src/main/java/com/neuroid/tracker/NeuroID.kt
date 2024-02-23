@@ -16,9 +16,8 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.storage.initDataStoreCtx
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
@@ -57,7 +56,7 @@ class NeuroID private constructor(
 
     // Dependency Injections
     internal var logger: NIDLogWrapper = NIDLogWrapper()
-    internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
+    internal var dataStore: NIDDataStoreManager
     internal var registrationIdentificationHelper:RegistrationIdentificationHelper
     internal var nidActivityCallbacks: ActivityCallbacks
     internal lateinit var nidJobServiceManager: NIDJobServiceManager
@@ -67,6 +66,7 @@ class NeuroID private constructor(
     internal var lowMemory:Boolean = false
 
     init {
+        dataStore = NIDDataStoreManagerImp()
         registrationIdentificationHelper = RegistrationIdentificationHelper(dataStore, logger)
         nidActivityCallbacks = ActivityCallbacks(dataStore, logger, registrationIdentificationHelper)
 
@@ -90,9 +90,6 @@ class NeuroID private constructor(
                 environment = "TEST"
             }
         }
-
-
-
     }
 
     @Synchronized
@@ -100,7 +97,6 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
-                initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
             }

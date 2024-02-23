@@ -54,7 +54,7 @@ class LifeCycleTest {
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -106,10 +106,10 @@ class LifeCycleTest {
     @Test
     fun test13ValidateChangeScreenOrientation() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         delay(500)

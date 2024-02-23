@@ -54,7 +54,7 @@ class TextUnitTest {
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -107,12 +107,12 @@ class TextUnitTest {
     @Test
     fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
@@ -128,11 +128,11 @@ class TextUnitTest {
     @Test
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
@@ -152,17 +152,17 @@ class TextUnitTest {
     @Test
     fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500)
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))

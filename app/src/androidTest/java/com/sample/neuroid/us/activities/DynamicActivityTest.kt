@@ -56,7 +56,7 @@ class DynamicActivityTest {
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -102,7 +102,7 @@ class DynamicActivityTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
         delay(2000)
@@ -111,7 +111,7 @@ class DynamicActivityTest {
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
 
         delay(2000)
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())

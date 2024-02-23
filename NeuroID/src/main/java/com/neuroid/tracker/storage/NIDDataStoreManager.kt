@@ -1,6 +1,6 @@
 package com.neuroid.tracker.storage
 
-import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -24,16 +24,15 @@ interface NIDDataStoreManager {
     fun saveAndClearAllQueuedEvents()
 }
 
-fun initDataStoreCtx(context: Context) {
-    NIDDataStoreManagerImp.init(context)
+@VisibleForTesting // Should we make the private?
+fun NeuroID.getDataStoreInstance():NIDDataStoreManager {
+    return dataStore
 }
 
-fun getDataStoreInstance(): NIDDataStoreManager {
-    return NIDDataStoreManagerImp
-}
-
-internal object NIDDataStoreManagerImp : NIDDataStoreManager {
-    const val EVENT_BUFFER_MAX_COUNT = 1999
+internal class NIDDataStoreManagerImp(private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)) : NIDDataStoreManager {
+    companion object {
+        const val EVENT_BUFFER_MAX_COUNT = 1999
+    }
 
     private val listNonActiveEvents = listOf(
         USER_INACTIVE,
@@ -42,12 +41,6 @@ internal object NIDDataStoreManagerImp : NIDDataStoreManager {
     internal val listIdsExcluded = arrayListOf<String>()
     private var eventsList = mutableListOf<NIDEventModel>()
     internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
-
-    private var ioDispatcher = CoroutineScope(Dispatchers.IO)
-
-    fun init(context: Context, newDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
-        ioDispatcher = newDispatcher
-    }
 
     // Queue events that are set before sdk is started
     @Synchronized

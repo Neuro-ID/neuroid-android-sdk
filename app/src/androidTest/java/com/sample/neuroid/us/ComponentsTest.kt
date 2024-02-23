@@ -45,7 +45,7 @@ class ComponentsTest {
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
         NeuroID.getInstance()?.stop()
         delay(500)
     }
@@ -67,7 +67,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -88,7 +88,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -113,7 +113,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -138,7 +138,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -163,7 +163,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -185,7 +185,7 @@ class ComponentsTest {
         )
 
         delay(1000)
-        getDataStoreInstance().getAllEvents()
+        NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents()
 
         onView(withId(R.id.seekBar_one)).perform(
             swipeRight()
@@ -194,7 +194,7 @@ class ComponentsTest {
         delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 

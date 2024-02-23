@@ -21,6 +21,7 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
 
 import org.junit.After
 import org.junit.Before
@@ -136,6 +137,11 @@ open class NeuroIDClassUnitTests {
 
         every { mockedNIDJobServiceManager.startJob(any(), any()) } just runs
         every { mockedNIDJobServiceManager.isStopped() } returns true
+        every { mockedNIDJobServiceManager.stopJob() } just runs
+
+        coEvery {
+            mockedNIDJobServiceManager.sendEventsNow(any())
+        } just runs
 
         NeuroID.getInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
     }

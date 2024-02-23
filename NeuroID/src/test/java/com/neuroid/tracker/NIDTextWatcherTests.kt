@@ -22,6 +22,8 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
         val dataStoreMock = setMockedDataStore()
 
+        println("DAA $dataStoreMock")
+
         val textWatcher = NIDTextWatcher(dataStoreMock, NIDLogWrapper(), "test", "myclass", "")
         textWatcher.onTextChanged("existing text", 0, 1, 0)
         verify(exactly = 0) { NeuroID.getInstance()?.dataStore?.saveEvent(any()) }
