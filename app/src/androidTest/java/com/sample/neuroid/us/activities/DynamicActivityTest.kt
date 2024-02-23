@@ -9,9 +9,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import com.sample.neuroid.us.NIDSchema
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.ResponseData
 import com.sample.neuroid.us.delay
@@ -56,7 +55,7 @@ class DynamicActivityTest {
 
     @After
     fun resetDispatchers() = runTest {
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -102,7 +101,7 @@ class DynamicActivityTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
         delay(2000)
@@ -111,7 +110,7 @@ class DynamicActivityTest {
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
 
         delay(2000)
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())

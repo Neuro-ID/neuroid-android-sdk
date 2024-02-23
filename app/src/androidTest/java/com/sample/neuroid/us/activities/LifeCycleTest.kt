@@ -7,10 +7,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import com.sample.neuroid.us.NIDSchema
 import com.sample.neuroid.us.ResponseData
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,7 +52,7 @@ class LifeCycleTest {
 
     @After
     fun resetDispatchers() = runTest {
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -106,10 +104,10 @@ class LifeCycleTest {
     @Test
     fun test13ValidateChangeScreenOrientation() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         delay(500)

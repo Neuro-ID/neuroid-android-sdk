@@ -25,7 +25,7 @@ interface NIDDataStoreManager {
 }
 
 @VisibleForTesting // Should we make the private?
-fun NeuroID.getDataStoreInstance():NIDDataStoreManager {
+fun NeuroID.getTestingDataStoreInstance():NIDDataStoreManager {
     return dataStore
 }
 

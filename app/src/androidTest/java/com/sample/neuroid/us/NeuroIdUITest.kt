@@ -10,7 +10,7 @@ import androidx.test.filters.LargeTest
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -70,7 +70,7 @@ class NeuroIdUITest {
 
     @After
     fun resetDispatchers() = runTest {
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -206,7 +206,7 @@ class NeuroIdUITest {
     fun test06ValidateLifecyclePause() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -224,11 +224,11 @@ class NeuroIdUITest {
     @Test
     fun test07ValidateLifecycleStop() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.pressBack()
         delay(1000)
@@ -243,12 +243,12 @@ class NeuroIdUITest {
     @Test
     fun test08ValidateTouchStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(200) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(200)
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(1000)
@@ -263,12 +263,12 @@ class NeuroIdUITest {
     @Test
     fun test09ValidateTouchEnd() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(500)
@@ -293,12 +293,12 @@ class NeuroIdUITest {
     @Test
     fun test12ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(1000)
@@ -315,7 +315,7 @@ class NeuroIdUITest {
     @Test
     fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
@@ -334,7 +334,7 @@ class NeuroIdUITest {
     @Test
     fun test14ValidateSetUserIdPreStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setUserID("UUID123")
