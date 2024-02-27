@@ -3,7 +3,7 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
@@ -15,6 +15,7 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -31,18 +32,21 @@ import org.junit.Assert.assertTrue
 
 
 enum class TestLogLevel {
-    DEBUG, INFO, ERROR
+    DEBUG,
+    INFO,
+    ERROR,
+    WARNING
 }
 
 open class NeuroIDClassUnitTests {
     private var errorCount = 0
     private var infoCount = 0
     private var debugCount = 0
+    private var warningCount = 0
 
     // datastoreMock vars
     private var storedEvents = mutableSetOf<NIDEventModel>()
     private var queuedEvents = mutableSetOf<NIDEventModel>()
-    private var excludedIds = mutableSetOf<String>()
 
     private fun assertLogMessage(type: TestLogLevel, expectedMessage: String, actualMessage: Any?) {
         if (actualMessage != "" && actualMessage != null) {
@@ -53,6 +57,7 @@ open class NeuroIDClassUnitTests {
             TestLogLevel.DEBUG -> debugCount += 1
             TestLogLevel.INFO -> infoCount += 1
             TestLogLevel.ERROR -> errorCount += 1
+            TestLogLevel.WARNING -> warningCount += 1
         }
 
         return
@@ -67,7 +72,10 @@ open class NeuroIDClassUnitTests {
     }
 
     private fun setNeuroIDMockedLogger(
-        errorMessage: String = "", infoMessage: String = "", debugMessage: String = ""
+        errorMessage: String = "",
+        infoMessage: String = "",
+        debugMessage: String = "",
+        warningMessage: String = ""
     ) {
         val log = mockk<NIDLogWrapper>()
 
@@ -95,10 +103,18 @@ open class NeuroIDClassUnitTests {
             actualMessage
         }
 
+        every { log.w(any(), any()) } answers {
+            val actualMessage = args[1]
+            assertLogMessage(TestLogLevel.WARNING, warningMessage, actualMessage)
+
+            // Return the result
+            actualMessage
+        }
+
         NeuroID.getInstance()?.setLoggerInstance(log)
     }
 
-    fun setMockedDataStore() {
+    fun setMockedDataStore(fullBuffer:Boolean = false):NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         every { dataStoreManager.saveEvent(any()) } answers {
             storedEvents.add(args[0] as NIDEventModel)
@@ -109,13 +125,13 @@ open class NeuroIDClassUnitTests {
             queuedEvents.add(args[0] as NIDEventModel)
         }
 
-        every { dataStoreManager.addViewIdExclude(any()) } answers {
-            excludedIds.add(args[0] as String)
-        }
-
         every { dataStoreManager.saveAndClearAllQueuedEvents() } answers { queuedEvents.clear() }
 
+        every { dataStoreManager.isFullBuffer() } returns fullBuffer
+
         NeuroID.getInstance()?.setDataStoreInstance(dataStoreManager)
+
+        return dataStoreManager
     }
 
     private fun setMockedApplication() {
@@ -128,11 +144,16 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.application = mockedApplication
     }
 
-    private fun setMockedNIDJobServiceManager() {
+    private fun setMockedNIDJobServiceManager(isStopped:Boolean = true) {
         val mockedNIDJobServiceManager = mockk<NIDJobServiceManager>()
 
         every { mockedNIDJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedNIDJobServiceManager.isStopped() } returns true
+        every { mockedNIDJobServiceManager.isStopped() } returns isStopped
+        every { mockedNIDJobServiceManager.stopJob() } just runs
+
+        coEvery {
+            mockedNIDJobServiceManager.sendEventsNow(any())
+        } just runs
 
         NeuroID.getInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
     }
@@ -141,6 +162,7 @@ open class NeuroIDClassUnitTests {
         errorCount = 0
         infoCount = 0
         debugCount = 0
+        warningCount = 0
     }
 
     private fun getDeprecatedMessage(fnName: String): String {
@@ -163,6 +185,18 @@ open class NeuroIDClassUnitTests {
         clearLogCounts()
     }
 
+    private fun assertWarningCount(count: Int) {
+        assertEquals(count, warningCount)
+        clearLogCounts()
+    }
+
+    fun unsetDefaultMockedLogger() {
+        val log = mockk<NIDLogWrapper>()
+        every { log.d(any(), any()) } just runs
+        every { log.e(any(), any()) } just runs
+        NeuroID.getInstance()?.setLoggerInstance(log)
+    }
+
     @Before
     fun setUp() {
         // setup instance and logging
@@ -173,7 +207,7 @@ open class NeuroIDClassUnitTests {
         clearLogCounts()
         storedEvents.clear()
         queuedEvents.clear()
-        excludedIds.clear()
+        NeuroID.getInstance()?.excludedTestIDList?.clear()
     }
 
     @After
@@ -181,6 +215,7 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Error Count is Greater than 0", 0, errorCount)
         assertEquals("Expected Log Info Count is Greater than 0", 0, infoCount)
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
+        assertEquals("Expected Log Warning Count is Greater than 0", 0, warningCount)
         unmockkAll()
     }
 
@@ -239,8 +274,9 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInstance()?.setUserID("myUserID")
 
         assertEquals(true, value)
-        assertEquals(1, queuedEvents.count())
-        assertEquals(true, queuedEvents.firstOrNull()?.type === SET_USER_ID)
+        assertEquals(4, queuedEvents.count())
+        assertEquals(1, queuedEvents.count{it.type === SET_USER_ID})
+        assertEquals(3, queuedEvents.count { it.type === SET_VARIABLE  })
     }
 
     @Test
@@ -251,40 +287,46 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInstance()?.setRegisteredUserID("myUserID")
 
         assertEquals(true, value)
-        assertEquals(1, queuedEvents.count())
-        assertEquals(true, queuedEvents.firstOrNull()?.type === SET_REGISTERED_USER_ID)
+        assertEquals(4, queuedEvents.count())
+        assertEquals(1, queuedEvents.count{it.type === SET_REGISTERED_USER_ID})
+        assertEquals(3, queuedEvents.count { it.type === SET_VARIABLE  })
     }
 
     @Test
     fun testUserID_success_Started() {
         setMockedDataStore()
         setNeuroIDMockedLogger()
+        setMockedNIDJobServiceManager(false)
 
         NeuroID.isSDKStarted = true
 
         val value = NeuroID.getInstance()?.setUserID("myUserID")
 
         assertEquals(true, value)
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === SET_USER_ID)
+        assertEquals(4, storedEvents.count())
+        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
+        assertEquals(1, storedEvents.count { x -> x.type === SET_USER_ID })
     }
 
     @Test
     fun testRegisteredUserID_success_Started() {
         setMockedDataStore()
         setNeuroIDMockedLogger()
+        setMockedNIDJobServiceManager(false)
 
         NeuroID.isSDKStarted = true
 
         val value = NeuroID.getInstance()?.setRegisteredUserID("myRegisteredUserID")
 
         assertEquals(true, value)
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === SET_REGISTERED_USER_ID)
+        assertEquals(4, storedEvents.count())
+        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
+        assertEquals(1, storedEvents.count { x -> x.type === SET_REGISTERED_USER_ID })
     }
 
     @Test
     fun testSetUserID_failure() {
+        setMockedDataStore(false)
         setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
 
         val value = NeuroID.getInstance()?.setUserID("Bad UserID")
@@ -370,13 +412,21 @@ open class NeuroIDClassUnitTests {
 
     //    excludeViewByTestID
     @Test
-    fun testExcludeViewByTestID() {
-        setMockedDataStore()
-        setMockedApplication()
+    fun testExcludeViewByTestID_single() {
+        NeuroID.getInstance()?.excludeViewByTestID("excludeMe")
 
-        NeuroID.getInstance()?.excludeViewByTestID("fddf")
+        assertEquals(1, NeuroID.getInstance()?.excludedTestIDList?.count())
+        assertEquals("excludeMe", NeuroID.getInstance()?.excludedTestIDList?.first())
+    }
 
-        assertEquals(1, excludedIds.count())
+    @Test
+    fun testExcludeViewByTestID_double() {
+        NeuroID.getInstance()?.excludeViewByTestID("excludeMe")
+        assertEquals(1, NeuroID.getInstance()?.excludedTestIDList?.count())
+        assertEquals("excludeMe", NeuroID.getInstance()?.excludedTestIDList?.first())
+
+        NeuroID.getInstance()?.excludeViewByTestID("excludeMe")
+        assertEquals(1, NeuroID.getInstance()?.excludedTestIDList?.count())
     }
 
     //    setEnvironment - DEPRECATED
@@ -507,7 +557,7 @@ open class NeuroIDClassUnitTests {
     //    registerPageTargets
     @Test
     fun testRegisterPageTargets() {
-        val mockedNIDACB = mockk<NIDActivityCallbacks>()
+        val mockedNIDACB = mockk<ActivityCallbacks>()
         every { mockedNIDACB.forceStart(any()) } just runs
         NeuroID.getInstance()?.setNIDActivityCallbackInstance(mockedNIDACB)
 
@@ -546,21 +596,11 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    captureEvent - not sure how to mock Application context
-    @Test
-    fun testCaptureEvent() {
-        setMockedDataStore()
-        setMockedApplication()
-
-        NeuroID.getInstance()?.captureEvent("testEvent", "testTGS")
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === "testEvent")
-    }
-
     //    formSubmit - Deprecated
     @Test
     fun testFormSubmit() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
         setMockedDataStore()
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmit"))
 
@@ -574,6 +614,8 @@ open class NeuroIDClassUnitTests {
     //    formSubmitSuccess - Deprecated
     @Test
     fun testFormSubmitSuccess() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
         setMockedDataStore()
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitSuccess"))
 
@@ -587,6 +629,8 @@ open class NeuroIDClassUnitTests {
     //    formSubmitFailure - Deprecated
     @Test
     fun testFormSubmitFailure() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
         setMockedDataStore()
         setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitFailure"))
 
@@ -935,11 +979,122 @@ open class NeuroIDClassUnitTests {
     }
 
 
-    fun unsetDefaultMockedLogger() {
-        val log = mockk<NIDLogWrapper>()
-        every { log.d(any(), any()) } just runs
-        every { log.e(any(), any()) } just runs
-        NeuroID.getInstance()?.setLoggerInstance(log)
+    //    captureEvent
+    @Test
+    fun testCaptureEvent_success() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent")
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === "testEvent")
     }
 
+    @Test
+    fun testCaptureEvent_success_queued() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.captureEvent(queuedEvent = true, type= "testEvent")
+
+        // In reality the datastore would add a full buffer event but that is tested in
+        //    the datastore unit tests
+        assertEquals(1, queuedEvents.count())
+        assertEquals(true, queuedEvents.firstOrNull()?.type === "testEvent")
+    }
+
+    @Test
+    fun testCaptureEvent_failure_not_started() {
+        NeuroID.isSDKStarted = false
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent")
+
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testCaptureEvent_failure_jobManager_stopped() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(true)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent")
+
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testCaptureEvent_failure_excludedID_tgs() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.excludedTestIDList?.add("excludeMe")
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent", tgs = "excludeMe")
+
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testCaptureEvent_failure_excludedID_tg() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+
+        NeuroID.getInstance()?.excludedTestIDList?.add("excludeMe")
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent", tg = mapOf(
+            "tgs" to "excludeMe"
+        ))
+
+        assertEquals(0, storedEvents.count())
+    }
+
+    @Test
+    fun testCaptureEvent_failure_lowMemory() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        setMockedApplication()
+        setNeuroIDMockedLogger(warningMessage = "Data store buffer FULL_BUFFER, testEvent dropped")
+
+        NeuroID.getInstance()?.lowMemory = true
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent")
+
+        assertEquals(0, storedEvents.count())
+
+        assertWarningCount(1)
+
+        NeuroID.getInstance()?.lowMemory = false
+    }
+
+    @Test
+    fun testCaptureEvent_failure_fullBuffer() {
+        NeuroID.isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore(true)
+        setMockedApplication()
+        setNeuroIDMockedLogger(warningMessage = "Data store buffer FULL_BUFFER, testEvent dropped")
+
+        NeuroID.getInstance()?.captureEvent(type= "testEvent")
+
+        // In reality the datastore would add a full buffer event but that is tested in
+        //    the datastore unit tests
+        assertEquals(0, storedEvents.count())
+
+        assertWarningCount(1)
+    }
 }

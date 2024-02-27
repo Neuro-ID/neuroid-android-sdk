@@ -22,7 +22,7 @@ interface NIDSendingService {
     fun sendEvents(
         key: String,
         events: List<NIDEventModel>,
-        nidResponseCallback: NIDResponseCallBack
+        responseCallback: NIDResponseCallBack
     )
 
 // Request Prep Functions

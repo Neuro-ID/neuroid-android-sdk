@@ -8,9 +8,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import com.sample.neuroid.us.NIDSchema
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.ResponseData
 import com.sample.neuroid.us.delay
@@ -53,7 +52,7 @@ class NonAutomaticEventsTest {
 
     @After
     fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 
@@ -106,9 +105,9 @@ class NonAutomaticEventsTest {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_submit))
             .perform(ViewActions.click())
         delay(600)
@@ -123,9 +122,9 @@ class NonAutomaticEventsTest {
     @Test
     fun test02ValidateFormSubmitSuccess() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_success))
             .perform(ViewActions.click())
         delay(600)
@@ -141,9 +140,9 @@ class NonAutomaticEventsTest {
     @Test
     fun test03ValidateFormSubmitFailure() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_failure))
             .perform(ViewActions.click())
         delay(600)
@@ -160,9 +159,9 @@ class NonAutomaticEventsTest {
     @Ignore
     fun test04ValidateFormCustomEvent() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.button_send_custom_event))
             .perform(ViewActions.click())

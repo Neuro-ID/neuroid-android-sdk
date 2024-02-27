@@ -6,10 +6,9 @@ import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlin.coroutines.resume
@@ -28,7 +27,7 @@ internal class AdvancedDeviceIDManager(
         private val context: Context,
         private val logger: NIDLogWrapper,
         private val sharedPrefs: NIDSharedPrefsDefaults,
-        private val dataStoreManager: NIDDataStoreManager,
+        private val neuroID: NeuroID,
         private val advNetworkService: ADVNetworkService,
         private val fpjsClient:
                 FingerprintJS? // only for testing purposes, need to create in real time to pass NID
@@ -62,13 +61,11 @@ internal class AdvancedDeviceIDManager(
                 msg =
                         "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}"
         )
-        dataStoreManager.saveEvent(
-                NIDEventModel(
-                        type = ADVANCED_DEVICE_REQUEST,
-                        rid = storedValue["key"] as String,
-                        ts = System.currentTimeMillis(),
-                        c = true
-                )
+        neuroID.captureEvent(
+            type = ADVANCED_DEVICE_REQUEST,
+            rid = storedValue["key"] as String,
+            ts = System.currentTimeMillis(),
+            c = true
         )
 
         return true
@@ -83,13 +80,11 @@ internal class AdvancedDeviceIDManager(
             logger.e(msg = "Failed to get API key from NeuroID: ${nidKeyResponse.message}")
 
             // capture failure in event
-            dataStoreManager.saveEvent(
-                    NIDEventModel(
-                            type = LOG,
-                            ts = System.currentTimeMillis(),
-                            level = "error",
-                            m = nidKeyResponse.message
-                    )
+            neuroID.captureEvent(
+                type = LOG,
+                ts = System.currentTimeMillis(),
+                level = "error",
+                m = nidKeyResponse.message
             )
             return null
         }
@@ -125,13 +120,11 @@ internal class AdvancedDeviceIDManager(
                                             "Generating Request ID for Advanced Device Signals: ${requestResponse.second}"
                             )
 
-                            dataStoreManager.saveEvent(
-                                    NIDEventModel(
-                                            type = ADVANCED_DEVICE_REQUEST,
-                                            rid = requestResponse.second,
-                                            ts = System.currentTimeMillis(),
-                                            c = false
-                                    )
+                            neuroID.captureEvent(
+                                type = ADVANCED_DEVICE_REQUEST,
+                                rid = requestResponse.second,
+                                ts = System.currentTimeMillis(),
+                                c = false
                             )
 
                             logger.d(msg = "Caching Request ID: ${requestResponse.second}")
@@ -168,13 +161,11 @@ internal class AdvancedDeviceIDManager(
                         val msg =
                             "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID: $jobErrorMessage"
 
-                        dataStoreManager.saveEvent(
-                            NIDEventModel(
-                                type = LOG,
-                                ts = System.currentTimeMillis(),
-                                level = "error",
-                                m = msg
-                            )
+                        neuroID.captureEvent(
+                            type = LOG,
+                            ts = System.currentTimeMillis(),
+                            level = "error",
+                            m = msg
                         )
                         logger.e(msg = msg)
                     }

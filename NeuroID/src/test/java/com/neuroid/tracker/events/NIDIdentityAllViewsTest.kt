@@ -1,4 +1,4 @@
-package com.neuroid.tracker
+package com.neuroid.tracker.events
 
 import android.text.Editable
 import android.view.ViewGroup
@@ -10,15 +10,13 @@ import android.widget.RatingBar
 import android.widget.SeekBar
 import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
-import com.neuroid.tracker.events.identifyView
-import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import kotlinx.coroutines.Job
 import org.junit.Test
 
 class NIDIdentityAllViewsTest {
@@ -40,11 +38,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -65,11 +63,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -91,11 +89,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -116,11 +114,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -141,11 +139,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0") }
     }
 
@@ -161,11 +159,11 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -206,11 +204,12 @@ class NIDIdentityAllViewsTest {
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } answers {
-            mockk<Job>()
-        }
-        identifyView(view, "someguid", logger, dataStoreManager)
+
+        val nidMock = mockNeuroID()
+
+
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
+        registrationIdentificationHelper.identifySingleView(view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12") }
         verify(exactly = 2) {
             logger.d(
@@ -220,4 +219,68 @@ class NIDIdentityAllViewsTest {
         }
     }
 
+    private fun mockNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
+        every {
+            nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        } just runs
+
+        return nidMock
+    }
 }

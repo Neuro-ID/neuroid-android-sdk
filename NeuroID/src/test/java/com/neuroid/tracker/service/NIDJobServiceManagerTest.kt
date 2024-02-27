@@ -1,4 +1,4 @@
-package com.neuroid.tracker
+package com.neuroid.tracker.service
 
 import android.app.ActivityManager
 import android.app.Application
@@ -7,13 +7,9 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDApiService
-import com.neuroid.tracker.service.NIDEventSender
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDResponseCallBack
-import com.neuroid.tracker.service.NIDSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.Runs
@@ -147,13 +143,80 @@ class NIDJobServiceManagerTest {
     ):Triple<NIDJobServiceManager, Application, NIDLogWrapper>{
         val mockedApplication = getMockedApplication()
         val logger = getMockedLogger()
+
         val nidJobServiceManager = NIDJobServiceManager(
-            logger,
+            getMockedNeuroID(),
             getMockedDatastoreManager(),
-            getMockEventSender(isSuccess, respCode, respMessage, mockedApplication)
+            getMockEventSender(isSuccess, respCode, respMessage, mockedApplication),
+            logger
         )
 
         return Triple(nidJobServiceManager, mockedApplication, logger)
+    }
+
+    private fun getMockedNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
+        every {
+            nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        } just runs
+
+        return nidMock
     }
 
     private fun getMockedDatastoreManager (): NIDDataStoreManager {
@@ -174,7 +237,7 @@ class NIDJobServiceManagerTest {
         val sensorManager = mockk<SensorManager>()
         every {sensorManager.getSensorList(any())} returns listOf()
         every {sensorManager.unregisterListener(any<NIDSensorGenListener>())} just runs
-        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())}
+        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())} returns true
 
         val application = mockk<Application>()
         every{application.getSystemService(any())} returns sensorManager

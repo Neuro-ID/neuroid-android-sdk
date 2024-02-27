@@ -25,7 +25,7 @@ class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
-              neuroID.isConnected = onNetworkAction()
+                neuroID.isConnected = onNetworkAction()
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.neuroid.tracker
+package com.neuroid.tracker.service
 
 import android.app.ActivityManager
 import android.app.Application
@@ -9,9 +9,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDResponseCallBack
-import com.neuroid.tracker.service.NIDApiService
-import com.neuroid.tracker.service.NIDEventSender
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
