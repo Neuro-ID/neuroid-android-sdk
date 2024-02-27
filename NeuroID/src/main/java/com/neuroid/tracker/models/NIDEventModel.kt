@@ -15,6 +15,7 @@ import com.neuroid.tracker.events.KEY_DOWN
 import com.neuroid.tracker.events.KEY_UP
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.SELECT_CHANGE
@@ -91,7 +92,9 @@ data class NIDEventModel(
         val rid: String? = null,
         val m: String? = null,
         val level: String? = null,
-        val c: Boolean? = null
+        val c: Boolean? = null,
+        val isWifi: Boolean? = null,
+        val isConnected: Boolean? = null
 ) : Comparable<NIDEventModel> {
 
     fun toJSONString(): String {
@@ -174,6 +177,8 @@ data class NIDEventModel(
             gyro?.let { jsonObject.put("gyro", it.toJSON()) }
             accel?.let { jsonObject.put("accel", it.toJSON()) }
             metadata?.let { jsonObject.put("metadata", it) }
+            isWifi?.let { jsonObject.put("iswifi", it) }
+            isConnected?.let { jsonObject.put("isconnected", it) }
         }
 
         return jsonObject
@@ -221,6 +226,7 @@ data class NIDEventModel(
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
                 ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
+                NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 else -> {}
             }
 

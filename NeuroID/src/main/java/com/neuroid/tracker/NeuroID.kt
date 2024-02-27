@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -18,6 +20,7 @@ import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -70,7 +73,8 @@ private constructor(
 
     internal var clipboardManager: ClipboardManager? = null
 
-    internal var lowMemory: Boolean = false
+    internal var lowMemory:Boolean = false
+    internal var isConnected = false
 
     init {
         dataStore = NIDDataStoreManagerImp(logger)
@@ -94,6 +98,19 @@ private constructor(
             } else {
                 environment = "TEST"
             }
+        }
+
+        // register network listener here. >=API24 will not receive if registered
+        // in the manifest so we do it here for full compatibility
+        application?.let {
+            val connectivityManager =
+                it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            application?.registerReceiver(
+                NIDNetworkListener(
+                    connectivityManager,
+                    dataStore, this),
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
         }
     }
 
@@ -129,6 +146,7 @@ private constructor(
         internal var siteID = ""
         internal var rndmId = "mobile"
         internal var firstScreenName = ""
+        internal var isConnected = false
 
         internal var registeredViews: MutableSet<String> = mutableSetOf()
 
@@ -712,7 +730,8 @@ private constructor(
             rid: String? = null,
             m: String? = null,
             level: String? = null,
-            c: Boolean? = null
+            c: Boolean? = null,
+            isConnected: Boolean? = null
     ) {
         if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
             return
@@ -783,7 +802,8 @@ private constructor(
                         rid,
                         m,
                         level,
-                        c
+                        c,
+                        isConnected
                 )
 
         if(queuedEvent) {
