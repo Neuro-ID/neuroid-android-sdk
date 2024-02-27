@@ -9,7 +9,7 @@ class NIDEventModelUnitTest {
         val event = NIDEventModel(type = "TEST_TYPE", ts = 1)
         val result = event.toJSONString()
 
-        assertEquals("{\"type\":\"TEST_TYPE\",\"ts\":1,\"gyro\":{\"x\":null,\"y\":null,\"z\":null}}", result)
+        assertEquals("{\"type\":\"TEST_TYPE\",\"accel\":{\"x\":null,\"y\":null,\"z\":null},\"ts\":1,\"gyro\":{\"x\":null,\"y\":null,\"z\":null}}", result)
     }
 
     @Test
@@ -27,6 +27,6 @@ class NIDEventModelUnitTest {
             )
         val result = event.toJSONString()
 
-        assertEquals("{\"tg\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"dnt\":false,\"type\":\"TEST_TYPE\",\"attrs\":[{\"key\":\"value\"}],\"ts\":1,\"gyro\":{\"x\":null,\"y\":null,\"z\":null}}", result)
+        assertEquals("{\"tg\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"dnt\":false,\"type\":\"TEST_TYPE\",\"accel\":{\"x\":null,\"y\":null,\"z\":null},\"attrs\":[{\"key\":\"value\"}],\"ts\":1,\"gyro\":{\"x\":null,\"y\":null,\"z\":null}}", result)
     }
 }

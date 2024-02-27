@@ -237,7 +237,7 @@ class NIDJobServiceManagerTest {
         val sensorManager = mockk<SensorManager>()
         every {sensorManager.getSensorList(any())} returns listOf()
         every {sensorManager.unregisterListener(any<NIDSensorGenListener>())} just runs
-        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())}
+        every {sensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>(), any<Int>())} returns true
 
         val application = mockk<Application>()
         every{application.getSystemService(any())} returns sensorManager
