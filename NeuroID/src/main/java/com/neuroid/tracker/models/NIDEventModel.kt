@@ -1,84 +1,121 @@
 package com.neuroid.tracker.models
 
+import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
+import com.neuroid.tracker.events.APPLICATION_SUBMIT
+import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CLOSE_SESSION
+import com.neuroid.tracker.events.CONTEXT_MENU
+import com.neuroid.tracker.events.COPY
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.CUT
+import com.neuroid.tracker.events.FOCUS
+import com.neuroid.tracker.events.INPUT
+import com.neuroid.tracker.events.KEY_DOWN
+import com.neuroid.tracker.events.KEY_UP
+import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.NETWORK_STATE
+import com.neuroid.tracker.events.PASTE
+import com.neuroid.tracker.events.REGISTER_TARGET
+import com.neuroid.tracker.events.SELECT_CHANGE
+import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.events.TEXT_CHANGE
+import com.neuroid.tracker.events.TOUCH_END
+import com.neuroid.tracker.events.TOUCH_MOVE
+import com.neuroid.tracker.events.TOUCH_START
+import com.neuroid.tracker.events.WINDOW_BLUR
+import com.neuroid.tracker.events.WINDOW_FOCUS
+import com.neuroid.tracker.events.WINDOW_LOAD
+import com.neuroid.tracker.events.WINDOW_RESIZE
+import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
 import org.json.JSONObject
 
 data class NIDEventModel(
-    val type: String,
-    val attrs: JSONArray? = null,
-    val tg: Map<String, Any>? = null,
-    val tgs: String? = null,
-    val touches: List<String>? = null,
-    val key: String? = null,
-    val gyro: NIDSensorModel? = null,
-    val accel: NIDSensorModel? = null,
-    val v: String? = null,
-    val hv: String? = null,
-    val en: String? = null,
-    val etn: String? = null,
-    val ec: String? = null,
-    val et: String? = null,
-    var eid: String? = null,
-    val ct: String? = null,
-    val ts: Long,
-    val sm: Int? = null,
-    val pd: Int? = null,
-    val x: Float? = null,
-    val y: Float? = null,
-    val w: Int? = null,
-    val h: Int? = null,
-    val sw: Float? = null,
-    val sh: Float? = null,
-    val f: String? = null,
-    val lsid: String? = null,
-    val sid: String? = null,
-    val siteId: String? = null,
-    val cid: String? = null,
-    val did: String? = null,
-    val iid: String? = null,
-    val loc: String? = null,
-    val ua: String? = null,
-    val tzo: Int? = null,
-    val lng: String? = null,
-    val ce: Boolean? = null,
-    val je: Boolean? = null,
-    val ol: Boolean? = null,
-    val p: String? = null,
-    val dnt: Boolean? = null,
-    val tch: Boolean? = null,
-    val url: String? = null,
-    val ns: String? = null,
-    val jsl: List<String>? = null,
-    val jsv: String? = null,
-    val uid: String? = null,
-    val o: String? = null,
-    var rts: String? = null,
-    val metadata: JSONObject? = null,
-    val rid: String? = null,
-    val m: String? = null,
-    val level: String? = null,
-    val c: Boolean? = null,
-    val cp: String? = null,
-
+        val type: String,
+        val ts: Long =
+                System.currentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
+        // always add real timestamp
+        val attrs: List<Map<String, Any>>? = null,
+        val tg: Map<String, Any>? = null,
+        val tgs: String? = null,
+        val touches: List<NIDTouchModel>? = null,
+        val key: String? = null,
+        val gyro: NIDSensorModel? = NIDSensorHelper.getGyroscopeInfo(),
+        val accel: NIDSensorModel? = NIDSensorHelper.getAccelerometerInfo(),
+        val v: String? = null,
+        val hv: String? = null,
+        val en: String? = null,
+        val etn: String? = null,
+        val ec: String? = null,
+        val et: String? = null,
+        var eid: String? = null,
+        val ct: String? = null,
+        val sm: Int? = null,
+        val pd: Int? = null,
+        val x: Float? = null,
+        val y: Float? = null,
+        val w: Int? = null,
+        val h: Int? = null,
+        val sw: Float? = null,
+        val sh: Float? = null,
+        val f: String? = null,
+        val lsid: String? = null,
+        val sid: String? = null,
+        val siteId: String? = null,
+        val cid: String? = null,
+        val did: String? = null,
+        val iid: String? = null,
+        val loc: String? = null,
+        val ua: String? = null,
+        val tzo: Int? = null,
+        val lng: String? = null,
+        val ce: Boolean? = null,
+        val je: Boolean? = null,
+        val ol: Boolean? = null,
+        val p: String? = null,
+        val dnt: Boolean? = null,
+        val tch: Boolean? = null,
+        val url: String? = null,
+        val ns: String? = null,
+        val jsl: List<String>? = null,
+        val jsv: String? = null,
+        val uid: String? = null,
+        val o: String? = null,
+        var rts: String? = null,
+        val metadata: NIDMetaData? = null,
+        val rid: String? = null,
+        val m: String? = null,
+        val level: String? = null,
+        val c: Boolean? = null,
+        val isWifi: Boolean? = null,
+        val isConnected: Boolean? = null,
+        val cp: String? = null
 ) : Comparable<NIDEventModel> {
-    fun getOwnJson(): String {
+
+    fun toJSONString(): String {
+        return toJSON().toString()
+    }
+
+    fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("type", this.type)
         this.apply {
-            tg?.let {
-                jsonObject.put("tg", JSONObject(it))
-            }
+            tg?.let { jsonObject.put("tg", JSONObject(it)) }
             attrs?.let { jsonObject.put("attrs", it) }
             tgs?.let { jsonObject.put("tgs", it) }
             touches?.let {
                 val array = JSONArray()
-                it.forEach { item ->
-                    array.put(JSONObject(item))
-                }
+                it.forEach { item -> array.put(item.toJSON()) }
                 jsonObject.put("touches", array)
             }
             m?.let { jsonObject.put("m", it) }
-            level?.let {jsonObject.put("level", it)}
+            level?.let { jsonObject.put("level", it) }
             key?.let { jsonObject.put("key", it) }
             v?.let { jsonObject.put("v", it) }
             hv?.let { jsonObject.put("hv", it) }
@@ -98,7 +135,7 @@ data class NIDEventModel(
             sw?.let { jsonObject.put("sw", it) }
             sh?.let { jsonObject.put("sh", it) }
             f?.let { jsonObject.put("f", it) }
-            rts?.let {jsonObject.put("rts", it)}
+            rts?.let { jsonObject.put("rts", it) }
             lsid?.let {
                 if (it == "null") {
                     jsonObject.put("lsid", null)
@@ -138,36 +175,85 @@ data class NIDEventModel(
                 }
             }
             uid?.let { jsonObject.put("uid", it) }
-            gyro?.let {
-                jsonObject.put("gyro", it.getJsonObject())
-            }
-            accel?.let {
-                jsonObject.put("accel", it.getJsonObject())
-            }
-            metadata?.let {
-                jsonObject.put("metadata", it)
-            }
+            gyro?.let { jsonObject.put("gyro", it.toJSON()) }
+            accel?.let { jsonObject.put("accel", it.toJSON()) }
+            metadata?.let { jsonObject.put("metadata", it) }
+            isWifi?.let { jsonObject.put("iswifi", it) }
+            isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
         }
 
-        return jsonObject.toString()
+        return jsonObject
     }
 
     override fun compareTo(other: NIDEventModel): Int {
         return ts.compareTo(other.ts)
     }
+
+    internal fun log() {
+        NIDLog.d(Constants.debugEventTag.displayName, "") {
+            var contextString: String? = ""
+            when (this.type) {
+                SET_USER_ID -> contextString = "uid=${this.uid}"
+                CREATE_SESSION -> contextString = "cid=${this.cid}, sh=${this.sh}, sw=${this.sw}"
+                APPLICATION_SUBMIT -> contextString = ""
+                TEXT_CHANGE -> contextString = "v=${this.v}, tg=${this.tg}"
+                "SET_CHECKPOINT" -> contextString = ""
+                "STATE_CHANGE" -> contextString = this.url ?: ""
+                KEY_UP -> contextString = "tg=${this.tg}"
+                KEY_DOWN -> contextString = "tg=${this.tg}"
+                INPUT -> contextString = "v=${this.v}, tg=${this.tg}"
+                FOCUS -> contextString = ""
+                BLUR -> contextString = ""
+                MOBILE_METADATA_ANDROID -> contextString = "meta=${this.metadata}"
+                "CLICK" -> contextString = ""
+                REGISTER_TARGET ->
+                        contextString =
+                                "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata}"
+                "DEREGISTER_TARGET" -> contextString = ""
+                TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg}"
+                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg}"
+                TOUCH_MOVE -> contextString = "xy=${this.touches} tg=${this.tg}"
+                CLOSE_SESSION -> contextString = ""
+                SET_VARIABLE -> contextString = this.v ?: ""
+                CUT -> contextString = ""
+                COPY -> contextString = ""
+                PASTE -> contextString = ""
+                WINDOW_RESIZE -> contextString = "h=${this.h}, w=${this.w}"
+                SELECT_CHANGE -> contextString = "tg=${this.tg}"
+                WINDOW_LOAD -> contextString = "meta=${this.metadata}"
+                WINDOW_UNLOAD -> contextString = "meta=${this.metadata}"
+                WINDOW_BLUR -> contextString = "meta=${this.metadata}"
+                WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
+                CONTEXT_MENU -> contextString = "meta=${this.metadata}"
+                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}"
+                LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
+                NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
+                else -> {}
+            }
+
+            "EVENT: ${this.type} - ${this.tgs} - $contextString"
+        }
+    }
 }
 
-data class NIDSensorModel(
-    val x: Float?,
-    val y: Float?,
-    val z: Float?
-) {
-    fun getJsonObject(): JSONObject {
+data class NIDSensorModel(val x: Float?, val y: Float?, val z: Float?) {
+    fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("x", x ?: JSONObject.NULL)
         jsonObject.put("y", y ?: JSONObject.NULL)
         jsonObject.put("z", z ?: JSONObject.NULL)
+
+        return jsonObject
+    }
+}
+
+data class NIDTouchModel(val tid: Float?, val x: Float?, val y: Float?) {
+    fun toJSON(): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("tid", tid ?: JSONObject.NULL)
+        jsonObject.put("x", x ?: JSONObject.NULL)
+        jsonObject.put("y", y ?: JSONObject.NULL)
 
         return jsonObject
     }

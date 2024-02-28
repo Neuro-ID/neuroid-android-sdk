@@ -5,25 +5,31 @@ import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
-import com.neuroid.tracker.events.identifyView
+import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDSensorModel
+import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.callbacks.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
@@ -35,14 +41,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
-class NeuroID private constructor(
-    internal var application: Application?, internal var clientKey: String
+class NeuroID
+private constructor(
+    internal var application: Application?,
+    internal var clientKey: String
 ) {
-    @Volatile
-    private var pauseCollectionJob: Job? = null
+    @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
+    private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     private var firstTime = true
     internal var sessionID = ""
@@ -50,6 +56,7 @@ class NeuroID private constructor(
     internal var userID = ""
     internal var registeredUserID = ""
     internal var timestamp: Long = 0L
+    internal val excludedTestIDList = arrayListOf<String>()
 
     internal var forceStart: Boolean = false
 
@@ -57,31 +64,44 @@ class NeuroID private constructor(
 
     internal var verifyIntegrationHealth: Boolean = false
     internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
-        mutableListOf<NIDEventModel>()
+            mutableListOf<NIDEventModel>()
 
     internal var isRN = false
 
-    internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
-    internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
-    internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
+    // Dependency Injections
+    internal var logger: NIDLogWrapper = NIDLogWrapper()
+    internal var dataStore: NIDDataStoreManager
+    internal var registrationIdentificationHelper: RegistrationIdentificationHelper
+    internal var nidActivityCallbacks: ActivityCallbacks
+    internal lateinit var nidJobServiceManager: NIDJobServiceManager
+
     internal var clipboardManager: ClipboardManager? = null
 
     internal var nidCallActivityListener: NIDCallActivityListener? = null
+    internal var lowMemory:Boolean = false
+    internal var isConnected = false
 
     init {
+        dataStore = NIDDataStoreManagerImp(logger)
+        registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
+        nidActivityCallbacks =
+                ActivityCallbacks(this, logger, registrationIdentificationHelper)
+
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
+
+            nidJobServiceManager =
+                    NIDJobServiceManager(this, dataStore,  getSendingService(endpoint, logger, it), logger)
         }
 
         if (!validateClientKey(clientKey)) {
-            NIDLog.e(msg = "Invalid Client Key")
+            logger.e(msg = "Invalid Client Key")
             clientKey = ""
         } else {
             if (clientKey.contains("_live_")) {
-                NIDServiceTracker.environment = "LIVE"
+                environment = "LIVE"
             } else {
-                NIDServiceTracker.environment = "TEST"
+                environment = "TEST"
             }
         }
         // set call activity listener
@@ -94,17 +114,13 @@ class NeuroID private constructor(
         if (firstTime) {
             firstTime = false
             application?.let {
-
-                initDataStoreCtx(it.applicationContext)
                 it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
                 NIDTimerActive.initTimer()
             }
         }
     }
 
-    data class Builder(
-        var application: Application? = null, var clientKey: String = ""
-    ) {
+    data class Builder(var application: Application? = null, var clientKey: String = "") {
         fun build() = NeuroID(application, clientKey)
     }
 
@@ -112,12 +128,30 @@ class NeuroID private constructor(
         var showLogs: Boolean = true
         var isSDKStarted = false
 
+        internal val GYRO_SAMPLE_INTERVAL = 200L
+        internal val captureGyroCadence = true
+
+        @get:Synchronized @set:Synchronized internal var screenName = ""
+
+        @get:Synchronized @set:Synchronized internal var screenActivityName = ""
+
+        @get:Synchronized @set:Synchronized internal var screenFragName = ""
+
+        internal var environment = ""
+        internal var siteID = ""
+        internal var rndmId = "mobile"
+        internal var firstScreenName = ""
+        internal var isConnected = false
+
+        internal var registeredViews: MutableSet<String> = mutableSetOf()
+
+        internal var endpoint = Constants.productionEndpoint.displayName
         private var singleton: NeuroID? = null
 
         @JvmStatic
         @Deprecated(
-            "setNeuroIdInstance has been renamed to setNeuroIDInstance",
-            ReplaceWith("NeuroID.setNeuroIDInstance()")
+                "setNeuroIdInstance has been renamed to setNeuroIDInstance",
+                ReplaceWith("NeuroID.setNeuroIDInstance()")
         )
         fun setNeuroIdInstance(neuroID: NeuroID) {
             this.setNeuroIDInstance(neuroID)
@@ -134,8 +168,8 @@ class NeuroID private constructor(
         fun getInstance(): NeuroID? = singleton
     }
 
-    internal fun setLoggerInstance(logger: NIDLogWrapper) {
-        NIDLog = logger
+    internal fun setLoggerInstance(newLogger: NIDLogWrapper) {
+        logger = newLogger
     }
 
     internal fun setDataStoreInstance(store: NIDDataStoreManager) {
@@ -148,18 +182,27 @@ class NeuroID private constructor(
 
     internal fun getClipboardManagerInstance(): ClipboardManager? {
         if (clipboardManager == null) {
-            return getApplicationContext()
-                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            return getApplicationContext()?.getSystemService(Context.CLIPBOARD_SERVICE) as
+                    ClipboardManager
         }
         return clipboardManager
     }
 
-    internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
+    internal fun setNIDActivityCallbackInstance(callback: ActivityCallbacks) {
         nidActivityCallbacks = callback
     }
 
     internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
         nidJobServiceManager = serviceManager
+    }
+
+    @VisibleForTesting
+    fun setTestURL(newEndpoint: String) {
+        endpoint = newEndpoint
+
+        application?.let {
+            nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
+        }
     }
 
     internal fun validateClientKey(clientKey: String): Boolean {
@@ -177,7 +220,7 @@ class NeuroID private constructor(
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
         if (!userId.matches(regex.toRegex())) {
-            NIDLog.e(msg = "Invalid UserID")
+            logger.e(msg = "Invalid UserID")
             return false
         }
 
@@ -185,17 +228,18 @@ class NeuroID private constructor(
     }
 
     fun setRegisteredUserID(registeredUserId: String): Boolean {
-        val validID = setGenericUserID(
-            SET_REGISTERED_USER_ID,
-            registeredUserId,
-        )
+        val validID =
+                setGenericUserID(
+                        SET_REGISTERED_USER_ID,
+                        registeredUserId,
+                )
 
         if (!validID) {
             return false
         }
 
         this.registeredUserID = registeredUserId
-        return true;
+        return true
     }
 
     fun setUserID(userID: String): Boolean {
@@ -203,127 +247,99 @@ class NeuroID private constructor(
     }
 
     private fun setUserID(userId: String, userGenerated: Boolean): Boolean {
-        val validID = setGenericUserID(
-            SET_USER_ID,
-            userId,
-            userGenerated
-        )
+        val validID = setGenericUserID(SET_USER_ID, userId, userGenerated)
 
         if (!validID) {
             return false
         }
 
         this.userID = userId
-        return true;
+        return true
     }
 
     internal fun setGenericUserID(
-        type: String,
-        genericUserId: String,
-        userGenerated: Boolean = true
+            type: String,
+            genericUserId: String,
+            userGenerated: Boolean = true
     ): Boolean {
         try {
             val validID = validateUserId(genericUserId)
             val originRes =
-                getOriginResult(
-                    genericUserId,
-                    validID = validID,
-                    userGenerated = userGenerated
-                )
+                    getOriginResult(genericUserId, validID = validID, userGenerated = userGenerated)
             sendOriginEvent(originRes)
 
             if (!validID) {
                 return false
             }
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
-                    )
-                }
-            }
-            val genericUserIdEvent = NIDEventModel(
-                type = type,
-                uid = genericUserId,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-            if (isSDKStarted) {
-                dataStore.saveEvent(
-                    genericUserIdEvent
+            if(isSDKStarted) {
+                captureEvent(
+                    type = type,
+                    uid = genericUserId
                 )
             } else {
-                dataStore.queueEvent(genericUserIdEvent)
+                captureEvent(
+                    queuedEvent = true,
+                    type = type,
+                    uid = genericUserId
+                )
             }
 
             return true
         } catch (exception: Exception) {
-            NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
-            return false;
+            logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
+            return false
         }
     }
 
-    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-    fun getUserId() = userID
+    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()")) fun getUserId() = userID
     fun getUserID() = userID
 
     fun getRegisteredUserID() = registeredUserID
 
     fun setScreenName(screen: String): Boolean {
-
         if (!isSDKStarted) {
-            NIDLog.e(msg = "NeuroID SDK is not started")
+            logger.e(msg = "NeuroID SDK is not started")
             return false
         }
 
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
+        screenName = screen.replace("\\s".toRegex(), "%20")
         createMobileMetadata()
 
         return true
     }
 
-    fun getScreenName(): String = NIDServiceTracker.screenName
+    fun getScreenName(): String = screenName
 
+    @Synchronized
     fun excludeViewByTestID(id: String) {
-        application?.let {
-            dataStore.addViewIdExclude(id)
+        if (excludedTestIDList.none { it == id }) {
+            excludedTestIDList.add(id)
         }
     }
 
     @Deprecated("setEnvironment is deprecated and no longer required")
     fun setEnvironment(environment: String) {
-        NIDLog.i(
-            msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED")
     }
 
     @Deprecated("setEnvironmentProduction is deprecated and no longer required")
     fun setEnvironmentProduction(prod: Boolean) {
-        NIDLog.i(
-            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED")
     }
 
-    fun getEnvironment(): String = NIDServiceTracker.environment
+    fun getEnvironment(): String = environment
 
     @Deprecated("getSiteId is deprecated and no longer required")
     fun setSiteId(siteId: String) {
-        NIDLog.i(
-            msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
-        )
-        NIDServiceTracker.siteId = siteId
+        logger.i(msg = "**** NOTE: setSiteId METHOD IS DEPRECATED")
+
+        siteID = siteId
     }
 
     @Deprecated("getSiteId is deprecated")
     internal fun getSiteId(): String {
-        NIDLog.i(
-            msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: getSiteId METHOD IS DEPRECATED")
         return ""
     }
 
@@ -350,118 +366,48 @@ class NeuroID private constructor(
         nidActivityCallbacks.forceStart(activity)
     }
 
-    internal fun getTabId(): String = NIDServiceTracker.rndmId
+    internal fun getTabId(): String = rndmId
 
     internal fun getFirstTS(): Long = timestamp
 
-    internal fun getJsonPayLoad(context: Context): String {
-        return dataStore.getJsonPayload(context)
-    }
-
-    internal fun resetJsonPayLoad() {
-        dataStore.resetJsonPayload()
-    }
-
-    internal fun captureEvent(eventName: String, tgs: String) {
-        application?.applicationContext?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = eventName,
-                    tgs = tgs,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                )
-            )
-        }
-    }
-
     @Deprecated("formSubmit is deprecated and no longer required")
     fun formSubmit() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: formSubmit METHOD IS DEPRECATED")
 
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData,
-
-                )
-        )
-
+        captureEvent(type = FORM_SUBMIT)
         saveIntegrationHealthEvents()
     }
 
     @Deprecated("formSubmitSuccess is deprecated and no longer required")
     fun formSubmitSuccess() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED")
 
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-        )
-
+        captureEvent(type = FORM_SUBMIT_SUCCESS)
         saveIntegrationHealthEvents()
     }
 
     @Deprecated("formSubmitFailure is deprecated and no longer required")
     fun formSubmitFailure() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
-        )
+        logger.i(msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED")
 
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-        )
-
+        captureEvent(type = FORM_SUBMIT_FAILURE)
         saveIntegrationHealthEvents()
     }
 
     open fun start(): Boolean {
         if (clientKey == "") {
-            NIDLog.e(
-                msg = "Missing Client Key - please call configure prior to calling start"
-            )
+            logger.e(msg = "Missing Client Key - please call configure prior to calling start")
             return false
         }
 
+        application?.let { nidJobServiceManager.startJob(it, clientKey) }
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
             startIntegrationHealthCheck()
             createSession()
             saveIntegrationHealthEvents()
-        }
-        application?.let {
-            nidJobServiceManager.startJob(it, clientKey)
         }
         dataStore.saveAndClearAllQueuedEvents()
 
@@ -477,11 +423,7 @@ class NeuroID private constructor(
 
     fun closeSession() {
         if (!isStopped()) {
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
-                )
-            )
+            captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
             stop()
         }
     }
@@ -496,80 +438,64 @@ class NeuroID private constructor(
     fun isStopped() = !isSDKStarted
 
     internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(
-            view,
-            activity.getGUID(),
-            NIDLogWrapper(),
-            dataStore,
-            true,
-            addListener
+        registrationIdentificationHelper.identifySingleView(
+                view,
+                activity.getGUID(),
+                true,
+                addListener
         )
     }
 
-    /**
-     * Provide public access to application context for other intenral NID functions
-     */
+    /** Provide public access to application context for other intenral NID functions */
     internal fun getApplicationContext(): Context? {
         return this.application?.applicationContext
     }
 
-    private suspend fun createSession() {
+    private fun createSession() {
         timestamp = System.currentTimeMillis()
         application?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
             val sharedDefaults = NIDSharedPrefsDefaults(it)
             sessionID = sharedDefaults.getNewSessionID()
             clientID = sharedDefaults.getClientId()
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = CREATE_SESSION,
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
-                )
+
+            captureEvent(
+                type = CREATE_SESSION,
+                f = clientKey,
+                sid = sessionID,
+                lsid = "null",
+                cid = clientID,
+                did = sharedDefaults.getDeviceId(),
+                iid = sharedDefaults.getIntermediateId(),
+                loc = sharedDefaults.getLocale(),
+                ua = sharedDefaults.getUserAgent(),
+                tzo = sharedDefaults.getTimeZone(),
+                lng = sharedDefaults.getLanguage(),
+                ce = true,
+                je = true,
+                ol = true,
+                p = sharedDefaults.getPlatform(),
+                jsl = listOf(),
+                dnt = false,
+                url = "",
+                ns = "nid",
+                jsv = NIDVersion.getSDKVersion(),
+                sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                metadata = metaData
             )
+
             createMobileMetadata()
         }
     }
 
     private fun createMobileMetadata() {
-        timestamp = System.currentTimeMillis()
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
-            dataStore.saveEvent(
-                NIDEventModel(
+            captureEvent(
                     type = MOBILE_METADATA_ANDROID,
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
                     sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
+                    metadata = metaData,
                     f = clientKey,
                     sid = sessionID,
                     lsid = "null",
@@ -589,8 +515,7 @@ class NeuroID private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
-                )
+                    attrs = listOf(mapOf("isRN" to isRN))
             )
         }
     }
@@ -609,17 +534,11 @@ class NeuroID private constructor(
     fun clearSessionVariables() {
         userID = ""
         registeredUserID = ""
-        this.getApplicationContext()?.let {
-            NIDSharedPrefsDefaults(it).setUserId("")
-            NIDSharedPrefsDefaults(it).setRegisteredUserId("")
-        }
     }
 
     fun startSession(sessionID: String? = null): SessionStartResult {
         if (clientKey == "") {
-            NIDLog.e(
-                msg = "Missing Client Key - please call configure prior to calling start"
-            )
+            logger.e(msg = "Missing Client Key - please call configure prior to calling start")
             return SessionStartResult(false, "")
         }
 
@@ -627,18 +546,15 @@ class NeuroID private constructor(
             stopSession()
         }
 
-        var finalSessionID = sessionID ?: generateUniqueHexId();
+        var finalSessionID = sessionID ?: generateUniqueHexId()
 
-        if (!setUserID(
-                finalSessionID,
-                sessionID != null
-            )
-        ) {
+        if (!setUserID(finalSessionID, sessionID != null)) {
             return SessionStartResult(false, "")
         }
 
+        resumeCollection()
+
         isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -662,59 +578,50 @@ class NeuroID private constructor(
 
     private fun sendOriginEvent(originResult: SessionIDOriginResult) {
         // sending these as individual items.
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionIdCode",
-                    v = originResult.originCode
-                )
-            )
+        captureEvent(
+            queuedEvent = !isSDKStarted,
+            type = SET_VARIABLE,
+            key = "sessionIdCode",
+            v = originResult.originCode
+        )
 
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionIdSource",
-                    v = originResult.origin
-                )
-            )
+        captureEvent(
+            queuedEvent = !isSDKStarted,
+            type = SET_VARIABLE,
+            key = "sessionIdSource",
+            v = originResult.origin
+        )
 
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionId",
-                    v = originResult.sessionID
-                )
-            )
+        captureEvent(
+            queuedEvent = !isSDKStarted,
+            type = SET_VARIABLE,
+            key = "sessionId",
+            v = originResult.sessionID
+        )
     }
 
     internal fun getOriginResult(
-        sessionID: String,
-        validID: Boolean,
-        userGenerated: Boolean
+            sessionID: String,
+            validID: Boolean,
+            userGenerated: Boolean
     ): SessionIDOriginResult {
-        var origin = if (userGenerated) {
-            NID_ORIGIN_CUSTOMER_SET
-        } else {
-            NID_ORIGIN_NID_SET
-        }
+        var origin =
+                if (userGenerated) {
+                    NID_ORIGIN_CUSTOMER_SET
+                } else {
+                    NID_ORIGIN_NID_SET
+                }
 
-        var originCode = if (validID) {
-            if (
-                userGenerated
-            ) {
-                NID_ORIGIN_CODE_CUSTOMER
-            } else {
-                NID_ORIGIN_CODE_NID
-            }
-        } else {
-            NID_ORIGIN_CODE_FAIL
-        }
+        var originCode =
+                if (validID) {
+                    if (userGenerated) {
+                        NID_ORIGIN_CODE_CUSTOMER
+                    } else {
+                        NID_ORIGIN_CODE_NID
+                    }
+                } else {
+                    NID_ORIGIN_CODE_FAIL
+                }
         return SessionIDOriginResult(origin, originCode, sessionID)
     }
 
@@ -722,26 +629,27 @@ class NeuroID private constructor(
     fun pauseCollection() {
         isSDKStarted = false
         if (pauseCollectionJob == null ||
-            pauseCollectionJob?.isCancelled == true ||
-            pauseCollectionJob?.isCompleted == true) {
-            pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-                nidJobServiceManager.stopJob()
-                saveIntegrationHealthEvents()
-            }
+                        pauseCollectionJob?.isCancelled == true ||
+                        pauseCollectionJob?.isCompleted == true
+        ) {
+            pauseCollectionJob =
+                    CoroutineScope(Dispatchers.IO).launch {
+                        nidJobServiceManager.sendEventsNow(true)
+                        nidJobServiceManager.stopJob()
+                        saveIntegrationHealthEvents()
+                    }
         }
     }
 
     @Synchronized
     fun resumeCollection() {
         if (pauseCollectionJob?.isCompleted == true ||
-            pauseCollectionJob?.isCancelled == true ||
-            pauseCollectionJob == null) {
+                        pauseCollectionJob?.isCancelled == true ||
+                        pauseCollectionJob == null
+        ) {
             resumeCollectionCompletion()
         } else {
-            pauseCollectionJob?.invokeOnCompletion {
-                resumeCollectionCompletion()
-            }
+            pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
         }
     }
 
@@ -757,14 +665,170 @@ class NeuroID private constructor(
     }
 
     fun stopSession(): Boolean {
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
-            )
-        )
+        captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
+
         pauseCollection()
         clearSessionVariables()
         nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
         return true
+    }
+
+    /*
+        Every Event Saved should run through this function
+        This function will verify that events should be saved to the datastore prior to making an event object
+        Additionally it will send all events in the queue if the type is a special type (see end of function)
+     */
+    internal fun captureEvent(
+            queuedEvent:Boolean = false,
+            type: String,
+            ts: Long = System.currentTimeMillis(),
+            attrs: List<Map<String, Any>>? = null,
+            tg: Map<String, Any>? = null,
+            tgs: String? = null,
+            touches: List<NIDTouchModel>? = null,
+            key: String? = null,
+            gyro: NIDSensorModel? = NIDSensorHelper.getGyroscopeInfo(),
+            accel: NIDSensorModel? = NIDSensorHelper.getAccelerometerInfo(),
+            v: String? = null,
+            hv: String? = null,
+            en: String? = null,
+            etn: String? = null,
+            ec: String? = null,
+            et: String? = null,
+            eid: String? = null,
+            ct: String? = null,
+            sm: Int? = null,
+            pd: Int? = null,
+            x: Float? = null,
+            y: Float? = null,
+            w: Int? = null,
+            h: Int? = null,
+            sw: Float? = null,
+            sh: Float? = null,
+            f: String? = null,
+            lsid: String? = null,
+            sid: String? = null,
+            siteId: String? = null,
+            cid: String? = null,
+            did: String? = null,
+            iid: String? = null,
+            loc: String? = null,
+            ua: String? = null,
+            tzo: Int? = null,
+            lng: String? = null,
+            ce: Boolean? = null,
+            je: Boolean? = null,
+            ol: Boolean? = null,
+            p: String? = null,
+            dnt: Boolean? = null,
+            tch: Boolean? = null,
+            url: String? = null,
+            ns: String? = null,
+            jsl: List<String>? = null,
+            jsv: String? = null,
+            uid: String? = null,
+            o: String? = null,
+            rts: String? = null,
+            metadata: NIDMetaData? = null,
+            rid: String? = null,
+            m: String? = null,
+            level: String? = null,
+            c: Boolean? = null,
+            isConnected: Boolean? = null
+    ) {
+        if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
+            return
+        }
+
+        if(excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
+            return
+        }
+
+        val fullBuffer = dataStore.isFullBuffer()
+        if(lowMemory || fullBuffer){
+            logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, $type dropped")
+            return
+        }
+
+        val event =
+                NIDEventModel(
+                        type,
+                        ts,
+                        attrs,
+                        tg,
+                        tgs,
+                        touches,
+                        key,
+                        gyro,
+                        accel,
+                        v,
+                        hv,
+                        en,
+                        etn,
+                        ec,
+                        et,
+                        eid,
+                        ct,
+                        sm,
+                        pd,
+                        x,
+                        y,
+                        w,
+                        h,
+                        sw,
+                        sh,
+                        f,
+                        lsid,
+                        sid,
+                        siteId,
+                        cid,
+                        did,
+                        iid,
+                        loc,
+                        ua,
+                        tzo,
+                        lng,
+                        ce,
+                        je,
+                        ol,
+                        p,
+                        dnt,
+                        tch,
+                        url,
+                        ns,
+                        jsl,
+                        jsv,
+                        uid,
+                        o,
+                        rts,
+                        metadata,
+                        rid,
+                        m,
+                        level,
+                        c,
+                        isConnected
+                )
+
+        if(queuedEvent) {
+            dataStore.queueEvent(event)
+        } else {
+            dataStore.saveEvent(event)
+        }
+
+        event.log()
+        captureIntegrationHealthEvent(event)
+
+        when (type) {
+            BLUR -> {
+                ioDispatcher.launch {
+                    nidJobServiceManager.sendEventsNow()
+                }
+            }
+            CLOSE_SESSION -> {
+                ioDispatcher.launch {
+                    nidJobServiceManager.sendEventsNow(true)
+                }
+            }
+        }
     }
 }

@@ -9,6 +9,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  buildAllFlavors:
+    name: Build All Flavors
+    runs-on: macos-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Build All Flavors ⚙️🛠
+        run: bash testBuildFlavors.sh
+
   build:
     name: Build AAR
     runs-on: macos-latest
