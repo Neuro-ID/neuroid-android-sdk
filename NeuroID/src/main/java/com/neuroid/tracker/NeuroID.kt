@@ -1,16 +1,11 @@
 package com.neuroid.tracker
 
-import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.IntentFilter
-import android.net.ConnectivityManager
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
@@ -22,9 +17,8 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
-import com.neuroid.tracker.callbacks.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -35,6 +29,7 @@ import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
@@ -105,7 +100,7 @@ private constructor(
             }
         }
         // set call activity listener
-        nidCallActivityListener = NIDCallActivityListener()
+        nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker() )
         this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
     }
 
