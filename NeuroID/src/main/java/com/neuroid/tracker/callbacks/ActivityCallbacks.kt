@@ -3,6 +3,7 @@ package com.neuroid.tracker.callbacks
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
@@ -44,7 +45,7 @@ class ActivityCallbacks(
         logger.d(msg = "onActivityCreated");
     }
 
-     override fun onActivityStarted(activity: Activity) {
+    override fun onActivityStarted(activity: Activity) {
         logger.d( msg="Activity - Created")
 
         val currentActivityName = activity::class.java.name
@@ -160,7 +161,7 @@ class ActivityCallbacks(
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
         // No Operation
-        logger.d( msg="Activity - Save Instance")
+        logger.d(msg="Activity - Save Instance")
     }
 
     override fun onActivityDestroyed(activity: Activity) {
@@ -168,7 +169,7 @@ class ActivityCallbacks(
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
-        logger.d( msg="Activity - Destroyed - Window Unload")
+        logger.d(msg="Activity - Destroyed - Window Unload")
         neuroID.captureEvent(
             type = WINDOW_UNLOAD,
             attrs = listOf(
@@ -179,5 +180,11 @@ class ActivityCallbacks(
                 )
             )
         )
+    }
+
+
+    @VisibleForTesting
+    internal fun setTestAuxOrientation(newValue:Int){
+        auxOrientation = newValue
     }
 }
