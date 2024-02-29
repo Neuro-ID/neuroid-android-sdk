@@ -6,6 +6,9 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
@@ -25,6 +28,7 @@ import org.junit.runners.MethodSorters
 @ExperimentalCoroutinesApi
 class TextUnitTest {
     val server = MockWebServer()
+    var uiDevice: UiDevice? = null
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -37,6 +41,15 @@ class TextUnitTest {
     @ExperimentalCoroutinesApi
     @Before
     fun stopSendEventsToServer() = runTest {
+        uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        // Grant permission using UIAutomator
+        val allowButton = uiDevice?.findObject(UiSelector().text("Allow"))
+        if (allowButton != null) {
+            if (allowButton.exists()) {
+                allowButton.click()
+            }
+        }
         server.start()
         val url = server.url("/c/").toString()
         server.enqueue(MockResponse().setBody("").setResponseCode(200))
