@@ -91,15 +91,14 @@ class NIDCallActivityListenerTests {
         unmockkAll()
     }
 
+    // Mocking Callback
     fun mockCallBack(callState: Int, listener: NIDCallActivityListener) {
         when (callState) {
             CallInProgress.INACTIVE.state -> {
-                // Mocking saveCallInProgressEvent(0)
                 listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
             }
 
             CallInProgress.ACTIVE.state -> {
-                // Mocking saveCallInProgressEvent(2)
                 listener.saveCallInProgressEvent(CallInProgress.ACTIVE.state)
             }
         }
