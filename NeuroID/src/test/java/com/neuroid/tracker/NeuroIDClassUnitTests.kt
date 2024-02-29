@@ -18,6 +18,7 @@ import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
 import kotlinx.coroutines.Job
@@ -225,6 +226,22 @@ open class NeuroIDClassUnitTests {
     //    setDataStoreInstance - Used for mocking
     //    setNIDActivityCallbackInstance - Used for mocking
     //    setNIDJobServiceManager - Used for mocking
+
+    //   setTestURL
+    @Test
+    fun testSetTestURL() {
+        NeuroID.getInstance()?.setTestURL("myTests")
+
+        assertEquals(true, NeuroID.endpoint == "myTests")
+    }
+
+    //   setTestingNeuroIDDevURL
+    @Test
+    fun testSetTestingNeuroIDDevURL() {
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+
+        assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
+    }
 
     //    validateClientKey
     @Test

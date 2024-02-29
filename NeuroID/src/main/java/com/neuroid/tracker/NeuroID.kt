@@ -200,6 +200,15 @@ private constructor(
         }
     }
 
+    @VisibleForTesting
+    fun setTestingNeuroIDDevURL() {
+        endpoint = Constants.devEndpoint.displayName
+
+        application?.let {
+            nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
+        }
+    }
+
     internal fun validateClientKey(clientKey: String): Boolean {
         var valid = false
         val regex = "key_(live|test)_[A-Za-z0-9]+"
