@@ -1,18 +1,15 @@
 package com.sample.neuroid.us
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.neuroid.tracker.events.ANDROID_URI
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDResponseCallBack
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDEventSender
+import com.neuroid.tracker.service.getSendingService
+import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
 import org.everit.json.schema.loader.SchemaLoader
-import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -48,7 +45,7 @@ class NIDSchema {
     }
 
     suspend fun validateSchema(
-        eventList: Set<String>,
+        eventList: List<NIDEventModel>,
     ) {
         val json =
             getJsonData(
@@ -57,22 +54,24 @@ class NIDSchema {
             )
         validateSchema(json)
 
-        val application = ApplicationProvider.getApplicationContext<Application>()
-        NIDServiceTracker.sendEventToServer(
-           NIDJobServiceManager.getServiceAPI(),
-            "key_live_suj4CX90v0un2k1ufGrbItT5",
-            application,
-            eventList,
-            object: NIDResponseCallBack {
-                override fun onSuccess(code: Int) {
-                    assertEquals(json, 200, code)
-                }
-
-                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
-                    assert(false)
-                }
-            }
-        )
+        // Commenting out because tests shouldn't send traffic to prod. Will put back in once dev url is available
+//        val application = ApplicationProvider.getApplicationContext<Application>()
+//        getSendingService(
+//            "", // PUT ENDPOINT WE WANT TO USE (AKA Dev)
+//            NIDLogWrapper(),
+//            application
+//        ).sendTrackerData(
+//            key = "key_live_suj4CX90v0un2k1ufGrbItT5",
+//            eventList,
+//            object: NIDResponseCallBack {
+//                override fun onSuccess(code: Int) {
+//                    assertEquals(json, 200, code)
+//                }
+//                override fun onFailure(code: Int, message: String, isRetry: Boolean) {
+//                    assert(false)
+//                }
+//            }
+//        )
     }
 
     private fun validateSchema(json: String) {
@@ -151,23 +150,7 @@ class NIDSchema {
     private fun getInputStreamFromResource(fileName: String) =
         javaClass.classLoader?.getResourceAsStream(fileName)
 
-    private suspend fun getJsonData(context: Context, listEvents: Set<String>): String {
-        val listJson = listEvents.map {
-            if (it.contains("\"CREATE_SESSION\"")) {
-                JSONObject(
-                    it.replace(
-                        "\"url\":\"\"",
-                        "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
-                    )
-                )
-            } else {
-                JSONObject(it)
-            }
-        }
-
-        val jsonListEvents = JSONArray(listJson)
-
-        return NIDServiceTracker.getContentJson(context, jsonListEvents)
-            .replace("\\/", "/")
+    private fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
+        return getSendingService("", NIDLogWrapper(), context).getRequestPayloadJSON(listEvents)
     }
 }
