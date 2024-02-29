@@ -63,7 +63,9 @@ class NeuroIdUITest {
         uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         // Grant permission using UIAutomator
-        val allowButton = uiDevice?.findObject(UiSelector().text("Allow"))
+        val allowButton = uiDevice?.findObject(UiSelector().text("ALLOW")) ?: uiDevice?.findObject(
+            UiSelector().text("Allow")
+        )
         if (allowButton != null) {
             if (allowButton.exists()) {
                 allowButton.click()
