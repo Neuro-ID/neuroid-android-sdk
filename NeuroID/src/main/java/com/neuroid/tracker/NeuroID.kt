@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -19,6 +21,7 @@ import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -99,6 +102,21 @@ private constructor(
                 environment = "TEST"
             }
         }
+
+        // register network listener here. >=API24 will not receive if registered
+        // in the manifest so we do it here for full compatibility
+        application?.let {
+            val connectivityManager =
+                it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            application?.registerReceiver(
+                NIDNetworkListener(
+                    connectivityManager,
+                    dataStore, this
+                ),
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+
         // set call activity listener
         nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker() )
         this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
