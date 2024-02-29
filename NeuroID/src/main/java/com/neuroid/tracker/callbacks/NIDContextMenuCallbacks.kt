@@ -3,17 +3,15 @@ package com.neuroid.tracker.callbacks
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.COPY
 import com.neuroid.tracker.events.CUT
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
-import org.json.JSONArray
-import org.json.JSONObject
 
 abstract class NIDContextMenuCallBacks(
+    val neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
 ) : ActionMode.Callback {
     val wrapper = actionCallBack
@@ -31,12 +29,35 @@ abstract class NIDContextMenuCallBacks(
     override fun onDestroyActionMode(actionMode: ActionMode?) {
         wrapper?.onDestroyActionMode(actionMode)
     }
+
+    internal fun saveEvent(option: Int, item: String) {
+        val type = when (option) {
+            android.R.id.paste -> PASTE
+            android.R.id.copy -> COPY
+            android.R.id.cut -> CUT
+            else -> ""
+        }
+
+        if (type.isNotEmpty()) {
+            neuroID.captureEvent(
+                type = CONTEXT_MENU,
+                attrs = listOf(
+                    mapOf(
+                        "option" to "$option",
+                        "item" to item,
+                        "type" to type
+                    )
+                )
+            )
+        }
+    }
 }
 
 // This is the callback for the context menu that appears when text is already in field
 class NIDTextContextMenuCallbacks(
+    neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
-) : NIDContextMenuCallBacks(actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
 
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
@@ -52,8 +73,9 @@ class NIDTextContextMenuCallbacks(
 
 // This is the callback for the context menu that appears when the text field is empty (only available in later API versions)
 class NIDLongPressContextMenuCallbacks(
+    neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?
-) : NIDContextMenuCallBacks(actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
 
@@ -66,33 +88,3 @@ class NIDLongPressContextMenuCallbacks(
     }
 }
 
-private fun saveEvent(option: Int, item: String) {
-    val gyroData = NIDSensorHelper.getGyroscopeInfo()
-    val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-    val type = when (option) {
-        android.R.id.paste -> PASTE
-        android.R.id.copy -> COPY
-        android.R.id.cut -> CUT
-        else -> ""
-    }
-
-    val metadataObj = JSONObject()
-    metadataObj.put("option", "$option")
-    metadataObj.put("item", "$item")
-    metadataObj.put("type", "$type")
-    val attrJSON = JSONArray().put(metadataObj)
-
-    if (type.isNotEmpty()) {
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = CONTEXT_MENU,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData,
-                    attrs = attrJSON
-                )
-            )
-    }
-}

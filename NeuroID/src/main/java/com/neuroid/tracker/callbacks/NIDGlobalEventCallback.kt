@@ -14,21 +14,21 @@ import android.view.SearchEvent
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getSHA256withSalt
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.storage.getDataStoreInstance
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
-import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import java.util.*
 
 class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
-    private val eventManager: NIDTouchEventManager,
-    private val viewMainContainer: View
+    private val eventManager: TouchEventManager,
+    private val viewMainContainer: View,
+    internal val neuroID: NeuroID,
+    internal val logger:NIDLogWrapper,
+    internal val singleTargetListenerRegister:SingleTargetListenerRegister
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
     ViewTreeObserver.OnGlobalLayoutListener, Window.Callback {
 
@@ -71,47 +71,28 @@ class NIDGlobalEventCallback(
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            getDataStoreInstance()
-                .saveEvent(
-                    NIDEventModel(
-                        type = WINDOW_RESIZE,
-                        w = currentWidth,
-                        h = currentHeight,
-                        ts = System.currentTimeMillis(),
-                        gyro = gyroData,
-                        accel = accelData
-                    )
-                )
+            neuroID.captureEvent(
+                type = WINDOW_RESIZE,
+                w = currentWidth,
+                h = currentHeight
+            )
         }
     }
 
     private fun registerTextChangeEvent(actualText: String) {
-        val ts = System.currentTimeMillis()
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = TEXT_CHANGE,
-                    tg = hashMapOf(
-                        "attr" to getAttrJson(actualText),
-                        "etn" to lastEditText?.getIdOrTag().orEmpty(),
-                        "et" to "text"
-                    ),
-                    tgs = lastEditText?.getIdOrTag().orEmpty(),
-                    ts = ts,
-                    sm = 0,
-                    pd = 0,
-                    v = "S~C~~${actualText.length}",
-                    hv = actualText.getSHA256withSalt().take(8),
-                    gyro = gyroData,
-                    accel = accelData
-                )
-            )
+        neuroID.captureEvent(
+            type = TEXT_CHANGE,
+            tg = hashMapOf(
+                "attr" to getAttrJson(actualText),
+                "etn" to lastEditText?.getIdOrTag().orEmpty(),
+                "et" to "text"
+            ),
+            tgs = lastEditText?.getIdOrTag().orEmpty(),
+            sm = 0,
+            pd = 0,
+            v = "S~C~~${actualText.length}",
+            hv = actualText.getSHA256withSalt().take(8)
+        )
     }
 
     //WindowCallback
@@ -124,7 +105,7 @@ class NIDGlobalEventCallback(
     }
 
     override fun dispatchTouchEvent(motionEvent: MotionEvent?): Boolean {
-        val view = eventManager.detectView(motionEvent, System.currentTimeMillis())
+        eventManager.detectView(motionEvent, System.currentTimeMillis())
         // REMOVING TEXT_CHANGE EVENT for right now
 //        lastEditText?.let {
 //            if (lastEditText != view) {
@@ -215,7 +196,7 @@ class NIDGlobalEventCallback(
 //
 //
 //
-//        NIDLog.d(
+//        logger.d(
 //            "** ACTION MODE START ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
 //        )
         return windowCallback.onActionModeStarted(p0)
@@ -226,50 +207,47 @@ class NIDGlobalEventCallback(
 //        val item = menu?.getItem(0)
 //
 //
-//        NIDLog.d(
+//        logger.d(
 //            "** ACTION MODE FINISH ${p0.toString()} - ${p0?.title} - ${menu?.size()} - ${item} - ${item?.itemId} - ${p0?.subtitle} - ${p0?.tag}"
 //        )
         return windowCallback.onActionModeFinished(p0)
     }
 
-}
 
-private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
-    val ts = System.currentTimeMillis()
-    val gyroData = NIDSensorHelper.getGyroscopeInfo()
-    val accelData = NIDSensorHelper.getAccelerometerInfo()
-    val idName = view.getIdOrTag()
-    val simpleJavaClassName = view.javaClass.simpleName
+    // Helper Functions
+    private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
+        val idName = view.getIdOrTag()
+        val simpleJavaClassName = view.javaClass.simpleName
 
-    val text = view.text.toString()
+        val text = view.text.toString()
 
-    // do a check to see if we have registered this Field yet
-    if (!NIDServiceTracker.registeredViews.contains(idName)) {
-        NIDLog.d(
-            msg="Late registration: registeringView $simpleJavaClassName"
-        )
-        val hashCodeAct = view.javaClass.name.hashCode();
-        val guid =
-            UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
-        registerComponent(view, guid, NIDLogWrapper(), getDataStoreInstance(), "targetInteractionEvent")
-        NIDServiceTracker.registeredViews.add(idName);
-    } else {
-        NIDLog.d(
-            msg="view already registered: registeringView $simpleJavaClassName tag: $idName"
+        // do a check to see if we have registered this Field yet
+        if (!NeuroID.registeredViews.contains(idName)) {
+            logger.d(
+                msg="Late registration: registeringView $simpleJavaClassName"
+            )
+            val hashCodeAct = view.javaClass.name.hashCode();
+            val guid =
+                UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
+
+            singleTargetListenerRegister.registerComponent(
+                view,
+                guid,
+                "targetInteractionEvent"
+            )
+            NeuroID.registeredViews.add(idName);
+        } else {
+            logger.d(
+                msg="view already registered: registeringView $simpleJavaClassName tag: $idName"
+            )
+        }
+
+        neuroID.captureEvent(
+            type = type,
+            tg = hashMapOf(
+                "attr" to getAttrJson(text),
+            ),
+            tgs = idName
         )
     }
-
-    getDataStoreInstance()
-        .saveEvent(
-            NIDEventModel(
-                type = type,
-                tg = hashMapOf(
-                    "attr" to getAttrJson(text),
-                ),
-                ts = ts,
-                tgs = idName,
-                gyro = gyroData,
-                accel = accelData
-            )
-        )
 }

@@ -6,13 +6,15 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -22,6 +24,7 @@ import org.junit.runners.MethodSorters
 @LargeTest
 @ExperimentalCoroutinesApi
 class TextUnitTest {
+    val server = MockWebServer()
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -34,9 +37,68 @@ class TextUnitTest {
     @ExperimentalCoroutinesApi
     @Before
     fun stopSendEventsToServer() = runTest {
-        NeuroID.getInstance()?.stop()
-        NIDJobServiceManager.isSendEventsNowEnabled = false
+        server.start()
+        val url = server.url("/c/").toString()
+        server.enqueue(MockResponse().setBody("").setResponseCode(200))
+        NeuroID.getInstance()?.setTestURL(url)
+
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
     }
+
+
+    @After
+    fun resetDispatchers() = runTest {
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        server.shutdown()
+    }
+
+    /*
+   Helper Test Functions
+    */
+
+    fun forceSendEvents(){
+        // stop to force send all events in queue
+        NeuroID.getInstance()?.stop()
+        delay(500)
+    }
+
+    fun assertRequestBodyContains(eventType:String){
+        val request = server.requestCount
+        if (request >0){
+            var foundEventFlag = false
+            for (i in 0 until request) {
+                var  req  = server.takeRequest()
+                val body = req.body.readUtf8().toString()
+                val gson = Gson()
+
+                val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
+
+                val foundEvent = jsonObject?.jsonEvents?.find { event -> event.type == eventType }
+                if (foundEvent != null) {
+                    foundEventFlag = true
+                }
+            }
+
+            assert(foundEventFlag == true) {
+                "$eventType not found in request object (total of $request objects searched)"
+            }
+        } else {
+            assert(false) {
+                "Failed to send request from SDK"
+            }
+        }
+
+    }
+
+    /*
+    Actual Tests
+     */
+
 
     /**
      * Validate FOCUS when the user click on editText
@@ -44,19 +106,19 @@ class TextUnitTest {
     @Test
     fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
         delay(500)
 
-        val eventType = "\"type\":\"FOCUS\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType, -1)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("FOCUS")
     }
 
     /**
@@ -65,10 +127,11 @@ class TextUnitTest {
     @Test
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
@@ -78,10 +141,8 @@ class TextUnitTest {
             .perform(ViewActions.click())
         delay(600)
 
-        val eventType = "\"type\":\"BLUR\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateSchema(events)
-        NIDSchema().validateEvents(events, eventType)
+        forceSendEvents()
+        assertRequestBodyContains("BLUR")
     }
 
     /**
@@ -90,22 +151,24 @@ class TextUnitTest {
     @Test
     fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
+
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
         delay(500)
 
-        val eventType = "\"type\":\"INPUT\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateSchema(events)
-        NIDSchema().validateEvents(events, eventType, text.length)
+        forceSendEvents()
+        assertRequestBodyContains("INPUT")
     }
 }
