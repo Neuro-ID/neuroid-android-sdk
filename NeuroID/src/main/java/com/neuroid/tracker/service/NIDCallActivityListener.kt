@@ -44,7 +44,7 @@ class NIDCallActivityListener(
             context.registerReceiver(this, intentFilter)
         } else {
             NIDLog.d(msg = "Permission to listen to call status not found")
-            saveCallInProgressEvent(9)
+            saveCallInProgressEvent(CallInProgress.UNAUTHORIZED.state)
         }
     }
 
