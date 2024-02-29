@@ -57,7 +57,7 @@ const val TOGGLE_BUTTON_CHANGE = "TOGGLE_BUTTON_CHANGE"
 const val RATING_BAR_CHANGE = "RATING_BAR_CHANGE"
 const val CONTEXT_MENU = "CONTEXT_MENU"
 const val ADVANCED_DEVICE_REQUEST = "ADVANCED_DEVICE_REQUEST"
-const val ANDROID_URI ="android://"
+const val ANDROID_URI = "android://"
 const val SET_VARIABLE = "SET_VARIABLE"
 const val CALL_IN_PROGRESS = "CALL_IN_PROGRESS"
 const val NETWORK_STATE = "NETWORK_STATE"
@@ -73,7 +73,8 @@ const val NID_ORIGIN_CODE_FAIL = "400"
 const val NID_ORIGIN_CODE_NID = "200"
 const val NID_ORIGIN_CODE_CUSTOMER = "201"
 
-enum class CallInProgress(val event: String, val state: Int ){
+// Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
+enum class CallInProgress(val event: String, val state: Int) {
     ACTIVE("true", 2),
     INACTIVE("false", 0),
     UNAUTHORIZED("unauthorized", 9)
