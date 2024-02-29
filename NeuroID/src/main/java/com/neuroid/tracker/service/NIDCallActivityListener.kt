@@ -56,35 +56,35 @@ class NIDCallActivityListener(
 
     fun saveCallInProgressEvent(state: Int) {
         when (state) {
-            0 -> {
+            CallInProgress.INACTIVE.state -> {
                 NIDLog.d(msg = "Call inactive")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.INACTIVE.state,
+                        cp = CallInProgress.INACTIVE.event,
                         ts = Calendar.getInstance().timeInMillis,
                     )
                 )
             }
 
-            2 -> {
+            CallInProgress.ACTIVE.state -> {
                 NIDLog.d(msg = "Call in progress")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.ACTIVE.state,
+                        cp = CallInProgress.ACTIVE.event,
                         ts = Calendar.getInstance().timeInMillis,
                     )
                 )
 
             }
 
-            9 -> {
+            CallInProgress.UNAUTHORIZED.state -> {
                 NIDLog.d(msg = "Call status not authorized")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.UNAUTHORIZED.state,
+                        cp = CallInProgress.UNAUTHORIZED.event,
                         ts = Calendar.getInstance().timeInMillis,
                     )
                 )
@@ -96,15 +96,16 @@ class NIDCallActivityListener(
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (versionChecker.isBuildVersionGreaterThan31()) {
             NIDLog.d(msg = "SDK > 31")
-            telephony.registerTelephonyCallback(context.mainExecutor,
+            telephony.registerTelephonyCallback(
+                context.mainExecutor,
                 CustomTelephonyCallback { state ->
                     when (state) {
-                        0 -> {
-                            saveCallInProgressEvent(0)
+                        CallInProgress.INACTIVE.state -> {
+                            saveCallInProgressEvent(CallInProgress.INACTIVE.state)
                         }
 
-                        2 -> {
-                            saveCallInProgressEvent(2)
+                        CallInProgress.ACTIVE.state -> {
+                            saveCallInProgressEvent(CallInProgress.ACTIVE.state)
                         }
                     }
                 })
@@ -114,12 +115,12 @@ class NIDCallActivityListener(
                 override fun onCallStateChanged(state: Int, phoneNumber: String?) {
                     when (state) {
                         TelephonyManager.CALL_STATE_IDLE -> {
-                            saveCallInProgressEvent(0)
+                            saveCallInProgressEvent(CallInProgress.INACTIVE.state)
                         }
 
                         // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                         TelephonyManager.CALL_STATE_OFFHOOK -> {
-                            saveCallInProgressEvent(2)
+                            saveCallInProgressEvent(CallInProgress.ACTIVE.state)
 
                         }
                     }

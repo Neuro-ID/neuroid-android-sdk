@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
+import com.neuroid.tracker.events.CallInProgress
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.CallBack
 import com.neuroid.tracker.service.NIDCallActivityListener
@@ -24,22 +25,30 @@ class NIDCallActivityListenerTests {
 
     @Test
     fun test_callActivityListener_call_in_progress_sdk_greater_than_31() {
-        callActivityListenerHarness(2, "true", true)
+        callActivityListenerHarness(CallInProgress.ACTIVE.state, CallInProgress.ACTIVE.event, true)
     }
 
     @Test
     fun test_callActivityListener_call_inactive_sdk_greater_than_31() {
-        callActivityListenerHarness(0, "false", true)
+        callActivityListenerHarness(
+            CallInProgress.INACTIVE.state,
+            CallInProgress.INACTIVE.event,
+            true
+        )
     }
 
     @Test
     fun test_callActivityListener_call_in_progress_sdk_lesser_than_31() {
-        callActivityListenerHarness(2, "true", false)
+        callActivityListenerHarness(CallInProgress.ACTIVE.state, CallInProgress.ACTIVE.event, false)
     }
 
     @Test
     fun test_callActivityListener_call_inactive_sdk_lesser_than_31() {
-        callActivityListenerHarness(0, "false", false)
+        callActivityListenerHarness(
+            CallInProgress.INACTIVE.state,
+            CallInProgress.INACTIVE.event,
+            false
+        )
     }
 
     fun callActivityListenerHarness(callState: Int, isActive: String, sdkGreaterThan31: Boolean) {
@@ -75,9 +84,7 @@ class NIDCallActivityListenerTests {
         listener.onReceive(context, intent)
 
         val callActivityEvent = NIDEventModel(
-            type = CALL_IN_PROGRESS,
-            cp = isActive,
-            ts = Calendar.getInstance().timeInMillis
+            type = CALL_IN_PROGRESS, cp = isActive, ts = Calendar.getInstance().timeInMillis
         )
 
         verify { dataStoreManager.saveEvent((callActivityEvent)) }
@@ -86,14 +93,14 @@ class NIDCallActivityListenerTests {
 
     fun mockCallBack(callState: Int, listener: NIDCallActivityListener) {
         when (callState) {
-            0 -> {
+            CallInProgress.INACTIVE.state -> {
                 // Mocking saveCallInProgressEvent(0)
-                listener.saveCallInProgressEvent(0)
+                listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
             }
 
-            2 -> {
+            CallInProgress.ACTIVE.state -> {
                 // Mocking saveCallInProgressEvent(2)
-                listener.saveCallInProgressEvent(2)
+                listener.saveCallInProgressEvent(CallInProgress.ACTIVE.state)
             }
         }
     }
