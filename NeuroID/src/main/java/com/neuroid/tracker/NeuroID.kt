@@ -585,11 +585,9 @@ private constructor(
             saveIntegrationHealthEvents()
         }
 
-        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
-
-        resumeCollection()
-
         dataStore.saveAndClearAllQueuedEvents()
+
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
 
         // we need to set finalSessionID with the set random user id
         // if a sessionID was not passed in
