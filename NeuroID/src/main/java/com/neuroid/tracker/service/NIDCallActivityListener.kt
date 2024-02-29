@@ -21,8 +21,7 @@ import com.neuroid.tracker.utils.VersionChecker
 import java.util.Calendar
 
 class NIDCallActivityListener(
-    private val dataStoreManager: NIDDataStoreManager,
-    private val versionChecker: VersionChecker
+    private val dataStoreManager: NIDDataStoreManager, private val versionChecker: VersionChecker
 ) : BroadcastReceiver() {
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
@@ -97,8 +96,8 @@ class NIDCallActivityListener(
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (versionChecker.isBuildVersionGreaterThan31()) {
             NIDLog.d(msg = "SDK > 31")
-            telephony.registerTelephonyCallback(
-                context.mainExecutor, CustomTelephonyCallback { state ->
+            telephony.registerTelephonyCallback(context.mainExecutor,
+                CustomTelephonyCallback { state ->
                     when (state) {
                         0 -> {
                             saveCallInProgressEvent(0)
@@ -108,8 +107,7 @@ class NIDCallActivityListener(
                             saveCallInProgressEvent(2)
                         }
                     }
-                }
-            )
+                })
         } else {
             NIDLog.d(msg = "SDK < 31")
             telephony.listen(object : PhoneStateListener() {
