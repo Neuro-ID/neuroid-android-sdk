@@ -20,8 +20,10 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.VersionChecker
 import java.util.Calendar
 
-class NIDCallActivityListener(private val dataStoreManager: NIDDataStoreManager, private val versionChecker: VersionChecker) :
-    BroadcastReceiver() {
+class NIDCallActivityListener(
+    private val dataStoreManager: NIDDataStoreManager,
+    private val versionChecker: VersionChecker
+) : BroadcastReceiver() {
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private val isReceiverRegistered = false
@@ -56,6 +58,7 @@ class NIDCallActivityListener(private val dataStoreManager: NIDDataStoreManager,
     fun saveCallInProgressEvent(state: Int) {
         when (state) {
             0 -> {
+                NIDLog.d(msg = "Call inactive")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
@@ -66,6 +69,7 @@ class NIDCallActivityListener(private val dataStoreManager: NIDDataStoreManager,
             }
 
             2 -> {
+                NIDLog.d(msg = "Call in progress")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
@@ -77,6 +81,7 @@ class NIDCallActivityListener(private val dataStoreManager: NIDDataStoreManager,
             }
 
             9 -> {
+                NIDLog.d(msg = "Call status not authorized")
                 dataStoreManager.saveEvent(
                     NIDEventModel(
                         type = CALL_IN_PROGRESS,
@@ -118,7 +123,6 @@ class NIDCallActivityListener(private val dataStoreManager: NIDDataStoreManager,
 
                         // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                         TelephonyManager.CALL_STATE_OFFHOOK -> {
-                            NIDLog.d(msg = "Call in progress")
                             saveCallInProgressEvent(2)
 
                         }
@@ -146,7 +150,7 @@ internal class CustomTelephonyCallback(callBack: CallBack) : TelephonyCallback()
     }
 }
 
-internal interface CallBack {
+internal fun interface CallBack {
     fun callStateChanged(state: Int)
 }
 
