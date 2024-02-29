@@ -43,6 +43,10 @@ internal class NIDDataStoreManagerImp(
     // Queue events that are set before sdk is started
     @Synchronized
     override fun queueEvent(tempEvent: NIDEventModel) {
+        if (isFullBuffer()) {
+            logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, ${tempEvent.type} dropped")
+            return
+        }
         val event = tempEvent.copy(
             ts = System.currentTimeMillis(),
             gyro = NIDSensorHelper.getGyroscopeInfo(),
@@ -138,7 +142,7 @@ internal class NIDDataStoreManagerImp(
 
         if (lastEventType == FULL_BUFFER) {
             return true
-        } else if (eventsList.size > EVENT_BUFFER_MAX_COUNT) {
+        } else if (eventsList.size + queuedEvents.size > EVENT_BUFFER_MAX_COUNT) {
             // add a full buffer event and drop the new event
             saveEvent(
                 NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis())
