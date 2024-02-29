@@ -98,19 +98,17 @@ class NIDCallActivityListener(
         if (versionChecker.isBuildVersionGreaterThan31()) {
             NIDLog.d(msg = "SDK > 31")
             telephony.registerTelephonyCallback(
-                context.mainExecutor, CustomTelephonyCallback(object : CallBack {
-                    override fun callStateChanged(state: Int) {
-                        when (state) {
-                            0 -> {
-                                saveCallInProgressEvent(0)
-                            }
+                context.mainExecutor, CustomTelephonyCallback { state ->
+                    when (state) {
+                        0 -> {
+                            saveCallInProgressEvent(0)
+                        }
 
-                            2 -> {
-                                saveCallInProgressEvent(2)
-                            }
+                        2 -> {
+                            saveCallInProgressEvent(2)
                         }
                     }
-                })
+                }
             )
         } else {
             NIDLog.d(msg = "SDK < 31")
