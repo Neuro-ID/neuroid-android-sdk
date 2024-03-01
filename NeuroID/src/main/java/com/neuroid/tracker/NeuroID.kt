@@ -502,6 +502,8 @@ private constructor(
     private fun createMobileMetadata() {
         application?.let {
             val sharedDefaults = NIDSharedPrefsDefaults(it)
+            // get updated GPS location if possible
+            metaData?.getLocation(it)
             captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
