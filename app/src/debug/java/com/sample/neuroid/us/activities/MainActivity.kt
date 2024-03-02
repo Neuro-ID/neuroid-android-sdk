@@ -9,14 +9,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import com.sample.neuroid.us.databinding.NidActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: NidActivityMainBinding
-
-    val LOCATION_REQUEST_CODE = 1000
+    private val REQUEST_CODE = 1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +47,20 @@ class MainActivity : AppCompatActivity() {
                 NeuroID.getInstance()?.closeSession()
             }
         }
+
+        val permissions = mutableListOf<String>()
+
         if (!isLocationPermissionGiven()) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_REQUEST_CODE)
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (!isCallActivityPermissionGiven()){
+            permissions.add(Manifest.permission.READ_PHONE_STATE)
+        }
+
+        if (permissions.isNotEmpty()) {
+            requestPermissions(permissions.toTypedArray(), REQUEST_CODE)
         }
     }
 
@@ -61,6 +72,10 @@ class MainActivity : AppCompatActivity() {
         return coarse && fine
     }
 
+    private fun isCallActivityPermissionGiven(): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -69,9 +84,25 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode) {
-            LOCATION_REQUEST_CODE -> {
-                Log.d("main_activity", "location grantResults ${grantResults[0]} ${grantResults[1]}")
+            REQUEST_CODE -> {
+                if (isLocationPermissionGiven()) {
+                    Log.d(
+                        "main_activity",
+                        "location grantResults ok"
+                    )
+                } else {
+                    Log.d(
+                        "main_activity",
+                        "location grantResults denied"
+                    )
+                }
+                if (isCallActivityPermissionGiven()) {
+                    NIDLog.d(msg = "call activity permission granted")
+                } else {
+                    NIDLog.d(msg = "call activity permission denied")
+                }
             }
         }
     }
+
 }

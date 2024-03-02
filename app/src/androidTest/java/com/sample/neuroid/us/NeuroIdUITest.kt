@@ -8,6 +8,9 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
@@ -22,6 +25,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+
 
 data class ResponseData(
     val siteId: String,
@@ -49,6 +53,7 @@ data class ResponseData(
 @ExperimentalCoroutinesApi
 class NeuroIdUITest {
     val server = MockWebServer()
+    var uiDevice: UiDevice? = null
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -56,6 +61,17 @@ class NeuroIdUITest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
+        uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        // Grant permission using UIAutomator
+        val allowButton = uiDevice?.findObject(UiSelector().text("ALLOW")) ?: uiDevice?.findObject(
+            UiSelector().text("Allow")
+        )
+        if (allowButton != null) {
+            if (allowButton.exists()) {
+                allowButton.click()
+            }
+        }
         server.start()
         val url = server.url("/c/").toString()
         NeuroID.getInstance()?.setTestURL(url)
