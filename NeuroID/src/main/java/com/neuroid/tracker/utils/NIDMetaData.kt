@@ -91,13 +91,18 @@ class NIDMetaData(context: Context) {
 
     @SuppressLint("MissingPermission")
     internal fun getLocation(context: Context) {
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED) {
+        val fineResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+        val coarseResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (fineResult != PackageManager.PERMISSION_GRANTED ||
+                coarseResult != PackageManager.PERMISSION_GRANTED) {
             gpsCoordinates.authorizationStatus = LOCATION_DENIED
             return
         }
