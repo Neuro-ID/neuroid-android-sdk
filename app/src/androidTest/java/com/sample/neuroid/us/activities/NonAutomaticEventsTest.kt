@@ -110,7 +110,6 @@ class NonAutomaticEventsTest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_submit))
             .perform(ViewActions.click())
-        delay(600)
 
         forceSendEvents()
         assertRequestBodyContains("APPLICATION_SUBMIT")
@@ -127,7 +126,6 @@ class NonAutomaticEventsTest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_success))
             .perform(ViewActions.click())
-        delay(600)
 
 
         forceSendEvents()
@@ -145,7 +143,6 @@ class NonAutomaticEventsTest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_send_form_failure))
             .perform(ViewActions.click())
-        delay(600)
 
         forceSendEvents()
         assertRequestBodyContains("APPLICATION_SUBMIT_FAILURE")

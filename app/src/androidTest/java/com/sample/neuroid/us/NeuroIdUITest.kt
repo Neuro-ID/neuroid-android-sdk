@@ -226,7 +226,6 @@ class NeuroIdUITest {
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
         Espresso.pressBack()
         delay(500)
 
@@ -287,7 +286,6 @@ class NeuroIdUITest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
 
         forceSendEvents()
         assertRequestBodyContains("TOUCH_END")
@@ -317,7 +315,6 @@ class NeuroIdUITest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
         forceSendEvents()
         assertRequestBodyContains("WINDOW_RESIZE")
@@ -335,10 +332,8 @@ class NeuroIdUITest {
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
         forceSendEvents()
         assertRequestBodyContains("REGISTER_TARGET")
@@ -371,7 +366,7 @@ class NeuroIdUITest {
         NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
-        delay(1500)
+        delay(500)
         NeuroID.getInstance()?.start()
         delay(500)
 
