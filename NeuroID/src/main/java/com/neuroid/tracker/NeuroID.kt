@@ -19,6 +19,7 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.getSendingService
@@ -31,6 +32,7 @@ import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +75,7 @@ private constructor(
 
     internal var clipboardManager: ClipboardManager? = null
 
+    internal var nidCallActivityListener: NIDCallActivityListener? = null
     internal var lowMemory:Boolean = false
     internal var isConnected = false
 
@@ -108,10 +111,15 @@ private constructor(
             application?.registerReceiver(
                 NIDNetworkListener(
                     connectivityManager,
-                    dataStore, this),
+                    dataStore, this
+                ),
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
         }
+
+        // set call activity listener
+        nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker() )
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
     }
 
     @Synchronized
@@ -425,11 +433,14 @@ private constructor(
         }
         dataStore.saveAndClearAllQueuedEvents()
 
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
         return true
     }
 
     fun stop() {
         pauseCollection()
+        nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
     }
 
     fun closeSession() {
@@ -576,6 +587,8 @@ private constructor(
 
         dataStore.saveAndClearAllQueuedEvents()
 
+        this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
         // we need to set finalSessionID with the set random user id
         // if a sessionID was not passed in
         finalSessionID = getUserID()
@@ -676,6 +689,7 @@ private constructor(
 
         pauseCollection()
         clearSessionVariables()
+        nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
         return true
     }
 
