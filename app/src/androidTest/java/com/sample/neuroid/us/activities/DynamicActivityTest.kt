@@ -104,11 +104,8 @@ class DynamicActivityTest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
-        delay(2000)
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(click())
-        delay(2000)
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
-
         delay(2000)
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
