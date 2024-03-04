@@ -549,24 +549,24 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    getForceStart
+    //    shouldForceStart
     @Test
-    fun testGetForceStart_false() {
+    fun test_shouldForceStart_false() {
 
         val expectedValue = false
 
-        val value = NeuroID.getInstance()?.getForceStart()
+        val value = NeuroID.getInstance()?.shouldForceStart()
 
         assertEquals(expectedValue, value)
     }
 
     @Test
-    fun testGetForceStart_true() {
+    fun test_shouldForceStart_true() {
 
         val expectedValue = true
         NeuroID.getInstance()?.forceStart = expectedValue
 
-        val value = NeuroID.getInstance()?.getForceStart()
+        val value = NeuroID.getInstance()?.shouldForceStart()
 
         assertEquals(expectedValue, value)
     }
