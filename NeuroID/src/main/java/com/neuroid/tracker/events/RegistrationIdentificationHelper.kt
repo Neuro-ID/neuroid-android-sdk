@@ -238,7 +238,11 @@ class SingleTargetListenerRegister(
             // add original action menu watcher
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(neuroID, actionCallback)
+                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(
+                    neuroID,
+                    logger,
+                    actionCallback
+                )
             }
 
             // if later api version, add additional action menu watcher
@@ -467,7 +471,11 @@ class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
         val actionInsertionCallback = view.customInsertionActionModeCallback
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
-                NIDLongPressContextMenuCallbacks(neuroID, actionInsertionCallback)
+                NIDLongPressContextMenuCallbacks(
+                    neuroID,
+                    logger,
+                    actionInsertionCallback
+                )
         }
     }
 

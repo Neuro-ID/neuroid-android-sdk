@@ -8,7 +8,7 @@ import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.COPY
 import com.neuroid.tracker.events.CUT
-import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 
 abstract class NIDContextMenuCallBacks(
     val neuroID: NeuroID,
@@ -56,13 +56,14 @@ abstract class NIDContextMenuCallBacks(
 // This is the callback for the context menu that appears when text is already in field
 class NIDTextContextMenuCallbacks(
     neuroID: NeuroID,
+    val logger:NIDLogWrapper,
     actionCallBack: ActionMode.Callback?
 ) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
 
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
 
-        NIDLog.d(
+        logger.d(
             msg="Existing Text Action Context - $item"
         )
 
@@ -74,12 +75,13 @@ class NIDTextContextMenuCallbacks(
 // This is the callback for the context menu that appears when the text field is empty (only available in later API versions)
 class NIDLongPressContextMenuCallbacks(
     neuroID: NeuroID,
+    val logger:NIDLogWrapper,
     actionCallBack: ActionMode.Callback?
 ) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
     override fun onActionItemClicked(action: ActionMode?, item: MenuItem?): Boolean {
         wrapper?.onActionItemClicked(action, item)
 
-        NIDLog.d(
+        logger.d(
            msg="Long Press Action Context - $item"
         )
 
