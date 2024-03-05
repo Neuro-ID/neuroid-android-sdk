@@ -80,7 +80,6 @@ class FragmentCallbacks(
 
     override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
         logger.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
-
     }
 
     override fun onFragmentViewCreated(
@@ -99,7 +98,7 @@ class FragmentCallbacks(
 
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
-        if (NeuroID.getInstance()?.getForceStart() == true) {
+        if (neuroID.shouldForceStart()) {
             registrationHelper.registerTargetFromScreen(
                 f.requireActivity(),
                 true,
@@ -129,15 +128,15 @@ class FragmentCallbacks(
 
     override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
         super.onFragmentPaused(fm, f)
-        logger.d(msg = "Fragment - Paused ${f::class.java.simpleName}")
+        logger.d(msg = "onFragmentPaused ${f::class.java.simpleName}")
     }
 
     override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
-        logger.d(msg = "Fragment - Stopped ${f::class.java.simpleName}")
+        logger.d(msg = "onFragmentStopped ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
-        logger.d(msg = "Fragment - Destroyed ${f::class.java.simpleName}")
+        logger.d(msg = "onFragmentDestroyed ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
