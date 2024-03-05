@@ -59,12 +59,9 @@ class ComponentsTest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.check_one))
             .perform(click())
-
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
@@ -80,12 +77,9 @@ class ComponentsTest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.radioButton_one))
             .perform(click())
-
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
@@ -101,16 +95,12 @@ class ComponentsTest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.switch_three)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.switch_one))
             .perform(click())
-
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
@@ -126,16 +116,12 @@ class ComponentsTest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.toggle_button)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.toggle_button))
             .perform(click())
-
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
@@ -151,16 +137,13 @@ class ComponentsTest {
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.rating_bar)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.rating_bar))
             .perform(click())
 
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
@@ -173,12 +156,10 @@ class ComponentsTest {
     @Test
     fun test06ValidateSliderChange() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
 
-        delay(500)
 
         onView(withId(R.id.seekBar_one)).perform(
             scrollTo()
@@ -191,7 +172,6 @@ class ComponentsTest {
             swipeRight()
         )
 
-        delay(500)
 
         NIDSchema().validateSchema(
             NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()

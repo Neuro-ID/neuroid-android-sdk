@@ -130,7 +130,6 @@ class TextUnitTest {
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        delay(500)
 
         forceSendEvents()
         assertRequestBodyContains("FOCUS")
@@ -150,11 +149,9 @@ class TextUnitTest {
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        delay(600)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_password_field))
             .perform(ViewActions.click())
-        delay(600)
 
         forceSendEvents()
         assertRequestBodyContains("BLUR")
@@ -181,7 +178,6 @@ class TextUnitTest {
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.typeText(text))
-        delay(500)
 
         forceSendEvents()
         assertRequestBodyContains("INPUT")

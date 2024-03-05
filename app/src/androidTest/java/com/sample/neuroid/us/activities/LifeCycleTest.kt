@@ -110,12 +110,10 @@ class LifeCycleTest {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
-        delay(500)
         device.setOrientationNatural()
         delay(1000)
 
         forceSendEvents()
         assertRequestBodyContains("WINDOW_ORIENTATION_CHANGE")
-
     }
 }
