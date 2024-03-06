@@ -39,6 +39,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 class NeuroID
 private constructor(
@@ -111,7 +112,7 @@ private constructor(
             application?.registerReceiver(
                 NIDNetworkListener(
                     connectivityManager,
-                    dataStore, this
+                    dataStore, this, Dispatchers.IO
                 ),
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
@@ -646,7 +647,7 @@ private constructor(
     }
 
     @Synchronized
-    fun pauseCollection() {
+    fun pauseCollection(flushEvents: Boolean = true) {
         isSDKStarted = false
         if (pauseCollectionJob == null ||
                         pauseCollectionJob?.isCancelled == true ||
@@ -654,7 +655,7 @@ private constructor(
         ) {
             pauseCollectionJob =
                     CoroutineScope(Dispatchers.IO).launch {
-                        nidJobServiceManager.sendEventsNow(true)
+                        nidJobServiceManager.sendEventsNow(flushEvents)
                         nidJobServiceManager.stopJob()
                         saveIntegrationHealthEvents()
                     }
