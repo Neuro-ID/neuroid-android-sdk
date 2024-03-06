@@ -36,8 +36,11 @@ class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
                          private val dataStoreManager: NIDDataStoreManager,
                          private val neuroID: NeuroID,
                          private val dispatcher: CoroutineContext,
-                         private val sleepInterval: Long = 10000L
-): BroadcastReceiver() {
+                         private val sleepInterval: Long = SLEEP_INTERVAL): BroadcastReceiver() {
+
+    companion object {
+        const val SLEEP_INTERVAL = 10000L
+    }
 
     private var haveNoNetworkJob: Job? = null
     private var haveNetworkJob: Job? = null
