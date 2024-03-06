@@ -654,7 +654,7 @@ private constructor(
         ) {
             pauseCollectionJob =
                     CoroutineScope(Dispatchers.IO).launch {
-                        nidJobServiceManager.sendEventsNow(true)
+                        nidJobServiceManager.sendEvents(true)
                         nidJobServiceManager.stopJob()
                         saveIntegrationHealthEvents()
                     }
@@ -841,12 +841,12 @@ private constructor(
         when (type) {
             BLUR -> {
                 ioDispatcher.launch {
-                    nidJobServiceManager.sendEventsNow()
+                    nidJobServiceManager.sendEvents()
                 }
             }
             CLOSE_SESSION -> {
                 ioDispatcher.launch {
-                    nidJobServiceManager.sendEventsNow(true)
+                    nidJobServiceManager.sendEvents(true)
                 }
             }
         }

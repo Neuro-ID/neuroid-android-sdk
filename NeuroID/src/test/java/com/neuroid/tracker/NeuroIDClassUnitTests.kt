@@ -153,7 +153,7 @@ open class NeuroIDClassUnitTests {
         every { mockedNIDJobServiceManager.stopJob() } just runs
 
         coEvery {
-            mockedNIDJobServiceManager.sendEventsNow(any())
+            mockedNIDJobServiceManager.sendEvents(any())
         } just runs
 
         NeuroID.getInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
