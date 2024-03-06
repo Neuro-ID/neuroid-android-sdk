@@ -379,7 +379,7 @@ private constructor(
 
     fun getClientID(): String = clientID
 
-    internal fun getForceStart(): Boolean? {
+    internal fun shouldForceStart(): Boolean {
         return forceStart
     }
 
