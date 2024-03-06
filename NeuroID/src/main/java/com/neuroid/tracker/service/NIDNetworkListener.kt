@@ -10,7 +10,6 @@ import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import kotlinx.coroutines.*
-import okhttp3.Dispatcher
 import java.util.Calendar
 import kotlin.coroutines.CoroutineContext
 
