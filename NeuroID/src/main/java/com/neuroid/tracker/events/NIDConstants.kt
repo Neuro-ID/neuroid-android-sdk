@@ -77,5 +77,5 @@ const val NID_ORIGIN_CODE_CUSTOMER = "201"
 enum class CallInProgress(val event: String, val state: Int) {
     ACTIVE("true", 2),
     INACTIVE("false", 0),
-    UNAUTHORIZED("unauthorized", 99)
+    UNAUTHORIZED("unauthorized", 99),
 }

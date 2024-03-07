@@ -19,10 +19,15 @@ import java.util.Calendar
  * manifest. Anytime we get network changes, we send these back as NETWORK_STATE events and
  * update the isConnected flag in NeuroID.
  */
-class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
-                         private val dataStoreManager: NIDDataStoreManager,
-                         private val neuroID: NeuroID): BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
+class NIDNetworkListener(
+    private val connectivityManager: ConnectivityManager,
+    private val dataStoreManager: NIDDataStoreManager,
+    private val neuroID: NeuroID,
+) : BroadcastReceiver() {
+    override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+    ) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
                 neuroID.isConnected = onNetworkAction()
@@ -38,15 +43,14 @@ class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
             isWifi = activeNetworkInfo.type == TYPE_WIFI
             isConnected = activeNetworkInfo.isConnectedOrConnecting()
         }
-        val networkEvent = NIDEventModel(
-            ts = Calendar.getInstance().timeInMillis,
-            type = NETWORK_STATE,
-            isConnected = isConnected,
-            isWifi = isWifi)
+        val networkEvent =
+            NIDEventModel(
+                ts = Calendar.getInstance().timeInMillis,
+                type = NETWORK_STATE,
+                isConnected = isConnected,
+                isWifi = isWifi,
+            )
         dataStoreManager.saveEvent(networkEvent)
         return isConnected
     }
-
-
 }
-
