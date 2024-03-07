@@ -105,6 +105,8 @@ internal class NIDJobServiceManager(
 
     /**
      * Creates a job that synchronizes all requests to send events.
+     *   The function will loop through all the current sendEventNotifications
+     *   and collapse them into one request to be sent rather than multiple
      */
     private fun createSendEventsServer(): Job {
         return CoroutineScope(dispatcher).launch {
