@@ -71,7 +71,7 @@ class NIDNetworkListener(private val connectivityManager: ConnectivityManager,
                 neuroID.pauseCollection(false)
             }
         } else {
-            if (!neuroID.isStopped()) {
+            if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
                 return
             }
             haveNetworkJob = CoroutineScope(dispatcher).launch {

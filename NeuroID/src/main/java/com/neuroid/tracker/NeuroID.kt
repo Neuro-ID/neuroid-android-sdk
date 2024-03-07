@@ -646,7 +646,12 @@ private constructor(
     }
 
     @Synchronized
-    fun pauseCollection(flushEvents: Boolean = true) {
+    fun pauseCollection() {
+        pauseCollection(true)
+    }
+
+    @Synchronized
+    internal fun pauseCollection(flushEvents: Boolean) {
         isSDKStarted = false
         if (pauseCollectionJob == null ||
                         pauseCollectionJob?.isCancelled == true ||

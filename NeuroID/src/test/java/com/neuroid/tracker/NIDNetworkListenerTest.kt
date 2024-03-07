@@ -26,66 +26,122 @@ import java.util.Calendar
 class NIDNetworkListenerTest {
 
     @Test
-    fun test_networkListener_wifi_connected_sdk_stopped() {
+    fun test_networkListener_wifi_connected_sdk_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_WIFI, true,
             true, true, true,
-            0, 1)
+            0, 0, "")
     }
 
     @Test
-    fun test_networkListener_mobile_connected_sdk_stopped() {
+    fun test_networkListener_mobile_connected_sdk_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_MOBILE, true,
             true, false, true,
-            0,1)
+            0,0, "")
     }
 
     @Test
-    fun test_networkListener_mobile_not_connected_sdk_stopped() {
+    fun test_networkListener_mobile_not_connected_sdk_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_MOBILE, false,
             false, false, true,
-            0,0)
+            0,0, "")
     }
 
     @Test
-    fun test_networkListener_wifi_not_connected_sdk_stopped() {
+    fun test_networkListener_wifi_not_connected_sdk_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_WIFI, false,
             false, true, true,
-            0,0)
+            0,0, "")
     }
 
     @Test
-    fun test_networkListener_wifi_connected_sdk_not_stopped() {
+    fun test_networkListener_wifi_connected_sdk_not_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_WIFI, true,
             true, true, false,
-            0, 0)
+            0, 0, "")
     }
 
     @Test
-    fun test_networkListener_mobile_connected_sdk_not_stopped() {
+    fun test_networkListener_mobile_connected_sdk_not_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_MOBILE, true,
             true, false, false,
-            0,0)
+            0,0, "")
     }
 
     @Test
-    fun test_networkListener_mobile_not_connected_sdk_not_stopped() {
+    fun test_networkListener_mobile_not_connected_sdk_not_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_MOBILE, false,
             false, false, false,
-            1,0)
+            1,0, "")
     }
 
     @Test
-    fun test_networkListener_wifi_not_connected_sdk_not_stopped() {
+    fun test_networkListener_wifi_not_connected_sdk_not_stopped_empty_userId() {
         networkListenerTestHarness(TYPE_WIFI, false,
             false, true, false,
-            1,0)
+            1,0, "")
+    }
+
+    @Test
+    fun test_networkListener_wifi_connected_sdk_stopped_userId() {
+        networkListenerTestHarness(TYPE_WIFI, true,
+            true, true, true,
+            0, 1, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_mobile_connected_sdk_stopped_userId() {
+        networkListenerTestHarness(TYPE_MOBILE, true,
+            true, false, true,
+            0,1, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_mobile_not_connected_sdk_stopped_userId() {
+        networkListenerTestHarness(TYPE_MOBILE, false,
+            false, false, true,
+            0,0, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_wifi_not_connected_sdk_stopped_userId() {
+        networkListenerTestHarness(TYPE_WIFI, false,
+            false, true, true,
+            0,0, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_wifi_connected_sdk_not_stopped_userId() {
+        networkListenerTestHarness(TYPE_WIFI, true,
+            true, true, false,
+            0, 0, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_mobile_connected_sdk_not_stopped_userId() {
+        networkListenerTestHarness(TYPE_MOBILE, true,
+            true, false, false,
+            0,0, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_mobile_not_connected_sdk_not_stopped_userId() {
+        networkListenerTestHarness(TYPE_MOBILE, false,
+            false, false, false,
+            1,0, "ggdasgasdgg")
+    }
+
+    @Test
+    fun test_networkListener_wifi_not_connected_sdk_not_stopped_userId() {
+        networkListenerTestHarness(TYPE_WIFI, false,
+            false, true, false,
+            1,0, "ggdasgasdgg")
     }
 
     fun networkListenerTestHarness(connectionType: Int,
                                    isConnectedOrConnecting: Boolean,
                                    isConnectedAssert: Boolean,
                                    isWifiAssert: Boolean,
-                                   isStopped: Boolean, pauseCalledCount: Int, resumeCalledCount: Int) {
+                                   isStopped: Boolean, pauseCalledCount: Int, resumeCalledCount: Int, userId: String) {
         val calendar = mockk<Calendar>()
         every {calendar.timeInMillis} returns 5
         mockkStatic(Calendar::class)
@@ -96,6 +152,7 @@ class NIDNetworkListenerTest {
         every { neuroID.isStopped() } returns isStopped
         every { neuroID.pauseCollection(any()) } just runs
         every { neuroID.resumeCollection() } just runs
+        every { neuroID.userID } returns userId
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType
         every { networkInfo.isConnectedOrConnecting } returns isConnectedOrConnecting
