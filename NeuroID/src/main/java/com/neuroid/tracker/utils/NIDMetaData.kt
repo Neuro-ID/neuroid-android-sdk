@@ -101,7 +101,7 @@ class NIDMetaData(context: Context) {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
 
-        if (fineResult != PackageManager.PERMISSION_GRANTED ||
+        if (fineResult != PackageManager.PERMISSION_GRANTED &&
                 coarseResult != PackageManager.PERMISSION_GRANTED) {
             gpsCoordinates.authorizationStatus = LOCATION_DENIED
             return
