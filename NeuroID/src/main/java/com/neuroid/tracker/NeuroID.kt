@@ -111,7 +111,7 @@ private constructor(
             application?.registerReceiver(
                 NIDNetworkListener(
                     connectivityManager,
-                    dataStore, this
+                    dataStore, this, Dispatchers.IO
                 ),
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
@@ -647,6 +647,11 @@ private constructor(
 
     @Synchronized
     fun pauseCollection() {
+        pauseCollection(true)
+    }
+
+    @Synchronized
+    internal fun pauseCollection(flushEvents: Boolean) {
         isSDKStarted = false
         if (pauseCollectionJob == null ||
                         pauseCollectionJob?.isCancelled == true ||
@@ -654,7 +659,7 @@ private constructor(
         ) {
             pauseCollectionJob =
                     CoroutineScope(Dispatchers.IO).launch {
-                        nidJobServiceManager.sendEventsNow(true)
+                        nidJobServiceManager.sendEventsNow(flushEvents)
                         nidJobServiceManager.stopJob()
                         saveIntegrationHealthEvents()
                     }
