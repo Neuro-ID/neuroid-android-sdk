@@ -98,9 +98,7 @@ internal class NIDJobServiceManager(
      * Notify the send events server to initiate a send.
      */
     fun sendEvents(forceSendEvents: Boolean = false) {
-        CoroutineScope(dispatcher).launch {
-            sendEventsNotification.send(forceSendEvents)
-        }
+        sendEventsNotification.trySend(forceSendEvents)
     }
 
     /**
