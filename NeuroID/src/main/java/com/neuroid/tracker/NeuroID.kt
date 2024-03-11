@@ -443,10 +443,12 @@ private constructor(
         return true
     }
 
-    fun stop() {
-        pauseCollection()
-        nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
-    }
+        fun stop(): Boolean {
+            pauseCollection()
+            nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
+
+            return true
+        }
 
     fun closeSession() {
         if (!isStopped()) {
