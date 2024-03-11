@@ -12,30 +12,35 @@ import java.util.Queue
 
 interface NIDDataStoreManager {
     fun saveEvent(event: NIDEventModel)
+
     fun getAllEvents(): List<NIDEventModel>
+
     fun clearEvents()
+
     fun queueEvent(tempEvent: NIDEventModel)
+
     fun saveAndClearAllQueuedEvents()
-    fun isFullBuffer():Boolean
+
+    fun isFullBuffer(): Boolean
 }
 
 @VisibleForTesting // Should we make the private?
-fun NeuroID.getTestingDataStoreInstance():NIDDataStoreManager {
+fun NeuroID.getTestingDataStoreInstance(): NIDDataStoreManager {
     return dataStore
 }
 
 internal class NIDDataStoreManagerImp(
-    val logger: NIDLogWrapper
+    val logger: NIDLogWrapper,
 ) : NIDDataStoreManager {
     companion object {
         private const val EVENT_BUFFER_MAX_COUNT = 1999
 
-        private val listNonActiveEvents = listOf(
-            USER_INACTIVE,
-            WINDOW_BLUR //Block screen
-        )
+        private val listNonActiveEvents =
+            listOf(
+                USER_INACTIVE,
+                WINDOW_BLUR, // Block screen
+            )
     }
-
 
     private var eventsList = mutableListOf<NIDEventModel>()
     internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
@@ -47,11 +52,12 @@ internal class NIDDataStoreManagerImp(
             logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, ${tempEvent.type} dropped")
             return
         }
-        val event = tempEvent.copy(
-            ts = System.currentTimeMillis(),
-            gyro = NIDSensorHelper.getGyroscopeInfo(),
-            accel = NIDSensorHelper.getAccelerometerInfo()
-        )
+        val event =
+            tempEvent.copy(
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorHelper.getGyroscopeInfo(),
+                accel = NIDSensorHelper.getAccelerometerInfo(),
+            )
 
         queuedEvents.add(event)
     }
@@ -61,7 +67,6 @@ internal class NIDDataStoreManagerImp(
         eventsList.addAll(queuedEvents)
         queuedEvents.clear()
     }
-
 
     /*
         Returns a Boolean indicating if the event was successfully saved or not
@@ -112,11 +117,12 @@ internal class NIDDataStoreManagerImp(
 
             if (updateEvent) {
                 // update the event
-                previousEventsList[index] = item.copy(
-                    accel = accel,
-                    gyro = gyro,
-                    url = url
-                )
+                previousEventsList[index] =
+                    item.copy(
+                        accel = accel,
+                        gyro = gyro,
+                        url = url,
+                    )
             }
         }
 
@@ -138,14 +144,14 @@ internal class NIDDataStoreManagerImp(
     }
 
     override fun isFullBuffer(): Boolean {
-        val lastEventType = if (eventsList.isEmpty()) { "" } else { eventsList.last().type }
+        val lastEventType = if (eventsList.isEmpty()) "" else eventsList.last().type
 
         if (lastEventType == FULL_BUFFER) {
             return true
         } else if (eventsList.size + queuedEvents.size > EVENT_BUFFER_MAX_COUNT) {
             // add a full buffer event and drop the new event
             saveEvent(
-                NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis())
+                NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),
             )
             return true
         }
