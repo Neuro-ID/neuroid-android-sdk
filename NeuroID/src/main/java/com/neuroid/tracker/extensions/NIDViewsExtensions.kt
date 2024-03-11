@@ -2,7 +2,6 @@ package com.neuroid.tracker.extensions
 
 import android.content.res.Resources
 import android.view.View
-import androidx.fragment.app.FragmentManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun View?.getIdOrTag(): String {
@@ -39,15 +38,20 @@ fun View.getParents(logger: NIDLogWrapper): String {
     return getParentsOfView(0, this, logger)
 }
 
-
-fun View.getParentsOfView(layers: Int, view: View, log: NIDLogWrapper): String {
+fun View.getParentsOfView(
+    layers: Int,
+    view: View,
+    log: NIDLogWrapper,
+): String {
     return if (view.parent is View) {
         val childView = view.parent as View
-        if (layers == 3 || childView.id == android.R.id.content) "" else {
+        if (layers == 3 || childView.id == android.R.id.content) {
+            ""
+        } else {
             "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView, log)}"
         }
     } else {
-        log.e(msg="instance ${view.parent?.javaClass?.name} is not a view!")
+        log.e(msg = "instance ${view.parent?.javaClass?.name} is not a view!")
         "not_a_view"
     }
 }

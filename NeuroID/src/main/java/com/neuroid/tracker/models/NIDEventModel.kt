@@ -37,67 +37,66 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 data class NIDEventModel(
-        val type: String,
-        val ts: Long =
-                System.currentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
-        // always add real timestamp
-        val attrs: List<Map<String, Any>>? = null,
-        val tg: Map<String, Any>? = null,
-        val tgs: String? = null,
-        val touches: List<NIDTouchModel>? = null,
-        val key: String? = null,
-        val gyro: NIDSensorModel? = NIDSensorHelper.getGyroscopeInfo(),
-        val accel: NIDSensorModel? = NIDSensorHelper.getAccelerometerInfo(),
-        val v: String? = null,
-        val hv: String? = null,
-        val en: String? = null,
-        val etn: String? = null,
-        val ec: String? = null,
-        val et: String? = null,
-        var eid: String? = null,
-        val ct: String? = null,
-        val sm: Int? = null,
-        val pd: Int? = null,
-        val x: Float? = null,
-        val y: Float? = null,
-        val w: Int? = null,
-        val h: Int? = null,
-        val sw: Float? = null,
-        val sh: Float? = null,
-        val f: String? = null,
-        val lsid: String? = null,
-        val sid: String? = null,
-        val siteId: String? = null,
-        val cid: String? = null,
-        val did: String? = null,
-        val iid: String? = null,
-        val loc: String? = null,
-        val ua: String? = null,
-        val tzo: Int? = null,
-        val lng: String? = null,
-        val ce: Boolean? = null,
-        val je: Boolean? = null,
-        val ol: Boolean? = null,
-        val p: String? = null,
-        val dnt: Boolean? = null,
-        val tch: Boolean? = null,
-        val url: String? = null,
-        val ns: String? = null,
-        val jsl: List<String>? = null,
-        val jsv: String? = null,
-        val uid: String? = null,
-        val o: String? = null,
-        var rts: String? = null,
-        val metadata: NIDMetaData? = null,
-        val rid: String? = null,
-        val m: String? = null,
-        val level: String? = null,
-        val c: Boolean? = null,
-        val isWifi: Boolean? = null,
-        val isConnected: Boolean? = null,
-        val cp: String? = null
+    val type: String,
+    val ts: Long =
+        System.currentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
+    // always add real timestamp
+    val attrs: List<Map<String, Any>>? = null,
+    val tg: Map<String, Any>? = null,
+    val tgs: String? = null,
+    val touches: List<NIDTouchModel>? = null,
+    val key: String? = null,
+    val gyro: NIDSensorModel? = NIDSensorHelper.getGyroscopeInfo(),
+    val accel: NIDSensorModel? = NIDSensorHelper.getAccelerometerInfo(),
+    val v: String? = null,
+    val hv: String? = null,
+    val en: String? = null,
+    val etn: String? = null,
+    val ec: String? = null,
+    val et: String? = null,
+    var eid: String? = null,
+    val ct: String? = null,
+    val sm: Int? = null,
+    val pd: Int? = null,
+    val x: Float? = null,
+    val y: Float? = null,
+    val w: Int? = null,
+    val h: Int? = null,
+    val sw: Float? = null,
+    val sh: Float? = null,
+    val f: String? = null,
+    val lsid: String? = null,
+    val sid: String? = null,
+    val siteId: String? = null,
+    val cid: String? = null,
+    val did: String? = null,
+    val iid: String? = null,
+    val loc: String? = null,
+    val ua: String? = null,
+    val tzo: Int? = null,
+    val lng: String? = null,
+    val ce: Boolean? = null,
+    val je: Boolean? = null,
+    val ol: Boolean? = null,
+    val p: String? = null,
+    val dnt: Boolean? = null,
+    val tch: Boolean? = null,
+    val url: String? = null,
+    val ns: String? = null,
+    val jsl: List<String>? = null,
+    val jsv: String? = null,
+    val uid: String? = null,
+    val o: String? = null,
+    var rts: String? = null,
+    val metadata: NIDMetaData? = null,
+    val rid: String? = null,
+    val m: String? = null,
+    val level: String? = null,
+    val c: Boolean? = null,
+    val isWifi: Boolean? = null,
+    val isConnected: Boolean? = null,
+    val cp: String? = null,
 ) : Comparable<NIDEventModel> {
-
     fun toJSONString(): String {
         return toJSON().toString()
     }
@@ -208,8 +207,8 @@ data class NIDEventModel(
                 MOBILE_METADATA_ANDROID -> contextString = "meta=${this.metadata}"
                 "CLICK" -> contextString = ""
                 REGISTER_TARGET ->
-                        contextString =
-                                "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata}"
+                    contextString =
+                        "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata}"
                 "DEREGISTER_TARGET" -> contextString = ""
                 TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg}"
                 TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg}"

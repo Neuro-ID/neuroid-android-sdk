@@ -19,11 +19,15 @@ object NIDSensorHelper {
 
     private var sensorActive = false
 
-    fun isSensorActive():Boolean {
-        return  sensorActive
+    fun isSensorActive(): Boolean {
+        return sensorActive
     }
 
-    fun initSensorHelper(context: Context, logger: NIDLogWrapper, nSensors: NIDSensors = nidSensors) {
+    fun initSensorHelper(
+        context: Context,
+        logger: NIDLogWrapper,
+        nSensors: NIDSensors = nidSensors,
+    ) {
         initSensorManager(context)
 
         val list = sensorManager?.getSensorList(Sensor.TYPE_ALL)
@@ -47,8 +51,9 @@ object NIDSensorHelper {
     }
 
     private fun initSensorManager(context: Context) {
-        if (sensorManager == null)
+        if (sensorManager == null) {
             sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        }
     }
 
     @VisibleForTesting
@@ -57,7 +62,6 @@ object NIDSensorHelper {
         sensorManager = null
         sensorActive = false
     }
-
 
     fun stopSensors() {
         sensorManager?.unregisterListener(listener)
@@ -84,9 +88,11 @@ object NIDSensorHelper {
     }
 
     @VisibleForTesting
-    internal fun getNIDGenListener(nSensors: NIDSensors,
-                                   fvGyro: NIDSensorData,
-                                   fvAccel: NIDSensorData): NIDSensorGenListener{
+    internal fun getNIDGenListener(
+        nSensors: NIDSensors,
+        fvGyro: NIDSensorData,
+        fvAccel: NIDSensorData,
+    ): NIDSensorGenListener  {
         return NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
@@ -94,7 +100,7 @@ object NIDSensorHelper {
                         nSensors.gyroscopeData.copy(
                             axisX = it.axisX,
                             axisY = it.axisY,
-                            axisZ = it.axisZ
+                            axisZ = it.axisZ,
                         )
 
                     fvGyro.axisX = it.axisX
@@ -107,7 +113,7 @@ object NIDSensorHelper {
                         nSensors.accelerometer.copy(
                             axisX = it.axisX,
                             axisY = it.axisY,
-                            axisZ = it.axisZ
+                            axisZ = it.axisZ,
                         )
 
                     fvAccel.axisX = it.axisX
@@ -119,16 +125,19 @@ object NIDSensorHelper {
         }
     }
 
-    fun getAccelerometerInfo() = NIDSensorModel(
-        nidSensors.accelerometer.axisX,
-        nidSensors.accelerometer.axisY,
-        nidSensors.accelerometer.axisZ
-    )
-    fun getGyroscopeInfo() = NIDSensorModel(
-        nidSensors.gyroscopeData.axisX,
-        nidSensors.gyroscopeData.axisY,
-        nidSensors.gyroscopeData.axisZ
-    )
+    fun getAccelerometerInfo() =
+        NIDSensorModel(
+            nidSensors.accelerometer.axisX,
+            nidSensors.accelerometer.axisY,
+            nidSensors.accelerometer.axisZ,
+        )
+
+    fun getGyroscopeInfo() =
+        NIDSensorModel(
+            nidSensors.gyroscopeData.axisX,
+            nidSensors.gyroscopeData.axisY,
+            nidSensors.gyroscopeData.axisZ,
+        )
 
     val valuesGyro: NIDSensorData get() = firstValuesGyro
     val valuesAccel: NIDSensorData get() = firstValuesAccel
@@ -136,17 +145,17 @@ object NIDSensorHelper {
 
 enum class NIDSensorStatus {
     AVAILABLE,
-    UNAVAILABLE
+    UNAVAILABLE,
 }
 
 data class NIDSensors(
     var gyroscopeData: NIDSensorData = NIDSensorData("Gyroscope"),
-    var accelerometer: NIDSensorData = NIDSensorData("Accelerometer")
+    var accelerometer: NIDSensorData = NIDSensorData("Accelerometer"),
 ) {
     override fun equals(other: Any?): Boolean =
         (other is NIDSensors) &&
-                gyroscopeData == other.gyroscopeData &&
-                accelerometer == other.accelerometer
+            gyroscopeData == other.gyroscopeData &&
+            accelerometer == other.accelerometer
 }
 
 data class NIDSensorData(
@@ -154,13 +163,13 @@ data class NIDSensorData(
     var status: NIDSensorStatus = NIDSensorStatus.UNAVAILABLE,
     var axisX: Float? = null,
     var axisY: Float? = null,
-    var axisZ: Float? = null
+    var axisZ: Float? = null,
 ) {
     override fun equals(other: Any?): Boolean =
         (other is NIDSensorData) &&
-                name.contentEquals(other.name) &&
-                status == other.status &&
-                axisX == other.axisX &&
-                axisY == other.axisY &&
-                axisZ == other.axisZ
+            name.contentEquals(other.name) &&
+            status == other.status &&
+            axisX == other.axisX &&
+            axisY == other.axisY &&
+            axisZ == other.axisZ
 }
