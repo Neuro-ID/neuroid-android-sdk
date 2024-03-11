@@ -19,7 +19,7 @@ data class ComponentValuesResult(
     val idName: String,
     val et: String,
     val v: String,
-    val metaData: Map<String, Any>
+    val metaData: Map<String, Any>,
 )
 
 fun isCommonAndroidComponent(view: View): ComponentValuesResult {
@@ -47,7 +47,7 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
             metaData.put("id", idName)
 
             // go up to 3 parents in case a RadioGroup is not the direct parent
-            var rParent = view.parent;
+            var rParent = view.parent
             repeat(3) { index ->
                 if (rParent is RadioGroup) {
                     val p = rParent as RadioGroup
@@ -93,6 +93,6 @@ fun isCommonAndroidComponent(view: View): ComponentValuesResult {
         idName,
         et,
         v,
-        metaData
+        metaData,
     )
 }

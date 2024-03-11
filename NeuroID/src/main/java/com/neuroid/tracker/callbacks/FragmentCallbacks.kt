@@ -15,17 +15,21 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 class FragmentCallbacks(
     isChangeOrientation: Boolean,
     val neuroID: NeuroID,
-    val logger:NIDLogWrapper,
-    val registrationHelper: RegistrationIdentificationHelper
+    val logger: NIDLogWrapper,
+    val registrationHelper: RegistrationIdentificationHelper,
 ) : FragmentLifecycleCallbacks() {
     private var _isChangeOrientation = isChangeOrientation
 
     var listFragment = arrayListOf<String>()
     val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
 
-     override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
+    override fun onFragmentAttached(
+        fm: FragmentManager,
+        f: Fragment,
+        context: Context,
+    ) {
         val className = f::class.java.simpleName
-        logger.d(msg="onFragmentAttached $className");
+        logger.d(msg = "onFragmentAttached $className")
 
         if (blackListFragments.any { it == className }.not()) {
             if (NeuroID.screenName.isEmpty()) {
@@ -37,21 +41,23 @@ class FragmentCallbacks(
 
             neuroID.captureEvent(
                 type = WINDOW_LOAD,
-                attrs = listOf(
-                    mapOf(
-                        "component" to "fragment",
-                        "lifecycle" to "attached",
-                        "className" to className
-                    )
-                )
+                attrs =
+                    listOf(
+                        mapOf(
+                            "component" to "fragment",
+                            "lifecycle" to "attached",
+                            "className" to className,
+                        ),
+                    ),
             )
 
             val concatName = f.toString().split(" ")
-            val fragName = if (concatName.isNotEmpty()) {
-                concatName[0]
-            } else {
-                ""
-            }
+            val fragName =
+                if (concatName.isNotEmpty()) {
+                    concatName[0]
+                } else {
+                    ""
+                }
 
             if (listFragment.contains(fragName)) {
                 val index = listFragment.indexOf(fragName)
@@ -62,7 +68,7 @@ class FragmentCallbacks(
                         registerTarget = true,
                         registerListeners = false,
                         activityOrFragment = "fragment",
-                        parent = className
+                        parent = className,
                     )
                 }
             } else {
@@ -72,28 +78,38 @@ class FragmentCallbacks(
                     registerTarget = true,
                     registerListeners = true,
                     activityOrFragment = "fragment",
-                    parent = className
+                    parent = className,
                 )
             }
         }
     }
 
-    override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
-        logger.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
-    }
-
-    override fun onFragmentViewCreated(
-        fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?
+    override fun onFragmentCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        savedInstanceState: Bundle?,
     ) {
         logger.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
     }
 
-    override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentViewCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        v: View,
+        savedInstanceState: Bundle?,
+    ) {
+        logger.d(msg = "onFragmentViewCreated ${f::class.java.simpleName}")
+    }
+
+    override fun onFragmentResumed(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         super.onFragmentResumed(fm, f)
         val simpleClassName = f::class.java.simpleName
 
         logger.d(
-            msg = "Fragment - Resumed ${f.id} ${f.isVisible} ${f.tag} $simpleClassName"
+            msg = "Fragment - Resumed ${f.id} ${f.isVisible} ${f.tag} $simpleClassName",
         )
 
         // TODO skip on force start
@@ -104,21 +120,21 @@ class FragmentCallbacks(
                 true,
                 true,
                 activityOrFragment = "fragment",
-                parent = simpleClassName
+                parent = simpleClassName,
             )
             return
         }
 
         if (blackListFragments.any { it == simpleClassName }.not()) {
             logger.d(
-                msg = "Fragment - Resumed - REGISTER TARGET $simpleClassName"
+                msg = "Fragment - Resumed - REGISTER TARGET $simpleClassName",
             )
             registrationHelper.registerTargetFromScreen(
                 f.requireActivity(),
                 _isChangeOrientation.not(),
                 true,
                 activityOrFragment = "fragment",
-                parent = simpleClassName
+                parent = simpleClassName,
             )
             _isChangeOrientation = false
         } else {
@@ -126,36 +142,49 @@ class FragmentCallbacks(
         }
     }
 
-    override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentPaused(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         super.onFragmentPaused(fm, f)
         logger.d(msg = "onFragmentPaused ${f::class.java.simpleName}")
     }
 
-    override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentStopped(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         logger.d(msg = "onFragmentStopped ${f::class.java.simpleName}")
     }
 
-    override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentDestroyed(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         logger.d(msg = "onFragmentDestroyed ${f::class.java.simpleName}")
     }
 
-    override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentDetached(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         val className = f::class.java.simpleName
         logger.d(msg = "Fragment - Detached $className")
         if (blackListFragments.any { it == className }.not()) {
             logger.d(
-                msg = "Fragment - Detached - WINDOW UNLOAD $className"
+                msg = "Fragment - Detached - WINDOW UNLOAD $className",
             )
 
             neuroID.captureEvent(
                 type = WINDOW_UNLOAD,
-                attrs = listOf(
-                    mapOf(
-                        "component" to "fragment",
-                        "lifecycle" to "detached",
-                        "className" to className
-                    )
-                )
+                attrs =
+                    listOf(
+                        mapOf(
+                            "component" to "fragment",
+                            "lifecycle" to "detached",
+                            "className" to className,
+                        ),
+                    ),
             )
         }
     }

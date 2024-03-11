@@ -1,25 +1,25 @@
 package com.neuroid.tracker.callbacks
 
 import android.os.Build
-import android.view.Window
-import android.view.View
-import android.view.ViewTreeObserver
+import android.view.ActionMode
 import android.view.KeyEvent
+import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-import android.view.Menu
-import android.view.WindowManager
-import android.view.ActionMode
 import android.view.SearchEvent
+import android.view.View
+import android.view.ViewTreeObserver
+import android.view.Window
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.*
+import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.extensions.getIdOrTag
 import java.util.*
 
 class NIDGlobalEventCallback(
@@ -27,20 +27,22 @@ class NIDGlobalEventCallback(
     private val eventManager: TouchEventManager,
     private val viewMainContainer: View,
     internal val neuroID: NeuroID,
-    internal val logger:NIDLogWrapper,
-    internal val singleTargetListenerRegister:SingleTargetListenerRegister
+    internal val logger: NIDLogWrapper,
+    internal val singleTargetListenerRegister: SingleTargetListenerRegister,
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
-    ViewTreeObserver.OnGlobalLayoutListener, Window.Callback {
-
+    ViewTreeObserver.OnGlobalLayoutListener,
+    Window.Callback {
     private var lastEditText: EditText? = null
     private var currentWidth = 0
     private var currentHeight = 0
 
-    override fun onGlobalFocusChanged(oldView: View?, newView: View?) {
+    override fun onGlobalFocusChanged(
+        oldView: View?,
+        newView: View?,
+    ) {
         if (newView != null) {
             if (newView is EditText) {
                 registerEditTextViewOnFocusBlur(newView, FOCUS)
-
 
                 // REMOVING TEXT_CHANGE EVENT for right now
 //                lastEditText = if (lastEditText == null) {
@@ -74,7 +76,7 @@ class NIDGlobalEventCallback(
             neuroID.captureEvent(
                 type = WINDOW_RESIZE,
                 w = currentWidth,
-                h = currentHeight
+                h = currentHeight,
             )
         }
     }
@@ -82,20 +84,21 @@ class NIDGlobalEventCallback(
     private fun registerTextChangeEvent(actualText: String) {
         neuroID.captureEvent(
             type = TEXT_CHANGE,
-            tg = hashMapOf(
-                "attr" to getAttrJson(actualText),
-                "etn" to lastEditText?.getIdOrTag().orEmpty(),
-                "et" to "text"
-            ),
+            tg =
+                hashMapOf(
+                    "attr" to getAttrJson(actualText),
+                    "etn" to lastEditText?.getIdOrTag().orEmpty(),
+                    "et" to "text",
+                ),
             tgs = lastEditText?.getIdOrTag().orEmpty(),
             sm = 0,
             pd = 0,
             v = "S~C~~${actualText.length}",
-            hv = actualText.getSHA256withSalt().take(8)
+            hv = actualText.getSHA256withSalt().take(8),
         )
     }
 
-    //WindowCallback
+    // WindowCallback
     override fun dispatchKeyEvent(keyEvent: KeyEvent?): Boolean {
         return windowCallback.dispatchKeyEvent(keyEvent)
     }
@@ -132,19 +135,32 @@ class NIDGlobalEventCallback(
         return windowCallback.onCreatePanelView(p0)
     }
 
-    override fun onCreatePanelMenu(p0: Int, menu: Menu): Boolean {
+    override fun onCreatePanelMenu(
+        p0: Int,
+        menu: Menu,
+    ): Boolean {
         return windowCallback.onCreatePanelMenu(p0, menu)
     }
 
-    override fun onPreparePanel(p0: Int, view: View?, menu: Menu): Boolean {
+    override fun onPreparePanel(
+        p0: Int,
+        view: View?,
+        menu: Menu,
+    ): Boolean {
         return windowCallback.onPreparePanel(p0, view, menu)
     }
 
-    override fun onMenuOpened(p0: Int, menu: Menu): Boolean {
+    override fun onMenuOpened(
+        p0: Int,
+        menu: Menu,
+    ): Boolean {
         return windowCallback.onMenuOpened(p0, menu)
     }
 
-    override fun onMenuItemSelected(p0: Int, menuItem: MenuItem): Boolean {
+    override fun onMenuItemSelected(
+        p0: Int,
+        menuItem: MenuItem,
+    ): Boolean {
         return windowCallback.onMenuItemSelected(p0, menuItem)
     }
 
@@ -168,7 +184,10 @@ class NIDGlobalEventCallback(
         return windowCallback.onDetachedFromWindow()
     }
 
-    override fun onPanelClosed(p0: Int, menu: Menu) {
+    override fun onPanelClosed(
+        p0: Int,
+        menu: Menu,
+    ) {
         return windowCallback.onPanelClosed(p0, menu)
     }
 
@@ -186,7 +205,10 @@ class NIDGlobalEventCallback(
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    override fun onWindowStartingActionMode(p0: ActionMode.Callback?, p1: Int): ActionMode? {
+    override fun onWindowStartingActionMode(
+        p0: ActionMode.Callback?,
+        p1: Int,
+    ): ActionMode? {
         return windowCallback.onWindowStartingActionMode(p0, p1)
     }
 
@@ -213,9 +235,11 @@ class NIDGlobalEventCallback(
         return windowCallback.onActionModeFinished(p0)
     }
 
-
     // Helper Functions
-    private fun registerEditTextViewOnFocusBlur(view: EditText, type: String) {
+    private fun registerEditTextViewOnFocusBlur(
+        view: EditText,
+        type: String,
+    ) {
         val idName = view.getIdOrTag()
         val simpleJavaClassName = view.javaClass.simpleName
 
@@ -224,30 +248,31 @@ class NIDGlobalEventCallback(
         // do a check to see if we have registered this Field yet
         if (!NeuroID.registeredViews.contains(idName)) {
             logger.d(
-                msg="Late registration: registeringView $simpleJavaClassName"
+                msg = "Late registration: registeringView $simpleJavaClassName",
             )
-            val hashCodeAct = view.javaClass.name.hashCode();
+            val hashCodeAct = view.javaClass.name.hashCode()
             val guid =
                 UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
             singleTargetListenerRegister.registerComponent(
                 view,
                 guid,
-                "targetInteractionEvent"
+                "targetInteractionEvent",
             )
-            NeuroID.registeredViews.add(idName);
+            NeuroID.registeredViews.add(idName)
         } else {
             logger.d(
-                msg="view already registered: registeringView $simpleJavaClassName tag: $idName"
+                msg = "view already registered: registeringView $simpleJavaClassName tag: $idName",
             )
         }
 
         neuroID.captureEvent(
             type = type,
-            tg = hashMapOf(
-                "attr" to getAttrJson(text),
-            ),
-            tgs = idName
+            tg =
+                hashMapOf(
+                    "attr" to getAttrJson(text),
+                ),
+            tgs = idName,
         )
     }
 }

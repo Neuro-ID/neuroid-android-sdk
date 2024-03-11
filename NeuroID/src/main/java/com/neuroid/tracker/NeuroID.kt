@@ -42,8 +42,8 @@ import kotlinx.coroutines.launch
 
 class NeuroID
 private constructor(
-    internal var application: Application?,
-    internal var clientKey: String
+        internal var application: Application?,
+        internal var clientKey: String,
 ) {
     @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
     private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -76,20 +76,24 @@ private constructor(
     internal var clipboardManager: ClipboardManager? = null
 
     internal var nidCallActivityListener: NIDCallActivityListener? = null
-    internal var lowMemory:Boolean = false
+    internal var lowMemory: Boolean = false
     internal var isConnected = false
 
     init {
         dataStore = NIDDataStoreManagerImp(logger)
         registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
-        nidActivityCallbacks =
-                ActivityCallbacks(this, logger, registrationIdentificationHelper)
+        nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
 
         application?.let {
             metaData = NIDMetaData(it.applicationContext)
 
             nidJobServiceManager =
-                    NIDJobServiceManager(this, dataStore,  getSendingService(endpoint, logger, it), logger)
+                    NIDJobServiceManager(
+                            this,
+                            dataStore,
+                            getSendingService(endpoint, logger, it),
+                            logger
+                    )
         }
 
         if (!validateClientKey(clientKey)) {
@@ -107,18 +111,15 @@ private constructor(
         // in the manifest so we do it here for full compatibility
         application?.let {
             val connectivityManager =
-                it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             application?.registerReceiver(
-                NIDNetworkListener(
-                    connectivityManager,
-                    dataStore, this, Dispatchers.IO
-                ),
-                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+                    NIDNetworkListener(connectivityManager, dataStore, this, Dispatchers.IO),
+                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
             )
         }
 
         // set call activity listener
-        nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker() )
+        nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
         this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
     }
 
@@ -164,7 +165,7 @@ private constructor(
         @JvmStatic
         @Deprecated(
                 "setNeuroIdInstance has been renamed to setNeuroIDInstance",
-                ReplaceWith("NeuroID.setNeuroIDInstance()")
+                ReplaceWith("NeuroID.setNeuroIDInstance()"),
         )
         fun setNeuroIdInstance(neuroID: NeuroID) {
             this.setNeuroIDInstance(neuroID)
@@ -268,7 +269,10 @@ private constructor(
         return setUserID(userID, true)
     }
 
-    private fun setUserID(userId: String, userGenerated: Boolean): Boolean {
+    private fun setUserID(
+            userId: String,
+            userGenerated: Boolean,
+    ): Boolean {
         val validID = setGenericUserID(SET_USER_ID, userId, userGenerated)
 
         if (!validID) {
@@ -282,7 +286,7 @@ private constructor(
     internal fun setGenericUserID(
             type: String,
             genericUserId: String,
-            userGenerated: Boolean = true
+            userGenerated: Boolean = true,
     ): Boolean {
         try {
             val validID = validateUserId(genericUserId)
@@ -294,16 +298,16 @@ private constructor(
                 return false
             }
 
-            if(isSDKStarted) {
+            if (isSDKStarted) {
                 captureEvent(
-                    type = type,
-                    uid = genericUserId
+                        type = type,
+                        uid = genericUserId,
                 )
             } else {
                 captureEvent(
-                    queuedEvent = true,
-                    type = type,
-                    uid = genericUserId
+                        queuedEvent = true,
+                        type = type,
+                        uid = genericUserId,
                 )
             }
 
@@ -315,6 +319,7 @@ private constructor(
     }
 
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()")) fun getUserId() = userID
+
     fun getUserID() = userID
 
     fun getRegisteredUserID() = registeredUserID
@@ -461,12 +466,16 @@ private constructor(
 
     fun isStopped() = !isSDKStarted
 
-    internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
+    internal fun registerTarget(
+            activity: Activity,
+            view: View,
+            addListener: Boolean,
+    ) {
         registrationIdentificationHelper.identifySingleView(
                 view,
                 activity.getGUID(),
                 true,
-                addListener
+                addListener,
         )
     }
 
@@ -483,29 +492,29 @@ private constructor(
             clientID = sharedDefaults.getClientId()
 
             captureEvent(
-                type = CREATE_SESSION,
-                f = clientKey,
-                sid = sessionID,
-                lsid = "null",
-                cid = clientID,
-                did = sharedDefaults.getDeviceId(),
-                iid = sharedDefaults.getIntermediateId(),
-                loc = sharedDefaults.getLocale(),
-                ua = sharedDefaults.getUserAgent(),
-                tzo = sharedDefaults.getTimeZone(),
-                lng = sharedDefaults.getLanguage(),
-                ce = true,
-                je = true,
-                ol = true,
-                p = sharedDefaults.getPlatform(),
-                jsl = listOf(),
-                dnt = false,
-                url = "",
-                ns = "nid",
-                jsv = NIDVersion.getSDKVersion(),
-                sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                metadata = metaData
+                    type = CREATE_SESSION,
+                    f = clientKey,
+                    sid = sessionID,
+                    lsid = "null",
+                    cid = clientID,
+                    did = sharedDefaults.getDeviceId(),
+                    iid = sharedDefaults.getIntermediateId(),
+                    loc = sharedDefaults.getLocale(),
+                    ua = sharedDefaults.getUserAgent(),
+                    tzo = sharedDefaults.getTimeZone(),
+                    lng = sharedDefaults.getLanguage(),
+                    ce = true,
+                    je = true,
+                    ol = true,
+                    p = sharedDefaults.getPlatform(),
+                    jsl = listOf(),
+                    dnt = false,
+                    url = "",
+                    ns = "nid",
+                    jsv = NIDVersion.getSDKVersion(),
+                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
+                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
+                    metadata = metaData,
             )
 
             createMobileMetadata()
@@ -539,7 +548,7 @@ private constructor(
                     url = "",
                     ns = "nid",
                     jsv = NIDVersion.getSDKVersion(),
-                    attrs = listOf(mapOf("isRN" to isRN))
+                    attrs = listOf(mapOf("isRN" to isRN)),
             )
         }
     }
@@ -601,31 +610,31 @@ private constructor(
     private fun sendOriginEvent(originResult: SessionIDOriginResult) {
         // sending these as individual items.
         captureEvent(
-            queuedEvent = !isSDKStarted,
-            type = SET_VARIABLE,
-            key = "sessionIdCode",
-            v = originResult.originCode
+                queuedEvent = !isSDKStarted,
+                type = SET_VARIABLE,
+                key = "sessionIdCode",
+                v = originResult.originCode,
         )
 
         captureEvent(
-            queuedEvent = !isSDKStarted,
-            type = SET_VARIABLE,
-            key = "sessionIdSource",
-            v = originResult.origin
+                queuedEvent = !isSDKStarted,
+                type = SET_VARIABLE,
+                key = "sessionIdSource",
+                v = originResult.origin,
         )
 
         captureEvent(
-            queuedEvent = !isSDKStarted,
-            type = SET_VARIABLE,
-            key = "sessionId",
-            v = originResult.sessionID
+                queuedEvent = !isSDKStarted,
+                type = SET_VARIABLE,
+                key = "sessionId",
+                v = originResult.sessionID,
         )
     }
 
     internal fun getOriginResult(
             sessionID: String,
             validID: Boolean,
-            userGenerated: Boolean
+            userGenerated: Boolean,
     ): SessionIDOriginResult {
         var origin =
                 if (userGenerated) {
@@ -661,7 +670,7 @@ private constructor(
         ) {
             pauseCollectionJob =
                     CoroutineScope(Dispatchers.IO).launch {
-                        nidJobServiceManager.sendEventsNow(flushEvents)
+                        nidJobServiceManager.sendEvents(flushEvents)
                         nidJobServiceManager.stopJob()
                         saveIntegrationHealthEvents()
                     }
@@ -701,12 +710,12 @@ private constructor(
     }
 
     /*
-        Every Event Saved should run through this function
-        This function will verify that events should be saved to the datastore prior to making an event object
-        Additionally it will send all events in the queue if the type is a special type (see end of function)
-     */
+       Every Event Saved should run through this function
+       This function will verify that events should be saved to the datastore prior to making an event object
+       Additionally it will send all events in the queue if the type is a special type (see end of function)
+    */
     internal fun captureEvent(
-            queuedEvent:Boolean = false,
+            queuedEvent: Boolean = false,
             type: String,
             ts: Long = System.currentTimeMillis(),
             attrs: List<Map<String, Any>>? = null,
@@ -761,18 +770,18 @@ private constructor(
             m: String? = null,
             level: String? = null,
             c: Boolean? = null,
-            isConnected: Boolean? = null
+            isConnected: Boolean? = null,
     ) {
         if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
             return
         }
 
-        if(excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
+        if (excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
             return
         }
 
         val fullBuffer = dataStore.isFullBuffer()
-        if(lowMemory || fullBuffer){
+        if (lowMemory || fullBuffer) {
             logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, $type dropped")
             return
         }
@@ -833,10 +842,10 @@ private constructor(
                         m,
                         level,
                         c,
-                        isConnected
+                        isConnected,
                 )
 
-        if(queuedEvent) {
+        if (queuedEvent) {
             dataStore.queueEvent(event)
         } else {
             dataStore.saveEvent(event)
@@ -847,14 +856,10 @@ private constructor(
 
         when (type) {
             BLUR -> {
-                ioDispatcher.launch {
-                    nidJobServiceManager.sendEventsNow()
-                }
+                ioDispatcher.launch { nidJobServiceManager.sendEvents() }
             }
             CLOSE_SESSION -> {
-                ioDispatcher.launch {
-                    nidJobServiceManager.sendEventsNow(true)
-                }
+                ioDispatcher.launch { nidJobServiceManager.sendEvents(true) }
             }
         }
     }
