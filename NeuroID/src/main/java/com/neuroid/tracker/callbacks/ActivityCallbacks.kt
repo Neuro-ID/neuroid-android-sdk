@@ -17,9 +17,9 @@ import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
     val neuroID: NeuroID,
-    val logger:NIDLogWrapper,
-    val registrationHelper: RegistrationIdentificationHelper
-): ActivityLifecycleCallbacks {
+    val logger: NIDLogWrapper,
+    val registrationHelper: RegistrationIdentificationHelper,
+) : ActivityLifecycleCallbacks {
     private var activitiesStarted = 0
     private var listActivities = ArrayList<String>()
 
@@ -35,18 +35,21 @@ class ActivityCallbacks(
             true,
             true,
             activityOrFragment = "activity",
-            parent = activity::class.java.simpleName
+            parent = activity::class.java.simpleName,
         )
         // register listeners for focus, blur and touch events
         registrationHelper.registerWindowListeners(activity)
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        logger.d(msg = "onActivityCreated");
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
+        logger.d(msg = "onActivityCreated")
     }
 
     override fun onActivityStarted(activity: Activity) {
-        logger.d( msg="Activity - Created")
+        logger.d(msg = "Activity - Created")
 
         val currentActivityName = activity::class.java.name
 
@@ -69,24 +72,24 @@ class ActivityCallbacks(
         wasChanged = auxOrientation != orientation
 
         if (existActivity.not()) {
-            logger.d(msg="onActivityStarted existActivity.not()");
+            logger.d(msg = "onActivityStarted existActivity.not()")
 
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
-            logger.d( msg="Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            logger.d(msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
             fragManager?.registerFragmentLifecycleCallbacks(
                 FragmentCallbacks(
                     wasChanged,
                     neuroID,
                     logger,
-                    registrationHelper
+                    registrationHelper,
                 ),
-                true
+                true,
             )
         }
 
         if (wasChanged) {
-            logger.d( msg="Activity - POST Created - Orientation change")
+            logger.d(msg = "Activity - POST Created - Orientation change")
             neuroID.captureEvent(
                 type = WINDOW_ORIENTATION_CHANGE,
                 o = "CHANGED",
@@ -94,48 +97,51 @@ class ActivityCallbacks(
             auxOrientation = orientation
         }
 
-         logger.d(msg="Activity - POST Created - Window Load")
-         neuroID.captureEvent(
-             type = WINDOW_LOAD,
-             attrs = listOf(
-                 mapOf(
-                     "component" to "activity",
-                     "lifecycle" to "postCreated",
-                     "className" to currentActivityName
-                 )
-             )
-         )
+        logger.d(msg = "Activity - POST Created - Window Load")
+        neuroID.captureEvent(
+            type = WINDOW_LOAD,
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "postCreated",
+                        "className" to currentActivityName,
+                    ),
+                ),
+        )
     }
 
     override fun onActivityPaused(activity: Activity) {
-        logger.d( msg="Activity - Paused")
+        logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
         neuroID.captureEvent(
             type = WINDOW_BLUR,
-            attrs = listOf(
-                mapOf(
-                    "component" to "activity",
-                    "lifecycle" to "paused",
-                    "className" to currentActivityName
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "paused",
+                        "className" to currentActivityName,
+                    ),
+                ),
         )
     }
 
     override fun onActivityResumed(activity: Activity) {
-        logger.d(msg="Activity - Resumed")
+        logger.d(msg = "Activity - Resumed")
         val currentActivityName = activity::class.java.name
 
         neuroID.captureEvent(
             type = WINDOW_FOCUS,
-            attrs = listOf(
-                mapOf(
-                    "component" to "activity",
-                    "lifecycle" to "resumed",
-                    "className" to currentActivityName
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "resumed",
+                        "className" to currentActivityName,
+                    ),
+                ),
         )
 
         // depending on RN or Android run the following code
@@ -147,7 +153,7 @@ class ActivityCallbacks(
                 registerTarget = true,
                 registerListeners = true,
                 activityOrFragment = "activity",
-                parent = currentActivityName
+                parent = currentActivityName,
             )
 
             registrationHelper.registerWindowListeners(activity)
@@ -155,36 +161,39 @@ class ActivityCallbacks(
     }
 
     override fun onActivityStopped(activity: Activity) {
-        logger.d( msg="Activity - Stopped")
+        logger.d(msg = "Activity - Stopped")
         activitiesStarted--
     }
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) {
         // No Operation
-        logger.d(msg="Activity - Save Instance")
+        logger.d(msg = "Activity - Save Instance")
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        logger.d( msg="Activity - Destroyed")
+        logger.d(msg = "Activity - Destroyed")
         val activityDestroyed = activity::class.java.name
         listActivities.remove(activityDestroyed)
 
-        logger.d(msg="Activity - Destroyed - Window Unload")
+        logger.d(msg = "Activity - Destroyed - Window Unload")
         neuroID.captureEvent(
             type = WINDOW_UNLOAD,
-            attrs = listOf(
-                mapOf(
-                    "component" to "activity",
-                    "lifecycle" to "destroyed",
-                    "className" to activityDestroyed
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "activity",
+                        "lifecycle" to "destroyed",
+                        "className" to activityDestroyed,
+                    ),
+                ),
         )
     }
 
-
     @VisibleForTesting
-    internal fun setTestAuxOrientation(newValue:Int){
+    internal fun setTestAuxOrientation(newValue: Int)  {
         auxOrientation = newValue
     }
 }

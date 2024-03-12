@@ -22,13 +22,11 @@ interface NIDSendingService {
     fun sendEvents(
         key: String,
         events: List<NIDEventModel>,
-        responseCallback: NIDResponseCallBack
+        responseCallback: NIDResponseCallBack,
     )
 
 // Request Prep Functions
-    fun getRequestPayloadJSON(
-        events: List<NIDEventModel>
-    ): String
+    fun getRequestPayloadJSON(events: List<NIDEventModel>): String
 }
 
 /**
@@ -38,7 +36,7 @@ interface NIDSendingService {
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
  * we retry requests that connect and come back with bad response codes.
  */
-class NIDEventSender(private var apiService: NIDApiService, private val context:Context):NIDSendingService {
+class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService {
     companion object {
         // if you change the retry count, please update the test!
         const val RETRY_COUNT = 3
@@ -57,21 +55,26 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
      */
     private fun initializeStaticPayload() {
         if (oomPayload.isEmpty()) {
-            oomPayload = getRequestPayloadJSON(
-                listOf(
-                    NIDEventModel(
-                        type = OUT_OF_MEMORY,
-                        ts = System.currentTimeMillis()
-                    )
+            oomPayload =
+                getRequestPayloadJSON(
+                    listOf(
+                        NIDEventModel(
+                            type = OUT_OF_MEMORY,
+                            ts = System.currentTimeMillis(),
+                        ),
+                    ),
                 )
-            )
         }
     }
 
-    override fun sendEvents(key: String, events: List<NIDEventModel>,  responseCallback: NIDResponseCallBack) {
+    override fun sendEvents(
+        key: String,
+        events: List<NIDEventModel>,
+        responseCallback: NIDResponseCallBack,
+    ) {
         var data = ""
         try {
-            if(events.isEmpty()) {
+            if (events.isEmpty()) {
                 // nothing to send
                 return
             }
@@ -90,38 +93,39 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
         retryRequests(call, responseCallback)
     }
 
-    override fun getRequestPayloadJSON(
-        events: List<NIDEventModel>
-    ): String {
+    override fun getRequestPayloadJSON(events: List<NIDEventModel>): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
-        val userID:String? = if(NeuroID.getInstance()?.getUserID() != null) {
-            NeuroID.getInstance()?.getUserID()
-        } else {
-            null
-        }
-        val registeredUserID:String? = if(NeuroID.getInstance()?.getRegisteredUserID() != null) {
-            NeuroID.getInstance()?.getRegisteredUserID()
-        } else {
-            null
-        }
+        val userID: String? =
+            if (NeuroID.getInstance()?.getUserID() != null) {
+                NeuroID.getInstance()?.getUserID()
+            } else {
+                null
+            }
+        val registeredUserID: String? =
+            if (NeuroID.getInstance()?.getRegisteredUserID() != null) {
+                NeuroID.getInstance()?.getRegisteredUserID()
+            } else {
+                null
+            }
 
-        val jsonBody = mapOf(
-            "siteId" to NeuroID.siteID,
-            "userId" to userID,
-            "clientId" to sharedDefaults.getClientId(),
-            "identityId" to userID,
-            "registeredUserId" to registeredUserID,
-            "pageTag" to NeuroID.screenActivityName,
-            "pageId" to NeuroID.rndmId,
-            "tabId" to NeuroID.rndmId,
-            "responseId" to sharedDefaults.generateUniqueHexId(),
-            "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
-            "jsVersion" to "5.0.0",
-            "sdkVersion" to NIDVersion.getSDKVersion(),
-            "environment" to NeuroID.environment,
-            "jsonEvents" to events
-        )
+        val jsonBody =
+            mapOf(
+                "siteId" to NeuroID.siteID,
+                "userId" to userID,
+                "clientId" to sharedDefaults.getClientId(),
+                "identityId" to userID,
+                "registeredUserId" to registeredUserID,
+                "pageTag" to NeuroID.screenActivityName,
+                "pageId" to NeuroID.rndmId,
+                "tabId" to NeuroID.rndmId,
+                "responseId" to sharedDefaults.generateUniqueHexId(),
+                "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
+                "jsVersion" to "5.0.0",
+                "sdkVersion" to NIDVersion.getSDKVersion(),
+                "environment" to NeuroID.environment,
+                "jsonEvents" to events,
+            )
 
         // using this JSON library (already included) does not escape /
         val gson: Gson = GsonBuilder().create()
@@ -130,8 +134,8 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
 
     internal fun retryRequests(
         call: Call<ResponseBody>,
-        responseCallback: NIDResponseCallBack
-    ){
+        responseCallback: NIDResponseCallBack,
+    )  {
         try {
             var retryCount = 0
             while (retryCount < RETRY_COUNT) {
@@ -147,11 +151,11 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
                     break
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times
-                    retryCount ++
+                    retryCount++
                     responseCallback.onFailure(
                         response.code(),
                         response.message(),
-                        retryCount < RETRY_COUNT
+                        retryCount < RETRY_COUNT,
                     )
                     response.body()?.close()
                 }
@@ -164,14 +168,18 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
             responseCallback.onFailure(-1, errorMessage, false)
         }
     }
-
 }
 
-fun getSendingService(endpoint:String, logger: NIDLogWrapper, context:Context):NIDSendingService = NIDEventSender(
-    getRetroFitInstance(
-        endpoint,
-        logger,
-        NIDApiService::class.java
-    ),
-    context
-)
+fun getSendingService(
+    endpoint: String,
+    logger: NIDLogWrapper,
+    context: Context,
+): NIDSendingService =
+    NIDEventSender(
+        getRetroFitInstance(
+            endpoint,
+            logger,
+            NIDApiService::class.java,
+        ),
+        context,
+    )

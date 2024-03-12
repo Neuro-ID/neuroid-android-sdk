@@ -12,33 +12,36 @@ import com.neuroid.tracker.events.LOW_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class NIDJobServiceManager(
+internal class NIDJobServiceManager(
     private var neuroID: NeuroID,
-    private var dataStore:NIDDataStoreManager,
+    private var dataStore: NIDDataStoreManager,
     private var eventSender: NIDSendingService,
-    private var logger:NIDLogWrapper
-)
-{
+    private var logger: NIDLogWrapper,
+    private var dispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
     @Volatile
     var userActive = true
     var isSendEventsNowEnabled = true
 
-    internal var jobCaptureEvents: Job? = null
-    internal var gyroCadenceJob: Job? = null
-
     internal var clientKey = ""
     internal var isSetup: Boolean = false
 
+    private var sendEventsJob: Job = createSendEventsServer()
+    internal var sendCadenceJob: Job? = null
+    internal var gyroCadenceJob: Job? = null
+
+    private val sendEventsNotification = Channel<Boolean>(Channel.UNLIMITED)
     private var application: Application? = null
     private var activityManager: ActivityManager? = null
-
 
     @Synchronized
     fun startJob(
@@ -48,10 +51,12 @@ class NIDJobServiceManager(
         this.userActive = true
         this.clientKey = clientKey
         this.application = application
-        jobCaptureEvents = createJobServer()
+
+        sendEventsJob = createSendEventsServer()
+        sendCadenceJob = createSendCadenceServer()
         NIDSensorHelper.initSensorHelper(application, logger)
 
-        gyroCadenceJob = createGyroJobServer()
+        gyroCadenceJob = createGyroCadenceServer()
         activityManager = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         this.isSetup = true
     }
@@ -59,8 +64,8 @@ class NIDJobServiceManager(
     @Synchronized
     fun stopJob() {
         NIDSensorHelper.stopSensors()
-        jobCaptureEvents?.cancel()
-        jobCaptureEvents = null
+        sendCadenceJob?.cancel()
+        sendCadenceJob = null
 
         gyroCadenceJob?.cancel()
         gyroCadenceJob = null
@@ -68,41 +73,88 @@ class NIDJobServiceManager(
 
     @Synchronized
     fun isStopped(): Boolean {
-        return jobCaptureEvents?.isActive != true
+        return sendCadenceJob?.isActive != true
     }
 
     @Synchronized
     fun restart() {
         this.userActive = true
         NIDSensorHelper.restartSensors()
-        jobCaptureEvents?.cancel()
-        jobCaptureEvents = createJobServer()
+
+        // If the job has ended for any reason restart it
+        if (!sendEventsJob.isActive) {
+            sendEventsJob.cancel()
+            sendEventsJob = createSendEventsServer()
+        }
+
+        sendCadenceJob?.cancel()
+        sendCadenceJob = createSendCadenceServer()
 
         gyroCadenceJob?.cancel()
-        gyroCadenceJob = createGyroJobServer()
+        gyroCadenceJob = createGyroCadenceServer()
     }
 
-    private fun createJobServer(): Job {
-        return CoroutineScope(Dispatchers.IO).launch {
+    /**
+     * Notify the send events server to initiate a send.
+     */
+    fun sendEvents(forceSendEvents: Boolean = false) {
+        CoroutineScope(dispatcher).launch {
+            sendEventsNotification.send(forceSendEvents)
+        }
+    }
+
+    /**
+     * Creates a job that synchronizes all requests to send events.
+     */
+    private fun createSendEventsServer(): Job {
+        return CoroutineScope(dispatcher).launch {
+            try {
+                for (notification in sendEventsNotification) {
+                    var sendNow = notification
+                    var next = sendEventsNotification.tryReceive()
+                    while (next.isSuccess) {
+                        next.getOrNull()?.let {
+                            sendNow = sendNow || it
+                        }
+                        next = sendEventsNotification.tryReceive()
+                    }
+                    sendEventsNow(sendNow)
+                }
+            } catch (exception: Exception) {
+                logger.e("NeuroID", exception.toString())
+            }
+            logger.e("NeuroID", "Send Event Job Exited")
+        }
+    }
+
+    /**
+     * Creates a job that notifies the sendEvents channel to send events
+     */
+    private fun createSendCadenceServer(): Job {
+        return CoroutineScope(dispatcher).launch {
             while (userActive && isActive) {
                 delay(5000L)
-                sendEventsNow()
+                sendEventsNotification.send(false)
             }
         }
     }
 
-    private fun createGyroJobServer(): Job {
-        return CoroutineScope(Dispatchers.IO).launch {
+    /**
+     * Create a job that captures the gyro/accel data in an event on a set cadence
+     */
+    private fun createGyroCadenceServer(): Job {
+        return CoroutineScope(dispatcher).launch {
             while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
                 delay(NeuroID.GYRO_SAMPLE_INTERVAL)
 
                 neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,
-                    attrs = listOf(
-                        mapOf(
-                            "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s"
-                        )
-                    )
+                    attrs =
+                        listOf(
+                            mapOf(
+                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s",
+                            ),
+                        ),
                 )
             }
         }
@@ -112,30 +164,31 @@ class NIDJobServiceManager(
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
      * set here to show what timeouts are available in the OKHttp client.
      */
-    suspend fun sendEventsNow(
-        forceSendEvents: Boolean = false
-    ) {
+    private fun sendEventsNow(forceSendEvents: Boolean = false) {
         if (isSendEventsNowEnabled && (forceSendEvents || !isStopped())) {
             application?.let {
                 eventSender.sendEvents(
                     clientKey,
                     getEventsToSend(it),
-                    object: NIDResponseCallBack {
+                    object : NIDResponseCallBack {
                         override fun onSuccess(code: Int) {
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }
 
-                        override fun onFailure(code: Int, message: String, isRetry: Boolean) {
+                        override fun onFailure(
+                            code: Int,
+                            message: String,
+                            isRetry: Boolean,
+                        ) {
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
-                    }
+                    },
                 )
             } ?: run {
                 userActive = false
             }
         }
     }
-
 
     /**
      * Get the current system memory state.
@@ -157,14 +210,15 @@ class NIDJobServiceManager(
             return NIDEventModel(
                 type = LOW_MEMORY,
                 ts = System.currentTimeMillis(),
-                attrs = listOf(
-                    mapOf<String, Any>(
-                        "isLowMemory" to memoryInfo.lowMemory,
-                        "total" to memoryInfo.totalMem,
-                        "available" to memoryInfo.availMem,
-                        "threshold" to memoryInfo.threshold,
-                    )
-                )
+                attrs =
+                    listOf(
+                        mapOf<String, Any>(
+                            "isLowMemory" to memoryInfo.lowMemory,
+                            "total" to memoryInfo.totalMem,
+                            "available" to memoryInfo.availMem,
+                            "threshold" to memoryInfo.threshold,
+                        ),
+                    ),
             )
         }
 
@@ -179,7 +233,7 @@ class NIDJobServiceManager(
     private fun getEventsToSend(context: Context): List<NIDEventModel> {
         val lowMemEvent = checkMemoryLevel(context)
 
-        if (lowMemEvent !=null) {
+        if (lowMemEvent != null) {
             // return the low memory event to be sent
             return listOf(lowMemEvent)
         }
@@ -188,7 +242,7 @@ class NIDJobServiceManager(
     }
 
     @VisibleForTesting
-    internal fun setTestEventSender(eventSender: NIDSendingService){
+    internal fun setTestEventSender(eventSender: NIDSendingService) {
         this.eventSender = eventSender
     }
 }

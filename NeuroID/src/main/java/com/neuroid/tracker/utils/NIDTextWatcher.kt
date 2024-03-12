@@ -13,18 +13,27 @@ class NIDTextWatcher(
     val logger: NIDLogWrapper,
     private val idName: String,
     val className: String? = "",
-    val startingHashValue: String? = ""
+    val startingHashValue: String? = "",
 ) : TextWatcher {
-
     private var lastSize = 0
     private var lastHashValue = startingHashValue
     private var lastPastedHashValue: String? = ""
 
-    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+    override fun beforeTextChanged(
+        p0: CharSequence?,
+        p1: Int,
+        p2: Int,
+        p3: Int,
+    ) {
         // No operation
     }
 
-    override fun onTextChanged(sequence: CharSequence?, start: Int, before: Int, count: Int) {
+    override fun onTextChanged(
+        sequence: CharSequence?,
+        start: Int,
+        before: Int,
+        count: Int,
+    ) {
         // Check if the change is due to a paste operation
         val clipboard = NeuroID.getInstance()?.getClipboardManagerInstance()
         val clipData = clipboard?.primaryClip
@@ -48,23 +57,24 @@ class NIDTextWatcher(
 
                     if (pastedText.isNotEmpty()) {
                         neuroID.captureEvent(
-                                type = PASTE,
-                                tg = hashMapOf(
+                            type = PASTE,
+                            tg =
+                                hashMapOf(
                                     "attr" to getAttrJson(sequence.toString()),
-                                    "et" to "text"
+                                    "et" to "text",
                                 ),
-                                tgs = idName,
-                                v = "S~C~~${sequence?.length}",
-                                hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                                attrs = listOf(
+                            tgs = idName,
+                            v = "S~C~~${sequence?.length}",
+                            hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                            attrs =
+                                listOf(
                                     mapOf(
-                                        "clipboardText" to "S~C~~${pastedText.length}"
-                                    )
-                                )
-                            )
+                                        "clipboardText" to "S~C~~${pastedText.length}",
+                                    ),
+                                ),
+                        )
                     }
                 }
-
             }
         }
     }
@@ -74,15 +84,16 @@ class NIDTextWatcher(
 
         if (lastHashValue != currentHashValue) {
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
-            logger.d(msg = "Activity - after text ${sequence.toString()}")
+            logger.d(msg = "Activity - after text $sequence")
 
             neuroID.captureEvent(
                 type = INPUT,
-                tg = hashMapOf(
-                    "attr" to getAttrJson(sequence.toString()),
-                    "etn" to INPUT,
-                    "et" to "text"
-                ),
+                tg =
+                    hashMapOf(
+                        "attr" to getAttrJson(sequence.toString()),
+                        "etn" to INPUT,
+                        "et" to "text",
+                    ),
                 tgs = idName,
                 v = "S~C~~${sequence?.length}",
                 hv = sequence?.toString()?.getSHA256withSalt()?.take(8),

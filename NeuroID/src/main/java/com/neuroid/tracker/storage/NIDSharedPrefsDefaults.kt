@@ -9,9 +9,8 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.random.Random
 
-
 class NIDSharedPrefsDefaults(
-    context: Context
+    context: Context,
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
@@ -101,7 +100,10 @@ class NIDSharedPrefsDefaults(
         return "$timeNow.$numRnd"
     }
 
-    internal fun putString(key: String, value: String) {
+    internal fun putString(
+        key: String,
+        value: String,
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             sharedPref?.let {
                 with(it.edit()) {
@@ -112,7 +114,10 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    internal fun getString(key: String, default: String = ""): String {
+    internal fun getString(
+        key: String,
+        default: String = "",
+    ): String {
         return sharedPref?.getString(key, "") ?: default
     }
 
@@ -127,16 +132,13 @@ class NIDSharedPrefsDefaults(
         private const val NID_IID = "NID_IID_KEY"
         private const val NID_DEVICE_SALT = "NID_DEVICE_SALT"
 
+        fun getHexRandomID(): String =
+            List(12) {
+                (('a'..'f') + ('0'..'9')).random()
+            }.joinToString("")
 
-        fun getHexRandomID(): String = List(12) {
-            (('a'..'f') + ('0'..'9')).random()
-        }.joinToString("")
+        fun getDisplayWidth() = Resources.getSystem().displayMetrics.widthPixels
 
-        fun getDisplayWidth() =
-            Resources.getSystem().displayMetrics.widthPixels
-
-        fun getDisplayHeight() =
-            Resources.getSystem().displayMetrics.heightPixels
-
+        fun getDisplayHeight() = Resources.getSystem().displayMetrics.heightPixels
     }
 }

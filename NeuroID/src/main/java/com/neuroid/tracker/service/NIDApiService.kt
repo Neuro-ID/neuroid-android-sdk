@@ -9,5 +9,8 @@ import retrofit2.http.Path
 
 interface NIDApiService {
     @POST("/c/{key}")
-    fun sendEvents(@Body requestBody: RequestBody, @Path("key") key: String): Call<ResponseBody>
-}
+    fun sendEvents(
+        @Body requestBody: RequestBody,
+        @Path("key") key: String,
+    ): Call<ResponseBody>
+} 

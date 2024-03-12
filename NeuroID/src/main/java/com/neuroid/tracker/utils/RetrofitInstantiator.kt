@@ -10,17 +10,18 @@ fun <T> getRetroFitInstance(
     endpoint: String,
     logger: NIDLogWrapper,
     service: Class<T>,
-    timeOut:Long = 10,
-): T = Retrofit.Builder()
-    .baseUrl(endpoint)
-    .client(
-        OkHttpClient.Builder()
-            .readTimeout(timeOut, TimeUnit.SECONDS)
-            .connectTimeout(timeOut, TimeUnit.SECONDS)
-            .callTimeout(0, TimeUnit.SECONDS)
-            .writeTimeout(timeOut, TimeUnit.SECONDS)
-            .addInterceptor(LoggerIntercepter(logger)).build()
-    )
-    .addConverterFactory(GsonConverterFactory.create())
-    .build()
-    .create(service)
+    timeOut: Long = 10,
+): T =
+    Retrofit.Builder()
+        .baseUrl(endpoint)
+        .client(
+            OkHttpClient.Builder()
+                .readTimeout(timeOut, TimeUnit.SECONDS)
+                .connectTimeout(timeOut, TimeUnit.SECONDS)
+                .callTimeout(0, TimeUnit.SECONDS)
+                .writeTimeout(timeOut, TimeUnit.SECONDS)
+                .addInterceptor(LoggerIntercepter(logger)).build(),
+        )
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(service) 

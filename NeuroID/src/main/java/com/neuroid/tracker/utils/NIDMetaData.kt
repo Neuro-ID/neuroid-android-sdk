@@ -45,46 +45,50 @@ class NIDMetaData(context: Context) {
         isSimulator = RootHelper().isProbablyEmulator()
     }
 
-    private fun getScreenResolution(context: Context): String = try {
-        val width = context.resources.displayMetrics.widthPixels
-        val height = context.resources.displayMetrics.heightPixels
-        "$width,$height"
-    } catch (ex: Exception) {
-        ""
-    }
+    private fun getScreenResolution(context: Context): String =
+        try {
+            val width = context.resources.displayMetrics.widthPixels
+            val height = context.resources.displayMetrics.heightPixels
+            "$width,$height"
+        } catch (ex: Exception) {
+            ""
+        }
 
-    private fun getCarrierName(context: Context): String = try {
-        val telephonyManager =
-            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        telephonyManager.networkOperatorName
-    } catch (ex: Exception) {
-        ""
-    }
+    private fun getCarrierName(context: Context): String =
+        try {
+            val telephonyManager =
+                context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephonyManager.networkOperatorName
+        } catch (ex: Exception) {
+            ""
+        }
 
-    private fun getMemory(context: Context): Double = try {
-        val actManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+    private fun getMemory(context: Context): Double =
+        try {
+            val actManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
 
-        // Declaring MemoryInfo object
-        val memInfo = ActivityManager.MemoryInfo()
-        actManager.getMemoryInfo(memInfo)
-        memInfo.totalMem.toDouble() / (1024 * 1024 * 1024)
-    } catch (ex: Exception) {
-        0.toDouble()
-    }
+            // Declaring MemoryInfo object
+            val memInfo = ActivityManager.MemoryInfo()
+            actManager.getMemoryInfo(memInfo)
+            memInfo.totalMem.toDouble() / (1024 * 1024 * 1024)
+        } catch (ex: Exception) {
+            0.toDouble()
+        }
 
-    private fun getBatteryLevel(context: Context): Int = try {
-        val bm = context.getSystemService(BATTERY_SERVICE) as BatteryManager
-        bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-    } catch (ex: Exception) {
-        0
-    }
+    private fun getBatteryLevel(context: Context): Int =
+        try {
+            val bm = context.getSystemService(BATTERY_SERVICE) as BatteryManager
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        } catch (ex: Exception) {
+            0
+        }
 
     private fun getWifiStatus(context: Context): Boolean? {
         return try {
             val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
             wifiManager.isWifiEnabled
         } catch (ex: Exception) {
-            //No Wifi Permissions
+            // No Wifi Permissions
             null
         }
     }
