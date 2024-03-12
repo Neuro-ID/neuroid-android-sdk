@@ -36,11 +36,13 @@ class NIDNetworkListener(
         private val dataStoreManager: NIDDataStoreManager,
         private val neuroID: NeuroID,
         private val dispatcher: CoroutineContext,
-        private val sleepInterval: Long = SLEEP_INTERVAL
+        private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
+        private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
 ) : BroadcastReceiver() {
 
     companion object {
-        const val SLEEP_INTERVAL = 10000L
+        const val SLEEP_INTERVAL_PAUSE = 10000L
+        const val SLEEP_INTERVAL_RESUME = 2000L
     }
 
     private var haveNoNetworkJob: Job? = null
@@ -70,7 +72,7 @@ class NIDNetworkListener(
             }
             haveNoNetworkJob =
                     CoroutineScope(dispatcher).launch {
-                        delay(sleepInterval)
+                        delay(sleepIntervalPause)
                         neuroID.pauseCollection(false)
                     }
         } else {
@@ -79,7 +81,7 @@ class NIDNetworkListener(
             }
             haveNetworkJob =
                     CoroutineScope(dispatcher).launch {
-                        delay(sleepInterval)
+                        delay(sleepIntervalResume)
                         neuroID.resumeCollection()
                     }
         }
