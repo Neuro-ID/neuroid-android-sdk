@@ -84,7 +84,6 @@ class NIDTextWatcher(
 
         if (lastHashValue != currentHashValue) {
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
-            logger.d(msg = "Activity - after text $sequence")
 
             neuroID.captureEvent(
                 type = INPUT,
