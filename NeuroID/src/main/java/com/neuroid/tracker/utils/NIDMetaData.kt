@@ -8,7 +8,15 @@ import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
+import com.neuroid.tracker.models.NIDLocation
 import org.json.JSONObject
+
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.LocationManager
+
+import androidx.core.app.ActivityCompat
 
 class NIDMetaData(context: Context) {
     private val brand = Build.BRAND
@@ -25,6 +33,7 @@ class NIDMetaData(context: Context) {
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
+    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
 
     init {
         displayResolution = getScreenResolution(context)
@@ -84,6 +93,42 @@ class NIDMetaData(context: Context) {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    internal fun getLocation(context: Context) {
+        val fineResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+        val coarseResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (fineResult != PackageManager.PERMISSION_GRANTED &&
+                coarseResult != PackageManager.PERMISSION_GRANTED) {
+            gpsCoordinates.authorizationStatus = LOCATION_DENIED
+            return
+        }
+
+        // get last position if available, take highest accuracy from available providers
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val providers = locationManager.getProviders(true)
+        var smallestAccuracyMeters = Float.MAX_VALUE
+        for (provider in providers) {
+            val location = locationManager.getLastKnownLocation(provider)
+            if (location != null) {
+                if (location.accuracy < smallestAccuracyMeters) {
+                    gpsCoordinates.longitude = location.longitude
+                    gpsCoordinates.latitude = location.latitude
+                    gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
+                    smallestAccuracyMeters = location.accuracy
+                }
+            }
+        }
+    }
+
+
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("brand", brand)
@@ -100,8 +145,16 @@ class NIDMetaData(context: Context) {
         jsonObject.put("isJailBreak", isJailBreak)
         jsonObject.put("isWifiOn", isWifiOn)
         jsonObject.put("isSimulator", isSimulator)
+        jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         return jsonObject
     }
 
     override fun toString(): String = toJson().toString()
+
+    companion object{
+        const val LOCATION_DENIED = "denied"
+        const val LOCATION_UNKNOWN = "unknown"
+        const val LOCATION_AUTHORIZED_ALWAYS = "authorized"
+    }
+
 }

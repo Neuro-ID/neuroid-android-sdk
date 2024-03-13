@@ -1,5 +1,6 @@
 package com.sample.neuroid.us
 
+import android.Manifest
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -7,9 +8,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiSelector
+import androidx.test.rule.GrantPermissionRule
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
@@ -52,7 +51,13 @@ data class ResponseData(
 @ExperimentalCoroutinesApi
 class NeuroIdUITest {
     val server = MockWebServer()
-    var uiDevice: UiDevice? = null
+
+    // take care of the phone and location permissions dialogs.
+    @get:Rule
+    val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.READ_PHONE_STATE)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
@@ -60,17 +65,6 @@ class NeuroIdUITest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
-        uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-
-        // Grant permission using UIAutomator
-        val allowButton = uiDevice?.findObject(UiSelector().text("ALLOW")) ?: uiDevice?.findObject(
-            UiSelector().text("Allow")
-        )
-        if (allowButton != null) {
-            if (allowButton.exists()) {
-                allowButton.click()
-            }
-        }
         server.start()
         val url = server.url("/c/").toString()
         NeuroID.getInstance()?.setTestURL(url)
