@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
@@ -15,7 +16,7 @@ import com.sample.neuroid.us.databinding.NidActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: NidActivityMainBinding
-    private val READ_PHONE_STATE_REQUEST_CODE = 100
+    private val REQUEST_CODE = 1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,16 +47,34 @@ class MainActivity : AppCompatActivity() {
                 NeuroID.getInstance()?.closeSession()
             }
         }
-            if(!isCallActivityPermissionGiven()){
-             requestPermissions(arrayOf(Manifest.permission.READ_PHONE_STATE), READ_PHONE_STATE_REQUEST_CODE)
-            }
 
+        val permissions = mutableListOf<String>()
+
+        if (!isLocationPermissionGiven()) {
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (!isCallActivityPermissionGiven()){
+            permissions.add(Manifest.permission.READ_PHONE_STATE)
+        }
+
+        if (permissions.isNotEmpty()) {
+            requestPermissions(permissions.toTypedArray(), REQUEST_CODE)
+        }
+    }
+
+    private fun isLocationPermissionGiven(): Boolean {
+        val coarse = ActivityCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val fine = ActivityCompat.checkSelfPermission(
+            this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return coarse && fine
     }
 
     private fun isCallActivityPermissionGiven(): Boolean {
         return ActivityCompat.checkSelfPermission(
             this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
-
     }
 
     override fun onRequestPermissionsResult(
@@ -64,10 +83,26 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode){
-            READ_PHONE_STATE_REQUEST_CODE ->{
-                NIDLog.d(msg = "call activity permission granted}")
+        when(requestCode) {
+            REQUEST_CODE -> {
+                if (isLocationPermissionGiven()) {
+                    Log.d(
+                        "main_activity",
+                        "location grantResults ok"
+                    )
+                } else {
+                    Log.d(
+                        "main_activity",
+                        "location grantResults denied"
+                    )
+                }
+                if (isCallActivityPermissionGiven()) {
+                    NIDLog.d(msg = "call activity permission granted")
+                } else {
+                    NIDLog.d(msg = "call activity permission denied")
+                }
             }
         }
     }
+
 }
