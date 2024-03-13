@@ -164,7 +164,7 @@ class NIDNetworkListenerTest {
         val intent = mockk<Intent>()
         every { intent.action } returns ConnectivityManager.CONNECTIVITY_ACTION
         val listener = NIDNetworkListener(connectivityManager, dataStoreManager, neuroID,
-            UnconfinedTestDispatcher(), 0
+            UnconfinedTestDispatcher(), 0, 0
         )
         listener.onReceive(context, intent)
 

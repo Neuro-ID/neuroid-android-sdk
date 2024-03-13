@@ -30,7 +30,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
 }
 
 fun NeuroID.startSession(
-    sessionID: String = "",
+    sessionID: String? = null,
     advancedDeviceSignals: Boolean
 ): SessionStartResult {
     val sessionRes = startSession(

@@ -685,6 +685,10 @@ class NeuroID
 
         @Synchronized
         fun resumeCollection() {
+            // Don't allow resume to be called if SDK has not been started
+            if (userID.isEmpty() && !isSDKStarted) {
+                return
+            }
             if (pauseCollectionJob?.isCompleted == true ||
                 pauseCollectionJob?.isCancelled == true ||
                 pauseCollectionJob == null
