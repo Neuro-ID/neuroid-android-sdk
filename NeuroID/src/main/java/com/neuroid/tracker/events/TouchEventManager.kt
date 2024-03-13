@@ -132,14 +132,14 @@ class TouchEventManager(
                 when (currentView) {
                     is CheckBox, is AppCompatCheckBox -> {
                         type = CHECKBOX_CHANGE
-                        logger.i(
+                        logger.d(
                             NIDLog.CHECK_BOX_CHANGE_TAG,
                             NIDLog.CHECK_BOX_ID + currentView.getIdOrTag(),
                         )
                     }
                     is RadioButton -> {
                         type = RADIO_CHANGE
-                        logger.i(
+                        logger.d(
                             NIDLog.RADIO_BUTTON_CHANGE_TAG,
                             NIDLog.RADIO_BUTTON_ID + currentView.getIdOrTag(),
                         )
