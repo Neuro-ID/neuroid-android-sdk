@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
  * Start a request to get a location for a provider. Once the location is obtained, update
  * the location to a passed in NIDLocation instance. If multiple providers are found, choose
  * one using the PROVIDER_MAP. Highest number is the most desired (most accurate) provider.
- *
  */
 class LocationService(private val locationManager: LocationManager,
                       private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
@@ -38,7 +37,8 @@ class LocationService(private val locationManager: LocationManager,
     }
 
     /**
-     * Tied to the session lifecycle, called in NeuroID on start, startSession, resumeCollection,
+     * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a
+     * looper. tied to the session lifecycle, called in NeuroID on start, startSession, resumeCollection,
      */
     fun setupLocationCoroutine() {
         if (isStarted) {
@@ -58,7 +58,9 @@ class LocationService(private val locationManager: LocationManager,
     }
 
     /**
-     * Tied to the session lifecycle, called in NeuroID on stop, pauseCollection, stopSession
+     * this will cancel the coroutine scope used by requestLocation() to request locations.
+     * lcoation requesting will stop when listener is removend and locationScope is canceled.
+     * tied to the session lifecycle, called in NeuroID on stop, pauseCollection, stopSession
      */
     @SuppressLint("MissingPermission")
     fun shutdownLocationCoroutine() {
@@ -71,8 +73,8 @@ class LocationService(private val locationManager: LocationManager,
 
     /**
      * called when we get metadata to get the last known position pulled from the location
-     * requestor, scope parameter exposed for testing purposes. normal operation will use
-     * internal scope derived from the HandlerThread
+     * requestor. coroutine param is for testing purposes. normal operation will use the
+     * internal coroutine scope.
      */
     @SuppressLint("MissingPermission")
     fun getLastKnownLocation(context: Context, nidLocation: NIDLocation,
@@ -103,7 +105,8 @@ class LocationService(private val locationManager: LocationManager,
     }
 
     /**
-     * Tied to the session life cycle, called in NeuroID on start, resumeCollection, startSession()
+     * start requesting location. locations will be polled based on the time and distance from the
+     * last collected location.
      */
     @SuppressLint("MissingPermission")
     private fun requestLocation(context: Context, scope: CoroutineScope?) {
