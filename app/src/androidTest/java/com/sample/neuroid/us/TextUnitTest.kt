@@ -1,5 +1,6 @@
 package com.sample.neuroid.us
 
+import android.location.LocationListener
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.ViewMatchers
@@ -10,10 +11,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
+import com.neuroid.tracker.utils.CoroutineScopeAdapter
+import com.neuroid.tracker.utils.LocationListenerCreator
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -89,7 +94,10 @@ class TextUnitTest {
             for (i in 0 until request) {
                 var  req  = server.takeRequest()
                 val body = req.body.readUtf8().toString()
-                val gson = Gson()
+                val gson = GsonBuilder()
+                    .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
+                    .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())
+                    .create()
 
                 val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
 
