@@ -21,14 +21,18 @@ import com.neuroid.tracker.utils.VersionChecker
 import java.util.Calendar
 
 class NIDCallActivityListener(
-    private val dataStoreManager: NIDDataStoreManager, private val versionChecker: VersionChecker
+    private val dataStoreManager: NIDDataStoreManager,
+    private val versionChecker: VersionChecker,
 ) : BroadcastReceiver() {
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private val isReceiverRegistered = false
 
     @RequiresApi(Build.VERSION_CODES.S)
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+    ) {
         if (context != null) {
             registerCustomTelephonyCallback(context)
         }
@@ -36,7 +40,8 @@ class NIDCallActivityListener(
 
     internal fun setCallActivityListener(context: Context) {
         if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.READ_PHONE_STATE
+                context,
+                Manifest.permission.READ_PHONE_STATE,
             ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
@@ -63,7 +68,7 @@ class NIDCallActivityListener(
                         type = CALL_IN_PROGRESS,
                         cp = CallInProgress.INACTIVE.event,
                         ts = Calendar.getInstance().timeInMillis,
-                    )
+                    ),
                 )
             }
 
@@ -74,9 +79,8 @@ class NIDCallActivityListener(
                         type = CALL_IN_PROGRESS,
                         cp = CallInProgress.ACTIVE.event,
                         ts = Calendar.getInstance().timeInMillis,
-                    )
+                    ),
                 )
-
             }
 
             CallInProgress.UNAUTHORIZED.state -> {
@@ -86,7 +90,7 @@ class NIDCallActivityListener(
                         type = CALL_IN_PROGRESS,
                         cp = CallInProgress.UNAUTHORIZED.event,
                         ts = Calendar.getInstance().timeInMillis,
-                    )
+                    ),
                 )
             }
         }
@@ -108,33 +112,37 @@ class NIDCallActivityListener(
                             saveCallInProgressEvent(CallInProgress.ACTIVE.state)
                         }
                     }
-                })
+                },
+            )
         } else {
             NIDLog.d(msg = "SDK < 31")
-            telephony.listen(object : PhoneStateListener() {
-                override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-                    when (state) {
-                        TelephonyManager.CALL_STATE_IDLE -> {
-                            saveCallInProgressEvent(CallInProgress.INACTIVE.state)
-                        }
+            telephony.listen(
+                object : PhoneStateListener() {
+                    override fun onCallStateChanged(
+                        state: Int,
+                        phoneNumber: String?,
+                    ) {
+                        when (state) {
+                            TelephonyManager.CALL_STATE_IDLE -> {
+                                saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+                            }
 
-                        // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
-                        TelephonyManager.CALL_STATE_OFFHOOK -> {
-                            saveCallInProgressEvent(CallInProgress.ACTIVE.state)
-
+                            // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
+                            TelephonyManager.CALL_STATE_OFFHOOK -> {
+                                saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+                            }
                         }
                     }
-                }
-            }, PhoneStateListener.LISTEN_CALL_STATE)
+                },
+                PhoneStateListener.LISTEN_CALL_STATE,
+            )
         }
     }
-
-
 }
 
-
 @RequiresApi(Build.VERSION_CODES.S)
-internal class CustomTelephonyCallback(callBack: CallBack) : TelephonyCallback(),
+internal class CustomTelephonyCallback(callBack: CallBack) :
+    TelephonyCallback(),
     TelephonyCallback.CallStateListener {
     private val mCallBack: CallBack
 
@@ -150,4 +158,3 @@ internal class CustomTelephonyCallback(callBack: CallBack) : TelephonyCallback()
 internal fun interface CallBack {
     fun callStateChanged(state: Int)
 }
-

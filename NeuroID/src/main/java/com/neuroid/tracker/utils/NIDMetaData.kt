@@ -8,8 +8,15 @@ import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
+import com.neuroid.tracker.models.NIDLocation
 import org.json.JSONObject
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.LocationManager
+
+import androidx.core.app.ActivityCompat
 
 class NIDMetaData(context: Context) {
     private val brand = Build.BRAND
@@ -26,7 +33,7 @@ class NIDMetaData(context: Context) {
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
-
+    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
 
     init {
         displayResolution = getScreenResolution(context)
@@ -38,49 +45,89 @@ class NIDMetaData(context: Context) {
         isSimulator = RootHelper().isProbablyEmulator()
     }
 
-    private fun getScreenResolution(context: Context): String = try {
-        val width = context.resources.displayMetrics.widthPixels
-        val height = context.resources.displayMetrics.heightPixels
-        "$width,$height"
-    } catch (ex: Exception) {
-        ""
-    }
+    private fun getScreenResolution(context: Context): String =
+        try {
+            val width = context.resources.displayMetrics.widthPixels
+            val height = context.resources.displayMetrics.heightPixels
+            "$width,$height"
+        } catch (ex: Exception) {
+            ""
+        }
 
-    private fun getCarrierName(context: Context): String = try {
-        val telephonyManager =
-            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        telephonyManager.networkOperatorName
-    } catch (ex: Exception) {
-        ""
-    }
+    private fun getCarrierName(context: Context): String =
+        try {
+            val telephonyManager =
+                context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephonyManager.networkOperatorName
+        } catch (ex: Exception) {
+            ""
+        }
 
-    private fun getMemory(context: Context): Double = try {
-        val actManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+    private fun getMemory(context: Context): Double =
+        try {
+            val actManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
 
-        // Declaring MemoryInfo object
-        val memInfo = ActivityManager.MemoryInfo()
-        actManager.getMemoryInfo(memInfo)
-        memInfo.totalMem.toDouble() / (1024 * 1024 * 1024)
-    } catch (ex: Exception) {
-        0.toDouble()
-    }
+            // Declaring MemoryInfo object
+            val memInfo = ActivityManager.MemoryInfo()
+            actManager.getMemoryInfo(memInfo)
+            memInfo.totalMem.toDouble() / (1024 * 1024 * 1024)
+        } catch (ex: Exception) {
+            0.toDouble()
+        }
 
-    private fun getBatteryLevel(context: Context): Int = try {
-        val bm = context.getSystemService(BATTERY_SERVICE) as BatteryManager
-        bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-    } catch (ex: Exception) {
-        0
-    }
+    private fun getBatteryLevel(context: Context): Int =
+        try {
+            val bm = context.getSystemService(BATTERY_SERVICE) as BatteryManager
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        } catch (ex: Exception) {
+            0
+        }
 
     private fun getWifiStatus(context: Context): Boolean? {
         return try {
             val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
             wifiManager.isWifiEnabled
         } catch (ex: Exception) {
-            //No Wifi Permissions
+            // No Wifi Permissions
             null
         }
     }
+
+    @SuppressLint("MissingPermission")
+    internal fun getLocation(context: Context) {
+        val fineResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+        val coarseResult = ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (fineResult != PackageManager.PERMISSION_GRANTED &&
+                coarseResult != PackageManager.PERMISSION_GRANTED) {
+            gpsCoordinates.authorizationStatus = LOCATION_DENIED
+            return
+        }
+
+        // get last position if available, take highest accuracy from available providers
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val providers = locationManager.getProviders(true)
+        var smallestAccuracyMeters = Float.MAX_VALUE
+        for (provider in providers) {
+            val location = locationManager.getLastKnownLocation(provider)
+            if (location != null) {
+                if (location.accuracy < smallestAccuracyMeters) {
+                    gpsCoordinates.longitude = location.longitude
+                    gpsCoordinates.latitude = location.latitude
+                    gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
+                    smallestAccuracyMeters = location.accuracy
+                }
+            }
+        }
+    }
+
 
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
@@ -98,10 +145,16 @@ class NIDMetaData(context: Context) {
         jsonObject.put("isJailBreak", isJailBreak)
         jsonObject.put("isWifiOn", isWifiOn)
         jsonObject.put("isSimulator", isSimulator)
+        jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         return jsonObject
     }
 
     override fun toString(): String = toJson().toString()
 
+    companion object{
+        const val LOCATION_DENIED = "denied"
+        const val LOCATION_UNKNOWN = "unknown"
+        const val LOCATION_AUTHORIZED_ALWAYS = "authorized"
+    }
 
 }

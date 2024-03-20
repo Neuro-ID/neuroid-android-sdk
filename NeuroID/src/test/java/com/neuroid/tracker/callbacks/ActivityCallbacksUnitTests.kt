@@ -296,7 +296,8 @@ internal class ActivityCallbacksUnitTests {
                     "lifecycle" to "destroyed",
                     "className" to expectedActivityName
                 )
-            ))
+            )
+        )
     }
 
 

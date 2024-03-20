@@ -5,13 +5,14 @@ import com.neuroid.tracker.NeuroID
 
 object NIDVersion {
     fun getSDKVersion(): String {
-        val rnText = NeuroID.getInstance()?.isRN?.let {
-            if (it) {
-                "rn-"
-            } else {
-                ""
+        val rnText =
+            NeuroID.getInstance()?.isRN?.let {
+                if (it) {
+                    "rn-"
+                } else {
+                    ""
+                }
             }
-        }
 
         return "5.android-" + "$rnText" + BuildConfig.VERSION_NAME
     }

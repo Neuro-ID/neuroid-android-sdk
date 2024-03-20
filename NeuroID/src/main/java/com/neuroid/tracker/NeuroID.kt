@@ -148,7 +148,7 @@ class NeuroID
             var isSDKStarted = false
 
             internal val GYRO_SAMPLE_INTERVAL = 200L
-            internal val captureGyroCadence = true
+            internal val captureGyroCadence = false
 
             @get:Synchronized @set:Synchronized
             internal var screenName = ""
@@ -452,9 +452,11 @@ class NeuroID
             return true
         }
 
-        fun stop() {
+        fun stop(): Boolean {
             pauseCollection()
             nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
+
+            return true
         }
 
         fun closeSession() {
@@ -531,6 +533,8 @@ class NeuroID
         private fun createMobileMetadata() {
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
+                // get updated GPS location if possible
+                metaData?.getLocation(it)
                 captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
@@ -686,6 +690,10 @@ class NeuroID
 
         @Synchronized
         fun resumeCollection() {
+            // Don't allow resume to be called if SDK has not been started
+            if (userID.isEmpty() && !isSDKStarted) {
+                return
+            }
             if (pauseCollectionJob?.isCompleted == true ||
                 pauseCollectionJob?.isCancelled == true ||
                 pauseCollectionJob == null

@@ -883,6 +883,44 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testResumeCollection() {
         setMockedNIDJobServiceManager()
+        NeuroID.getInstance()?.pauseCollection()
+        NeuroID.getInstance()?.let {
+            it.resumeCollection()
+
+            if (it.pauseCollectionJob != null) {
+                it.pauseCollectionJob?.invokeOnCompletion {
+                    assertEquals(true, NeuroID.isSDKStarted)
+                }
+            } else {
+                assertEquals(true, NeuroID.isSDKStarted)
+            }
+
+        }
+    }
+
+    @Test
+    fun testResumeCollection_SDK_is_stopped_no_userId() {
+        setMockedNIDJobServiceManager()
+        NeuroID.getInstance()?.stopSession()
+        NeuroID.getInstance()?.let {
+            it.resumeCollection()
+
+            if (it.pauseCollectionJob != null) {
+                it.pauseCollectionJob?.invokeOnCompletion {
+                    assertEquals(false, NeuroID.isSDKStarted)
+                }
+            } else {
+                assertEquals(false, NeuroID.isSDKStarted)
+            }
+
+        }
+    }
+
+    @Test
+    fun testResumeCollection_SDK_is_stopped_userId() {
+        setMockedNIDJobServiceManager()
+        NeuroID.getInstance()?.stopSession()
+        NeuroID.getInstance()?.setUserID("gasdgasdgasd")
         NeuroID.getInstance()?.let {
             it.resumeCollection()
 

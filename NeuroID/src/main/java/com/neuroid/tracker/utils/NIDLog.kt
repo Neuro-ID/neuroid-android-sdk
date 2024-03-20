@@ -10,7 +10,11 @@ object NIDLog {
     val errorTag = "****** NeuroID ERROR: ******"
     val warnTag = "NeuroID Warn"
 
-    fun d(tag: String? = null, msg: String, cb:()->String = { msg }) {
+    fun d(
+        tag: String? = null,
+        msg: String,
+        cb: () -> String = { msg },
+    ) {
         if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, debugTag), it)
@@ -18,7 +22,11 @@ object NIDLog {
         }
     }
 
-    fun i(tag: String? = null, msg: String, cb:()->String = { msg }) {
+    fun i(
+        tag: String? = null,
+        msg: String,
+        cb: () -> String = { msg },
+    ) {
         if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, infoTag), it)
@@ -26,7 +34,11 @@ object NIDLog {
         }
     }
 
-    fun v(tag: String? = null, msg: String, cb:()->String = { msg }) {
+    fun v(
+        tag: String? = null,
+        msg: String,
+        cb: () -> String = { msg },
+    ) {
         if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, nidTag), it)
@@ -34,7 +46,11 @@ object NIDLog {
         }
     }
 
-    fun w(tag: String? = null, msg: String, cb:()->String = { msg }) {
+    fun w(
+        tag: String? = null,
+        msg: String,
+        cb: () -> String = { msg },
+    ) {
         if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, warnTag), it)
@@ -42,7 +58,11 @@ object NIDLog {
         }
     }
 
-    fun e(tag: String? = null, msg: String, cb:()->String = { msg }) {
+    fun e(
+        tag: String? = null,
+        msg: String,
+        cb: () -> String = { msg },
+    ) {
         if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, errorTag), it)
@@ -50,8 +70,11 @@ object NIDLog {
         }
     }
 
-    // Add default tag to provided optional tag     
-    private fun appendTag(tag: String? = null, levelTag: String): String {
+    // Add default tag to provided optional tag
+    private fun appendTag(
+        tag: String? = null,
+        levelTag: String,
+    ): String {
         return if (tag != null) {
             "$levelTag $tag"
         } else {

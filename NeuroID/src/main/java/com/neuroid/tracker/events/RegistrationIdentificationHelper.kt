@@ -30,11 +30,11 @@ import java.util.UUID
 val textWatchers = mutableListOf<TextWatcher>()
 
 class RegistrationIdentificationHelper(
-    val neuroID:NeuroID,
-    val logger: NIDLogWrapper
-){
-    val additionalListeners:AdditionalListeners = AdditionalListeners(neuroID, logger)
-    val singleTargetListenerRegister:SingleTargetListenerRegister =
+    val neuroID: NeuroID,
+    val logger: NIDLogWrapper,
+) {
+    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroID, logger)
+    val singleTargetListenerRegister: SingleTargetListenerRegister =
         SingleTargetListenerRegister(neuroID, logger, additionalListeners)
 
     fun registerTargetFromScreen(
@@ -45,9 +45,10 @@ class RegistrationIdentificationHelper(
         parent: String = "",
     ) {
         // DEBUG are we actually fetching all view containers
-        val viewMainContainer = activity.window.decorView.findViewById<View>(
-            android.R.id.content
-        ) as ViewGroup
+        val viewMainContainer =
+            activity.window.decorView.findViewById<View>(
+                android.R.id.content,
+            ) as ViewGroup
 
         val hashCodeAct = activity.hashCode()
         val guid = UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
@@ -59,34 +60,36 @@ class RegistrationIdentificationHelper(
                 registerTarget,
                 registerListeners,
                 activityOrFragment,
-                parent
+                parent,
             )
         }
     }
 
     fun registerWindowListeners(activity: Activity) {
-        val viewMainContainer = activity.window.decorView.findViewById<View>(
-            android.R.id.content
-        )
+        val viewMainContainer =
+            activity.window.decorView.findViewById<View>(
+                android.R.id.content,
+            )
 
         val callBack = activity.window.callback
 
         if (callBack !is NIDGlobalEventCallback) {
-            val nidGlobalEventCallback = NIDGlobalEventCallback(
-                callBack,
-                TouchEventManager(
-                    viewMainContainer as ViewGroup,
+            val nidGlobalEventCallback =
+                NIDGlobalEventCallback(
+                    callBack,
+                    TouchEventManager(
+                        viewMainContainer as ViewGroup,
+                        neuroID,
+                        logger,
+                    ),
+                    viewMainContainer,
                     neuroID,
-                    logger
-                ),
-                viewMainContainer,
-                neuroID,
-                logger,
-                singleTargetListenerRegister
-            )
+                    logger,
+                    singleTargetListenerRegister,
+                )
             viewMainContainer.viewTreeObserver.addOnGlobalFocusChangeListener(nidGlobalEventCallback)
             viewMainContainer.viewTreeObserver.addOnGlobalLayoutListener(
-                nidGlobalEventCallback
+                nidGlobalEventCallback,
             )
 
             activity.window.callback = nidGlobalEventCallback
@@ -106,7 +109,7 @@ class RegistrationIdentificationHelper(
                 view,
                 guid,
                 activityOrFragment = activityOrFragment,
-                parent = parent
+                parent = parent,
             )
         }
         if (registerListeners) {
@@ -120,7 +123,7 @@ class RegistrationIdentificationHelper(
         registerTarget: Boolean = true,
         registerListeners: Boolean = true,
         activityOrFragment: String = "",
-        parent: String = ""
+        parent: String = "",
     ) {
         logger.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
 
@@ -134,13 +137,13 @@ class RegistrationIdentificationHelper(
                         registerTarget,
                         registerListeners,
                         activityOrFragment,
-                        parent
+                        parent,
                     )
 
                     it.setOnHierarchyChangeListener(additionalListeners.addOnHierarchyChangeListener())
 
                     // exception groups that should be registered:
-                    if(it is RadioGroup) {
+                    if (it is RadioGroup) {
                         shouldRegister = true
                     }
                 }
@@ -150,19 +153,18 @@ class RegistrationIdentificationHelper(
                 }
             }
 
-            if(shouldRegister) {
+            if (shouldRegister) {
                 identifySingleView(
                     it,
                     guid,
                     registerTarget,
                     registerListeners,
                     activityOrFragment,
-                    parent
+                    parent,
                 )
             }
         }
     }
-
 
     fun identifySingleView(
         view: View,
@@ -181,11 +183,11 @@ class RegistrationIdentificationHelper(
                     registerTarget,
                     registerListeners,
                     activityOrFragment = activityOrFragment,
-                    parent = parent
+                    parent = parent,
                 )
 
                 // exception groups that should be registered:
-                if(view is RadioGroup) {
+                if (view is RadioGroup) {
                     shouldRegister = true
                 }
             }
@@ -194,25 +196,25 @@ class RegistrationIdentificationHelper(
             }
         }
 
-        if(shouldRegister){
-            registerSingleTargetListeners(
-                view,
-                guid,
-                registerTarget,
-                registerListeners,
-                activityOrFragment = activityOrFragment,
-                parent = parent
-            )
-        }
+        if (shouldRegister)
+            {
+                registerSingleTargetListeners(
+                    view,
+                    guid,
+                    registerTarget,
+                    registerListeners,
+                    activityOrFragment = activityOrFragment,
+                    parent = parent,
+                )
+            }
     }
 }
 
 class SingleTargetListenerRegister(
-    val neuroID:NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
-    val additionalListeners:AdditionalListeners
+    val additionalListeners: AdditionalListeners,
 ) {
-
     fun registerListeners(view: View) {
         val idName = view.getIdOrTag()
         val simpleClassName = view.javaClass.simpleName
@@ -221,10 +223,10 @@ class SingleTargetListenerRegister(
         if (view is EditText) {
             logger.d(
                 "NID-Activity",
-                "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}"
+                "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}",
             )
             // add Text Change watcher
-            val textWatcher = NIDTextWatcher(neuroID, logger,  idName, simpleClassName)
+            val textWatcher = NIDTextWatcher(neuroID, logger, idName, simpleClassName)
             // first we have to clear the text watcher that is currently in the EditText
             for (watcher in textWatchers) {
                 view.removeTextChangedListener(watcher)
@@ -238,7 +240,11 @@ class SingleTargetListenerRegister(
             // add original action menu watcher
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(neuroID, actionCallback)
+                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(
+                    neuroID,
+                    logger,
+                    actionCallback
+                )
             }
 
             // if later api version, add additional action menu watcher
@@ -255,16 +261,17 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
                         idName,
-                        lastClickListener
+                        lastClickListener,
                     )
 
                 val lastSelectListener = view.onItemSelectedListener
                 view.onItemSelectedListener = null
-                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
-                    idName,
-                    lastSelectListener,
-                    simpleClassName
-                )
+                view.onItemSelectedListener =
+                    additionalListeners.addSelectOnSelect(
+                        idName,
+                        lastSelectListener,
+                        simpleClassName,
+                    )
             }
 
             is Spinner -> {
@@ -273,16 +280,17 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
                         idName,
-                        lastClickListener
+                        lastClickListener,
                     )
 
                 val lastSelectListener = view.onItemSelectedListener
                 view.onItemSelectedListener = null
-                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
-                    idName,
-                    lastSelectListener,
-                    simpleClassName
-                )
+                view.onItemSelectedListener =
+                    additionalListeners.addSelectOnSelect(
+                        idName,
+                        lastSelectListener,
+                        simpleClassName,
+                    )
             }
 
             is AbsSpinner -> {
@@ -291,16 +299,17 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
                         idName,
-                        lastClickListener
+                        lastClickListener,
                     )
 
                 val lastSelectListener = view.onItemSelectedListener
                 view.onItemSelectedListener = null
-                view.onItemSelectedListener = additionalListeners.addSelectOnSelect(
-                    idName,
-                    lastSelectListener,
-                    simpleClassName
-                )
+                view.onItemSelectedListener =
+                    additionalListeners.addSelectOnSelect(
+                        idName,
+                        lastSelectListener,
+                        simpleClassName,
+                    )
             }
         }
     }
@@ -316,7 +325,7 @@ class SingleTargetListenerRegister(
 
         logger.d(
             "NIDDebug registeredComponent",
-            "view: ${view::class} java: $simpleName"
+            "view: ${view::class} java: $simpleName",
         )
 
         val (idName, et, v, metaData) = verifyComponentType(view)
@@ -328,12 +337,13 @@ class SingleTargetListenerRegister(
             return
         }
 
-        val attrJson = createAtrrList(
-            view,
-            guid,
-            activityOrFragment,
-            parent
-        )
+        val attrJson =
+            createAtrrList(
+                view,
+                guid,
+                activityOrFragment,
+                parent,
+            )
         attrJson.add(metaData)
 
         registerFinalComponent(
@@ -342,7 +352,7 @@ class SingleTargetListenerRegister(
             et,
             v,
             simpleName,
-            attrJson
+            attrJson,
         )
     }
 
@@ -352,13 +362,14 @@ class SingleTargetListenerRegister(
         et: String,
         v: String,
         simpleName: String,
-        attrJson: List<Map<String, Any>>
+        attrJson: List<Map<String, Any>>,
     ) {
-        val pathFrag = if (NeuroID.screenFragName.isEmpty()) {
-            ""
-        } else {
-            "/${NeuroID.screenFragName}"
-        }
+        val pathFrag =
+            if (NeuroID.screenFragName.isEmpty()) {
+                ""
+            } else {
+                "/${NeuroID.screenFragName}"
+            }
 
         val urlView = ANDROID_URI + NeuroID.screenActivityName + "$pathFrag/" + idName
 
@@ -377,7 +388,7 @@ class SingleTargetListenerRegister(
             v = v,
             hv = v.getSHA256withSalt().take(8),
             url = urlView,
-            rts = rts
+            rts = rts,
         )
     }
 
@@ -387,31 +398,33 @@ class SingleTargetListenerRegister(
         activityOrFragment: String = "",
         parent: String = "",
     ): MutableList<Map<String, Any>> {
-        val idJson = mapOf<String, Any>(
-            "n" to "guid",
-            "v" to guid
-        )
+        val idJson =
+            mapOf<String, Any>(
+                "n" to "guid",
+                "v" to guid,
+            )
 
-        val classJson = mapOf<String, Any>(
-            "n" to "screenHierarchy",
-            "v" to "${view.getParents(logger)}${NeuroID.screenName}"
-        )
+        val classJson =
+            mapOf<String, Any>(
+                "n" to "screenHierarchy",
+                "v" to "${view.getParents(logger)}${NeuroID.screenName}",
+            )
 
         val parentData =
             mapOf<String, Any>(
                 "parentClass" to parent,
-                "component" to activityOrFragment
+                "component" to activityOrFragment,
             )
 
         return mutableListOf(
             idJson,
             classJson,
-            parentData
+            parentData,
         )
     }
 }
 
-class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
+class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
     internal fun addSelectOnSelect(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
@@ -422,18 +435,19 @@ class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
                 adapter: AdapterView<*>?,
                 viewList: View?,
                 position: Int,
-                p3: Long
+                p3: Long,
             ) {
                 lastSelectListener?.onItemSelected(adapter, viewList, position, p3)
                 neuroID.captureEvent(
                     type = SELECT_CHANGE,
-                    tg = hashMapOf(
-                        "etn" to simpleClassName,
-                        "tgs" to idName,
-                        "sender" to simpleClassName
-                    ),
+                    tg =
+                        hashMapOf(
+                            "etn" to simpleClassName,
+                            "tgs" to idName,
+                            "sender" to simpleClassName,
+                        ),
                     tgs = idName,
-                    v = "$position"
+                    v = "$position",
                 )
             }
 
@@ -445,19 +459,20 @@ class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
 
     internal fun addSelectOnClickListener(
         idName: String,
-        lastClickListener: AdapterView.OnItemClickListener?
+        lastClickListener: AdapterView.OnItemClickListener?,
     ): AdapterView.OnItemClickListener {
         return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
             neuroID.captureEvent(
                 type = SELECT_CHANGE,
-                tg = hashMapOf(
-                    "etn" to "INPUT",
-                    "et" to "text"
-                ),
+                tg =
+                    hashMapOf(
+                        "etn" to "INPUT",
+                        "et" to "text",
+                    ),
                 tgs = idName,
-                v = "$position"
+                v = "$position",
             )
         }
     }
@@ -467,32 +482,40 @@ class AdditionalListeners(val neuroID:NeuroID, val logger: NIDLogWrapper){
         val actionInsertionCallback = view.customInsertionActionModeCallback
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
-                NIDLongPressContextMenuCallbacks(neuroID, actionInsertionCallback)
+                NIDLongPressContextMenuCallbacks(
+                    neuroID,
+                    logger,
+                    actionInsertionCallback
+                )
         }
     }
 
-
-    internal fun addOnHierarchyChangeListener ():ViewGroup.OnHierarchyChangeListener {
-       return object : ViewGroup.OnHierarchyChangeListener {
-           override fun onChildViewAdded(parent: View?, child: View?) {
-               logger.d(
-                   "NIDDebug ChildViewAdded",
-                   "ViewAdded: ${child?.getIdOrTag().orEmpty()}"
-               )
-               child?.let { view ->
-                   // This is double registering targets and registering listeners before the correct
-                   //  lifecycle event which is causing a replay of text input events to occur
+    internal fun addOnHierarchyChangeListener(): ViewGroup.OnHierarchyChangeListener {
+        return object : ViewGroup.OnHierarchyChangeListener {
+            override fun onChildViewAdded(
+                parent: View?,
+                child: View?,
+            ) {
+                logger.d(
+                    "NIDDebug ChildViewAdded",
+                    "ViewAdded: ${child?.getIdOrTag().orEmpty()}",
+                )
+                child?.let { view ->
+                    // This is double registering targets and registering listeners before the correct
+                    //  lifecycle event which is causing a replay of text input events to occur
 //                         identifyView(view, guid, registerTarget, registerListeners)
-               }
-           }
+                }
+            }
 
-           override fun onChildViewRemoved(parent: View?, child: View?) {
-               logger.d(
-                   "NIDDebug ViewListener",
-                   "ViewRemoved: ${child?.getIdOrTag().orEmpty()}"
-               )
-           }
-       }
+            override fun onChildViewRemoved(
+                parent: View?,
+                child: View?,
+            ) {
+                logger.d(
+                    "NIDDebug ViewListener",
+                    "ViewRemoved: ${child?.getIdOrTag().orEmpty()}",
+                )
+            }
+        }
     }
 }
-
