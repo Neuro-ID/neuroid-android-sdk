@@ -10,6 +10,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
@@ -106,7 +107,6 @@ class NeuroIdUITest {
             for (i in 0 until request) {
                 var  req  = server.takeRequest()
                 val body = req.body.readUtf8().toString()
-                // for
                 val gson = GsonBuilder()
                     .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
                     .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())

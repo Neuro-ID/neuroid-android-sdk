@@ -2,6 +2,7 @@ package com.neuroid.tracker.service
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Handler
@@ -23,8 +24,8 @@ import kotlinx.coroutines.launch
  * the location to a passed in NIDLocation instance. If multiple providers are found, choose
  * one using the PROVIDER_MAP. Highest number is the most desired (most accurate) provider.
  */
-class LocationService(private val locationManager: LocationManager,
-                      private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
+class LocationService(private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
+
     private var nidLocation: NIDLocation? = null
     private var isStarted = false
     private var locationScope: CoroutineScope? = null
@@ -40,9 +41,9 @@ class LocationService(private val locationManager: LocationManager,
      * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a
      * looper. tied to the session lifecycle, called in NeuroID on start, startSession, resumeCollection,
      */
-    fun setupLocationCoroutine() {
+    fun setupLocationCoroutine(locationManager: LocationManager) {
         if (isStarted) {
-            shutdownLocationCoroutine()
+            shutdownLocationCoroutine(locationManager)
         }
         if (locationScope == null || locationScope?.isActive == false) {
             // this will allow us to get the looper
@@ -63,7 +64,7 @@ class LocationService(private val locationManager: LocationManager,
      * tied to the session lifecycle, called in NeuroID on stop, pauseCollection, stopSession
      */
     @SuppressLint("MissingPermission")
-    fun shutdownLocationCoroutine() {
+    fun shutdownLocationCoroutine(locationManager: LocationManager) {
         locationManager.removeUpdates(locationListener)
         locationScope?.cancel()
         isStarted = false
@@ -78,9 +79,9 @@ class LocationService(private val locationManager: LocationManager,
      */
     @SuppressLint("MissingPermission")
     fun getLastKnownLocation(context: Context, nidLocation: NIDLocation,
-                             scope: CoroutineScope? = locationScope) {
+                             scope: CoroutineScope? = locationScope, locationManager: LocationManager) {
         if (locationPermissionUtils.isNotAllowedToCollectLocations(context)){
-            shutdownLocationCoroutine()
+            shutdownLocationCoroutine(locationManager)
             return
         }
         this.nidLocation = nidLocation
@@ -101,7 +102,7 @@ class LocationService(private val locationManager: LocationManager,
                 }
             }
         }
-        requestLocation(context, scope)
+        requestLocation(context, scope, locationManager)
     }
 
     /**
@@ -109,10 +110,10 @@ class LocationService(private val locationManager: LocationManager,
      * last collected location.
      */
     @SuppressLint("MissingPermission")
-    private fun requestLocation(context: Context, scope: CoroutineScope?) {
+    private fun requestLocation(context: Context, scope: CoroutineScope?, locationManager: LocationManager) {
         if (!isStarted) {
             if (locationPermissionUtils.isNotAllowedToCollectLocations(context)) {
-                shutdownLocationCoroutine()
+                shutdownLocationCoroutine(locationManager)
                 return
             }
             // request a location

@@ -87,9 +87,7 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             application?.let {
-                locationService = LocationService(
-                    it.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-                )
+                locationService = LocationService()
                 metaData = NIDMetaData(
                     it.applicationContext,
                     locationService
@@ -452,8 +450,8 @@ class NeuroID
 
             this.getApplicationContext()
                 ?.let { nidCallActivityListener?.setCallActivityListener(it) }
-            locationService?.let {
-                it.setupLocationCoroutine()
+            locationService?.let { ls ->
+                ls.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
 
             return true
@@ -464,7 +462,7 @@ class NeuroID
             nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
 
             locationService?.let {
-                it.shutdownLocationCoroutine()
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
 
             return true
@@ -627,7 +625,7 @@ class NeuroID
             finalSessionID = getUserID()
 
             locationService?.let {
-                it.setupLocationCoroutine()
+                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
 
             return SessionStartResult(true, finalSessionID)
@@ -704,7 +702,7 @@ class NeuroID
                     }
             }
             locationService?.let {
-                it.shutdownLocationCoroutine()
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
         }
 
@@ -724,7 +722,7 @@ class NeuroID
             }
 
             locationService?.let {
-                it.setupLocationCoroutine()
+                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
         }
 
@@ -747,7 +745,7 @@ class NeuroID
             nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
 
             locationService?.let {
-                it.shutdownLocationCoroutine()
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
 
             return true

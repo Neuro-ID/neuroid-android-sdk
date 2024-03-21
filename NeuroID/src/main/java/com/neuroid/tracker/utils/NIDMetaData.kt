@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.BATTERY_SERVICE
+import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
@@ -89,7 +90,8 @@ class NIDMetaData(context: Context, private val locationService: LocationService
     }
 
     internal fun getLastKnownLocation(context: Context) {
-       locationService?.getLastKnownLocation(context, gpsCoordinates)
+       locationService?.getLastKnownLocation(context, gpsCoordinates,
+           locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
     }
 
     fun toJson(): JSONObject {

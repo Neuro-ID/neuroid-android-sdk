@@ -33,8 +33,8 @@ class NIDLocationServiceTest {
         val locationManager = mockk<LocationManager>()
         every{locationManager.removeUpdates(any<LocationListener>())} just runs
 
-        val locationService = LocationService(locationManager, locationPermissionUtils)
-        locationService.shutdownLocationCoroutine()
+        val locationService = LocationService(locationPermissionUtils)
+        locationService.shutdownLocationCoroutine(locationManager)
         assertFalse(locationService.isLocationServiceListening())
     }
 
@@ -45,8 +45,8 @@ class NIDLocationServiceTest {
         val locationManager = mockk<LocationManager>()
         every{locationManager.removeUpdates(any<LocationListener>())} just runs
 
-        val locationService = LocationService(locationManager, locationPermissionUtils)
-        locationService.setupLocationCoroutine()
+        val locationService = LocationService(locationPermissionUtils)
+        locationService.setupLocationCoroutine(locationManager)
         assertFalse(locationService.isLocationServiceListening())
     }
 
@@ -67,9 +67,9 @@ class NIDLocationServiceTest {
         every{locationManager.removeUpdates(any<LocationListener>())} just runs
         every{locationManager.requestLocationUpdates(any<String>(), any(), any(), any(), any<Looper>())} just runs
 
-        val locationService = LocationService(locationManager, locationPermissionUtils)
+        val locationService = LocationService(locationPermissionUtils)
         val location = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
-        locationService.getLastKnownLocation(context, location, CoroutineScope(Dispatchers.Unconfined))
+        locationService.getLastKnownLocation(context, location, CoroutineScope(Dispatchers.Unconfined), locationManager)
         assertEquals(3.0, location.longitude, 0.0)
         assertEquals(2.0, location.latitude, 0.0)
         assertEquals(location.authorizationStatus, LOCATION_AUTHORIZED_ALWAYS)
