@@ -12,6 +12,8 @@ import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
@@ -25,9 +27,11 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.*
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.io.StringReader
 
 
 data class ResponseData(
@@ -54,8 +58,7 @@ data class ResponseData(
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @ExperimentalCoroutinesApi
-class NeuroIdUITest {
-    val server = MockWebServer()
+class NeuroIdUITest: MockServerTest() {
 
     // take care of the phone and location permissions dialogs.
     @get:Rule
@@ -68,28 +71,6 @@ class NeuroIdUITest {
     var activityRule: ActivityScenarioRule<MainActivity> =
         ActivityScenarioRule(MainActivity::class.java)
 
-    @Before
-    fun stopSendEventsToServer() = runTest {
-        server.start()
-        val url = server.url("/c/").toString()
-        NeuroID.getInstance()?.setTestURL(url)
-        server.enqueue(MockResponse().setBody("").setResponseCode(200))
-
-        NeuroID.getInstance()?.isStopped()?.let {
-            if (it) {
-                NeuroID.getInstance()?.start()
-            }
-        }
-        delay(500)
-    }
-
-    @After
-    fun resetDispatchers() = runTest {
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        server.shutdown()
-    }
-
-
     /*
     Helper Test Functions
      */
@@ -98,36 +79,6 @@ class NeuroIdUITest {
         // stop to force send all events in queue
         NeuroID.getInstance()?.stop()
         delay(500)
-    }
-
-    fun assertRequestBodyContains(eventType:String){
-        var request = server.requestCount
-        if (request >0){
-            var foundEventFlag = false
-            for (i in 0 until request) {
-                var  req  = server.takeRequest()
-                val body = req.body.readUtf8().toString()
-                val gson = GsonBuilder()
-                    .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
-                    .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())
-                    .create()
-                val jsonObject: ResponseData? = gson.fromJson(body, ResponseData::class.java)
-
-                val foundEvent = jsonObject?.jsonEvents?.find { event -> event.type == eventType }
-                if (foundEvent != null) {
-                    foundEventFlag = true
-                }
-            }
-
-            assert(foundEventFlag == true) {
-                "$eventType not found in request object (total of $request objects searched)"
-            }
-        } else {
-            assert(false) {
-                "Failed to send request from SDK"
-            }
-        }
-
     }
 
     /*
@@ -145,8 +96,6 @@ class NeuroIdUITest {
 
         forceSendEvents()
         assertRequestBodyContains("CREATE_SESSION")
-
-//        NIDSchema().validateEvents(events, eventType)
     }
 
     /**
@@ -257,7 +206,7 @@ class NeuroIdUITest {
      * Validate TOUCH_START when the user click on screen
      */
     @Test
-    fun test08ValidateTouchStart() = runTest {
+    fun test08ValidateTouchStart() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(200) // When you go to the next test, the activity is destroyed and recreated
