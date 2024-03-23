@@ -15,6 +15,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import java.io.StringReader
+import java.util.Stack
 
 /**
  * moved the MockServer setup and assertion to this abstract class. the tests will extend this.
@@ -48,60 +49,66 @@ abstract class MockServerTest {
     }
 
     /**
-     * recursively process each item in the JSON stream, stop processing when we find the
-     * event we are looking for or when we reach the end of the stream.
+     * iterativly process each item in the JSON stream, stop processing when we find the
+     * event we are looking for or when we reach the end of the stream. this should solve the
+     * out of stack exception that we were seeing in the test runs.
      */
     private fun processJSONObject(reader: JsonReader, eventType: String) {
-        when (reader.peek()) {
-            JsonToken.BEGIN_ARRAY -> {
-                reader.beginArray()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.END_ARRAY -> {
-                reader.endArray()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.BEGIN_OBJECT -> {
-                reader.beginObject()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.END_OBJECT -> {
-                reader.endObject()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.NAME ->  {
-                val t = reader.nextName()
-                if (t == eventType) {
-                    booleanIsFound = true
-                } else {
-                    processJSONObject(reader, eventType)
+        val jsonTokens = Stack<JsonToken>()
+        jsonTokens.push(reader.peek())
+        while (jsonTokens.isNotEmpty()) {
+            when (jsonTokens.pop()) {
+                JsonToken.BEGIN_ARRAY -> {
+                    reader.beginArray()
+                    jsonTokens.push(reader.peek())
                 }
-            }
-            JsonToken.STRING -> {
-                val t = reader.nextString()
-                if (t == eventType) {
-                    booleanIsFound = true
-                } else {
-                    processJSONObject(reader, eventType)
+                JsonToken.END_ARRAY -> {
+                    reader.endArray()
+                    jsonTokens.push(reader.peek())
                 }
-            }
-            JsonToken.NUMBER -> {
-                val t = reader.nextString()
-                if (t == eventType) {
-                    booleanIsFound = true
-                } else {
-                    processJSONObject(reader, eventType)
+                JsonToken.BEGIN_OBJECT -> {
+                    reader.beginObject()
+                    jsonTokens.push(reader.peek())
                 }
-            }
-            JsonToken.BOOLEAN -> {
-                reader.nextBoolean()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.NULL -> {
-                reader.nextNull()
-                processJSONObject(reader, eventType)
-            }
-            JsonToken.END_DOCUMENT -> {
+                JsonToken.END_OBJECT -> {
+                    reader.endObject()
+                    jsonTokens.push(reader.peek())
+                }
+                JsonToken.NAME ->  {
+                    val t = reader.nextName()
+                    if (t == eventType) {
+                        booleanIsFound = true
+                    } else {
+                        jsonTokens.push(reader.peek())
+                    }
+                }
+                JsonToken.STRING -> {
+                    val t = reader.nextString()
+                    if (t == eventType) {
+                        booleanIsFound = true
+                    } else {
+                        jsonTokens.push(reader.peek())
+                    }
+                }
+                JsonToken.NUMBER -> {
+                    val t = reader.nextString()
+                    if (t == eventType) {
+                        booleanIsFound = true
+                    } else {
+                        jsonTokens.push(reader.peek())
+                    }
+                }
+                JsonToken.BOOLEAN -> {
+                    reader.nextBoolean()
+                    jsonTokens.push(reader.peek())
+                }
+                JsonToken.NULL -> {
+                    reader.nextNull()
+                    jsonTokens.push(reader.peek())
+                }
+                JsonToken.END_DOCUMENT -> {
+                    // end of doc, we should exit here
+                }
             }
         }
     }
