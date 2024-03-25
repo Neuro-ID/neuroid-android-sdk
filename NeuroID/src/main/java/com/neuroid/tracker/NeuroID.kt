@@ -448,12 +448,10 @@ class NeuroID
             }
             dataStore.saveAndClearAllQueuedEvents()
 
-            this.getApplicationContext()
-                ?.let { nidCallActivityListener?.setCallActivityListener(it) }
-            locationService?.let { ls ->
-                ls.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            this.getApplicationContext()?.let {
+                nidCallActivityListener?.setCallActivityListener(it)
+                locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
-
             return true
         }
 

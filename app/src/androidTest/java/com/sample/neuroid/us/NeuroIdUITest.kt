@@ -1,7 +1,6 @@
 package com.sample.neuroid.us
 
 import android.Manifest
-import android.location.LocationListener
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -10,28 +9,17 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
-import com.neuroid.tracker.utils.CoroutineScopeAdapter
-import com.neuroid.tracker.utils.LocationListenerCreator
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.*
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import org.json.JSONArray
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.io.StringReader
 
 
 data class ResponseData(

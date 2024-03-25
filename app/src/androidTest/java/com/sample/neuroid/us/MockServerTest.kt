@@ -6,8 +6,8 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
-import com.neuroid.tracker.utils.CoroutineScopeAdapter
-import com.neuroid.tracker.utils.LocationListenerCreator
+import com.sample.neuroid.us.utils.CoroutineScopeAdapter
+import com.sample.neuroid.us.utils.LocationListenerCreator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -136,11 +136,11 @@ abstract class MockServerTest {
 
             if (booleanIsFound) {
                 assert(true) {
-                    "Found the event man!"
+                    "Found the event man ($eventType)!"
                 }
             } else {
                 assert(false) {
-                    "Failed to find event man!"
+                    "Failed to find event man ($eventType)!"
                 }
             }
         }
