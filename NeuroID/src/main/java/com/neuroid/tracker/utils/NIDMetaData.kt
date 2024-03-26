@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.BATTERY_SERVICE
+import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
@@ -11,14 +12,9 @@ import android.telephony.TelephonyManager
 import com.neuroid.tracker.models.NIDLocation
 import org.json.JSONObject
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
-import android.location.LocationManager
+import com.neuroid.tracker.service.LocationService
 
-import androidx.core.app.ActivityCompat
-
-class NIDMetaData(context: Context) {
+class NIDMetaData(context: Context, private val locationService: LocationService?) {
     private val brand = Build.BRAND
     private var device = Build.DEVICE
     private var display = Build.DISPLAY
@@ -93,41 +89,10 @@ class NIDMetaData(context: Context) {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    internal fun getLocation(context: Context) {
-        val fineResult = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-
-        val coarseResult = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-
-        if (fineResult != PackageManager.PERMISSION_GRANTED &&
-                coarseResult != PackageManager.PERMISSION_GRANTED) {
-            gpsCoordinates.authorizationStatus = LOCATION_DENIED
-            return
-        }
-
-        // get last position if available, take highest accuracy from available providers
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val providers = locationManager.getProviders(true)
-        var smallestAccuracyMeters = Float.MAX_VALUE
-        for (provider in providers) {
-            val location = locationManager.getLastKnownLocation(provider)
-            if (location != null) {
-                if (location.accuracy < smallestAccuracyMeters) {
-                    gpsCoordinates.longitude = location.longitude
-                    gpsCoordinates.latitude = location.latitude
-                    gpsCoordinates.authorizationStatus = LOCATION_AUTHORIZED_ALWAYS
-                    smallestAccuracyMeters = location.accuracy
-                }
-            }
-        }
+    internal fun getLastKnownLocation(context: Context) {
+       locationService?.getLastKnownLocation(context, gpsCoordinates,
+           locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
     }
-
 
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()

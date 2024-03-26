@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.IntentFilter
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.view.View
 import androidx.annotation.VisibleForTesting
@@ -19,6 +20,7 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
@@ -78,14 +80,18 @@ class NeuroID
         internal var nidCallActivityListener: NIDCallActivityListener? = null
         internal var lowMemory: Boolean = false
         internal var isConnected = false
+        internal var locationService: LocationService? = null
 
         init {
             dataStore = NIDDataStoreManagerImp(logger)
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
-
             application?.let {
-                metaData = NIDMetaData(it.applicationContext)
+                locationService = LocationService()
+                metaData = NIDMetaData(
+                    it.applicationContext,
+                    locationService
+                )
 
                 nidJobServiceManager =
                     NIDJobServiceManager(
@@ -442,14 +448,20 @@ class NeuroID
             }
             dataStore.saveAndClearAllQueuedEvents()
 
-            this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
-
+            this.getApplicationContext()?.let {
+                nidCallActivityListener?.setCallActivityListener(it)
+                locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            }
             return true
         }
 
         fun stop(): Boolean {
             pauseCollection()
             nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
+
+            locationService?.let {
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            }
 
             return true
         }
@@ -529,7 +541,7 @@ class NeuroID
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
                 // get updated GPS location if possible
-                metaData?.getLocation(it)
+                metaData?.getLastKnownLocation(it)
                 captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
@@ -610,8 +622,14 @@ class NeuroID
             // if a sessionID was not passed in
             finalSessionID = getUserID()
 
+            locationService?.let {
+                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            }
+
             return SessionStartResult(true, finalSessionID)
         }
+
+
 
         private fun sendOriginEvent(originResult: SessionIDOriginResult) {
             // sending these as individual items.
@@ -681,6 +699,9 @@ class NeuroID
                         saveIntegrationHealthEvents()
                     }
             }
+            locationService?.let {
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            }
         }
 
         @Synchronized
@@ -696,6 +717,10 @@ class NeuroID
                 resumeCollectionCompletion()
             } else {
                 pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
+            }
+
+            locationService?.let {
+                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             }
         }
 
@@ -716,6 +741,11 @@ class NeuroID
             pauseCollection()
             clearSessionVariables()
             nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
+
+            locationService?.let {
+                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            }
+
             return true
         }
 
