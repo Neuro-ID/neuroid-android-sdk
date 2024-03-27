@@ -39,7 +39,7 @@ class NeuroIDSendEventTest {
 
         eventSender.sendEvents("test_key", events, callback)
         verify {
-            callback.onSuccess(200)
+            callback.onSuccess(200, null)
         }
     }
 
@@ -128,7 +128,7 @@ class NeuroIDSendEventTest {
         eventSender.retryRequests(mockedCall, callback)
 
         verify {
-            callback.onSuccess(200)
+            callback.onSuccess(200, null)
         }
 
     }
@@ -252,7 +252,7 @@ class NeuroIDSendEventTest {
 
     private fun getMockedNIDCallback():NIDResponseCallBack{
         val callback = mockk<NIDResponseCallBack>()
-        every { callback.onSuccess(any()) } just Runs
+        every { callback.onSuccess(any(), null) } just Runs
         every { callback.onFailure(any(), any(), any()) } just Runs
 
         return callback

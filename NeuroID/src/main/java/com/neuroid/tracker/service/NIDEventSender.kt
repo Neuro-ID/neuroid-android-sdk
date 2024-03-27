@@ -15,8 +15,6 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.getRetroFitInstance
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
 
 interface NIDSendingService {
     fun sendEvents(
@@ -36,12 +34,7 @@ interface NIDSendingService {
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
  * we retry requests that connect and come back with bad response codes.
  */
-class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService {
-    companion object {
-        // if you change the retry count, please update the test!
-        const val RETRY_COUNT = 3
-        const val HTTP_SUCCESS = 200
-    }
+class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService, RetrySender() {
 
     // a static payload to send if OOM occurs
     private var oomPayload = ""
@@ -130,43 +123,6 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
         // using this JSON library (already included) does not escape /
         val gson: Gson = GsonBuilder().create()
         return gson.toJson(jsonBody)
-    }
-
-    internal fun retryRequests(
-        call: Call<ResponseBody>,
-        responseCallback: NIDResponseCallBack,
-    )  {
-        try {
-            var retryCount = 0
-            while (retryCount < RETRY_COUNT) {
-                // retain the existing call and always execute on clones of it so we can retry when
-                // there is a failure!
-                val retryCall = call.clone()
-                val response = retryCall.execute()
-                // only allow 200 codes to succeed, everything else is failure, 204 is a failure
-                // which is weird!
-                if (response.code() == HTTP_SUCCESS) {
-                    responseCallback.onSuccess(response.code())
-                    response.body()?.close()
-                    break
-                } else {
-                    // response code is not 200, retry these up to RETRY_COUNT times
-                    retryCount++
-                    responseCallback.onFailure(
-                        response.code(),
-                        response.message(),
-                        retryCount < RETRY_COUNT,
-                    )
-                    response.body()?.close()
-                }
-            }
-        } catch (e: Exception) {
-            var errorMessage = "no error message available"
-            e.message?.let {
-                errorMessage = it
-            }
-            responseCallback.onFailure(-1, errorMessage, false)
-        }
     }
 }
 

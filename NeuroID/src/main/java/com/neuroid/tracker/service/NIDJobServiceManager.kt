@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
 
 internal class NIDJobServiceManager(
     private var neuroID: NeuroID,
@@ -171,7 +172,7 @@ internal class NIDJobServiceManager(
                     clientKey,
                     getEventsToSend(it),
                     object : NIDResponseCallBack {
-                        override fun onSuccess(code: Int) {
+                        override fun <T> onSuccess(code: Int, response: T) {
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }
 

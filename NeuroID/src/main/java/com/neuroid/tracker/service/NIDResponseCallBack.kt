@@ -1,7 +1,9 @@
 package com.neuroid.tracker.service
 
+import retrofit2.Response
+
 interface NIDResponseCallBack {
-    fun onSuccess(code: Int)
+    fun <T> onSuccess(code: Int, response: T)
 
     fun onFailure(
         code: Int,
