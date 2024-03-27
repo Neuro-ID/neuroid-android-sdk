@@ -88,6 +88,21 @@ class NeuroID
         internal var locationService: LocationService? = null
 
         init {
+            // get nid remote config, do this first so we can configure the app
+            NIDConfigurationService(
+                getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                object : OnRemoteConfigReceivedListener {
+                    override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                        nidSDKConfig = remoteConfig
+                        logger.e("remote_config", "remoteConfig: $remoteConfig")
+                    }
+
+                    override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                        logger.e("remote_config", "error getting remote config: $errorMessage")
+                    }
+                }, clientKey
+            )
+
             dataStore = NIDDataStoreManagerImp(logger)
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
@@ -130,22 +145,11 @@ class NeuroID
             }
 
             // set call activity listener
-            nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
-            this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
-
-            // get nid remote config
-            NIDConfigurationService(
-                getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
-                object: OnRemoteConfigReceivedListener {
-                    override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
-                        nidSDKConfig = remoteConfig
-                        logger.e("remote_config", "remoteConfig: $remoteConfig")
-                    }
-                    override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                        logger.e("remote_config", "error getting remote config: $errorMessage")
-                    }
-                }, clientKey
-            )
+            if (nidSDKConfig.callInProgress) {
+                nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
+                this.getApplicationContext()
+                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            }
         }
 
         @Synchronized
@@ -166,9 +170,6 @@ class NeuroID
         companion object {
             var showLogs: Boolean = true
             var isSDKStarted = false
-
-            internal val GYRO_SAMPLE_INTERVAL = 200L
-            internal val captureGyroCadence = false
 
             @get:Synchronized @set:Synchronized
             internal var screenName = ""
@@ -472,8 +473,12 @@ class NeuroID
             dataStore.saveAndClearAllQueuedEvents()
 
             this.getApplicationContext()?.let {
-                nidCallActivityListener?.setCallActivityListener(it)
-                locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                if (nidSDKConfig.callInProgress) {
+                    nidCallActivityListener?.setCallActivityListener(it)
+                }
+                if (nidSDKConfig.geoLocation) {
+                    locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
             return true
         }
@@ -639,14 +644,19 @@ class NeuroID
 
             dataStore.saveAndClearAllQueuedEvents()
 
-            this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            if (nidSDKConfig.callInProgress) {
+                this.getApplicationContext()
+                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            }
 
             // we need to set finalSessionID with the set random user id
             // if a sessionID was not passed in
             finalSessionID = getUserID()
 
-            locationService?.let {
-                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            if (nidSDKConfig.geoLocation) {
+                locationService?.let {
+                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
 
             return SessionStartResult(true, finalSessionID)
@@ -742,8 +752,10 @@ class NeuroID
                 pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
             }
 
-            locationService?.let {
-                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            if (nidSDKConfig.geoLocation) {
+                locationService?.let {
+                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
         }
 

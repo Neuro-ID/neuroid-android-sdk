@@ -39,7 +39,7 @@ class NeuroIDSendEventTest {
 
         eventSender.sendEvents("test_key", events, callback)
         verify {
-            callback.onSuccess(200, null)
+            callback.onSuccess(200, any<ResponseBody>())
         }
     }
 
@@ -128,9 +128,8 @@ class NeuroIDSendEventTest {
         eventSender.retryRequests(mockedCall, callback)
 
         verify {
-            callback.onSuccess(200, null)
+            callback.onSuccess(200, any<ResponseBody>())
         }
-
     }
 
     @Test

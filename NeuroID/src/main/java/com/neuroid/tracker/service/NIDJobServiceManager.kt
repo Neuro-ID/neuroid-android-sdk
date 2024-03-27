@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.NeuroID.Companion.GYRO_SAMPLE_INTERVAL
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.CADENCE_READING_ACCEL
 import com.neuroid.tracker.events.LOW_MEMORY
@@ -20,7 +19,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
 
 internal class NIDJobServiceManager(
     private var neuroID: NeuroID,
@@ -134,7 +132,7 @@ internal class NIDJobServiceManager(
     private fun createSendCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
             while (userActive && isActive) {
-                delay(5000L)
+                delay(NeuroID.nidSDKConfig.eventQueueFlushInterval * 1000L)
                 sendEventsNotification.send(false)
             }
         }
@@ -145,15 +143,15 @@ internal class NIDJobServiceManager(
      */
     private fun createGyroCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
-            while (NeuroID.isSDKStarted && NeuroID.captureGyroCadence) {
-                delay(NeuroID.GYRO_SAMPLE_INTERVAL)
+            while (NeuroID.isSDKStarted && NeuroID.nidSDKConfig.gyroAccelCadence) {
+                delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime * 1000L)
 
                 neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,
                     attrs =
                         listOf(
                             mapOf(
-                                "interval" to "${1000 * GYRO_SAMPLE_INTERVAL}s",
+                                "interval" to "${NeuroID.nidSDKConfig.gyroAccelCadenceTime}sec",
                             ),
                         ),
                 )
