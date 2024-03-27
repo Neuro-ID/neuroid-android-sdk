@@ -8,6 +8,6 @@ enum class Constants(val displayName: String) {
 
     debugEventTag("Event"),
     fpjsProdDomain("https://advanced.neuro-id.com"),
-    productionEndpoint("https://receiver.neuroid.cloud/"),
-    devEndpoint("https://receiver.neuro-dev.com/"),
+    productionEndpoint("neuroid.cloud/"),
+    devEndpoint("neuro-dev.com/")
 } 

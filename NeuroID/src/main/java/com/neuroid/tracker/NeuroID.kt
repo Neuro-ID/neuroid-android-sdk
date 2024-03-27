@@ -16,14 +16,18 @@ import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.LocationService
+import com.neuroid.tracker.service.NIDApiService
 import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDConfigurationService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.service.OnRemoteConfigReceivedListener
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -37,6 +41,7 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
+import com.neuroid.tracker.utils.getRetroFitInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -127,6 +132,20 @@ class NeuroID
             // set call activity listener
             nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
             this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+
+            // get nid remote config
+            NIDConfigurationService(
+                getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                object: OnRemoteConfigReceivedListener {
+                    override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                        nidSDKConfig = remoteConfig
+                        logger.e("remote_config", "remoteConfig: $remoteConfig")
+                    }
+                    override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                        logger.e("remote_config", "error getting remote config: $errorMessage")
+                    }
+                }, clientKey
+            )
         }
 
         @Synchronized
@@ -168,8 +187,12 @@ class NeuroID
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
-            internal var endpoint = Constants.productionEndpoint.displayName
+            internal var endpoint = "https://receiver.${Constants.devEndpoint.displayName}"
+            internal var scriptEndpoint = "https://scripts.${Constants.devEndpoint.displayName}"
             private var singleton: NeuroID? = null
+
+            // configuration state
+            internal var nidSDKConfig = NIDRemoteConfig()
 
             @JvmStatic
             @Deprecated(
