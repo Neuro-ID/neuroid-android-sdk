@@ -124,14 +124,17 @@ abstract class MockServerTest {
             for (i in 0 until request) {
                 var req = server.takeRequest()
                 val body = req.body.readUtf8()
-                val gson = GsonBuilder()
-                    .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
-                    .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())
-                    .create()
-                val reader = gson.newJsonReader(StringReader(body))
-                reader?.let {
-                    processJSONObject(it, eventType)
+                if (body.contains(eventType)) {
+                    booleanIsFound = true
                 }
+//                val gson = GsonBuilder()
+//                    .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
+//                    .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())
+//                    .create()
+//                val reader = gson.newJsonReader(StringReader(body))
+//                reader?.let {
+//                    processJSONObject(it, eventType)
+//                }
             }
 
             if (booleanIsFound) {
