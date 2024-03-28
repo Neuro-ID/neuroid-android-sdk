@@ -8,12 +8,9 @@ class NIDConfigurationService(
     key: String
 ): RetrySender() {
 
-    var nidRemoteConfig = NIDRemoteConfig()
-
     private val responseCallback = object: NIDResponseCallBack {
         override fun <T> onSuccess(code: Int, response: T) {
-            nidRemoteConfig = response as NIDRemoteConfig
-            remoteConfigListener.onRemoteConfigReceived(nidRemoteConfig)
+            remoteConfigListener.onRemoteConfigReceived(response as NIDRemoteConfig)
         }
 
         override fun onFailure(code: Int, message: String, isRetry: Boolean) {
