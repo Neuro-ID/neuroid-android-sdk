@@ -6,7 +6,7 @@ data class NIDRemoteConfig(
     @SerializedName(value="call_in_progress")
     val callInProgress: Boolean = true,
     @SerializedName(value="event_queue_flush_interval")
-    val eventQueueFlushInterval: Long = 10,
+    val eventQueueFlushInterval: Long = 5,
     @SerializedName(value="event_queue_flush_size")
     val eventQueueFlushSize: Int = 1999,
     @SerializedName(value="geo_location")

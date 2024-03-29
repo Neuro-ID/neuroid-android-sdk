@@ -45,7 +45,10 @@ import com.neuroid.tracker.utils.getRetroFitInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class NeuroID
     private constructor(
@@ -88,20 +91,7 @@ class NeuroID
         internal var locationService: LocationService? = null
 
         init {
-            // get nid remote config, do this first so we can configure the app
-            NIDConfigurationService(
-                getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
-                object : OnRemoteConfigReceivedListener {
-                    override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
-                        nidSDKConfig = remoteConfig
-                        logger.e("remote_config", "remoteConfig: $remoteConfig")
-                    }
-
-                    override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                        logger.e("remote_config", "error getting remote config: $errorMessage")
-                    }
-                }, clientKey
-            )
+            setRemoteConfig()
 
             dataStore = NIDDataStoreManagerImp(logger)
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
@@ -152,6 +142,27 @@ class NeuroID
             }
         }
 
+        private fun setRemoteConfig() = runBlocking {
+            val deferred = CoroutineScope(Dispatchers.IO).async {
+                NIDConfigurationService(
+                    getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                    object : OnRemoteConfigReceivedListener {
+                        override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                            nidSDKConfig = remoteConfig
+                            logger.e("init", "remoteConfig: $remoteConfig")
+                        }
+
+                        override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                            logger.e(
+                                "init", "error getting remote config: $errorMessage"
+                            )
+                        }
+                    }, clientKey
+                )
+            }
+            deferred.await()
+        }
+
         @Synchronized
         private fun setupCallbacks() {
             if (firstTime) {
@@ -188,8 +199,8 @@ class NeuroID
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
-            internal var endpoint = "https://receiver.${Constants.devEndpoint.displayName}"
-            internal var scriptEndpoint = "https://scripts.${Constants.devEndpoint.displayName}"
+            internal var endpoint = "${Constants.productionEndpoint.displayName}"
+            internal var scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
             private var singleton: NeuroID? = null
 
             // configuration state

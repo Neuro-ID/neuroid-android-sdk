@@ -144,7 +144,7 @@ internal class NIDJobServiceManager(
     private fun createGyroCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
             while (NeuroID.isSDKStarted && NeuroID.nidSDKConfig.gyroAccelCadence) {
-                delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime * 1000L)
+                delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime)
 
                 neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,

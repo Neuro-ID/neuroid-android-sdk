@@ -14,7 +14,7 @@ class NIDConfigurationService(
         }
 
         override fun onFailure(code: Int, message: String, isRetry: Boolean) {
-            remoteConfigListener.onRemoteConfigReceivedFailed("no can get config for key: $key, use defaults")
+            remoteConfigListener.onRemoteConfigReceivedFailed("Unable to retrieve the remote configuration for key $key. The default values will be used instead")
         }
 
     }
