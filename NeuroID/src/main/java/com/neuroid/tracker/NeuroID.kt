@@ -199,7 +199,7 @@ class NeuroID
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
             internal var endpoint = "${Constants.productionEndpoint.displayName}"
-            internal var scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
+            internal var scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
             private var singleton: NeuroID? = null
 
             // configuration state
