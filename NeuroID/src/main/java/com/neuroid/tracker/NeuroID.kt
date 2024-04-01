@@ -16,14 +16,18 @@ import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.LocationService
+import com.neuroid.tracker.service.NIDApiService
 import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDConfigurationService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.service.OnRemoteConfigReceivedListener
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -37,10 +41,13 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
+import com.neuroid.tracker.utils.getRetroFitInstance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class NeuroID
     private constructor(
@@ -83,6 +90,8 @@ class NeuroID
         internal var locationService: LocationService? = null
 
         init {
+            setRemoteConfig()
+
             dataStore = NIDDataStoreManagerImp(logger)
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
@@ -125,8 +134,32 @@ class NeuroID
             }
 
             // set call activity listener
-            nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
-            this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            if (nidSDKConfig.callInProgress) {
+                nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
+                this.getApplicationContext()
+                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            }
+        }
+
+        private fun setRemoteConfig() = runBlocking {
+            val deferred = CoroutineScope(Dispatchers.IO).async {
+                NIDConfigurationService(
+                    getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                    object : OnRemoteConfigReceivedListener {
+                        override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                            nidSDKConfig = remoteConfig
+                            logger.e("init", "remoteConfig: $remoteConfig")
+                        }
+
+                        override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                            logger.e(
+                                "init", "error getting remote config: $errorMessage"
+                            )
+                        }
+                    }, clientKey
+                )
+            }
+            deferred.await()
         }
 
         @Synchronized
@@ -148,9 +181,6 @@ class NeuroID
             var showLogs: Boolean = true
             var isSDKStarted = false
 
-            internal val GYRO_SAMPLE_INTERVAL = 200L
-            internal val captureGyroCadence = false
-
             @get:Synchronized @set:Synchronized
             internal var screenName = ""
 
@@ -168,8 +198,12 @@ class NeuroID
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
-            internal var endpoint = Constants.productionEndpoint.displayName
+            internal var endpoint = "${Constants.productionEndpoint.displayName}"
+            internal var scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
             private var singleton: NeuroID? = null
+
+            // configuration state
+            internal var nidSDKConfig = NIDRemoteConfig()
 
             @JvmStatic
             @Deprecated(
@@ -449,8 +483,12 @@ class NeuroID
             dataStore.saveAndClearAllQueuedEvents()
 
             this.getApplicationContext()?.let {
-                nidCallActivityListener?.setCallActivityListener(it)
-                locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                if (nidSDKConfig.callInProgress) {
+                    nidCallActivityListener?.setCallActivityListener(it)
+                }
+                if (nidSDKConfig.geoLocation) {
+                    locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
             return true
         }
@@ -616,14 +654,19 @@ class NeuroID
 
             dataStore.saveAndClearAllQueuedEvents()
 
-            this.getApplicationContext()?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            if (nidSDKConfig.callInProgress) {
+                this.getApplicationContext()
+                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            }
 
             // we need to set finalSessionID with the set random user id
             // if a sessionID was not passed in
             finalSessionID = getUserID()
 
-            locationService?.let {
-                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            if (nidSDKConfig.geoLocation) {
+                locationService?.let {
+                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
 
             return SessionStartResult(true, finalSessionID)
@@ -719,8 +762,10 @@ class NeuroID
                 pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
             }
 
-            locationService?.let {
-                it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+            if (nidSDKConfig.geoLocation) {
+                locationService?.let {
+                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
             }
         }
 

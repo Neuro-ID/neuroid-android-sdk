@@ -21,6 +21,7 @@ class NIDAdvancedDeviceNetworkService(
     companion object {
         const val RETRY_COUNT = 3
         const val TIMEOUT = 2L // 2000L = 2 sec?
+        const val HTTP_SUCCESS = 200
     }
 
     override fun getNIDAdvancedDeviceAccessKey(
@@ -48,7 +49,7 @@ class NIDAdvancedDeviceNetworkService(
 
                 // only allow 200 codes to succeed, everything else is failure, 204 is a failure
                 // which is weird!
-                if (response.code() == NIDEventSender.HTTP_SUCCESS) {
+                if (response.code() == HTTP_SUCCESS) {
                     val responseBody = response.body()
 
                     // Shouldn't be possible but retrofit says body can be null
