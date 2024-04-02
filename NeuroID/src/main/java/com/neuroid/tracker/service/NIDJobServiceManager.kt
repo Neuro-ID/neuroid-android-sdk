@@ -7,6 +7,7 @@ import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.CADENCE_READING_ACCEL
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.LOW_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -179,6 +180,7 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
+                            neuroID.captureEvent(type=LOG, m="network failure, sendEventsNow() failed retrylimitHit: $message $code")
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },
