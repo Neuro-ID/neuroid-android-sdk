@@ -33,7 +33,7 @@ internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
 ) : NIDDataStoreManager {
     companion object {
-        private const val EVENT_BUFFER_MAX_COUNT = 1999
+        private var eventBufferMaxCount = NeuroID.nidSDKConfig.eventQueueFlushSize
 
         private val listNonActiveEvents =
             listOf(
@@ -148,7 +148,7 @@ internal class NIDDataStoreManagerImp(
 
         if (lastEventType == FULL_BUFFER) {
             return true
-        } else if (eventsList.size + queuedEvents.size > EVENT_BUFFER_MAX_COUNT) {
+        } else if (eventsList.size + queuedEvents.size > eventBufferMaxCount) {
             // add a full buffer event and drop the new event
             saveEvent(
                 NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),
