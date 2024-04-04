@@ -29,6 +29,8 @@ abstract class MockServerTest {
 
     @Before
     fun stopSendEventsToServer() = runTest {
+        // set dev to scripts and collection endpoint
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
         server.start()
         val url = server.url("/c/").toString()
         NeuroID.getInstance()?.setTestURL(url)
