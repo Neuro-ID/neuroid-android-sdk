@@ -36,6 +36,9 @@ class ComponentsTest {
      */
     @Before
     fun stopSendEventsToServer() = runTest {
+        // set dev to scripts and collection endpoint
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+
         NeuroID.getInstance()?.isStopped()?.let {
             if (it) {
                 NeuroID.getInstance()?.start()

@@ -265,6 +265,7 @@ class NeuroID
         @VisibleForTesting
         fun setTestingNeuroIDDevURL() {
             endpoint = Constants.devEndpoint.displayName
+            scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
                 nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))

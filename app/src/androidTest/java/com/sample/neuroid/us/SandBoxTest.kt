@@ -28,6 +28,13 @@ import org.junit.runners.MethodSorters
 @ExperimentalCoroutinesApi
 class SandBoxTest {
 
+    @Before
+    fun init() {
+        // set dev to scripts and collection endpoint
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+    }
+
+
     @get:Rule
     var activityRule: ActivityScenarioRule<SandBoxActivity> =
         ActivityScenarioRule(SandBoxActivity::class.java)
