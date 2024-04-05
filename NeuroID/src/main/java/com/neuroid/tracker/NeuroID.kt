@@ -51,7 +51,7 @@ import kotlinx.coroutines.runBlocking
 
 class NeuroID
     private constructor(
-        internal val application: Application?,
+        internal var application: Application?,
         internal var clientKey: String,
         serverEnvironment: String = "production"
     ) {
