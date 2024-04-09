@@ -35,7 +35,7 @@ class MyApplicationDemo : MultiDexApplication() {
         val neuroID = NeuroID.Builder(
             this,
             "key_live_suj4CX90v0un2k1ufGrbItT5",
-            "development"
+            NeuroID.DEVELOPMENT
         ).build()
         NeuroID.setNeuroIDInstance(neuroID)
         NeuroID.getInstance()?.setEnvironmentProduction(true)

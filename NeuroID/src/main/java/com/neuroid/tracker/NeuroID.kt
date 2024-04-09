@@ -53,7 +53,7 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        serverEnvironment: String = "production"
+        serverEnvironment: String = PRODUCTION
     ) {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
         private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -92,13 +92,13 @@ class NeuroID
 
         init {
             when (serverEnvironment) {
-                "production" -> {
-                    endpoint = "${Constants.productionEndpoint.displayName}"
-                    scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
-                }
-                "development" -> {
+                DEVELOPMENT -> {
                     endpoint = "${Constants.devEndpoint.displayName}"
                     scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+                }
+                else -> {
+                    endpoint = "${Constants.productionEndpoint.displayName}"
+                    scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
                 }
             }
 
@@ -187,11 +187,14 @@ class NeuroID
 
         data class Builder(val application: Application? = null,
                            val clientKey: String = "",
-                           val serverEnvironment: String= "prod") {
+                           val serverEnvironment: String = PRODUCTION) {
             fun build() = NeuroID(application, clientKey, serverEnvironment)
         }
 
         companion object {
+            const val PRODUCTION = "production"
+            const val DEVELOPMENT = "development"
+
             var showLogs: Boolean = true
             var isSDKStarted = false
 
