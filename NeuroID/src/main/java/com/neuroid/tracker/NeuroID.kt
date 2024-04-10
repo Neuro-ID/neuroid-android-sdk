@@ -53,6 +53,7 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
+        serverEnvironment: String = PRODUCTION
     ) {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
         private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -90,6 +91,17 @@ class NeuroID
         internal var locationService: LocationService? = null
 
         init {
+            when (serverEnvironment) {
+                DEVELOPMENT -> {
+                    endpoint = "${Constants.devEndpoint.displayName}"
+                    scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+                }
+                else -> {
+                    endpoint = "${Constants.productionEndpoint.displayName}"
+                    scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
+                }
+            }
+
             setRemoteConfig()
 
             dataStore = NIDDataStoreManagerImp(logger)
@@ -173,11 +185,16 @@ class NeuroID
             }
         }
 
-        data class Builder(var application: Application? = null, var clientKey: String = "") {
-            fun build() = NeuroID(application, clientKey)
+        data class Builder(val application: Application? = null,
+                           val clientKey: String = "",
+                           val serverEnvironment: String = PRODUCTION) {
+            fun build() = NeuroID(application, clientKey, serverEnvironment)
         }
 
         companion object {
+            const val PRODUCTION = "production"
+            const val DEVELOPMENT = "development"
+
             var showLogs: Boolean = true
             var isSDKStarted = false
 
@@ -199,7 +216,7 @@ class NeuroID
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
             internal var endpoint = "${Constants.productionEndpoint.displayName}"
-            internal var scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+            internal var scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
             private var singleton: NeuroID? = null
 
             // configuration state
@@ -256,6 +273,7 @@ class NeuroID
         @VisibleForTesting
         fun setTestURL(newEndpoint: String) {
             endpoint = newEndpoint
+            scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
                 nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
