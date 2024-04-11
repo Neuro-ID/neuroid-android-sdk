@@ -67,7 +67,7 @@ open class NeuroIDClassUnitTests {
     // Helper Functions
     private fun setNeuroIDInstance() {
         val neuroId = NeuroID.Builder(
-            null, "key_test_fake1234"
+            null, "key_test_fake1234", NeuroID.DEVELOPMENT
         ).build()
         NeuroID.setNeuroIDInstance(neuroId)
     }
