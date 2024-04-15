@@ -69,11 +69,35 @@ class NIDLocationServiceTest {
 
         val locationService = LocationService(locationPermissionUtils)
         val location = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
-        locationService.getLastKnownLocation(context, location, CoroutineScope(Dispatchers.Unconfined), locationManager)
+        locationService.getLastKnownLocation(context, location, CoroutineScope(Dispatchers.Unconfined), locationManager, true)
         assertEquals(3.0, location.longitude, 0.0)
         assertEquals(2.0, location.latitude, 0.0)
         assertEquals(location.authorizationStatus, LOCATION_AUTHORIZED_ALWAYS)
         verify { locationManager.requestLocationUpdates(any<String>(), any(), any(), any(), any<Looper>()) }
         assertTrue(locationService.isLocationServiceListening())
+    }
+
+    @Test
+    fun getLastKnownLocation_isNotStarted() {
+        val locationPermissionUtils = mockk<LocationPermissionUtils>()
+        every {locationPermissionUtils.isNotAllowedToCollectLocations(any())} returns false
+        val context = mockk<Context>()
+        val androidLocation = mockk<Location>()
+        every {androidLocation.latitude} returns 2.0
+        every {androidLocation.longitude} returns 3.0
+        every {androidLocation.provider} returns GPS_PROVIDER
+        every {androidLocation.accuracy} returns 1F
+        val locationManager = mockk<LocationManager>()
+        every {locationManager.getLastKnownLocation(any())} returns androidLocation
+        every {locationManager.getProviders(true)} returns listOf(
+            GPS_PROVIDER, PASSIVE_PROVIDER, NETWORK_PROVIDER)
+        every{locationManager.removeUpdates(any<LocationListener>())} just runs
+        every{locationManager.requestLocationUpdates(any<String>(), any(), any(), any(), any<Looper>())} just runs
+
+        val locationService = LocationService(locationPermissionUtils)
+        val location = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
+        locationService.getLastKnownLocation(context, location, CoroutineScope(Dispatchers.Unconfined), locationManager, false)
+        verify(exactly = 0){locationManager.getLastKnownLocation(any())}
+        verify{locationManager.removeUpdates(any<LocationListener>())}
     }
 }
