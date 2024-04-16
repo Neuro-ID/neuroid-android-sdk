@@ -598,7 +598,7 @@ class NeuroID
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
                 // get updated GPS location if possible
-                metaData?.getLastKnownLocation(it)
+                metaData?.getLastKnownLocation(it, nidSDKConfig.geoLocation)
                 captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),

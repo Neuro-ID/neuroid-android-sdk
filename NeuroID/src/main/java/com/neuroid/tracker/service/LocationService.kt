@@ -79,8 +79,9 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
      */
     @SuppressLint("MissingPermission")
     fun getLastKnownLocation(context: Context, nidLocation: NIDLocation,
-                             scope: CoroutineScope? = locationScope, locationManager: LocationManager) {
-        if (locationPermissionUtils.isNotAllowedToCollectLocations(context)){
+                             scope: CoroutineScope? = locationScope,
+                             locationManager: LocationManager, isLocationAllowed: Boolean) {
+        if (locationPermissionUtils.isNotAllowedToCollectLocations(context) || !isLocationAllowed){
             shutdownLocationCoroutine(locationManager)
             return
         }

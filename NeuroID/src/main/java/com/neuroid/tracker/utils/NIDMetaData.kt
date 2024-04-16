@@ -89,9 +89,10 @@ class NIDMetaData(context: Context, private val locationService: LocationService
         }
     }
 
-    internal fun getLastKnownLocation(context: Context) {
-       locationService?.getLastKnownLocation(context, gpsCoordinates,
-           locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+    internal fun getLastKnownLocation(context: Context, isLocationAllowed: Boolean) {
+        locationService?.getLastKnownLocation(context, gpsCoordinates,
+            locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
+            isLocationAllowed=isLocationAllowed)
     }
 
     fun toJson(): JSONObject {
