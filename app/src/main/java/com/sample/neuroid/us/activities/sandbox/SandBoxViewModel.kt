@@ -2,7 +2,8 @@ package com.sample.neuroid.us.activities.sandbox
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
+import com.sample.neuroid.us.MyApplicationDemo
 import com.sample.neuroid.us.data.network.NIDServices
 import com.sample.neuroid.us.data.network.NetworkInteractor
 import com.sample.neuroid.us.domain.config.ConfigHelper
@@ -36,7 +37,7 @@ class SandBoxViewModel @Inject constructor(
 
     fun checkScore() {
         viewModelScope.launch {
-            NeuroID.getInstance()?.closeSession()
+            NeuroIDImpl.getInstance()?.closeSession()
             delay(2000)
 
             val result = networkInteractor.safeApiCall {

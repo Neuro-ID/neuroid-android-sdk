@@ -5,7 +5,7 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
@@ -16,7 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
-    val neuroID: NeuroID,
+    val neuroIDImpl: NeuroIDImpl,
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : ActivityLifecycleCallbacks {
@@ -59,15 +59,15 @@ class ActivityCallbacks(
         }
         val existActivity = listActivities.contains(currentActivityName)
 
-        NeuroID.screenActivityName = currentActivityName
-        if (NeuroID.firstScreenName.isNullOrEmpty()) {
-            NeuroID.firstScreenName = currentActivityName
+        NeuroIDImpl.screenActivityName = currentActivityName
+        if (NeuroIDImpl.firstScreenName.isNullOrEmpty()) {
+            NeuroIDImpl.firstScreenName = currentActivityName
         }
-        if (NeuroID.screenFragName.isNullOrEmpty()) {
-            NeuroID.screenFragName = ""
+        if (NeuroIDImpl.screenFragName.isNullOrEmpty()) {
+            NeuroIDImpl.screenFragName = ""
         }
-        if (NeuroID.screenName.isNullOrEmpty()) {
-            NeuroID.screenName = "AppInit"
+        if (NeuroIDImpl.screenName.isNullOrEmpty()) {
+            NeuroIDImpl.screenName = "AppInit"
         }
         wasChanged = auxOrientation != orientation
 
@@ -80,7 +80,7 @@ class ActivityCallbacks(
             fragManager?.registerFragmentLifecycleCallbacks(
                 FragmentCallbacks(
                     wasChanged,
-                    neuroID,
+                    neuroIDImpl,
                     logger,
                     registrationHelper,
                 ),
@@ -90,7 +90,7 @@ class ActivityCallbacks(
 
         if (wasChanged) {
             logger.d(msg = "Activity - POST Created - Orientation change")
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = WINDOW_ORIENTATION_CHANGE,
                 o = "CHANGED",
             )
@@ -98,7 +98,7 @@ class ActivityCallbacks(
         }
 
         logger.d(msg = "Activity - POST Created - Window Load")
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = WINDOW_LOAD,
             attrs =
                 listOf(
@@ -115,7 +115,7 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = WINDOW_BLUR,
             attrs =
                 listOf(
@@ -132,7 +132,7 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Resumed")
         val currentActivityName = activity::class.java.name
 
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = WINDOW_FOCUS,
             attrs =
                 listOf(
@@ -179,7 +179,7 @@ class ActivityCallbacks(
         listActivities.remove(activityDestroyed)
 
         logger.d(msg = "Activity - Destroyed - Window Unload")
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = WINDOW_UNLOAD,
             attrs =
                 listOf(

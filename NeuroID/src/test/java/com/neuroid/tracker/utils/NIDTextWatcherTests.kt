@@ -3,7 +3,7 @@ package com.neuroid.tracker.utils
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.text.Editable
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.NeuroIDClassUnitTests
 import io.mockk.every
 import io.mockk.just
@@ -21,7 +21,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
 
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroIDImpl.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
 
         val nidMock = getMockedNeuroID()
 
@@ -38,7 +38,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         every { clipData.getItemAt(any()).text.toString() } returns "copied text"
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroIDImpl.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
         val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),
@@ -53,7 +53,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
     @Test
     fun textWatcher_after_text_changed() {
         val clipboardManager = mockk<ClipboardManager>()
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroIDImpl.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
         val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),"test", "myclass", "")
@@ -73,7 +73,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
 
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroIDImpl.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
         val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),
@@ -88,7 +88,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
     @Test
     fun textWatcher_after_duplicate_text_changed() {
         val clipboardManager = mockk<ClipboardManager>()
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroIDImpl.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
         val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),"test", "myclass", "")
@@ -101,7 +101,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         verifyCaptureEvent(nidMock)
     }
 
-    private fun verifyCaptureEvent(nidMock: NeuroID, count:Int = 1){
+    private fun verifyCaptureEvent(nidMock: NeuroIDImpl, count:Int = 1){
         verify(exactly = count) {
             nidMock.captureEvent(
                 any(),
@@ -164,8 +164,8 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
     }
 
 
-    private fun getMockedNeuroID(): NeuroID {
-        val nidMock = mockk<NeuroID>()
+    private fun getMockedNeuroID(): NeuroIDImpl {
+        val nidMock = mockk<NeuroIDImpl>()
         every {
             nidMock.captureEvent(
                 any(),

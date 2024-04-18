@@ -10,7 +10,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +31,7 @@ class SandBoxTest {
     @Before
     fun init() {
         // set dev to scripts and collection endpoint
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+        NeuroIDImpl.getInstance()?.setTestingNeuroIDDevURL()
     }
 
 

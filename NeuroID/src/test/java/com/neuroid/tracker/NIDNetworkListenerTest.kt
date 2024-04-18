@@ -17,8 +17,6 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.junit.Test
 import java.util.Calendar
@@ -146,13 +144,13 @@ class NIDNetworkListenerTest {
         every {calendar.timeInMillis} returns 5
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
-        val neuroID = mockk<NeuroID>()
-        every { neuroID.isConnected = any() } just runs
-        every { neuroID.isConnected } returns isConnectedOrConnecting
-        every { neuroID.isStopped() } returns isStopped
-        every { neuroID.pauseCollection(any()) } just runs
-        every { neuroID.resumeCollection() } just runs
-        every { neuroID.userID } returns userId
+        val neuroIDImpl = mockk<NeuroIDImpl>()
+        every { neuroIDImpl.isConnected = any() } just runs
+        every { neuroIDImpl.isConnected } returns isConnectedOrConnecting
+        every { neuroIDImpl.isStopped() } returns isStopped
+        every { neuroIDImpl.pauseCollection(any()) } just runs
+        every { neuroIDImpl.resumeCollection() } just runs
+        every { neuroIDImpl.userID } returns userId
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType
         every { networkInfo.isConnectedOrConnecting } returns isConnectedOrConnecting
@@ -163,7 +161,7 @@ class NIDNetworkListenerTest {
         val context = mockk<Context>()
         val intent = mockk<Intent>()
         every { intent.action } returns ConnectivityManager.CONNECTIVITY_ACTION
-        val listener = NIDNetworkListener(connectivityManager, dataStoreManager, neuroID,
+        val listener = NIDNetworkListener(connectivityManager, dataStoreManager, neuroIDImpl,
             UnconfinedTestDispatcher(), 0, 0
         )
         listener.onReceive(context, intent)
@@ -175,9 +173,9 @@ class NIDNetworkListenerTest {
             isWifi = isWifiAssert)
 
         verify { dataStoreManager.saveEvent(networkEvent) }
-        verify { neuroID.isConnected = isConnectedAssert}
-        verify(exactly = pauseCalledCount){ neuroID.pauseCollection(any()) }
-        verify(exactly = resumeCalledCount){ neuroID.resumeCollection() }
+        verify { neuroIDImpl.isConnected = isConnectedAssert}
+        verify(exactly = pauseCalledCount){ neuroIDImpl.pauseCollection(any()) }
+        verify(exactly = resumeCalledCount){ neuroIDImpl.resumeCollection() }
         unmockkAll()
     }
 }

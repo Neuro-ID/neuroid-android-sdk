@@ -6,7 +6,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_UNLOAD
@@ -14,7 +14,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 
 class FragmentCallbacks(
     isChangeOrientation: Boolean,
-    val neuroID: NeuroID,
+    val neuroIDImpl: NeuroIDImpl,
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : FragmentLifecycleCallbacks() {
@@ -32,14 +32,14 @@ class FragmentCallbacks(
         logger.d(msg = "onFragmentAttached $className")
 
         if (blackListFragments.any { it == className }.not()) {
-            if (NeuroID.screenName.isEmpty()) {
-                NeuroID.screenName = "AppInit"
+            if (NeuroIDImpl.screenName.isEmpty()) {
+                NeuroIDImpl.screenName = "AppInit"
             }
-            if (NeuroID.screenFragName.isEmpty()) {
-                NeuroID.screenFragName = className
+            if (NeuroIDImpl.screenFragName.isEmpty()) {
+                NeuroIDImpl.screenFragName = className
             }
 
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = WINDOW_LOAD,
                 attrs =
                     listOf(
@@ -114,7 +114,7 @@ class FragmentCallbacks(
 
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
-        if (neuroID.shouldForceStart()) {
+        if (neuroIDImpl.shouldForceStart()) {
             registrationHelper.registerTargetFromScreen(
                 f.requireActivity(),
                 true,
@@ -175,7 +175,7 @@ class FragmentCallbacks(
                 msg = "Fragment - Detached - WINDOW UNLOAD $className",
             )
 
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = WINDOW_UNLOAD,
                 attrs =
                     listOf(

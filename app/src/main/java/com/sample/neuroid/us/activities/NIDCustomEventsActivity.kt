@@ -4,7 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
+import com.sample.neuroid.us.MyApplicationDemo
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.NidActivityCustomEventsBinding
 
@@ -15,7 +16,7 @@ class NIDCustomEventsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setTitle(R.string.nid_custom_events_title_activity)
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_custom_events)
-        NeuroID.getInstance()?.let {
+        NeuroIDImpl.getInstance()?.let {
             if (it.isStopped()) {
                 it.start()
             }
@@ -27,15 +28,15 @@ class NIDCustomEventsActivity : AppCompatActivity() {
                 showToast()
             }
             buttonSendFormSubmit.setOnClickListener {
-                NeuroID.getInstance()?.formSubmit()
+                NeuroIDImpl.getInstance()?.formSubmit()
                 showToast()
             }
             buttonSendFormSuccess.setOnClickListener {
-                NeuroID.getInstance()?.formSubmitSuccess()
+                NeuroIDImpl.getInstance()?.formSubmitSuccess()
                 showToast()
             }
             buttonSendFormFailure.setOnClickListener {
-                NeuroID.getInstance()?.formSubmitFailure()
+                NeuroIDImpl.getInstance()?.formSubmitFailure()
                 showToast()
             }
         }

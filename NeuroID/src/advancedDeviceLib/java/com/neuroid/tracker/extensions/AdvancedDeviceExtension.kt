@@ -2,6 +2,7 @@ package com.neuroid.tracker.extensions
 
 import android.content.Context
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -9,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.neuroid.tracker.service.getADVNetworkService
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.Constants
 
@@ -21,8 +21,10 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
     }
 
     if (advancedDeviceSignals) {
-        getApplicationContext()?.let {
-            getADVSignal(clientKey, it, this, logger)
+        NeuroIDImpl.getInternalInstance()?.apply {
+            getApplicationContext()?.let { context ->
+                getADVSignal(clientKey, context, this, logger)
+            }
         }
     }
 
@@ -42,8 +44,10 @@ fun NeuroID.startSession(
     }
 
     if (advancedDeviceSignals) {
-        getApplicationContext()?.let {
-            getADVSignal(clientKey, it, this, logger)
+        NeuroIDImpl.getInternalInstance()?.apply {
+            getApplicationContext()?.let { context ->
+                getADVSignal(clientKey, context, this, logger)
+            }
         }
     }
 
@@ -53,7 +57,7 @@ fun NeuroID.startSession(
 internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
-    neuroID: NeuroID,
+    neuroIDImpl: NeuroIDImpl,
     logger: NIDLogWrapper
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -61,16 +65,16 @@ internal fun getADVSignal(
             applicationContext,
             logger,
             NIDSharedPrefsDefaults(applicationContext),
-            neuroID,
+            neuroIDImpl,
             getADVNetworkService(
-                NeuroID.endpoint,
+                NeuroIDImpl.endpoint,
                 logger
             ),
-           null
+            null
         )
 
         // check for cachedID first
-        if(!advancedDeviceIDManagerService.getCachedID()) {
+        if (!advancedDeviceIDManagerService.getCachedID()) {
             // no cached ID - contact NID & FPJS
             advancedDeviceIDManagerService.getRemoteID(
                 clientKey,

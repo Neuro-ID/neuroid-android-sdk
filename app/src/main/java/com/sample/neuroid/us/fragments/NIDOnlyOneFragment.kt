@@ -5,7 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
+import com.sample.neuroid.us.MyApplicationDemo
 import com.sample.neuroid.us.databinding.NidFragmentOnlyOneBinding
 
 class NIDOnlyOneFragment : Fragment() {
@@ -22,7 +23,7 @@ class NIDOnlyOneFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        NeuroID.getInstance()?.let {
+        NeuroIDImpl.getInstance()?.let {
             if (it.isStopped()) {
                 it.start()
             }

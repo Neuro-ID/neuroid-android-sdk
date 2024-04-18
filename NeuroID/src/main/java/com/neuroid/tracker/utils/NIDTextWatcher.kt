@@ -2,14 +2,14 @@ package com.neuroid.tracker.utils
 
 import android.text.Editable
 import android.text.TextWatcher
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
 class NIDTextWatcher(
-    val neuroID: NeuroID,
+    val neuroIDImpl: NeuroIDImpl,
     val logger: NIDLogWrapper,
     private val idName: String,
     val className: String? = "",
@@ -35,7 +35,7 @@ class NIDTextWatcher(
         count: Int,
     ) {
         // Check if the change is due to a paste operation
-        val clipboard = NeuroID.getInstance()?.getClipboardManagerInstance()
+        val clipboard = NeuroIDImpl.getInternalInstance()?.getClipboardManagerInstance()
         val clipData = clipboard?.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             var pastedText = ""
@@ -56,7 +56,7 @@ class NIDTextWatcher(
                     lastPastedHashValue = sequence?.toString()?.hashCode().toString()
 
                     if (pastedText.isNotEmpty()) {
-                        neuroID.captureEvent(
+                        neuroIDImpl.captureEvent(
                             type = PASTE,
                             tg =
                                 hashMapOf(
@@ -85,7 +85,7 @@ class NIDTextWatcher(
         if (lastHashValue != currentHashValue) {
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
 
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = INPUT,
                 tg =
                     hashMapOf(

@@ -1,18 +1,22 @@
 package com.sample.neuroid.us.activities
 
 import android.Manifest
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import com.sample.neuroid.us.databinding.NidActivityMainBinding
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: NidActivityMainBinding
@@ -20,11 +24,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ensure that the phone stays on for the duration of the test
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val keyguardLock = km.newKeyguardLock("TAG")
+        keyguardLock.disableKeyguard()
+        window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
         binding.apply {
-            textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
-            textViewCidValue.setText(NeuroID.getInstance()?.getClientId())
+            textViewSidValue.setText(NeuroIDImpl.getInstance()?.getSessionId())
+            textViewCidValue.setText(NeuroIDImpl.getInstance()?.getClientId())
             buttonShowActivityNoAutomaticEvents.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDCustomEventsActivity::class.java))
             }
@@ -44,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, NIDPayloadJsonActivity::class.java))
             }
             buttonCloseSession.setOnClickListener {
-                NeuroID.getInstance()?.closeSession()
+                NeuroIDImpl.getInstance()?.closeSession()
             }
         }
 

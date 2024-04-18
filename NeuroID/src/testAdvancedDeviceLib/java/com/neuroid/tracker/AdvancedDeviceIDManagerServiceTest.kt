@@ -22,7 +22,6 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
 import com.neuroid.tracker.utils.NIDLogWrapper
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -92,7 +91,7 @@ class AdvancedDeviceIDManagerServiceTest {
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
-        val mockedNID = mocks["mockedNeuroID"] as NeuroID
+        val mockedNID = mocks["mockedNeuroID"] as NeuroIDImpl
 
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
@@ -116,7 +115,7 @@ class AdvancedDeviceIDManagerServiceTest {
             assert(e.m == errorMessage) { "Expected event m value to be $errorMessage, found ${e.m}" }
         }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedNID = mocks["mockedNeuroID"] as NeuroID
+        val mockedNID = mocks["mockedNeuroID"] as NeuroIDImpl
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
         advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
@@ -231,8 +230,8 @@ class AdvancedDeviceIDManagerServiceTest {
         )
     }
 
-    private fun getMockedNeuroID(): NeuroID {
-        val nidMock = mockk<NeuroID>()
+    private fun getMockedNeuroID(): NeuroIDImpl {
+        val nidMock = mockk<NeuroIDImpl>()
         every {
             nidMock.captureEvent(
                 any(),
@@ -379,7 +378,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
 
-    private fun verifyCaptureEvent(nidMock: NeuroID, count:Int = 1){
+    private fun verifyCaptureEvent(nidMock: NeuroIDImpl, count:Int = 1){
         verify(exactly = count) {
             nidMock.captureEvent(
                 any(),

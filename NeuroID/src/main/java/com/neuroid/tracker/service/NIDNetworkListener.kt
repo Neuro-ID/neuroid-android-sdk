@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.TYPE_WIFI
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -32,12 +32,12 @@ import kotlinx.coroutines.*
  * resume event collection
  */
 class NIDNetworkListener(
-        private val connectivityManager: ConnectivityManager,
-        private val dataStoreManager: NIDDataStoreManager,
-        private val neuroID: NeuroID,
-        private val dispatcher: CoroutineContext,
-        private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
-        private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
+    private val connectivityManager: ConnectivityManager,
+    private val dataStoreManager: NIDDataStoreManager,
+    private val neuroIDImpl: NeuroIDImpl,
+    private val dispatcher: CoroutineContext,
+    private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
+    private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
 ) : BroadcastReceiver() {
 
     companion object {
@@ -51,7 +51,7 @@ class NIDNetworkListener(
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
-                neuroID.isConnected = onNetworkAction()
+                neuroIDImpl.isConnected = onNetworkAction()
 
                 // act on the network change
                 handleNetworkChange()
@@ -66,23 +66,23 @@ class NIDNetworkListener(
 
     private fun handleNetworkChange() {
         cancelJobs()
-        if (!neuroID.isConnected) {
-            if (neuroID.isStopped()) {
+        if (!neuroIDImpl.isConnected) {
+            if (neuroIDImpl.isStopped()) {
                 return
             }
             haveNoNetworkJob =
                     CoroutineScope(dispatcher).launch {
                         delay(sleepIntervalPause)
-                        neuroID.pauseCollection(false)
+                        neuroIDImpl.pauseCollection(false)
                     }
         } else {
-            if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
+            if (!neuroIDImpl.isStopped() || neuroIDImpl.userID.isEmpty()) {
                 return
             }
             haveNetworkJob =
                     CoroutineScope(dispatcher).launch {
                         delay(sleepIntervalResume)
-                        neuroID.resumeCollection()
+                        neuroIDImpl.resumeCollection()
                     }
         }
     }

@@ -1,12 +1,12 @@
 package com.neuroid.tracker.utils
 
 import com.neuroid.tracker.BuildConfig
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 
 object NIDVersion {
     fun getSDKVersion(): String {
         val rnText =
-            NeuroID.getInstance()?.isRN?.let {
+            NeuroIDImpl.getInternalInstance()?.isRN?.let {
                 if (it) {
                     "rn-"
                 } else {

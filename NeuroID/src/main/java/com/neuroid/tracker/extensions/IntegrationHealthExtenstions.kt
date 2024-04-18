@@ -3,6 +3,7 @@ package com.neuroid.tracker.extensions
 import android.os.Build
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.models.DeviceOrientation
 import com.neuroid.tracker.models.IntegrationHealthDeviceInfo
 import com.neuroid.tracker.models.NIDEventModel
@@ -10,8 +11,7 @@ import com.neuroid.tracker.utils.*
 import org.json.JSONObject
 
 internal fun generateIntegrationHealthDeviceReport() {
-    val deviceInfo: IntegrationHealthDeviceInfo =
-        IntegrationHealthDeviceInfo(
+    val deviceInfo = IntegrationHealthDeviceInfo(
             name = "${Build.MANUFACTURER} - ${Build.BRAND} - ${Build.DEVICE} - ${Build.PRODUCT}",
             systemName = "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
             systemVersion = "${Build.VERSION.SDK_INT}",
@@ -41,7 +41,7 @@ internal fun generateIntegrationHealthDeviceReport() {
             .put("customDeviceType", deviceInfo.customDeviceType)
             .put("nidSDKVersion", deviceInfo.nidSDKVersion)
 
-    val context = NeuroID.getInstance()?.application?.getApplicationContext()
+    val context = NeuroIDImpl.getInternalInstance()?.getApplicationContext()
     if (context != null) {
         createJSONFile(
             context = context,
@@ -53,12 +53,12 @@ internal fun generateIntegrationHealthDeviceReport() {
 
 @Synchronized
 internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
-    val nidInstance = NeuroID.getInstance()
+    val nidInstance = NeuroIDImpl.getInternalInstance()
 
     val context = nidInstance?.application?.getApplicationContext()
     if (context != null) {
         val gson = Gson()
-        val events = nidInstance?.debugIntegrationHealthEvents
+        val events = nidInstance.debugIntegrationHealthEvents
 
         var immutableList = events?.toList()
 
@@ -73,13 +73,13 @@ internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
 }
 
 // Internal Extensions
-internal fun NeuroID.shouldDebugIntegrationHealth(ifTrueCB: () -> Unit) {
+internal fun NeuroIDImpl.shouldDebugIntegrationHealth(ifTrueCB: () -> Unit) {
     if (this.verifyIntegrationHealth) {
         ifTrueCB()
     }
 }
 
-internal fun NeuroID.startIntegrationHealthCheck() {
+internal fun NeuroIDImpl.startIntegrationHealthCheck() {
     shouldDebugIntegrationHealth {
         this.debugIntegrationHealthEvents = mutableListOf<NIDEventModel>()
         generateIntegrationHealthDeviceReport()
@@ -87,24 +87,23 @@ internal fun NeuroID.startIntegrationHealthCheck() {
     }
 }
 
-internal fun NeuroID.captureIntegrationHealthEvent(event: NIDEventModel) {
+internal fun NeuroIDImpl.captureIntegrationHealthEvent(event: NIDEventModel) {
     shouldDebugIntegrationHealth {
-//        NIDLog.d( "Adding Health Event: ${event.type}")
         this.debugIntegrationHealthEvents.add(event)
     }
 }
 
-internal fun NeuroID.getIntegrationHealthEvents(): List<NIDEventModel> {
+internal fun NeuroIDImpl.getIntegrationHealthEvents(): List<NIDEventModel> {
     return this.debugIntegrationHealthEvents
 }
 
-internal fun NeuroID.saveIntegrationHealthEvents() {
+internal fun NeuroIDImpl.saveIntegrationHealthEvents() {
     shouldDebugIntegrationHealth {
         generateNIDIntegrationHealthReport()
     }
 }
 
-internal fun NeuroID.generateNIDIntegrationHealthReport(saveIntegrationHealthReport: Boolean = false) {
+internal fun NeuroIDImpl.generateNIDIntegrationHealthReport(saveIntegrationHealthReport: Boolean = false) {
     shouldDebugIntegrationHealth {
         generateIntegrationHealthReport(saveCopy = saveIntegrationHealthReport)
     }
@@ -125,7 +124,7 @@ fun NeuroID.printIntegrationHealthInstruction() {
             "8. Run `node server.js`",
     )
 
-    val context = NeuroID.getInstance()?.application?.getApplicationContext()
+    val context = NeuroIDImpl.getInternalInstance()?.application?.getApplicationContext()
     if (context != null) {
         copyDirorfileFromAssetManager(
             context = context,
@@ -136,7 +135,7 @@ fun NeuroID.printIntegrationHealthInstruction() {
 }
 
 fun NeuroID.setVerifyIntegrationHealth(verify: Boolean) {
-    this.verifyIntegrationHealth = verify
+    NeuroIDImpl.getInternalInstance()?.verifyIntegrationHealth = verify
 
     if (verify) {
         printIntegrationHealthInstruction()

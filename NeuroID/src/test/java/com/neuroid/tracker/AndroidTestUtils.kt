@@ -11,8 +11,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 
-internal fun getMockedNeuroID(forceStart:Boolean = false): NeuroID {
-    val nidMock = mockk<NeuroID>()
+internal fun getMockedNeuroID(forceStart:Boolean = false): NeuroIDImpl {
+    val nidMock = mockk<NeuroIDImpl>()
 
     every { nidMock.forceStart } returns forceStart
     every { nidMock.shouldForceStart() } returns forceStart
@@ -109,7 +109,7 @@ internal fun getMockedActivity():Activity{
 }
 
 internal fun verifyCaptureEvent(
-    mockedNeuroID: NeuroID,
+    mockedNeuroIDImpl: NeuroIDImpl,
     eventType:String,
     count:Int = 1,
 
@@ -118,7 +118,7 @@ internal fun verifyCaptureEvent(
     o:String? = null
 ){
     verify(exactly = count) {
-        mockedNeuroID.captureEvent(
+        mockedNeuroIDImpl.captureEvent(
             any(),
             type=eventType,
             any(),

@@ -1,6 +1,6 @@
 package com.neuroid.tracker.utils
 
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.service.LoggerIntercepter
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -11,7 +11,7 @@ fun <T> getRetroFitInstance(
     endpoint: String,
     logger: NIDLogWrapper,
     service: Class<T>,
-    timeOut: Long = NeuroID.nidSDKConfig.requestTimeout,
+    timeOut: Long = NeuroIDImpl.nidSDKConfig.requestTimeout,
 ): T =
     Retrofit.Builder()
         .baseUrl(endpoint)

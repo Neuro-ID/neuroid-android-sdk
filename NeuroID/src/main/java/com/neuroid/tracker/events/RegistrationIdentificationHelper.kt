@@ -13,7 +13,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import androidx.annotation.RequiresApi
 import androidx.core.view.forEach
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
@@ -30,12 +30,12 @@ import java.util.UUID
 val textWatchers = mutableListOf<TextWatcher>()
 
 class RegistrationIdentificationHelper(
-    val neuroID: NeuroID,
+    val neuroIDImpl: NeuroIDImpl,
     val logger: NIDLogWrapper,
 ) {
-    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroID, logger)
+    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroIDImpl, logger)
     val singleTargetListenerRegister: SingleTargetListenerRegister =
-        SingleTargetListenerRegister(neuroID, logger, additionalListeners)
+        SingleTargetListenerRegister(neuroIDImpl, logger, additionalListeners)
 
     fun registerTargetFromScreen(
         activity: Activity,
@@ -79,11 +79,11 @@ class RegistrationIdentificationHelper(
                     callBack,
                     TouchEventManager(
                         viewMainContainer as ViewGroup,
-                        neuroID,
+                        neuroIDImpl,
                         logger,
                     ),
                     viewMainContainer,
-                    neuroID,
+                    neuroIDImpl,
                     logger,
                     singleTargetListenerRegister,
                 )
@@ -211,7 +211,7 @@ class RegistrationIdentificationHelper(
 }
 
 class SingleTargetListenerRegister(
-    val neuroID: NeuroID,
+    val neuroIDImpl: NeuroIDImpl,
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
 ) {
@@ -226,7 +226,7 @@ class SingleTargetListenerRegister(
                 "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}",
             )
             // add Text Change watcher
-            val textWatcher = NIDTextWatcher(neuroID, logger, idName, simpleClassName)
+            val textWatcher = NIDTextWatcher(neuroIDImpl, logger, idName, simpleClassName)
             // first we have to clear the text watcher that is currently in the EditText
             for (watcher in textWatchers) {
                 view.removeTextChangedListener(watcher)
@@ -241,7 +241,7 @@ class SingleTargetListenerRegister(
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
                 view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(
-                    neuroID,
+                    neuroIDImpl,
                     logger,
                     actionCallback
                 )
@@ -365,23 +365,23 @@ class SingleTargetListenerRegister(
         attrJson: List<Map<String, Any>>,
     ) {
         val pathFrag =
-            if (NeuroID.screenFragName.isEmpty()) {
+            if (NeuroIDImpl.screenFragName.isEmpty()) {
                 ""
             } else {
-                "/${NeuroID.screenFragName}"
+                "/${NeuroIDImpl.screenFragName}"
             }
 
-        val urlView = ANDROID_URI + NeuroID.screenActivityName + "$pathFrag/" + idName
+        val urlView = ANDROID_URI + NeuroIDImpl.screenActivityName + "$pathFrag/" + idName
 
         logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = REGISTER_TARGET,
             attrs = attrJson,
             tg = mapOf("attr" to attrJson),
             et = "$et::$simpleName",
             etn = "INPUT",
-            ec = NeuroID.screenName,
+            ec = NeuroIDImpl.screenName,
             eid = idName,
             tgs = idName,
             en = idName,
@@ -407,7 +407,7 @@ class SingleTargetListenerRegister(
         val classJson =
             mapOf<String, Any>(
                 "n" to "screenHierarchy",
-                "v" to "${view.getParents(logger)}${NeuroID.screenName}",
+                "v" to "${view.getParents(logger)}${NeuroIDImpl.screenName}",
             )
 
         val parentData =
@@ -424,7 +424,7 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
+class AdditionalListeners(val neuroIDImpl: NeuroIDImpl, val logger: NIDLogWrapper) {
     internal fun addSelectOnSelect(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
@@ -438,7 +438,7 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
                 p3: Long,
             ) {
                 lastSelectListener?.onItemSelected(adapter, viewList, position, p3)
-                neuroID.captureEvent(
+                neuroIDImpl.captureEvent(
                     type = SELECT_CHANGE,
                     tg =
                         hashMapOf(
@@ -464,7 +464,7 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
         return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = SELECT_CHANGE,
                 tg =
                     hashMapOf(
@@ -483,7 +483,7 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
                 NIDLongPressContextMenuCallbacks(
-                    neuroID,
+                    neuroIDImpl,
                     logger,
                     actionInsertionCallback
                 )

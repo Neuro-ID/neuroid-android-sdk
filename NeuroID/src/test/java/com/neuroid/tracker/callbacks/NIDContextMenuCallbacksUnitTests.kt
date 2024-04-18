@@ -1,7 +1,7 @@
 package com.neuroid.tracker.callbacks
 
 import android.view.MenuItem
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
@@ -48,7 +48,7 @@ internal class NIDContextMenuCallbacksUnitTests {
     }
 
 
-    fun getCallbackMocks(): Pair<NeuroID, NIDLogWrapper> {
+    fun getCallbackMocks(): Pair<NeuroIDImpl, NIDLogWrapper> {
         val mockedNeuroID = getMockedNeuroID()
         val mockedLogger = getMockedLogger()
 

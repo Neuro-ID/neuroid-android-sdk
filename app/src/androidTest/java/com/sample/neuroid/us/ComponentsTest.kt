@@ -9,7 +9,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
@@ -37,11 +37,11 @@ class ComponentsTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         // set dev to scripts and collection endpoint
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+        NeuroIDImpl.getInstance()?.setTestingNeuroIDDevURL()
 
-        NeuroID.getInstance()?.isStopped()?.let {
+        NeuroIDImpl.getInstance()?.isStopped()?.let {
             if (it) {
-                NeuroID.getInstance()?.start()
+                NeuroIDImpl.getInstance()?.start()
             }
         }
         delay(500)
@@ -49,8 +49,8 @@ class ComponentsTest {
 
     @After
     fun resetDispatchers() = runTest {
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        NeuroID.getInstance()?.stop()
+        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroIDImpl.getInstance()?.stop()
         delay(500)
     }
 
@@ -60,7 +60,7 @@ class ComponentsTest {
     @Test
     fun test01ValidateCheckBox() = runTest {
         Looper.prepare()
-        NeuroID.getInstance()?.start()
+        NeuroIDImpl.getInstance()?.start()
 
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
@@ -71,7 +71,7 @@ class ComponentsTest {
             .perform(click())
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -89,7 +89,7 @@ class ComponentsTest {
             .perform(click())
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -110,7 +110,7 @@ class ComponentsTest {
             .perform(click())
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -131,7 +131,7 @@ class ComponentsTest {
             .perform(click())
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -153,7 +153,7 @@ class ComponentsTest {
 
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -173,7 +173,7 @@ class ComponentsTest {
         )
 
         delay(1000)
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents()
+        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents()
 
         onView(withId(R.id.seekBar_one)).perform(
             swipeRight()
@@ -181,7 +181,7 @@ class ComponentsTest {
 
 
         NIDSchema().validateSchema(
-            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
+            NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 

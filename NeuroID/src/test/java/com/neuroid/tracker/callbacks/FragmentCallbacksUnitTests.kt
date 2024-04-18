@@ -5,7 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_UNLOAD
@@ -26,10 +26,10 @@ internal class FragmentCallbacksUnitTests {
     fun test_onFragmentAttached_no_list(){
         val mocks = getFragmentCallbackMocks()
 
-        NeuroID.firstScreenName = ""
-        NeuroID.screenActivityName = ""
-        NeuroID.screenFragName = ""
-        NeuroID.screenName = ""
+        NeuroIDImpl.firstScreenName = ""
+        NeuroIDImpl.screenActivityName = ""
+        NeuroIDImpl.screenFragName = ""
+        NeuroIDImpl.screenName = ""
 
         mocks.fragmentCallbacks.onFragmentAttached(
             mocks.mockedFragmentManager,
@@ -38,11 +38,11 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        assert(NeuroID.screenName == "AppInit") {
-            "value mismatch, received ${NeuroID.screenName}"
+        assert(NeuroIDImpl.screenName == "AppInit") {
+            "value mismatch, received ${NeuroIDImpl.screenName}"
         }
-        assert(NeuroID.screenFragName == expectedActivityName) {
-            "value mismatch, received ${NeuroID.screenFragName}"
+        assert(NeuroIDImpl.screenFragName == expectedActivityName) {
+            "value mismatch, received ${NeuroIDImpl.screenFragName}"
         }
         assert(mocks.fragmentCallbacks.listFragment.count() == 1) {
             "listFragment count mismatch"
@@ -63,7 +63,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroID,
+            mocks.mockedNeuroIDImpl,
             WINDOW_LOAD,
             1,
             attrs = listOf(
@@ -82,10 +82,10 @@ internal class FragmentCallbacksUnitTests {
     fun test_onFragmentAttached_existing_list(){
         val mocks = getFragmentCallbackMocks()
 
-        NeuroID.firstScreenName = ""
-        NeuroID.screenActivityName = ""
-        NeuroID.screenFragName = ""
-        NeuroID.screenName = ""
+        NeuroIDImpl.firstScreenName = ""
+        NeuroIDImpl.screenActivityName = ""
+        NeuroIDImpl.screenFragName = ""
+        NeuroIDImpl.screenName = ""
 
 
         val concatName = mocks.mockedFragment.toString().split(" ")
@@ -104,11 +104,11 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        assert(NeuroID.screenName == "AppInit") {
-            "value mismatch, received ${NeuroID.screenName}"
+        assert(NeuroIDImpl.screenName == "AppInit") {
+            "value mismatch, received ${NeuroIDImpl.screenName}"
         }
-        assert(NeuroID.screenFragName == expectedActivityName) {
-            "value mismatch, received ${NeuroID.screenFragName}"
+        assert(NeuroIDImpl.screenFragName == expectedActivityName) {
+            "value mismatch, received ${NeuroIDImpl.screenFragName}"
         }
         assert(mocks.fragmentCallbacks.listFragment.count() == 1) {
             "listFragment count mismatch actual count ${mocks.fragmentCallbacks.listFragment.count()}"
@@ -131,7 +131,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroID,
+            mocks.mockedNeuroIDImpl,
             WINDOW_LOAD,
             1,
             attrs = listOf(
@@ -207,7 +207,7 @@ internal class FragmentCallbacksUnitTests {
                 msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName"
             )
 
-            mocks.mockedNeuroID.shouldForceStart()
+            mocks.mockedNeuroIDImpl.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
                 mocks.mockedFragmentActivity,
@@ -235,7 +235,7 @@ internal class FragmentCallbacksUnitTests {
                 msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName"
             )
 
-            mocks.mockedNeuroID.shouldForceStart()
+            mocks.mockedNeuroIDImpl.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
                 mocks.mockedFragmentActivity,
@@ -329,7 +329,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroID,
+            mocks.mockedNeuroIDImpl,
             WINDOW_UNLOAD,
             1,
             attrs = listOf(
@@ -346,7 +346,7 @@ internal class FragmentCallbacksUnitTests {
         Mocks and Helper Functions
          */
     data class MockedFragmentCallBackSetup(
-        val mockedNeuroID: NeuroID,
+        val mockedNeuroIDImpl: NeuroIDImpl,
         val mockedLogger: NIDLogWrapper,
         val mockedRegistration: RegistrationIdentificationHelper,
         val mockedFragmentManager: FragmentManager,
@@ -373,7 +373,7 @@ internal class FragmentCallbacksUnitTests {
 
         val fragmentCallbacks = FragmentCallbacks(
             true,
-            neuroID = mockedNeuroID,
+            neuroIDImpl = mockedNeuroID,
             logger = mockedLogger,
             registrationHelper = mockedRegistration
         )

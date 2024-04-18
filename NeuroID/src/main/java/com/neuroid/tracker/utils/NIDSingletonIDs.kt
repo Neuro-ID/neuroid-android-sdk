@@ -1,6 +1,6 @@
 package com.neuroid.tracker.utils
 
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import java.util.UUID
 
@@ -13,7 +13,7 @@ object NIDSingletonIDs {
      * Look at shared defaults, and
      */
     fun retrieveOrCreateLocalSalt(): String {
-        var context = NeuroID.getInstance()?.getApplicationContext()
+        var context = NeuroIDImpl.getInternalInstance()?.getApplicationContext()
         val sharedDefaults = context?.let { NIDSharedPrefsDefaults(it) }
         var existingSalt = sharedDefaults?.getDeviceSalt()
 

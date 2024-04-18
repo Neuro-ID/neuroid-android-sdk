@@ -7,7 +7,7 @@ import android.widget.*
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.utils.NIDLog
@@ -17,7 +17,7 @@ import com.neuroid.tracker.utils.getEtnSenderName
 
 class TouchEventManager(
     private val viewParent: ViewGroup,
-    internal val neuroID: NeuroID,
+    internal val neuroIDImpl: NeuroIDImpl,
     internal val logger: NIDLogWrapper,
 ) {
     private var lastView: View? = null
@@ -100,7 +100,7 @@ class TouchEventManager(
             }
 
             if (shouldSaveEvent && eventType.isNotEmpty()) {
-                neuroID.captureEvent(
+                neuroIDImpl.captureEvent(
                     type = eventType,
                     tgs = nameView,
                     tg =

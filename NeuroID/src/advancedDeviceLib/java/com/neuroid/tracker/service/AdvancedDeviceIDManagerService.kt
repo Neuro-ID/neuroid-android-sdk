@@ -6,7 +6,7 @@ import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -24,12 +24,12 @@ interface AdvancedDeviceIDManagerService {
 }
 
 internal class AdvancedDeviceIDManager(
-        private val context: Context,
-        private val logger: NIDLogWrapper,
-        private val sharedPrefs: NIDSharedPrefsDefaults,
-        private val neuroID: NeuroID,
-        private val advNetworkService: ADVNetworkService,
-        private val fpjsClient:
+    private val context: Context,
+    private val logger: NIDLogWrapper,
+    private val sharedPrefs: NIDSharedPrefsDefaults,
+    private val neuroIDImpl: NeuroIDImpl,
+    private val advNetworkService: ADVNetworkService,
+    private val fpjsClient:
                 FingerprintJS? // only for testing purposes, need to create in real time to pass NID
                                //   Key
 ) : AdvancedDeviceIDManagerService {
@@ -61,7 +61,7 @@ internal class AdvancedDeviceIDManager(
                 msg =
                         "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}"
         )
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
             ts = System.currentTimeMillis(),
@@ -80,7 +80,7 @@ internal class AdvancedDeviceIDManager(
             logger.e(msg = "Failed to get API key from NeuroID: ${nidKeyResponse.message}")
 
             // capture failure in event
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = LOG,
                 ts = System.currentTimeMillis(),
                 level = "error",
@@ -120,7 +120,7 @@ internal class AdvancedDeviceIDManager(
                                             "Generating Request ID for Advanced Device Signals: ${requestResponse.second}"
                             )
 
-                            neuroID.captureEvent(
+                            neuroIDImpl.captureEvent(
                                 type = ADVANCED_DEVICE_REQUEST,
                                 rid = requestResponse.second,
                                 ts = System.currentTimeMillis(),
@@ -161,7 +161,7 @@ internal class AdvancedDeviceIDManager(
                         val msg =
                             "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID: $jobErrorMessage"
 
-                        neuroID.captureEvent(
+                        neuroIDImpl.captureEvent(
                             type = LOG,
                             ts = System.currentTimeMillis(),
                             level = "error",

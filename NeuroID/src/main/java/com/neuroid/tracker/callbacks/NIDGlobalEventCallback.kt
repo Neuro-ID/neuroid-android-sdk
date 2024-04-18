@@ -14,7 +14,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
-import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getSHA256withSalt
@@ -26,7 +26,7 @@ class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
     private val eventManager: TouchEventManager,
     private val viewMainContainer: View,
-    internal val neuroID: NeuroID,
+    internal val neuroIDImpl: NeuroIDImpl,
     internal val logger: NIDLogWrapper,
     internal val singleTargetListenerRegister: SingleTargetListenerRegister,
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
@@ -73,7 +73,7 @@ class NIDGlobalEventCallback(
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
 
-            neuroID.captureEvent(
+            neuroIDImpl.captureEvent(
                 type = WINDOW_RESIZE,
                 w = currentWidth,
                 h = currentHeight,
@@ -82,7 +82,7 @@ class NIDGlobalEventCallback(
     }
 
     private fun registerTextChangeEvent(actualText: String) {
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = TEXT_CHANGE,
             tg =
                 hashMapOf(
@@ -246,7 +246,7 @@ class NIDGlobalEventCallback(
         val text = view.text.toString()
 
         // do a check to see if we have registered this Field yet
-        if (!NeuroID.registeredViews.contains(idName)) {
+        if (!NeuroIDImpl.registeredViews.contains(idName)) {
             logger.d(
                 msg = "Late registration: registeringView $simpleJavaClassName",
             )
@@ -259,14 +259,14 @@ class NIDGlobalEventCallback(
                 guid,
                 "targetInteractionEvent",
             )
-            NeuroID.registeredViews.add(idName)
+            NeuroIDImpl.registeredViews.add(idName)
         } else {
             logger.d(
                 msg = "view already registered: registeringView $simpleJavaClassName tag: $idName",
             )
         }
 
-        neuroID.captureEvent(
+        neuroIDImpl.captureEvent(
             type = type,
             tg =
                 hashMapOf(
