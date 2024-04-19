@@ -53,11 +53,10 @@ class NeuroIDImpl
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
+        serverEnvironment: String = PRODUCTION
     ): NeuroID {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
         private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
-
-        internal var verifyIntegrationHealth = false
 
         private var firstTime = true
         internal var sessionID = ""
@@ -71,8 +70,9 @@ class NeuroIDImpl
 
         private var metaData: NIDMetaData? = null
 
+        internal var verifyIntegrationHealth: Boolean = false
         internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
-            mutableListOf()
+            mutableListOf<NIDEventModel>()
 
         internal var isRN = false
 
@@ -91,6 +91,17 @@ class NeuroIDImpl
         internal var locationService: LocationService? = null
 
         init {
+            when (serverEnvironment) {
+                DEVELOPMENT -> {
+                    endpoint = "${Constants.devEndpoint.displayName}"
+                    scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+                }
+                else -> {
+                    endpoint = "${Constants.productionEndpoint.displayName}"
+                    scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
+                }
+            }
+
             setRemoteConfig()
 
             dataStore = NIDDataStoreManagerImp(logger)
@@ -174,10 +185,12 @@ class NeuroIDImpl
             }
         }
 
-        data class Builder(var application: Application? = null, var clientKey: String = "") {
+        data class Builder(val application: Application? = null,
+                           val clientKey: String = "",
+                           val serverEnvironment: String = PRODUCTION) {
             fun build() {
                 if (singleton == null) {
-                    val neuroIDImpl = NeuroIDImpl(application, clientKey)
+                    val neuroIDImpl = NeuroIDImpl(application, clientKey, serverEnvironment)
                     neuroIDImpl.setupCallbacks()
                     setNeuroIDInstance(neuroIDImpl)
                 }
@@ -185,6 +198,9 @@ class NeuroIDImpl
         }
 
         companion object {
+            const val PRODUCTION = "production"
+            const val DEVELOPMENT = "development"
+
             var showLogs: Boolean = true
             var isSDKStarted = false
 
@@ -206,7 +222,7 @@ class NeuroIDImpl
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
             internal var endpoint = "${Constants.productionEndpoint.displayName}"
-            internal var scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+            internal var scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
             private var singleton: NeuroIDImpl? = null
 
             // configuration state
@@ -264,6 +280,7 @@ class NeuroIDImpl
         @VisibleForTesting
         override fun setTestURL(newEndpoint: String) {
             endpoint = newEndpoint
+            scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
                 nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
@@ -588,7 +605,7 @@ class NeuroIDImpl
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
                 // get updated GPS location if possible
-                metaData?.getLastKnownLocation(it)
+                metaData?.getLastKnownLocation(it, nidSDKConfig.geoLocation)
                 captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),

@@ -53,8 +53,9 @@ class LifeCycleTest: MockServerTest() {
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
         NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
+        delay(1000) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
+        delay(1000)
         device.setOrientationNatural()
         delay(1000)
 
