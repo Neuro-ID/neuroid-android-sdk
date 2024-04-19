@@ -228,16 +228,6 @@ class NeuroIDImpl
             // configuration state
             internal var nidSDKConfig = NIDRemoteConfig()
 
-//            @JvmStatic
-//            @Deprecated(
-//                "setNeuroIdInstance has been renamed to setNeuroIDInstance",
-//                ReplaceWith("NeuroID.setNeuroIDInstance()"),
-//            )
-//            fun setNeuroIdInstance(neuroIDImpl: NeuroIDImpl) {
-//                this.setNeuroIDInstance(neuroIDImpl)
-//            }
-
-//            @JvmStatic
             internal fun setNeuroIDInstance(neuroIDImpl: NeuroIDImpl) {
                 if (singleton == null) {
                     singleton = neuroIDImpl
@@ -246,6 +236,7 @@ class NeuroIDImpl
             }
 
             fun getInstance(): NeuroID? = singleton
+
             internal fun getInternalInstance() = singleton
         }
 
