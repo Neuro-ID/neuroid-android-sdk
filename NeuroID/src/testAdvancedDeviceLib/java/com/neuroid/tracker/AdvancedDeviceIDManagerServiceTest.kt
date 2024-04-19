@@ -91,7 +91,7 @@ class AdvancedDeviceIDManagerServiceTest {
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
-        val mockedNID = mocks["mockedNeuroID"] as NeuroIDImpl
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
 
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
@@ -115,7 +115,7 @@ class AdvancedDeviceIDManagerServiceTest {
             assert(e.m == errorMessage) { "Expected event m value to be $errorMessage, found ${e.m}" }
         }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedNID = mocks["mockedNeuroID"] as NeuroIDImpl
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
         advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
@@ -230,8 +230,8 @@ class AdvancedDeviceIDManagerServiceTest {
         )
     }
 
-    private fun getMockedNeuroID(): NeuroIDImpl {
-        val nidMock = mockk<NeuroIDImpl>()
+    private fun getMockedNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
         every {
             nidMock.captureEvent(
                 any(),
@@ -378,7 +378,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
 
-    private fun verifyCaptureEvent(nidMock: NeuroIDImpl, count:Int = 1){
+    private fun verifyCaptureEvent(nidMock: NeuroID, count:Int = 1){
         verify(exactly = count) {
             nidMock.captureEvent(
                 any(),

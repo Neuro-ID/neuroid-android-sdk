@@ -17,7 +17,7 @@ import com.neuroid.tracker.utils.getEtnSenderName
 
 class TouchEventManager(
     private val viewParent: ViewGroup,
-    internal val neuroIDImpl: NeuroID,
+    internal val neuroID: NeuroID,
     internal val logger: NIDLogWrapper,
 ) {
     private var lastView: View? = null
@@ -100,7 +100,7 @@ class TouchEventManager(
             }
 
             if (shouldSaveEvent && eventType.isNotEmpty()) {
-                neuroIDImpl.captureEvent(
+                neuroID.captureEvent(
                     type = eventType,
                     tgs = nameView,
                     tg =

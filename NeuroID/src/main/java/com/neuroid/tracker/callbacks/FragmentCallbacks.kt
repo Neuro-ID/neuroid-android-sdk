@@ -14,7 +14,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 
 class FragmentCallbacks(
     isChangeOrientation: Boolean,
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : FragmentLifecycleCallbacks() {
@@ -39,7 +39,7 @@ class FragmentCallbacks(
                 NeuroID.screenFragName = className
             }
 
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = WINDOW_LOAD,
                 attrs =
                     listOf(
@@ -114,7 +114,7 @@ class FragmentCallbacks(
 
         // TODO skip on force start
         // On clients where we have trouble starting the registration do a force start
-        if (neuroIDImpl.shouldForceStart()) {
+        if (neuroID.shouldForceStart()) {
             registrationHelper.registerTargetFromScreen(
                 f.requireActivity(),
                 true,
@@ -175,7 +175,7 @@ class FragmentCallbacks(
                 msg = "Fragment - Detached - WINDOW UNLOAD $className",
             )
 
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = WINDOW_UNLOAD,
                 attrs =
                     listOf(

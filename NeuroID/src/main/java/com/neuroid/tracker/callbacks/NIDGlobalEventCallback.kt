@@ -26,7 +26,7 @@ class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
     private val eventManager: TouchEventManager,
     private val viewMainContainer: View,
-    internal val neuroIDImpl: NeuroID,
+    internal val neuroID: NeuroID,
     internal val logger: NIDLogWrapper,
     internal val singleTargetListenerRegister: SingleTargetListenerRegister,
 ) : ViewTreeObserver.OnGlobalFocusChangeListener,
@@ -73,7 +73,7 @@ class NIDGlobalEventCallback(
             currentWidth = viewMainContainer.width
             currentHeight = viewMainContainer.height
 
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = WINDOW_RESIZE,
                 w = currentWidth,
                 h = currentHeight,
@@ -82,7 +82,7 @@ class NIDGlobalEventCallback(
     }
 
     private fun registerTextChangeEvent(actualText: String) {
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = TEXT_CHANGE,
             tg =
                 hashMapOf(
@@ -266,7 +266,7 @@ class NIDGlobalEventCallback(
             )
         }
 
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = type,
             tg =
                 hashMapOf(

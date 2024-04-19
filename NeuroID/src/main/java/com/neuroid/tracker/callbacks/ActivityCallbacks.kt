@@ -16,7 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : ActivityLifecycleCallbacks {
@@ -80,7 +80,7 @@ class ActivityCallbacks(
             fragManager?.registerFragmentLifecycleCallbacks(
                 FragmentCallbacks(
                     wasChanged,
-                    neuroIDImpl,
+                    neuroID,
                     logger,
                     registrationHelper,
                 ),
@@ -90,7 +90,7 @@ class ActivityCallbacks(
 
         if (wasChanged) {
             logger.d(msg = "Activity - POST Created - Orientation change")
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = WINDOW_ORIENTATION_CHANGE,
                 o = "CHANGED",
             )
@@ -98,7 +98,7 @@ class ActivityCallbacks(
         }
 
         logger.d(msg = "Activity - POST Created - Window Load")
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = WINDOW_LOAD,
             attrs =
                 listOf(
@@ -115,7 +115,7 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = WINDOW_BLUR,
             attrs =
                 listOf(
@@ -132,7 +132,7 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Resumed")
         val currentActivityName = activity::class.java.name
 
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = WINDOW_FOCUS,
             attrs =
                 listOf(
@@ -179,7 +179,7 @@ class ActivityCallbacks(
         listActivities.remove(activityDestroyed)
 
         logger.d(msg = "Activity - Destroyed - Window Unload")
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = WINDOW_UNLOAD,
             attrs =
                 listOf(

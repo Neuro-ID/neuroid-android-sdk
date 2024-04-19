@@ -11,7 +11,7 @@ import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 abstract class NIDContextMenuCallBacks(
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     actionCallBack: ActionMode.Callback?,
 ) : ActionMode.Callback {
     val wrapper = actionCallBack
@@ -49,7 +49,7 @@ abstract class NIDContextMenuCallBacks(
             }
 
         if (type.isNotEmpty()) {
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = CONTEXT_MENU,
                 attrs =
                     listOf(

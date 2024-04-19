@@ -30,12 +30,12 @@ import java.util.UUID
 val textWatchers = mutableListOf<TextWatcher>()
 
 class RegistrationIdentificationHelper(
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
 ) {
-    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroIDImpl, logger)
+    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroID, logger)
     val singleTargetListenerRegister: SingleTargetListenerRegister =
-        SingleTargetListenerRegister(neuroIDImpl, logger, additionalListeners)
+        SingleTargetListenerRegister(neuroID, logger, additionalListeners)
 
     fun registerTargetFromScreen(
         activity: Activity,
@@ -79,11 +79,11 @@ class RegistrationIdentificationHelper(
                     callBack,
                     TouchEventManager(
                         viewMainContainer as ViewGroup,
-                        neuroIDImpl,
+                        neuroID,
                         logger,
                     ),
                     viewMainContainer,
-                    neuroIDImpl,
+                    neuroID,
                     logger,
                     singleTargetListenerRegister,
                 )

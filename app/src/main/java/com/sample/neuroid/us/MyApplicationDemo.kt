@@ -6,7 +6,6 @@ import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.extensions.setVerifyIntegrationHealth
-import com.neuroid.tracker.extensions.startSession
 import com.sample.neuroid.us.domain.config.ConfigHelper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -43,6 +42,6 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
         NeuroID.getInstance()?.setUserID(configHelper.userId)
         NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
-        NeuroID.getInstance()?.startSession("testSession", true)
+        NeuroID.getInstance()?.startSession("testSession")
     }
 }

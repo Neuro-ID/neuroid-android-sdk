@@ -63,7 +63,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_LOAD,
             1,
             attrs = listOf(
@@ -131,7 +131,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_LOAD,
             1,
             attrs = listOf(
@@ -207,7 +207,7 @@ internal class FragmentCallbacksUnitTests {
                 msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName"
             )
 
-            mocks.mockedNeuroIDImpl.shouldForceStart()
+            mocks.mockedNeuroID.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
                 mocks.mockedFragmentActivity,
@@ -235,7 +235,7 @@ internal class FragmentCallbacksUnitTests {
                 msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName"
             )
 
-            mocks.mockedNeuroIDImpl.shouldForceStart()
+            mocks.mockedNeuroID.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
                 mocks.mockedFragmentActivity,
@@ -329,7 +329,7 @@ internal class FragmentCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_UNLOAD,
             1,
             attrs = listOf(
@@ -346,7 +346,7 @@ internal class FragmentCallbacksUnitTests {
         Mocks and Helper Functions
          */
     data class MockedFragmentCallBackSetup(
-        val mockedNeuroIDImpl: NeuroID,
+        val mockedNeuroID: NeuroID,
         val mockedLogger: NIDLogWrapper,
         val mockedRegistration: RegistrationIdentificationHelper,
         val mockedFragmentManager: FragmentManager,
@@ -373,7 +373,7 @@ internal class FragmentCallbacksUnitTests {
 
         val fragmentCallbacks = FragmentCallbacks(
             true,
-            neuroIDImpl = mockedNeuroID,
+            neuroID = mockedNeuroID,
             logger = mockedLogger,
             registrationHelper = mockedRegistration
         )

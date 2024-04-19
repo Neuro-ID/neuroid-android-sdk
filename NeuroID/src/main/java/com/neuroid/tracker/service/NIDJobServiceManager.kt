@@ -22,7 +22,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 internal class NIDJobServiceManager(
-    private var neuroIDImpl: NeuroID,
+    private var neuroID: NeuroID,
     private var dataStore: NIDDataStoreManager,
     private var eventSender: NIDSendingService,
     private var logger: NIDLogWrapper,
@@ -147,7 +147,7 @@ internal class NIDJobServiceManager(
             while (NeuroID.isSDKStarted && NeuroID.nidSDKConfig.gyroAccelCadence) {
                 delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime)
 
-                neuroIDImpl.captureEvent(
+                neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,
                     attrs =
                         listOf(
@@ -180,7 +180,7 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
-                            neuroIDImpl.captureEvent(type=LOG, m="network failure, sendEventsNow() failed retrylimitHit: $message $code")
+                            neuroID.captureEvent(type=LOG, m="network failure, sendEventsNow() failed retrylimitHit: $message $code")
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },

@@ -101,7 +101,7 @@ internal class ActivityCallbacksUnitTests {
             )
         }
 
-        verifyCaptureEvent(mocks.mockedNeuroIDImpl, WINDOW_LOAD, 1, attrs = listOf(
+        verifyCaptureEvent(mocks.mockedNeuroID, WINDOW_LOAD, 1, attrs = listOf(
             mapOf(
                 "component" to "activity",
                 "lifecycle" to "postCreated",
@@ -161,9 +161,9 @@ internal class ActivityCallbacksUnitTests {
             )
         }
 
-        verifyCaptureEvent(mocks.mockedNeuroIDImpl, WINDOW_ORIENTATION_CHANGE, 1, o = "CHANGED")
+        verifyCaptureEvent(mocks.mockedNeuroID, WINDOW_ORIENTATION_CHANGE, 1, o = "CHANGED")
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_LOAD,
             1,
             attrs = listOf(
@@ -191,7 +191,7 @@ internal class ActivityCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_BLUR,
             1,
             attrs = listOf(
@@ -228,7 +228,7 @@ internal class ActivityCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_FOCUS,
             1,
             attrs = listOf(
@@ -287,7 +287,7 @@ internal class ActivityCallbacksUnitTests {
         }
 
         verifyCaptureEvent(
-            mocks.mockedNeuroIDImpl,
+            mocks.mockedNeuroID,
             WINDOW_UNLOAD,
             1,
             attrs = listOf(
@@ -305,7 +305,7 @@ internal class ActivityCallbacksUnitTests {
     Mocks and Helper Functions
      */
     data class MockedActivityCallBackSetup(
-        val mockedNeuroIDImpl: NeuroID,
+        val mockedNeuroID: NeuroID,
         val mockedLogger: NIDLogWrapper,
         val mockedRegistration: RegistrationIdentificationHelper,
         val mockedActivity: Activity,
@@ -319,7 +319,7 @@ internal class ActivityCallbacksUnitTests {
         val mockedActivity = getMockedActivity()
 
         val activityCallbacks = ActivityCallbacks(
-            neuroIDImpl = mockedNeuroID,
+            neuroID = mockedNeuroID,
             logger = mockedLogger,
             registrationHelper = mockedRegistration
         )

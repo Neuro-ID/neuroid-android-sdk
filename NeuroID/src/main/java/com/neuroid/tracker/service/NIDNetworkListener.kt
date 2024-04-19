@@ -34,7 +34,7 @@ import kotlinx.coroutines.*
 class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
     private val dataStoreManager: NIDDataStoreManager,
-    private val neuroIDImpl: NeuroID,
+    private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
     private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
@@ -51,7 +51,7 @@ class NIDNetworkListener(
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
-                neuroIDImpl.isConnected = onNetworkAction()
+                neuroID.isConnected = onNetworkAction()
 
                 // act on the network change
                 handleNetworkChange()
@@ -66,23 +66,23 @@ class NIDNetworkListener(
 
     private fun handleNetworkChange() {
         cancelJobs()
-        if (!neuroIDImpl.isConnected) {
-            if (neuroIDImpl.isStopped()) {
+        if (!neuroID.isConnected) {
+            if (neuroID.isStopped()) {
                 return
             }
             haveNoNetworkJob =
                     CoroutineScope(dispatcher).launch {
                         delay(sleepIntervalPause)
-                        neuroIDImpl.pauseCollection(false)
+                        neuroID.pauseCollection(false)
                     }
         } else {
-            if (!neuroIDImpl.isStopped() || neuroIDImpl.userID.isEmpty()) {
+            if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
                 return
             }
             haveNetworkJob =
                     CoroutineScope(dispatcher).launch {
                         delay(sleepIntervalResume)
-                        neuroIDImpl.resumeCollection()
+                        neuroID.resumeCollection()
                     }
         }
     }

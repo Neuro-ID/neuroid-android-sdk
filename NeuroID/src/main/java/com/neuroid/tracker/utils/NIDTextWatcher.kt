@@ -9,7 +9,7 @@ import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 
 class NIDTextWatcher(
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     private val idName: String,
     val className: String? = "",
@@ -56,7 +56,7 @@ class NIDTextWatcher(
                     lastPastedHashValue = sequence?.toString()?.hashCode().toString()
 
                     if (pastedText.isNotEmpty()) {
-                        neuroIDImpl.captureEvent(
+                        neuroID.captureEvent(
                             type = PASTE,
                             tg =
                                 hashMapOf(
@@ -85,7 +85,7 @@ class NIDTextWatcher(
         if (lastHashValue != currentHashValue) {
             lastHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
 
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = INPUT,
                 tg =
                     hashMapOf(
