@@ -35,13 +35,13 @@ internal class NIDJobServiceManager(
     internal var clientKey = ""
     internal var isSetup: Boolean = false
 
-    private var sendEventsJob: Job = createSendEventsServer()
     internal var sendCadenceJob: Job? = null
     internal var gyroCadenceJob: Job? = null
 
     private val sendEventsNotification = Channel<Boolean>(Channel.UNLIMITED)
     private var application: Application? = null
     private var activityManager: ActivityManager? = null
+    private var sendEventsJob: Job = createSendEventsServer()
 
     @Synchronized
     fun startJob(

@@ -31,10 +31,12 @@ class MyApplicationDemo : MultiDexApplication() {
                 .penaltyLog()
                 .build()
         )
+
+        // tied to form id: form_dream102
         NeuroIDImpl.Builder(
             this,
-            "key_live_suj4CX90v0un2k1ufGrbItT5"
-        ).build()
+            "key_live_suj4CX90v0un2k1ufGrbItT5",
+            NeuroIDImpl.DEVELOPMENT).build()
         NeuroIDImpl.getInstance()?.setEnvironmentProduction(true)
         NeuroIDImpl.getInstance()?.setSiteId(configHelper.formId)
         NeuroIDImpl.getInstance()?.setVerifyIntegrationHealth(true)

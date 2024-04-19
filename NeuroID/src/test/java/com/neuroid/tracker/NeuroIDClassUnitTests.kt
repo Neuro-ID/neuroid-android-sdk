@@ -66,11 +66,7 @@ open class NeuroIDClassUnitTests {
 
     // Helper Functions
     private fun setNeuroIDInstance() {
-        val neuroIdImpl = NeuroIDImpl.Builder(
-            null, "key_test_fake1234"
-        ).build()
-        //NeuroIDImpl.setNeuroIDInstance(neuroIdImpl)
-
+        NeuroIDImpl.Builder(null, "key_test_fake1234", NeuroIDImpl.DEVELOPMENT).build()
     }
 
     private fun setNeuroIDMockedLogger(

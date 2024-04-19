@@ -4,7 +4,6 @@ import android.app.Activity
 import com.neuroid.tracker.models.SessionStartResult
 
 interface NeuroID {
-
     fun getClientId():String
     fun getClientID():String
     fun setTestURL(newEndpoint: String)
