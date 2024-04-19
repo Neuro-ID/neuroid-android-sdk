@@ -109,7 +109,7 @@ internal fun getMockedActivity():Activity{
 }
 
 internal fun verifyCaptureEvent(
-    mockedNeuroIDImpl: NeuroID,
+    mockedNeuroID: NeuroID,
     eventType:String,
     count:Int = 1,
 
@@ -118,7 +118,7 @@ internal fun verifyCaptureEvent(
     o:String? = null
 ){
     verify(exactly = count) {
-        mockedNeuroIDImpl.captureEvent(
+        mockedNeuroID.captureEvent(
             any(),
             type=eventType,
             any(),

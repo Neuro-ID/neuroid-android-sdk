@@ -228,9 +228,9 @@ class NeuroID
             // configuration state
             internal var nidSDKConfig = NIDRemoteConfig()
 
-            internal fun setNeuroIDInstance(neuroIDImpl: NeuroID) {
+            internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
-                    singleton = neuroIDImpl
+                    singleton = neuroID
                     singleton?.setupCallbacks()
                 }
             }

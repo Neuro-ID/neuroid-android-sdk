@@ -211,7 +211,7 @@ class RegistrationIdentificationHelper(
 }
 
 class SingleTargetListenerRegister(
-    val neuroIDImpl: NeuroID,
+    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
 ) {
@@ -226,7 +226,7 @@ class SingleTargetListenerRegister(
                 "EditText Listener $simpleClassName - ${view::class} - ${view.getIdOrTag()}",
             )
             // add Text Change watcher
-            val textWatcher = NIDTextWatcher(neuroIDImpl, logger, idName, simpleClassName)
+            val textWatcher = NIDTextWatcher(neuroID, logger, idName, simpleClassName)
             // first we have to clear the text watcher that is currently in the EditText
             for (watcher in textWatchers) {
                 view.removeTextChangedListener(watcher)
@@ -241,7 +241,7 @@ class SingleTargetListenerRegister(
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
                 view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(
-                    neuroIDImpl,
+                    neuroID,
                     logger,
                     actionCallback
                 )
@@ -375,7 +375,7 @@ class SingleTargetListenerRegister(
 
         logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
-        neuroIDImpl.captureEvent(
+        neuroID.captureEvent(
             type = REGISTER_TARGET,
             attrs = attrJson,
             tg = mapOf("attr" to attrJson),
@@ -424,7 +424,7 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val neuroIDImpl: NeuroID, val logger: NIDLogWrapper) {
+class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
     internal fun addSelectOnSelect(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
@@ -438,7 +438,7 @@ class AdditionalListeners(val neuroIDImpl: NeuroID, val logger: NIDLogWrapper) {
                 p3: Long,
             ) {
                 lastSelectListener?.onItemSelected(adapter, viewList, position, p3)
-                neuroIDImpl.captureEvent(
+                neuroID.captureEvent(
                     type = SELECT_CHANGE,
                     tg =
                         hashMapOf(
@@ -464,7 +464,7 @@ class AdditionalListeners(val neuroIDImpl: NeuroID, val logger: NIDLogWrapper) {
         return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
-            neuroIDImpl.captureEvent(
+            neuroID.captureEvent(
                 type = SELECT_CHANGE,
                 tg =
                     hashMapOf(
@@ -483,7 +483,7 @@ class AdditionalListeners(val neuroIDImpl: NeuroID, val logger: NIDLogWrapper) {
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
                 NIDLongPressContextMenuCallbacks(
-                    neuroIDImpl,
+                    neuroID,
                     logger,
                     actionInsertionCallback
                 )

@@ -24,12 +24,12 @@ interface AdvancedDeviceIDManagerService {
 }
 
 internal class AdvancedDeviceIDManager(
-    private val context: Context,
-    private val logger: NIDLogWrapper,
-    private val sharedPrefs: NIDSharedPrefsDefaults,
-    private val neuroID: NeuroID,
-    private val advNetworkService: ADVNetworkService,
-    private val fpjsClient:
+        private val context: Context,
+        private val logger: NIDLogWrapper,
+        private val sharedPrefs: NIDSharedPrefsDefaults,
+        private val neuroID: NeuroID,
+        private val advNetworkService: ADVNetworkService,
+        private val fpjsClient:
                 FingerprintJS? // only for testing purposes, need to create in real time to pass NID
                                //   Key
 ) : AdvancedDeviceIDManagerService {

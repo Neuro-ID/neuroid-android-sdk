@@ -66,10 +66,10 @@ abstract class NIDContextMenuCallBacks(
 
 // This is the callback for the context menu that appears when text is already in field
 class NIDTextContextMenuCallbacks(
-    neuroIDImpl: NeuroID,
+    neuroID: NeuroID,
     val logger: NIDLogWrapper,
     actionCallBack: ActionMode.Callback?,
-) : NIDContextMenuCallBacks(neuroIDImpl, actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
     override fun onActionItemClicked(
         action: ActionMode?,
         item: MenuItem?,
@@ -86,10 +86,10 @@ class NIDTextContextMenuCallbacks(
 // This is the callback for the context menu that appears when the text field is empty (only
 // available in later API versions)
 class NIDLongPressContextMenuCallbacks(
-    neuroIDImpl: NeuroID,
+    neuroID: NeuroID,
     val logger: NIDLogWrapper,
     actionCallBack: ActionMode.Callback?,
-) : NIDContextMenuCallBacks(neuroIDImpl, actionCallBack) {
+) : NIDContextMenuCallBacks(neuroID, actionCallBack) {
     override fun onActionItemClicked(
         action: ActionMode?,
         item: MenuItem?,
