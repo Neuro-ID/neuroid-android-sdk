@@ -2,7 +2,7 @@ package com.neuroid.tracker.extensions
 
 import android.content.Context
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -13,7 +13,7 @@ import com.neuroid.tracker.service.getADVNetworkService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.Constants
 
-fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
+fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
     val started = start()
 
     if (!started) {
@@ -21,7 +21,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
     }
 
     if (advancedDeviceSignals) {
-        NeuroIDImpl.getInternalInstance()?.apply {
+        NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
                 getADVSignal(clientKey, context, this, logger)
             }
@@ -31,7 +31,7 @@ fun NeuroID.start(advancedDeviceSignals: Boolean): Boolean {
     return started
 }
 
-fun NeuroID.startSession(
+fun NeuroIDPublic.startSession(
     sessionID: String? = null,
     advancedDeviceSignals: Boolean
 ): SessionStartResult {
@@ -44,7 +44,7 @@ fun NeuroID.startSession(
     }
 
     if (advancedDeviceSignals) {
-        NeuroIDImpl.getInternalInstance()?.apply {
+        NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
                 getADVSignal(clientKey, context, this, logger)
             }
@@ -57,7 +57,7 @@ fun NeuroID.startSession(
 internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
-    neuroIDImpl: NeuroIDImpl,
+    neuroId: NeuroID,
     logger: NIDLogWrapper
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -65,9 +65,9 @@ internal fun getADVSignal(
             applicationContext,
             logger,
             NIDSharedPrefsDefaults(applicationContext),
-            neuroIDImpl,
+            neuroId,
             getADVNetworkService(
-                NeuroIDImpl.endpoint,
+                NeuroID.endpoint,
                 logger
             ),
             null

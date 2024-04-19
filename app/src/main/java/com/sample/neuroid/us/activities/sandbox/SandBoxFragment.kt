@@ -8,8 +8,7 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.neuroid.tracker.NeuroIDImpl
-import com.sample.neuroid.us.MyApplicationDemo
+import com.neuroid.tracker.NeuroID
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.SandboxFragmentBinding
 import com.sample.neuroid.us.utils.collect
@@ -25,7 +24,7 @@ class SandBoxFragment : Fragment() {
     ): View? {
         binding = SandboxFragmentBinding.inflate(inflater)
         binding?.apply {
-            NeuroIDImpl.getInstance()?.let {
+            NeuroID.getInstance()?.let {
                 if (it.isStopped()) {
                     it.start()
                 }

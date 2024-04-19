@@ -11,7 +11,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
@@ -34,8 +34,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
         binding.apply {
-            textViewSidValue.setText(NeuroIDImpl.getInstance()?.getSessionId())
-            textViewCidValue.setText(NeuroIDImpl.getInstance()?.getClientId())
+            textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
+            textViewCidValue.setText(NeuroID.getInstance()?.getClientId())
             buttonShowActivityNoAutomaticEvents.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDCustomEventsActivity::class.java))
             }
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, NIDPayloadJsonActivity::class.java))
             }
             buttonCloseSession.setOnClickListener {
-                NeuroIDImpl.getInstance()?.closeSession()
+                NeuroID.getInstance()?.closeSession()
             }
         }
 

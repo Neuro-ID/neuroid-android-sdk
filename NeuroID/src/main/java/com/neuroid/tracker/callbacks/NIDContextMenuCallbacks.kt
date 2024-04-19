@@ -3,7 +3,7 @@ package com.neuroid.tracker.callbacks
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.COPY
 import com.neuroid.tracker.events.CUT
@@ -11,7 +11,7 @@ import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 abstract class NIDContextMenuCallBacks(
-    val neuroIDImpl: NeuroIDImpl,
+    val neuroIDImpl: NeuroID,
     actionCallBack: ActionMode.Callback?,
 ) : ActionMode.Callback {
     val wrapper = actionCallBack
@@ -66,7 +66,7 @@ abstract class NIDContextMenuCallBacks(
 
 // This is the callback for the context menu that appears when text is already in field
 class NIDTextContextMenuCallbacks(
-    neuroIDImpl: NeuroIDImpl,
+    neuroIDImpl: NeuroID,
     val logger: NIDLogWrapper,
     actionCallBack: ActionMode.Callback?,
 ) : NIDContextMenuCallBacks(neuroIDImpl, actionCallBack) {
@@ -86,7 +86,7 @@ class NIDTextContextMenuCallbacks(
 // This is the callback for the context menu that appears when the text field is empty (only
 // available in later API versions)
 class NIDLongPressContextMenuCallbacks(
-    neuroIDImpl: NeuroIDImpl,
+    neuroIDImpl: NeuroID,
     val logger: NIDLogWrapper,
     actionCallBack: ActionMode.Callback?,
 ) : NIDContextMenuCallBacks(neuroIDImpl, actionCallBack) {

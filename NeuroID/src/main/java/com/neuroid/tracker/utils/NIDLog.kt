@@ -1,7 +1,7 @@
 package com.neuroid.tracker.utils
 
 import android.util.Log
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 
 object NIDLog {
     val nidTag = "NeuroID"
@@ -15,7 +15,7 @@ object NIDLog {
         msg: String,
         cb: () -> String = { msg },
     ) {
-        if (NeuroIDImpl.showLogs && NeuroIDImpl.isSDKStarted) {
+        if (NeuroID.showLogs && NeuroID.isSDKStarted) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, debugTag), it)
             }
@@ -27,7 +27,7 @@ object NIDLog {
         msg: String,
         cb: () -> String = { msg },
     ) {
-        if (NeuroIDImpl.showLogs) {
+        if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, infoTag), it)
             }
@@ -39,7 +39,7 @@ object NIDLog {
         msg: String,
         cb: () -> String = { msg },
     ) {
-        if (NeuroIDImpl.showLogs) {
+        if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, nidTag), it)
             }
@@ -51,7 +51,7 @@ object NIDLog {
         msg: String,
         cb: () -> String = { msg },
     ) {
-        if (NeuroIDImpl.showLogs) {
+        if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, warnTag), it)
             }
@@ -63,7 +63,7 @@ object NIDLog {
         msg: String,
         cb: () -> String = { msg },
     ) {
-        if (NeuroIDImpl.showLogs) {
+        if (NeuroID.showLogs) {
             cb().chunked(900).forEach {
                 Log.d(appendTag(tag, errorTag), it)
             }

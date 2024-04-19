@@ -13,7 +13,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import androidx.annotation.RequiresApi
 import androidx.core.view.forEach
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
@@ -30,7 +30,7 @@ import java.util.UUID
 val textWatchers = mutableListOf<TextWatcher>()
 
 class RegistrationIdentificationHelper(
-    val neuroIDImpl: NeuroIDImpl,
+    val neuroIDImpl: NeuroID,
     val logger: NIDLogWrapper,
 ) {
     val additionalListeners: AdditionalListeners = AdditionalListeners(neuroIDImpl, logger)
@@ -211,7 +211,7 @@ class RegistrationIdentificationHelper(
 }
 
 class SingleTargetListenerRegister(
-    val neuroIDImpl: NeuroIDImpl,
+    val neuroIDImpl: NeuroID,
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
 ) {
@@ -365,13 +365,13 @@ class SingleTargetListenerRegister(
         attrJson: List<Map<String, Any>>,
     ) {
         val pathFrag =
-            if (NeuroIDImpl.screenFragName.isEmpty()) {
+            if (NeuroID.screenFragName.isEmpty()) {
                 ""
             } else {
-                "/${NeuroIDImpl.screenFragName}"
+                "/${NeuroID.screenFragName}"
             }
 
-        val urlView = ANDROID_URI + NeuroIDImpl.screenActivityName + "$pathFrag/" + idName
+        val urlView = ANDROID_URI + NeuroID.screenActivityName + "$pathFrag/" + idName
 
         logger.d("NID test output", "etn: INPUT, et: $simpleName, eid: $idName, v:$v")
 
@@ -381,7 +381,7 @@ class SingleTargetListenerRegister(
             tg = mapOf("attr" to attrJson),
             et = "$et::$simpleName",
             etn = "INPUT",
-            ec = NeuroIDImpl.screenName,
+            ec = NeuroID.screenName,
             eid = idName,
             tgs = idName,
             en = idName,
@@ -407,7 +407,7 @@ class SingleTargetListenerRegister(
         val classJson =
             mapOf<String, Any>(
                 "n" to "screenHierarchy",
-                "v" to "${view.getParents(logger)}${NeuroIDImpl.screenName}",
+                "v" to "${view.getParents(logger)}${NeuroID.screenName}",
             )
 
         val parentData =
@@ -424,7 +424,7 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val neuroIDImpl: NeuroIDImpl, val logger: NIDLogWrapper) {
+class AdditionalListeners(val neuroIDImpl: NeuroID, val logger: NIDLogWrapper) {
     internal fun addSelectOnSelect(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,

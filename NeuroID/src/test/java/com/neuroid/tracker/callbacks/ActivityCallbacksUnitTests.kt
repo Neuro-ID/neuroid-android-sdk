@@ -2,7 +2,7 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.os.Bundle
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
@@ -59,28 +59,28 @@ internal class ActivityCallbacksUnitTests {
     @Test
     fun test_onActivityStarted_same_orientation(){
         val mocks = getActivityCallbackMocks()
-        NeuroIDImpl.firstScreenName = ""
-        NeuroIDImpl.screenActivityName = ""
-        NeuroIDImpl.screenFragName = ""
-        NeuroIDImpl.screenName = ""
+        NeuroID.firstScreenName = ""
+        NeuroID.screenActivityName = ""
+        NeuroID.screenFragName = ""
+        NeuroID.screenName = ""
 
         mocks.activityCallback.onActivityStarted(mocks.mockedActivity)
 
         val expectedActivityName = mocks.mockedActivity::class.java.name
-        assert(NeuroIDImpl.firstScreenName == expectedActivityName) {
-            "value mistmatch, received ${NeuroIDImpl.firstScreenName}"
+        assert(NeuroID.firstScreenName == expectedActivityName) {
+            "value mistmatch, received ${NeuroID.firstScreenName}"
         }
 
-        assert(NeuroIDImpl.screenActivityName == expectedActivityName) {
-            "value mismatch, received ${NeuroIDImpl.screenActivityName}"
+        assert(NeuroID.screenActivityName == expectedActivityName) {
+            "value mismatch, received ${NeuroID.screenActivityName}"
         }
 
-        assert(NeuroIDImpl.screenFragName == "") {
-            "value mismatch, received ${NeuroIDImpl.screenFragName}"
+        assert(NeuroID.screenFragName == "") {
+            "value mismatch, received ${NeuroID.screenFragName}"
         }
 
-        assert(NeuroIDImpl.screenName == "AppInit") {
-            "value mismatch, received ${NeuroIDImpl.screenName}"
+        assert(NeuroID.screenName == "AppInit") {
+            "value mismatch, received ${NeuroID.screenName}"
         }
 
         verify (exactly = 1){
@@ -113,29 +113,29 @@ internal class ActivityCallbacksUnitTests {
     @Test
     fun test_onActivityStarted_changed_orientation(){
         val mocks = getActivityCallbackMocks()
-        NeuroIDImpl.firstScreenName = ""
-        NeuroIDImpl.screenActivityName = ""
-        NeuroIDImpl.screenFragName = ""
-        NeuroIDImpl.screenName = ""
+        NeuroID.firstScreenName = ""
+        NeuroID.screenActivityName = ""
+        NeuroID.screenFragName = ""
+        NeuroID.screenName = ""
         mocks.activityCallback.setTestAuxOrientation(2)
 
         mocks.activityCallback.onActivityStarted(mocks.mockedActivity)
 
         val expectedActivityName = mocks.mockedActivity::class.java.name
-        assert(NeuroIDImpl.firstScreenName == expectedActivityName) {
-            "value mistmatch, received ${NeuroIDImpl.firstScreenName}"
+        assert(NeuroID.firstScreenName == expectedActivityName) {
+            "value mistmatch, received ${NeuroID.firstScreenName}"
         }
 
-        assert(NeuroIDImpl.screenActivityName == expectedActivityName) {
-            "value mismatch, received ${NeuroIDImpl.screenActivityName}"
+        assert(NeuroID.screenActivityName == expectedActivityName) {
+            "value mismatch, received ${NeuroID.screenActivityName}"
         }
 
-        assert(NeuroIDImpl.screenFragName == "") {
-            "value mismatch, received ${NeuroIDImpl.screenFragName}"
+        assert(NeuroID.screenFragName == "") {
+            "value mismatch, received ${NeuroID.screenFragName}"
         }
 
-        assert(NeuroIDImpl.screenName == "AppInit") {
-            "value mismatch, received ${NeuroIDImpl.screenName}"
+        assert(NeuroID.screenName == "AppInit") {
+            "value mismatch, received ${NeuroID.screenName}"
         }
 
         verify (exactly = 1){
@@ -305,7 +305,7 @@ internal class ActivityCallbacksUnitTests {
     Mocks and Helper Functions
      */
     data class MockedActivityCallBackSetup(
-        val mockedNeuroIDImpl: NeuroIDImpl,
+        val mockedNeuroIDImpl: NeuroID,
         val mockedLogger: NIDLogWrapper,
         val mockedRegistration: RegistrationIdentificationHelper,
         val mockedActivity: Activity,

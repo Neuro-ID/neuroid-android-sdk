@@ -4,7 +4,7 @@ import android.location.LocationListener
 import com.google.gson.GsonBuilder
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.sample.neuroid.us.utils.CoroutineScopeAdapter
 import com.sample.neuroid.us.utils.LocationListenerCreator
@@ -30,15 +30,15 @@ abstract class MockServerTest {
     @Before
     fun stopSendEventsToServer() = runTest {
         // set dev to scripts and collection endpoint
-        NeuroIDImpl.getInstance()?.setTestingNeuroIDDevURL()
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
         server.start()
         val url = server.url("/c/").toString()
-        NeuroIDImpl.getInstance()?.setTestURL(url)
+        NeuroID.getInstance()?.setTestURL(url)
         server.enqueue(MockResponse().setBody("").setResponseCode(200))
 
-        NeuroIDImpl.getInstance()?.isStopped()?.let {
+        NeuroID.getInstance()?.isStopped()?.let {
             if (it) {
-                NeuroIDImpl.getInstance()?.start()
+                NeuroID.getInstance()?.start()
             }
         }
         delay(500)
@@ -46,7 +46,7 @@ abstract class MockServerTest {
 
     @After
     fun resetDispatchers() = runTest {
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }
 

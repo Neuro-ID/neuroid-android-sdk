@@ -9,7 +9,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
@@ -65,7 +65,7 @@ class NeuroIdUITest: MockServerTest() {
 
     fun forceSendEvents(){
         // stop to force send all events in queue
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.stop()
         delay(500)
     }
 
@@ -79,7 +79,7 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test01ValidateCreateSession() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.start()
+        NeuroID.getInstance()?.start()
         delay(500)
 
         forceSendEvents()
@@ -106,7 +106,7 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test03ValidateSetUserId() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.setUserID("UUID1234")
+        NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
 
         forceSendEvents()
@@ -119,7 +119,7 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test03aValidateSetRegisteredUserId() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.setRegisteredUserID("UUID1234")
+        NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
         delay(500)
 
         forceSendEvents()
@@ -160,7 +160,7 @@ class NeuroIdUITest: MockServerTest() {
     fun test06ValidateLifecyclePause() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -177,11 +177,11 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test07ValidateLifecycleStop() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.pressBack()
         delay(1000)
@@ -196,12 +196,12 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test08ValidateTouchStart() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(200) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(200)
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
         delay(1000)
@@ -216,12 +216,12 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test09ValidateTouchEnd() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
 
@@ -245,12 +245,12 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test12ValidateWindowsResize() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
 
@@ -266,7 +266,7 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
@@ -283,12 +283,12 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test14ValidateSetUserIdPreStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.stop()
         delay(500)
-        NeuroIDImpl.getInstance()?.setUserID("UUID123")
+        NeuroID.getInstance()?.setUserID("UUID123")
         delay(500)
-        NeuroIDImpl.getInstance()?.start()
+        NeuroID.getInstance()?.start()
         delay(500)
 
         forceSendEvents()
@@ -301,11 +301,11 @@ class NeuroIdUITest: MockServerTest() {
     @Test
     fun test15ValidateSetRegisteredUserIdPreStart() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.stop()
         delay(500)
-        NeuroIDImpl.getInstance()?.setRegisteredUserID("UUID1231212")
+        NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
         delay(500)
-        NeuroIDImpl.getInstance()?.start()
+        NeuroID.getInstance()?.start()
         delay(500)
 
         forceSendEvents()

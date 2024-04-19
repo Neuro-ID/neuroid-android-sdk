@@ -3,7 +3,7 @@ package com.neuroid.tracker.service
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.OUT_OF_MEMORY
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
@@ -75,7 +75,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
             data = getRequestPayloadJSON(events)
 
             NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
-            NeuroIDImpl.getInternalInstance()?.saveIntegrationHealthEvents()
+            NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload
@@ -90,33 +90,33 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
         val userID: String? =
-            if (NeuroIDImpl.getInstance()?.getUserID() != null) {
-                NeuroIDImpl.getInstance()?.getUserID()
+            if (NeuroID.getInstance()?.getUserID() != null) {
+                NeuroID.getInstance()?.getUserID()
             } else {
                 null
             }
         val registeredUserID: String? =
-            if (NeuroIDImpl.getInstance()?.getRegisteredUserID() != null) {
-                NeuroIDImpl.getInstance()?.getRegisteredUserID()
+            if (NeuroID.getInstance()?.getRegisteredUserID() != null) {
+                NeuroID.getInstance()?.getRegisteredUserID()
             } else {
                 null
             }
 
         val jsonBody =
             mapOf(
-                "siteId" to NeuroIDImpl.siteID,
+                "siteId" to NeuroID.siteID,
                 "userId" to userID,
                 "clientId" to sharedDefaults.getClientId(),
                 "identityId" to userID,
                 "registeredUserId" to registeredUserID,
-                "pageTag" to NeuroIDImpl.screenActivityName,
-                "pageId" to NeuroIDImpl.rndmId,
-                "tabId" to NeuroIDImpl.rndmId,
+                "pageTag" to NeuroID.screenActivityName,
+                "pageId" to NeuroID.rndmId,
+                "tabId" to NeuroID.rndmId,
                 "responseId" to sharedDefaults.generateUniqueHexId(),
-                "url" to "$ANDROID_URI${NeuroIDImpl.screenActivityName}",
+                "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",
                 "sdkVersion" to NIDVersion.getSDKVersion(),
-                "environment" to NeuroIDImpl.environment,
+                "environment" to NeuroID.environment,
                 "jsonEvents" to events,
             )
 

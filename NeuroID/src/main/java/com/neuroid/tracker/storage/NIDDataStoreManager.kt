@@ -1,8 +1,8 @@
 package com.neuroid.tracker.storage
 
 import androidx.annotation.VisibleForTesting
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
@@ -26,15 +26,15 @@ interface NIDDataStoreManager {
 }
 
 @VisibleForTesting // Should we make the private?
-fun NeuroID.getTestingDataStoreInstance(): NIDDataStoreManager? {
-    return NeuroIDImpl.getInternalInstance()?.dataStore
+fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
+    return NeuroID.getInternalInstance()?.dataStore
 }
 
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
 ) : NIDDataStoreManager {
     companion object {
-        private var eventBufferMaxCount = NeuroIDImpl.nidSDKConfig.eventQueueFlushSize
+        private var eventBufferMaxCount = NeuroID.nidSDKConfig.eventQueueFlushSize
 
         private val listNonActiveEvents =
             listOf(
@@ -113,7 +113,7 @@ internal class NIDDataStoreManagerImp(
             var url = item.url
             if (item.type == CREATE_SESSION && url == "") {
                 updateEvent = true
-                url = "$ANDROID_URI${NeuroIDImpl.firstScreenName}"
+                url = "$ANDROID_URI${NeuroID.firstScreenName}"
             }
 
             if (updateEvent) {

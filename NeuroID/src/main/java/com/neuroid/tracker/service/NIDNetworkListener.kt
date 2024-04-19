@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.TYPE_WIFI
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -34,7 +34,7 @@ import kotlinx.coroutines.*
 class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
     private val dataStoreManager: NIDDataStoreManager,
-    private val neuroIDImpl: NeuroIDImpl,
+    private val neuroIDImpl: NeuroID,
     private val dispatcher: CoroutineContext,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
     private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE

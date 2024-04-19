@@ -7,7 +7,7 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -132,8 +132,8 @@ class NIDJobServiceManagerTest {
         return MockedServices(nidJobServiceManager, mockedApplication, logger, mockedEventSender)
     }
 
-    private fun getMockedNeuroID(): NeuroIDImpl {
-        val nidMock = mockk<NeuroIDImpl>()
+    private fun getMockedNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
         every {
             nidMock.captureEvent(
                 any(),

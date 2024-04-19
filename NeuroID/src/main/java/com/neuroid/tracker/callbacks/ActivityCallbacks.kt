@@ -5,7 +5,7 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
@@ -16,7 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
 class ActivityCallbacks(
-    val neuroIDImpl: NeuroIDImpl,
+    val neuroIDImpl: NeuroID,
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : ActivityLifecycleCallbacks {
@@ -59,15 +59,15 @@ class ActivityCallbacks(
         }
         val existActivity = listActivities.contains(currentActivityName)
 
-        NeuroIDImpl.screenActivityName = currentActivityName
-        if (NeuroIDImpl.firstScreenName.isNullOrEmpty()) {
-            NeuroIDImpl.firstScreenName = currentActivityName
+        NeuroID.screenActivityName = currentActivityName
+        if (NeuroID.firstScreenName.isNullOrEmpty()) {
+            NeuroID.firstScreenName = currentActivityName
         }
-        if (NeuroIDImpl.screenFragName.isNullOrEmpty()) {
-            NeuroIDImpl.screenFragName = ""
+        if (NeuroID.screenFragName.isNullOrEmpty()) {
+            NeuroID.screenFragName = ""
         }
-        if (NeuroIDImpl.screenName.isNullOrEmpty()) {
-            NeuroIDImpl.screenName = "AppInit"
+        if (NeuroID.screenName.isNullOrEmpty()) {
+            NeuroID.screenName = "AppInit"
         }
         wasChanged = auxOrientation != orientation
 

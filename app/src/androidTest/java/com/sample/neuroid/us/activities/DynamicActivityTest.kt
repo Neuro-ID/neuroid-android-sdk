@@ -7,7 +7,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.MockServerTest
@@ -34,7 +34,7 @@ class DynamicActivityTest: MockServerTest() {
 
     fun forceSendEvents(){
         // stop to force send all events in queue
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.stop()
         delay(500)
     }
 
@@ -45,13 +45,13 @@ class DynamicActivityTest: MockServerTest() {
     @Test
     fun test01ValidateFormSubmit() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(click())
         Espresso.onView(ViewMatchers.withTagValue(`is`("etNewEditText"))).perform(pressKey(33))
         delay(2000)
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.btnAddWithRegisterTarget))
             .perform(click())

@@ -8,7 +8,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
@@ -41,7 +41,7 @@ class TextUnitTest: MockServerTest() {
 
     fun forceSendEvents(){
         // stop to force send all events in queue
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.stop()
         delay(500)
     }
 
@@ -56,12 +56,12 @@ class TextUnitTest: MockServerTest() {
     @Test
     fun test01ValidateFocusOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
@@ -76,11 +76,11 @@ class TextUnitTest: MockServerTest() {
     @Test
     fun test02ValidateBlurOnEditText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
@@ -98,17 +98,17 @@ class TextUnitTest: MockServerTest() {
     @Test
     fun test03ValidateInputText() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
             .perform(ViewActions.click())
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
 
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))
             .perform(ViewActions.click())
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         val text = "Some text"
         Espresso.onView(ViewMatchers.withId(R.id.editText_normal_field))

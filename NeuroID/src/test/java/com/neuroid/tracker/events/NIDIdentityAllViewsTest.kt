@@ -10,7 +10,7 @@ import android.widget.RatingBar
 import android.widget.SeekBar
 import android.widget.ToggleButton
 import androidx.appcompat.widget.SwitchCompat
-import com.neuroid.tracker.NeuroIDImpl
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.just
@@ -219,8 +219,8 @@ class NIDIdentityAllViewsTest {
         }
     }
 
-    private fun mockNeuroID(): NeuroIDImpl {
-        val nidMock = mockk<NeuroIDImpl>()
+    private fun mockNeuroID(): NeuroID {
+        val nidMock = mockk<NeuroID>()
         every {
             nidMock.captureEvent(
                 any(),

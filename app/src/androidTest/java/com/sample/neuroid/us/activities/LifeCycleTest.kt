@@ -6,7 +6,6 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.NeuroIDImpl
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.MockServerTest
@@ -35,7 +34,7 @@ class LifeCycleTest: MockServerTest() {
 
     fun forceSendEvents(){
         // stop to force send all events in queue
-        NeuroIDImpl.getInstance()?.stop()
+        NeuroID.getInstance()?.stop()
         delay(500)
     }
 
@@ -49,10 +48,10 @@ class LifeCycleTest: MockServerTest() {
     @Test
     fun test13ValidateChangeScreenOrientation() = runTest {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        NeuroIDImpl.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(1000) // When you go to the next test, the activity is destroyed and recreated
         device.setOrientationRight()
         delay(1000)

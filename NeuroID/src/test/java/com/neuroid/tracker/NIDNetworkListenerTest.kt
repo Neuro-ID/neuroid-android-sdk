@@ -144,7 +144,7 @@ class NIDNetworkListenerTest {
         every {calendar.timeInMillis} returns 5
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
-        val neuroIDImpl = mockk<NeuroIDImpl>()
+        val neuroIDImpl = mockk<NeuroID>()
         every { neuroIDImpl.isConnected = any() } just runs
         every { neuroIDImpl.isConnected } returns isConnectedOrConnecting
         every { neuroIDImpl.isStopped() } returns isStopped
