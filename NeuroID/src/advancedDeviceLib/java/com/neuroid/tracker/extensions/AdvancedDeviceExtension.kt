@@ -13,6 +13,11 @@ import com.neuroid.tracker.service.getADVNetworkService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.Constants
 
+/**
+ * Start the SDK and start a new session using the userID as the sessionID. Takes in a boolean to
+ * enable/disable the advanced signal collection. Return true to indicate that the SDK is started.
+ * Return false if not started.
+ */
 fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
     val started = start()
 
@@ -31,6 +36,13 @@ fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
     return started
 }
 
+/**
+ * Start a new session. This will start the SDK and start a new session using the session ID
+ * that is passed in. If a session ID is not passed in, a session ID at random will be used.
+ * Return a session result that contains the session ID and a boolean
+ * indicating the started state of the SDK. Takes in a boolean to
+ * enable/disable the advanced signal collection.
+ */
 fun NeuroIDPublic.startSession(
     sessionID: String? = null,
     advancedDeviceSignals: Boolean
@@ -57,7 +69,7 @@ fun NeuroIDPublic.startSession(
 internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
-    neuroId: NeuroID,
+    neuroID: NeuroID,
     logger: NIDLogWrapper
 ) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -65,16 +77,16 @@ internal fun getADVSignal(
             applicationContext,
             logger,
             NIDSharedPrefsDefaults(applicationContext),
-            neuroId,
+            neuroID,
             getADVNetworkService(
                 NeuroID.endpoint,
                 logger
             ),
-            null
+           null
         )
 
         // check for cachedID first
-        if (!advancedDeviceIDManagerService.getCachedID()) {
+        if(!advancedDeviceIDManagerService.getCachedID()) {
             // no cached ID - contact NID & FPJS
             advancedDeviceIDManagerService.getRemoteID(
                 clientKey,

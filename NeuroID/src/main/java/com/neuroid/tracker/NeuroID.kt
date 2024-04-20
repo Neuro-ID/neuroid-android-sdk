@@ -418,7 +418,7 @@ class NeuroID
 
         override fun getEnvironment(): String = environment
 
-        @Deprecated("getSiteId is deprecated and no longer required")
+        @Deprecated("setSiteId is deprecated and no longer required")
         override fun setSiteId(siteId: String) {
             logger.i(msg = "**** NOTE: setSiteId METHOD IS DEPRECATED")
 
@@ -550,7 +550,7 @@ class NeuroID
             )
         }
 
-        /** Provide public access to application context for other intenral NID functions */
+        /** Provide public access to application context for other internal NID functions */
         internal fun getApplicationContext(): Context? {
             return this.application?.applicationContext
         }
