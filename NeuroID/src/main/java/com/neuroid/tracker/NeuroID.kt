@@ -189,11 +189,9 @@ class NeuroID
                            val clientKey: String = "",
                            val serverEnvironment: String = PRODUCTION) {
             fun build() {
-                if (singleton == null) {
-                    val neuroID = NeuroID(application, clientKey, serverEnvironment)
-                    neuroID.setupCallbacks()
-                    setNeuroIDInstance(neuroID)
-                }
+                val neuroID = NeuroID(application, clientKey, serverEnvironment)
+                neuroID.setupCallbacks()
+                setNeuroIDInstance(neuroID)
             }
         }
 
