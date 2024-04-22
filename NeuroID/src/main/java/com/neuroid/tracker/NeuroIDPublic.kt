@@ -129,8 +129,8 @@ interface NeuroIDPublic {
     fun formSubmitFailure()
 
     /**
-     * Start the SDK and start a new session and use the userID as the sessionID. Return true if
-     * that indicates that the SDK is started. Returns false if the SDK is stopped. In the case of
+     * Start the SDK, start a new session and use the userID as the sessionID. Return true if
+     * the SDK is started. Returns false if the SDK is stopped. In the case of
      * a false return, check that the client key is set properly in the NeuroID.Builder() call.
      */
     fun start(): Boolean
