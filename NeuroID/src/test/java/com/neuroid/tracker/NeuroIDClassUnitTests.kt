@@ -805,7 +805,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.userID = "myID"
         NeuroID.getInternalInstance()?.registeredUserID = "myRID"
 
-        NeuroID.getInstance()?.clearSessionVariables()
+        NeuroID.getInternalInstance()?.clearSessionVariables()
 
         assertEquals("", NeuroID.getInternalInstance()?.userID)
         assertEquals("", NeuroID.getInternalInstance()?.registeredUserID)

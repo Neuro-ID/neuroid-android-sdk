@@ -36,7 +36,7 @@ class SandBoxViewModel @Inject constructor(
 
     fun checkScore() {
         viewModelScope.launch {
-            NeuroID.getInstance()?.closeSession()
+            NeuroID.getInstance()?.stopSession()
             delay(2000)
 
             val result = networkInteractor.safeApiCall {

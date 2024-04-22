@@ -377,7 +377,7 @@ class NeuroID
         }
 
         @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-        override fun getUserId() = userID
+        override fun getUserId() = getUserID()
 
         override fun getUserID() = userID
 
@@ -431,14 +431,14 @@ class NeuroID
 
         @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
         override fun getSessionId(): String {
-            return sessionID
+            return getSessionID()
         }
 
-        fun getSessionID(): String = sessionID
+        override fun getSessionID(): String = sessionID
 
         @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
         override fun getClientId(): String {
-            return clientID
+            return getClientID()
         }
 
         override fun getClientID(): String = clientID
@@ -519,7 +519,7 @@ class NeuroID
             return true
         }
 
-        override fun closeSession() {
+        fun closeSession() {
             if (!isStopped()) {
                 captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
                 stop()
@@ -635,7 +635,7 @@ class NeuroID
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
         // new Session Commands
-        override fun clearSessionVariables() {
+        fun clearSessionVariables() {
             userID = ""
             registeredUserID = ""
         }

@@ -8,7 +8,7 @@ interface NeuroIDPublic {
     /**
      * Deprecated, do not use!
      */
-    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
+    @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
     fun getClientId():String
 
     /**
@@ -17,7 +17,9 @@ interface NeuroIDPublic {
     fun getClientID():String
 
     /**
-     * Set a tag for the widget that is not registered.
+     * Update the test event sender endpoint to a new collection endpoint. This will generally be
+     * set to the mock collection endpoint. The remote config endpoint will be updated to point to
+     * the dev remote config endpoint.
      */
     fun setTestURL(newEndpoint: String)
 
@@ -33,8 +35,9 @@ interface NeuroIDPublic {
     fun setUserID(userID: String): Boolean
 
     /**
-     * Return the currently set user id.
+     * Deprecated, do not use!
      */
+    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId(): String
     /**
      * Return the currently set user id.
@@ -51,7 +54,8 @@ interface NeuroIDPublic {
     fun setRegisteredUserID(registeredUserId: String): Boolean
 
     /**
-     * Set a screen name for the current page in a session.
+     * Set a screen name for the current page in a session. This should be called
+     * when displaying a new screen.
      */
     fun setScreenName(screen: String): Boolean
 
@@ -61,7 +65,8 @@ interface NeuroIDPublic {
     fun getScreenName(): String
 
     /**
-     * Register page targets. This will send events targets to the server for the current page.
+     * Register page targets. This will send events targets to the server for the current page. This
+     * should only be called in ReactNative based apps when rendering each new screen.
      */
     fun registerPageTargets(activity: Activity)
 
@@ -95,9 +100,15 @@ interface NeuroIDPublic {
     fun setSiteId(siteId: String)
 
     /**
-     * Return the current sessionId.
+     * Deprecated, do not use
      */
+    @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
     fun getSessionId(): String
+
+    /**
+     * get the currently set session id
+     */
+    fun getSessionID(): String
 
     /**
      * Deprecated, do not use!
@@ -131,11 +142,6 @@ interface NeuroIDPublic {
     fun stop(): Boolean
 
     /**
-     * Stop the SDK and closes the current session.
-     */
-    fun closeSession()
-
-    /**
      * Return true if the SDK is stopped and false if SDK is not stopped.
      */
     fun isStopped(): Boolean
@@ -155,11 +161,6 @@ interface NeuroIDPublic {
      * Return the NeuroID SDK version.
      */
     fun getSDKVersion(): String
-
-    /**
-     * Clear the currently set user and register user id.
-     */
-    fun clearSessionVariables()
 
     /**
      * Stop the SDK and close the current session. Return true to indicate that the SDK is stopped.
