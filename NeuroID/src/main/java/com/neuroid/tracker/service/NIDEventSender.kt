@@ -75,7 +75,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
             data = getRequestPayloadJSON(events)
 
             NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
-            NeuroID.getInstance()?.saveIntegrationHealthEvents()
+            NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload

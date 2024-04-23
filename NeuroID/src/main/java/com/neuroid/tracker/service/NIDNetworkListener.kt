@@ -32,12 +32,12 @@ import kotlinx.coroutines.*
  * resume event collection
  */
 class NIDNetworkListener(
-        private val connectivityManager: ConnectivityManager,
-        private val dataStoreManager: NIDDataStoreManager,
-        private val neuroID: NeuroID,
-        private val dispatcher: CoroutineContext,
-        private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
-        private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
+    private val connectivityManager: ConnectivityManager,
+    private val dataStoreManager: NIDDataStoreManager,
+    private val neuroID: NeuroID,
+    private val dispatcher: CoroutineContext,
+    private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
+    private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
 ) : BroadcastReceiver() {
 
     companion object {

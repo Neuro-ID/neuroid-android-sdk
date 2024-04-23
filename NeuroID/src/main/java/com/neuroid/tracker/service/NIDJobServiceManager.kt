@@ -205,7 +205,7 @@ internal class NIDJobServiceManager(
             activityManager?.getMemoryInfo(memoryInfo)
         }
 
-        NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
+        NeuroID.getInternalInstance()?.lowMemory = memoryInfo.lowMemory
 
         if (memoryInfo.lowMemory) {
             return NIDEventModel(

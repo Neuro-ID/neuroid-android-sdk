@@ -2,6 +2,7 @@ package com.neuroid.tracker.extensions
 
 import android.os.Build
 import com.google.gson.Gson
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.DeviceOrientation
 import com.neuroid.tracker.models.IntegrationHealthDeviceInfo
@@ -10,8 +11,7 @@ import com.neuroid.tracker.utils.*
 import org.json.JSONObject
 
 internal fun generateIntegrationHealthDeviceReport() {
-    val deviceInfo: IntegrationHealthDeviceInfo =
-        IntegrationHealthDeviceInfo(
+    val deviceInfo = IntegrationHealthDeviceInfo(
             name = "${Build.MANUFACTURER} - ${Build.BRAND} - ${Build.DEVICE} - ${Build.PRODUCT}",
             systemName = "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
             systemVersion = "${Build.VERSION.SDK_INT}",
@@ -41,7 +41,7 @@ internal fun generateIntegrationHealthDeviceReport() {
             .put("customDeviceType", deviceInfo.customDeviceType)
             .put("nidSDKVersion", deviceInfo.nidSDKVersion)
 
-    val context = NeuroID.getInstance()?.application?.getApplicationContext()
+    val context = NeuroID.getInternalInstance()?.getApplicationContext()
     if (context != null) {
         createJSONFile(
             context = context,
@@ -53,14 +53,14 @@ internal fun generateIntegrationHealthDeviceReport() {
 
 @Synchronized
 internal fun generateIntegrationHealthReport(saveCopy: Boolean = false) {
-    val nidInstance = NeuroID.getInstance()
+    val nidInstance = NeuroID.getInternalInstance()
 
     val context = nidInstance?.application?.getApplicationContext()
     if (context != null) {
         val gson = Gson()
-        val events = nidInstance?.debugIntegrationHealthEvents
+        val events = nidInstance.debugIntegrationHealthEvents
 
-        var immutableList = events?.toList()
+        val immutableList = events.toList()
 
         val json: String = gson.toJson(immutableList)
 
@@ -89,7 +89,6 @@ internal fun NeuroID.startIntegrationHealthCheck() {
 
 internal fun NeuroID.captureIntegrationHealthEvent(event: NIDEventModel) {
     shouldDebugIntegrationHealth {
-//        NIDLog.d( "Adding Health Event: ${event.type}")
         this.debugIntegrationHealthEvents.add(event)
     }
 }
@@ -111,7 +110,7 @@ internal fun NeuroID.generateNIDIntegrationHealthReport(saveIntegrationHealthRep
 }
 
 // Public Extensions
-fun NeuroID.printIntegrationHealthInstruction() {
+fun NeuroIDPublic.printIntegrationHealthInstruction() {
     NIDLog.d(
         "NeuroID",
         "ℹ️ NeuroID Integration Health Instructions:\n" +
@@ -125,7 +124,7 @@ fun NeuroID.printIntegrationHealthInstruction() {
             "8. Run `node server.js`",
     )
 
-    val context = NeuroID.getInstance()?.application?.getApplicationContext()
+    val context = NeuroID.getInternalInstance()?.application?.applicationContext
     if (context != null) {
         copyDirorfileFromAssetManager(
             context = context,
@@ -135,8 +134,8 @@ fun NeuroID.printIntegrationHealthInstruction() {
     }
 }
 
-fun NeuroID.setVerifyIntegrationHealth(verify: Boolean) {
-    this.verifyIntegrationHealth = verify
+fun NeuroIDPublic.setVerifyIntegrationHealth(verify: Boolean) {
+    NeuroID.getInternalInstance()?.verifyIntegrationHealth = verify
 
     if (verify) {
         printIntegrationHealthInstruction()

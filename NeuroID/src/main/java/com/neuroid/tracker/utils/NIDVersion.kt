@@ -6,7 +6,7 @@ import com.neuroid.tracker.NeuroID
 object NIDVersion {
     fun getSDKVersion(): String {
         val rnText =
-            NeuroID.getInstance()?.isRN?.let {
+            NeuroID.getInternalInstance()?.isRN?.let {
                 if (it) {
                     "rn-"
                 } else {

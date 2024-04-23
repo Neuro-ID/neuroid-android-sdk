@@ -22,7 +22,6 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
 import com.neuroid.tracker.utils.NIDLogWrapper
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
