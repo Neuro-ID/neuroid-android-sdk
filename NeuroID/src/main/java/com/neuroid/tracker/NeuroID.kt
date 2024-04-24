@@ -48,6 +48,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.Calendar
 
 class NeuroID
     private constructor(
@@ -321,6 +322,22 @@ class NeuroID
 
             this.registeredUserID = registeredUserId
             return true
+        }
+
+        override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
+            try {
+                attemptedRegisteredUserId?.let {
+                    if (validateUserId(attemptedRegisteredUserId)) {
+                        captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
+                        return true
+                    }
+                }
+                captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
+                return true
+            } catch (exception: Exception) {
+                logger.e(msg = "exception in attemptedLogin() ${exception.message}")
+                return false
+            }
         }
 
         override fun setUserID(userID: String): Boolean {
@@ -817,7 +834,8 @@ class NeuroID
         internal fun captureEvent(
             queuedEvent: Boolean = false,
             type: String,
-            ts: Long = System.currentTimeMillis(),
+            // had to change to Calendar for tests. Cannot mock System methods.
+            ts: Long = Calendar.getInstance().timeInMillis,
             attrs: List<Map<String, Any>>? = null,
             tg: Map<String, Any>? = null,
             tgs: String? = null,
