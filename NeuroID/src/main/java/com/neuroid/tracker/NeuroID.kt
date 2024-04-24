@@ -325,17 +325,19 @@ class NeuroID
         }
 
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
-            attemptedRegisteredUserId?.let {
-                if (validateUserId(attemptedRegisteredUserId)) {
-                    captureEvent(
-                        type = ATTEMPTED_LOGIN,
-                        uid = attemptedRegisteredUserId
-                    )
-                    return true
+            try {
+                attemptedRegisteredUserId?.let {
+                    if (validateUserId(attemptedRegisteredUserId)) {
+                        captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
+                        return true
+                    }
                 }
+                captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
+                return true
+            } catch (exception: Exception) {
+                logger.e(msg = "exception in attemptedLogin() ${exception.message}")
+                return false
             }
-            captureEvent(type=ATTEMPTED_LOGIN, uid="scrubbed-id-failed-validation")
-            return false
         }
 
         override fun setUserID(userID: String): Boolean {

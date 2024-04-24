@@ -241,6 +241,24 @@ open class NeuroIDClassUnitTests {
         NeuroID.isSDKStarted = true
     }
 
+    private fun setupAttemptedLoginTestEnvironmentException() {
+        // fake out the clock
+        mockkStatic(Calendar::class)
+        every {Calendar.getInstance().timeInMillis} returns 1
+        // make the logger not throw
+        val logger = mockk<NIDLogWrapper>()
+        every { logger.e(any(), any()) } just runs
+        NeuroID.getInternalInstance()?.logger = logger
+        // make the datamanager throw exception
+        val dataStoreManager = mockk<NIDDataStoreManager>()
+        every{dataStoreManager.isFullBuffer()} returns false
+        every{dataStoreManager.saveEvent(any())} throws (Exception("save event exception"))
+        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStoreManager)
+        // everything else as normal
+        setMockedNIDJobServiceManager(false)
+        NeuroID.isSDKStarted = true
+    }
+
     private fun testAttemptedLogin(userId: String?, expectedHash: String, expectedResult: Boolean) {
         setupAttemptedLoginTestEnvironment()
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
@@ -250,18 +268,34 @@ open class NeuroIDClassUnitTests {
         unmockkStatic(Calendar::class)
     }
 
+    private fun testAttemptedLoginException(userId: String?, expectedHash: String, expectedResult: Boolean) {
+        setupAttemptedLoginTestEnvironmentException()
+        val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
+        val logger = NeuroID.getInternalInstance()?.logger
+        val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
+        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedHash"))}
+        verify {logger?.e(any(), msg = "exception in attemptedLogin() save event exception")}
+        assertEquals(expectedResult, actualResult)
+        unmockkStatic(Calendar::class)
+    }
+
     @Test
     fun testAttemptedLoginVarious() {
         // the single good id
         testAttemptedLogin("goodone", "goodone", true)
         // all the rest are rubbish ids
-        testAttemptedLogin("12", "scrubbed-id-failed-validation", false)
-        testAttemptedLogin("test@test.com'", "scrubbed-id-failed-validation", false)
-        testAttemptedLogin(null, "scrubbed-id-failed-validation", false)
-        testAttemptedLogin("@#\$%^&*()", "scrubbed-id-failed-validation" , false)
-        testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation" , false)
-        testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation" , false)
-        testAttemptedLogin("almost good", "scrubbed-id-failed-validation", false);
+        testAttemptedLogin("12", "scrubbed-id-failed-validation", true)
+        testAttemptedLogin("test@test.com'", "scrubbed-id-failed-validation", true)
+        testAttemptedLogin(null, "scrubbed-id-failed-validation", true)
+        testAttemptedLogin("@#\$%^&*()", "scrubbed-id-failed-validation" , true)
+        testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation" , true)
+        testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation" , true)
+        testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true);
+    }
+
+    @Test
+    fun testAttemptedLoginException() {
+        testAttemptedLoginException("goodone", "goodone", false)
     }
 
     @Test
