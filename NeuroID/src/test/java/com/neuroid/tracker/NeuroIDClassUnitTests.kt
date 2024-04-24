@@ -254,7 +254,7 @@ open class NeuroIDClassUnitTests {
     fun testAttemptedLoginVarious() {
         setupAttemptedLoginTestEnvironment()
         // the single good id
-        testAttemptedLogin("goodone", "207034505", true)
+        testAttemptedLogin("goodone", "goodone", true)
         // all the rest are rubbish ids
         testAttemptedLogin("12", "scrubbed-id-failed-validation", false)
         testAttemptedLogin("test@test.com'", "scrubbed-id-failed-validation", false)

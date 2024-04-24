@@ -329,7 +329,7 @@ class NeuroID
                 if (validateUserId(attemptedRegisteredUserId)) {
                     captureEvent(
                         type = ATTEMPTED_LOGIN,
-                        uid = attemptedRegisteredUserId.hashCode().toString()
+                        uid = attemptedRegisteredUserId
                     )
                     return true
                 }
