@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this@MainActivity, DynamicActivity::class.java))
             }
             buttonCloseSession.setOnClickListener {
-                NeuroID.getInstance()?.closeSession()
+                NeuroID.getInstance()?.stopSession()
             }
         }
     }
