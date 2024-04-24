@@ -832,6 +832,7 @@ class NeuroID
         internal fun captureEvent(
             queuedEvent: Boolean = false,
             type: String,
+            // had to change to Calendar for tests. Cannot mock System methods.
             ts: Long = Calendar.getInstance().timeInMillis,
             attrs: List<Map<String, Any>>? = null,
             tg: Map<String, Any>? = null,

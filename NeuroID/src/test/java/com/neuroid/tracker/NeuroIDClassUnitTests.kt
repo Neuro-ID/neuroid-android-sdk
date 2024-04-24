@@ -228,12 +228,15 @@ open class NeuroIDClassUnitTests {
     //   setTestURL
 
     private fun setupAttemptedLoginTestEnvironment() {
+        // fake out the clock
         mockkStatic(Calendar::class)
         every {Calendar.getInstance().timeInMillis} returns 1
-        setMockedDataStore()
+        // make the logger not throw
         val logger = mockk<NIDLogWrapper>()
         every { logger.e(any(), any()) } just runs
         NeuroID.getInternalInstance()?.logger = logger
+        // everything else as normal
+        setMockedDataStore()
         setMockedNIDJobServiceManager(false)
         NeuroID.isSDKStarted = true
     }
@@ -241,9 +244,9 @@ open class NeuroIDClassUnitTests {
     private fun testAttemptedLogin(userId: String?, expectedHash: String, expectedResult: Boolean) {
         setupAttemptedLoginTestEnvironment()
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
-        val result = NeuroID.getInstance()?.attemptedLogin(userId)
+        val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
         verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedHash"))}
-        assertEquals(expectedResult, result)
+        assertEquals(expectedResult, actualResult)
         unmockkStatic(Calendar::class)
     }
 
