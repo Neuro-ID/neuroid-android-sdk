@@ -252,7 +252,6 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun testAttemptedLoginVarious() {
-        setupAttemptedLoginTestEnvironment()
         // the single good id
         testAttemptedLogin("goodone", "goodone", true)
         // all the rest are rubbish ids
