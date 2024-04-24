@@ -30,6 +30,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import java.util.Calendar
 
 
 enum class TestLogLevel {
@@ -225,6 +226,42 @@ open class NeuroIDClassUnitTests {
     //    setNIDJobServiceManager - Used for mocking
 
     //   setTestURL
+
+    private fun setupAttemptedLoginTestEnvironment() {
+        mockkStatic(Calendar::class)
+        every {Calendar.getInstance().timeInMillis} returns 1
+        setMockedDataStore()
+        val logger = mockk<NIDLogWrapper>()
+        every { logger.e(any(), any()) } just runs
+        NeuroID.getInternalInstance()?.logger = logger
+        setMockedNIDJobServiceManager(false)
+        NeuroID.isSDKStarted = true
+    }
+
+    private fun testAttemptedLogin(userId: String?, expectedHash: String, expectedResult: Boolean) {
+        setupAttemptedLoginTestEnvironment()
+        val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
+        val result = NeuroID.getInstance()?.attemptedLogin(userId)
+        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedHash"))}
+        assertEquals(expectedResult, result)
+        unmockkStatic(Calendar::class)
+    }
+
+    @Test
+    fun testAttemptedLoginVarious() {
+        setupAttemptedLoginTestEnvironment()
+        // the single good id
+        testAttemptedLogin("goodone", "207034505", true)
+        // all the rest are rubbish ids
+        testAttemptedLogin("12", "scrubbed-id-failed-validation", false)
+        testAttemptedLogin("test@test.com'", "scrubbed-id-failed-validation", false)
+        testAttemptedLogin(null, "scrubbed-id-failed-validation", false)
+        testAttemptedLogin("@#\$%^&*()", "scrubbed-id-failed-validation" , false)
+        testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation" , false)
+        testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation" , false)
+        testAttemptedLogin("almost good", "scrubbed-id-failed-validation", false);
+    }
+
     @Test
     fun testSetTestURL() {
         NeuroID.getInstance()?.setTestURL("myTests")

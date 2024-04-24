@@ -187,4 +187,10 @@ interface NeuroIDPublic {
      * indicating the started state of the SDK.
      */
     fun startSession(sessionID: String? = null): SessionStartResult
+
+    /**
+     * This should be called when the user attempts to login. Returns true if a passed in
+     * attemptedRegisteredUserId is valid otherwise returns false.
+     */
+    fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
 }
