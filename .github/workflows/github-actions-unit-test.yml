@@ -18,10 +18,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
-
+          distribution: 'temurin'
       - name: Build All Flavors ⚙️🛠
         run: bash testBuildFlavors.sh
 
@@ -34,10 +34,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
-
+          distribution: 'temurin'
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
@@ -50,9 +50,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
+          distribution: 'temurin'
 
       # Execute unit test neuroid lib
       - name: Unit Test NeuroId
