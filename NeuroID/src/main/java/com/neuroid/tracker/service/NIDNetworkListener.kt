@@ -102,6 +102,7 @@ class NIDNetworkListener(
                         isConnected = isConnected,
                         isWifi = isWifi,
                 )
+        neuroID.isWifi = isWifi
         dataStoreManager.saveEvent(networkEvent)
         return isConnected
     }
