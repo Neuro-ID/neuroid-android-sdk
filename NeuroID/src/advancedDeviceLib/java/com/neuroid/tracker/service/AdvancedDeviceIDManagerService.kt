@@ -40,7 +40,6 @@ internal class AdvancedDeviceIDManager(
     }
 
     override fun getCachedID(): Boolean {
-        val startTime = Calendar.getInstance().timeInMillis
         val existingString = sharedPrefs.getString(NID_RID, defaultCacheValue)
 
         val gson = Gson()
@@ -63,16 +62,11 @@ internal class AdvancedDeviceIDManager(
                 msg =
                         "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}"
         )
-
         neuroID.captureEvent(
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
             ts = System.currentTimeMillis(),
-            c = true,
-            // time start to end time
-            l = Calendar.getInstance().timeInMillis - startTime,
-            // wifi/cell
-            ct = if (neuroID.isWifi) {"wifi"} else {"cell"}
+            c = true
         )
 
         return true
