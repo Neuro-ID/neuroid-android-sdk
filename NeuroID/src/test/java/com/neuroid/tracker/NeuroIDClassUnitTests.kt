@@ -263,7 +263,7 @@ open class NeuroIDClassUnitTests {
         setupAttemptedLoginTestEnvironment()
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedUserId"))}
+        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedUserId", l=0))}
         assertEquals(expectedResult, actualResult)
         unmockkStatic(Calendar::class)
     }
@@ -273,7 +273,7 @@ open class NeuroIDClassUnitTests {
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
         val logger = NeuroID.getInternalInstance()?.logger
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedUserId"))}
+        verify {dataStoreManager?.saveEvent(NIDEventModel(ts=1, type="ATTEMPTED_LOGIN", uid="$expectedUserId", l=0))}
         verify {logger?.e(any(), msg = "exception in attemptedLogin() save event exception")}
         assertEquals(expectedResult, actualResult)
         unmockkStatic(Calendar::class)

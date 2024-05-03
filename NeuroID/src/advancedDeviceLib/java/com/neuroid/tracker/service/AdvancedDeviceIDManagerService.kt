@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 interface AdvancedDeviceIDManagerService {
     fun getCachedID(): Boolean
@@ -39,6 +40,7 @@ internal class AdvancedDeviceIDManager(
     }
 
     override fun getCachedID(): Boolean {
+        val startTime = Calendar.getInstance().timeInMillis
         val existingString = sharedPrefs.getString(NID_RID, defaultCacheValue)
 
         val gson = Gson()
@@ -61,11 +63,16 @@ internal class AdvancedDeviceIDManager(
                 msg =
                         "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}"
         )
+
         neuroID.captureEvent(
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
             ts = System.currentTimeMillis(),
-            c = true
+            c = true,
+            // time start to end time
+            l = Calendar.getInstance().timeInMillis - startTime,
+            // wifi/cell
+            ct = if (neuroID.isWifi) {"wifi"} else {"cell"}
         )
 
         return true
@@ -103,6 +110,7 @@ internal class AdvancedDeviceIDManager(
                             )
                 }
 
+        val startTime = Calendar.getInstance().timeInMillis
         val remoteIDJob =
                 CoroutineScope(Dispatchers.IO).launch {
                     val maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
@@ -120,11 +128,16 @@ internal class AdvancedDeviceIDManager(
                                             "Generating Request ID for Advanced Device Signals: ${requestResponse.second}"
                             )
 
+                            val stopTime = Calendar.getInstance().timeInMillis
                             neuroID.captureEvent(
                                 type = ADVANCED_DEVICE_REQUEST,
                                 rid = requestResponse.second,
-                                ts = System.currentTimeMillis(),
-                                c = false
+                                ts = Calendar.getInstance().timeInMillis,
+                                c = false,
+                                // time start to end time
+                                l = stopTime - startTime,
+                                // wifi/cell
+                                ct = if (neuroID.isWifi) {"wifi"} else {"cell"}
                             )
 
                             logger.d(msg = "Caching Request ID: ${requestResponse.second}")
