@@ -14,7 +14,7 @@ import org.json.JSONObject
 
 import com.neuroid.tracker.service.LocationService
 
-class NIDMetaData(context: Context, private val locationService: LocationService?) {
+class NIDMetaData(context: Context) {
     private val brand = Build.BRAND
     private var device = Build.DEVICE
     private var display = Build.DISPLAY
@@ -89,7 +89,7 @@ class NIDMetaData(context: Context, private val locationService: LocationService
         }
     }
 
-    internal fun getLastKnownLocation(context: Context, isLocationAllowed: Boolean) {
+    internal fun getLastKnownLocation(context: Context, isLocationAllowed: Boolean, locationService: LocationService?) {
         locationService?.getLastKnownLocation(context, gpsCoordinates,
             locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
             isLocationAllowed=isLocationAllowed)
