@@ -110,8 +110,7 @@ class NeuroID
             application?.let {
                 locationService = LocationService()
                 metaData = NIDMetaData(
-                    it.applicationContext,
-                    locationService
+                    it.applicationContext
                 )
 
                 nidJobServiceManager =
@@ -598,7 +597,7 @@ class NeuroID
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
                 // get updated GPS location if possible
-                metaData?.getLastKnownLocation(it, nidSDKConfig.geoLocation)
+                metaData?.getLastKnownLocation(it, nidSDKConfig.geoLocation, locationService)
                 captureEvent(
                     type = MOBILE_METADATA_ANDROID,
                     sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
