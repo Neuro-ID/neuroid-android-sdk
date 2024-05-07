@@ -9,7 +9,7 @@ on:
     types:
       - closed
     branches:
-      - master
+      - release/3.2
 
 env:
   GIT_HASH: ${{github.sha}}
