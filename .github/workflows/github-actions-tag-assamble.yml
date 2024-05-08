@@ -54,7 +54,7 @@ jobs:
 
       - name: Create Release ✅ and upload assets
         run: |
-          gh release create ${{ env.TAG_NAME }} \
+          gh release create ${{ env.TAG_NAME }} --target "release/3.2" \\
           NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release  \
           NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release \
           NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug  \
