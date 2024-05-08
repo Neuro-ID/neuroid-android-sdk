@@ -2,7 +2,7 @@ name: Unit Test Sample App
 on:
   pull_request:
     branches:
-      - master
+      - release/3.2
 
 concurrency:
   group: ${{ github.head_ref }}
@@ -11,48 +11,49 @@ concurrency:
 jobs:
   buildAllFlavors:
     name: Build All Flavors
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
-
+          distribution: 'temurin'
       - name: Build All Flavors ⚙️🛠
         run: bash testBuildFlavors.sh
 
   build:
     name: Build AAR
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
-
+          distribution: 'temurin'
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
   test:
     name: SDK Test
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
       - name: set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 11
+          distribution: 'temurin'
 
       # Execute unit test neuroid lib
       - name: Unit Test NeuroId
