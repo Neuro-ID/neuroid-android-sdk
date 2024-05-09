@@ -52,11 +52,15 @@ jobs:
 
       - name: Create Release ✅ and upload assets
         run: |
-          gh release create ${{ env.TAG_NAME }} --target "release/3.2" \
-          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release  \
+          gh release create ${{ env.TAG_NAME }} \
+          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release \
           NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release \
-          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug  \
+          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug \
           NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-debug \
+          NeuroID/build/outputs/aar/androidAdvancedDeviceLib/neuro-id-android-sdk-androidAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-release \
+          NeuroID/build/outputs/aar/reactNativeAdvancedDeviceLib/neuro-id-android-sdk-reactNativeAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-reactNativeAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-release \
+          NeuroID/build/outputs/aar/androidAdvancedDeviceLib/neuro-id-android-sdk-androidAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-androidAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-debug \
+          NeuroID/build/outputs/aar/reactNativeAdvancedDeviceLib/neuro-id-android-sdk-reactNativeAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-reactNativeAdvancedDeviceLib-${{ env.GITHUB_SDK_VERSION}}-debug \
           --generate-notes --title "${{ env.TAG_NAME }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
