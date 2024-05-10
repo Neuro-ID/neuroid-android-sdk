@@ -90,6 +90,7 @@ class NeuroID
         internal var lowMemory: Boolean = false
         internal var isConnected = false
         internal var locationService: LocationService? = null
+        internal var isWifi = false
 
         init {
             when (serverEnvironment) {
@@ -150,6 +151,18 @@ class NeuroID
                 nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
                 this.getApplicationContext()
                     ?.let { nidCallActivityListener?.setCallActivityListener(it) }
+            }
+
+            //get connectivity info on startup
+            application?.let {
+                val connectivityManager =
+                    it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val info = connectivityManager.activeNetworkInfo
+                val isConnectingOrConnected = info?.isConnectedOrConnecting()
+                if (isConnectingOrConnected != null) {
+                    isConnected = isConnectingOrConnected
+                }
+                isWifi = info?.type == ConnectivityManager.TYPE_WIFI
             }
         }
 
