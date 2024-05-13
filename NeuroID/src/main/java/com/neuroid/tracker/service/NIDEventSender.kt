@@ -118,6 +118,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
                 "sdkVersion" to NIDVersion.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
+                "linkedSiteId" to NeuroID.linkedSiteID,
             )
 
         // using this JSON library (already included) does not escape /

@@ -213,6 +213,7 @@ class NeuroID
 
             internal var environment = ""
             internal var siteID = ""
+            internal var linkedSiteID: String? = null
             internal var rndmId = "mobile"
             internal var firstScreenName = ""
             internal var isConnected = false
@@ -286,6 +287,25 @@ class NeuroID
             }
         }
 
+        private fun verifyClientKeyExists(): Boolean {
+            if (clientKey.isNullOrEmpty()) {
+                logger.e(msg = "Missing Client Key - please call Builder.build() prior to calling start")
+                return false
+            }
+            return true
+        }
+
+        private fun validateSiteId(siteId: String): Boolean {
+            var valid = false
+            val regex = "form_[a-zA-Z0-9]{5}\\d{3}\$"
+
+            if (clientKey.matches(regex.toRegex())) {
+                valid = true
+            }
+
+            return valid
+        }
+
         internal fun validateClientKey(clientKey: String): Boolean {
             var valid = false
             val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -337,6 +357,46 @@ class NeuroID
                 logger.e(msg = "exception in attemptedLogin() ${exception.message}")
                 return false
             }
+        }
+
+        /**
+         * ported from the iOS implementation
+         */
+        override fun startAppFlow(linkedSiteId: String, userID: String?): SessionStartResult {
+            if (!verifyClientKeyExists() || validateSiteId(linkedSiteId)) {
+                return SessionStartResult(false, "")
+            }
+
+            // immediately flush events before anything else
+            CoroutineScope(Dispatchers.IO).launch {
+                nidJobServiceManager.sendEvents(true)
+                saveIntegrationHealthEvents()
+            }
+            // If not started then start
+            var startStatus: SessionStartResult = if (!isSDKStarted) {
+                // if userID passed then startSession else start
+                if (userID != null) {
+                    startSession(userID)
+                } else {
+                    start()
+                    SessionStartResult(isSDKStarted, "")
+                }
+            } else {
+                createMobileMetadata()
+                createSession()
+                SessionStartResult(true, userID ?: "")
+
+            }
+
+            if (!startStatus.started) {
+                return startStatus
+            }
+
+            // add linkedSite var
+            linkedSiteID = linkedSiteId
+            captureEvent(type=SET_LINKED_SITE, v=linkedSiteId)
+
+            return startStatus
         }
 
         override fun setUserID(userID: String): Boolean {

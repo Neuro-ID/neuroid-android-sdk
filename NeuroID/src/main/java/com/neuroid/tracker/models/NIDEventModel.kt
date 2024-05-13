@@ -36,11 +36,12 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 data class NIDEventModel(
     val type: String,
     val ts: Long =
-        System.currentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
+        Calendar.getInstance().timeInMillis, // Default 0 because the DataStore.saveEvent method will
     // always add real timestamp
     val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
@@ -97,6 +98,7 @@ data class NIDEventModel(
     val isWifi: Boolean? = null,
     val isConnected: Boolean? = null,
     val cp: String? = null,
+    val linkedSiteId: String? = null
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
         return toJSON().toString()

@@ -193,4 +193,16 @@ interface NeuroIDPublic {
      * exception is thrown during the process.
      */
     fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
+
+    /**
+     * Start a new app flow session with the specified linked site id argument for the flow
+     * that you wish to start a session for. ALl events after this will be linked to the site
+     * id that is specified here until a new flow is specified (startAppFlow() is called
+     * with a new linked site id).
+     *
+     * If the SDK was not started previously, start will be called
+     * here for you with a user ID that is specified in the optional userID argument. If the
+     * SDK is already started, the optional user id is not used and the SDK will not be restarted.
+     */
+    fun startAppFlow(siteID: String, userID: String? = null): SessionStartResult
 }
