@@ -299,7 +299,7 @@ class NeuroID
             var valid = false
             val regex = "form_[a-zA-Z0-9]{5}\\d{3}\$"
 
-            if (clientKey.matches(regex.toRegex())) {
+            if (siteId.matches(regex.toRegex())) {
                 valid = true
             }
 
@@ -363,7 +363,9 @@ class NeuroID
          * ported from the iOS implementation
          */
         override fun startAppFlow(linkedSiteId: String, userID: String?): SessionStartResult {
-            if (!verifyClientKeyExists() || validateSiteId(linkedSiteId)) {
+            // reset linked site id (in case of failure)
+            linkedSiteID = ""
+            if (!verifyClientKeyExists() || !validateSiteId(linkedSiteId)) {
                 return SessionStartResult(false, "")
             }
 
@@ -385,7 +387,6 @@ class NeuroID
                 createMobileMetadata()
                 createSession()
                 SessionStartResult(true, userID ?: "")
-
             }
 
             if (!startStatus.started) {
