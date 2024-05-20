@@ -51,7 +51,7 @@ class NIDNetworkListener(
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
-                neuroID.isConnected = onNetworkAction()
+                neuroID.isConnected = onNetworkAction(context)
 
                 // act on the network change
                 handleNetworkChange()
@@ -87,22 +87,29 @@ class NIDNetworkListener(
         }
     }
 
-    private fun onNetworkAction(): Boolean {
+    private fun onNetworkAction(context: Context?): Boolean {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         var isWifi = false
         var isConnected = false
+        var networkConnectionType = neuroID.networkConnectionType
         activeNetworkInfo?.let {
             isWifi = activeNetworkInfo.type == TYPE_WIFI
             isConnected = activeNetworkInfo.isConnectedOrConnecting()
         }
+
+        context?.let {
+            networkConnectionType = neuroID.getNetworkType(it)
+        }
+
         val networkEvent =
-                NIDEventModel(
-                        ts = Calendar.getInstance().timeInMillis,
-                        type = NETWORK_STATE,
-                        isConnected = isConnected,
-                        isWifi = isWifi,
-                )
-        neuroID.isWifi = isWifi
+            NIDEventModel(
+                ts = Calendar.getInstance().timeInMillis,
+                type = NETWORK_STATE,
+                isConnected = isConnected,
+                isWifi = isWifi,
+                ct = neuroID.networkConnectionType,
+            )
+        neuroID.networkConnectionType = networkConnectionType
         dataStoreManager.saveEvent(networkEvent)
         return isConnected
     }

@@ -95,7 +95,7 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
         val mockedNID = mocks["mockedNeuroID"] as NeuroID
-        every { mockedNID.isWifi } returns true
+        every { mockedNID.networkConnectionType } returns "wifi"
 
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 

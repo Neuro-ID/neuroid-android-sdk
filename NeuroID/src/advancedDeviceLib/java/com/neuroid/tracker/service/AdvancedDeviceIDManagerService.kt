@@ -69,12 +69,7 @@ internal class AdvancedDeviceIDManager(
             c = true,
             l = 0,
             // wifi/cell
-            ct =
-                if (neuroID.isWifi) {
-                    "wifi"
-                } else {
-                    "cell"
-                },
+            ct = neuroID.networkConnectionType,
         )
 
         return true
@@ -141,12 +136,7 @@ internal class AdvancedDeviceIDManager(
                             // time start to end time
                             l = stopTime - startTime,
                             // wifi/cell
-                            ct =
-                                if (neuroID.isWifi) {
-                                    "wifi"
-                                } else {
-                                    "cell"
-                                },
+                            ct = neuroID.networkConnectionType,
                         )
 
                             logger.d(msg = "Caching Request ID: ${requestResponse.second}")

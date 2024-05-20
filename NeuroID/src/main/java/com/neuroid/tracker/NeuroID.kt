@@ -78,7 +78,6 @@ class NeuroID
             mutableListOf<NIDEventModel>()
 
         internal var isRN = false
-        var isWifi = false
 
         // Dependency Injections
         internal var logger: NIDLogWrapper = NIDLogWrapper()
