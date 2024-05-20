@@ -49,6 +49,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Calendar
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.jvm.isAccessible
 
 class NeuroID
     private constructor(
@@ -90,6 +94,8 @@ class NeuroID
         internal var lowMemory: Boolean = false
         internal var isConnected = false
         internal var locationService: LocationService? = null
+
+        internal var isAdvancedDevice = false
 
         init {
             when (serverEnvironment) {
@@ -339,6 +345,45 @@ class NeuroID
             }
         }
 
+        /**
+         * Execute the captureAdvancedDevice() method without knowing if the class that holds
+         * it exists. Required because we moved the ADV setup to the start()/startSession()
+         * methods.
+         *
+         * This method will look for the AdvancedDeviceExtension file, create a class from it, find
+         * the method captureAdvancedDevice() within the extension class and call it with the
+         * shouldCapture boolean if the advanced lib is used. If this is called in the non advanced lib,
+         * the method will look for the AdvancedDeviceExtension file, not find it and fail the
+         * Class.forName() call which will throw a ClassNotFoundException because it doesn't exist.
+         * We catch this exception and log it to logcat.
+         *
+         * We must handle all exceptions that this method may
+         * throw because of the undependable nature of reflection. We cannot afford to throw any
+         * exception to the host app causing a crash because of this .
+         */
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isAdvancedDevice) {
+            val packageName = "com.neuroid.tracker.extensions"
+            val methodName = "captureAdvancedDevice"
+            val extensionName = ".AdvancedDeviceExtensionKt"
+            try {
+                val extensionFunctions = Class.forName(packageName + extensionName)
+                val method = extensionFunctions.getDeclaredMethod(methodName, NeuroID::class.java,
+                    Boolean::class.java)
+                if (method != null) {
+                    method.isAccessible = true
+                    // Invoke the method
+                    method.invoke(null, this, shouldCapture)
+                    logger.d(msg = "Method $methodName invoked successfully")
+                } else {
+                    logger.d(msg = "No $methodName method found")
+                }
+            } catch (e: ClassNotFoundException) {
+                logger.e(msg = "Class $packageName$extensionName not found")
+            } catch (e: Exception) {
+                logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
+            }
+        }
+
         override fun setUserID(userID: String): Boolean {
             return setUserID(userID, true)
         }
@@ -384,7 +429,6 @@ class NeuroID
                         uid = genericUserId,
                     )
                 }
-
                 return true
             } catch (exception: Exception) {
                 logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
@@ -521,6 +565,7 @@ class NeuroID
                     locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
                 }
             }
+            checkThenCaptureAdvancedDevice()
             return true
         }
 
@@ -699,7 +744,7 @@ class NeuroID
                     it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
                 }
             }
-
+            checkThenCaptureAdvancedDevice()
             return SessionStartResult(true, finalSessionID)
         }
 
