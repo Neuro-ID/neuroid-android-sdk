@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.IntentFilter
 import android.location.LocationManager
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -90,7 +92,7 @@ class NeuroID
         internal var lowMemory: Boolean = false
         internal var isConnected = false
         internal var locationService: LocationService? = null
-        internal var isWifi = false
+        internal var networkConnectionType = "unknown"
 
         init {
             when (serverEnvironment) {
@@ -162,8 +164,41 @@ class NeuroID
                 if (isConnectingOrConnected != null) {
                     isConnected = isConnectingOrConnected
                 }
-                isWifi = info?.type == ConnectivityManager.TYPE_WIFI
+                networkConnectionType = this.getNetworkType(it)
             }
+        }
+
+        /**
+         * Function to retrieve the current network type (wifi, cell, eth, unknown)
+         */
+        internal fun getNetworkType(context: Context): String {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val activeNetwork = connectivityManager.activeNetwork
+                activeNetwork?.let {
+                    val networkCapabilities = connectivityManager.getNetworkCapabilities(it)
+                    networkCapabilities?.let { capabilities ->
+                        return when {
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cell"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "eth"
+                            else -> "unknown"
+                        }
+                    }
+                }
+            } else {
+                // For devices below API level 23
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.let {
+                    return when (it.type) {
+                        ConnectivityManager.TYPE_WIFI -> "wifi"
+                        ConnectivityManager.TYPE_MOBILE -> "cell"
+                        ConnectivityManager.TYPE_ETHERNET -> "eth"
+                        else -> "unknown"
+                    }
+                }
+            }
+            return "noNetwork"
         }
 
         private fun setRemoteConfig() = runBlocking {
