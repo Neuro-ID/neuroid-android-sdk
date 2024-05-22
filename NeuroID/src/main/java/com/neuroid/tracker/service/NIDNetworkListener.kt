@@ -9,9 +9,9 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import kotlinx.coroutines.*
 import java.util.Calendar
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.*
 
 /**
  * This class will listen for network change intent messages that are sent from the OS. In
@@ -37,9 +37,8 @@ class NIDNetworkListener(
     private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
-    private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
+    private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE,
 ) : BroadcastReceiver() {
-
     companion object {
         const val SLEEP_INTERVAL_PAUSE = 10000L
         const val SLEEP_INTERVAL_RESUME = 2000L
@@ -48,7 +47,10 @@ class NIDNetworkListener(
     private var haveNoNetworkJob: Job? = null
     private var haveNetworkJob: Job? = null
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+    ) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
                 neuroID.isConnected = onNetworkAction(context)
@@ -71,19 +73,19 @@ class NIDNetworkListener(
                 return
             }
             haveNoNetworkJob =
-                    CoroutineScope(dispatcher).launch {
-                        delay(sleepIntervalPause)
-                        neuroID.pauseCollection(false)
-                    }
+                CoroutineScope(dispatcher).launch {
+                    delay(sleepIntervalPause)
+                    neuroID.pauseCollection(false)
+                }
         } else {
             if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
                 return
             }
             haveNetworkJob =
-                    CoroutineScope(dispatcher).launch {
-                        delay(sleepIntervalResume)
-                        neuroID.resumeCollection()
-                    }
+                CoroutineScope(dispatcher).launch {
+                    delay(sleepIntervalResume)
+                    neuroID.resumeCollection()
+                }
         }
     }
 

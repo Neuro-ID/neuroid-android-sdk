@@ -196,17 +196,16 @@ class RegistrationIdentificationHelper(
             }
         }
 
-        if (shouldRegister)
-            {
-                registerSingleTargetListeners(
-                    view,
-                    guid,
-                    registerTarget,
-                    registerListeners,
-                    activityOrFragment = activityOrFragment,
-                    parent = parent,
-                )
-            }
+        if (shouldRegister) {
+            registerSingleTargetListeners(
+                view,
+                guid,
+                registerTarget,
+                registerListeners,
+                activityOrFragment = activityOrFragment,
+                parent = parent,
+            )
+        }
     }
 }
 
@@ -240,11 +239,12 @@ class SingleTargetListenerRegister(
             // add original action menu watcher
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
-                view.customSelectionActionModeCallback = NIDTextContextMenuCallbacks(
-                    neuroID,
-                    logger,
-                    actionCallback
-                )
+                view.customSelectionActionModeCallback =
+                    NIDTextContextMenuCallbacks(
+                        neuroID,
+                        logger,
+                        actionCallback,
+                    )
             }
 
             // if later api version, add additional action menu watcher
@@ -485,7 +485,7 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
                 NIDLongPressContextMenuCallbacks(
                     neuroID,
                     logger,
-                    actionInsertionCallback
+                    actionInsertionCallback,
                 )
         }
     }

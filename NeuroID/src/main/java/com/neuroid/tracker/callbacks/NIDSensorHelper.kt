@@ -92,7 +92,7 @@ object NIDSensorHelper {
         nSensors: NIDSensors,
         fvGyro: NIDSensorData,
         fvAccel: NIDSensorData,
-    ): NIDSensorGenListener  {
+    ): NIDSensorGenListener {
         return NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {

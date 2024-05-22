@@ -8,38 +8,33 @@ import com.neuroid.tracker.utils.getRetroFitInstance
 import retrofit2.Call
 
 interface ADVNetworkService {
-    fun getNIDAdvancedDeviceAccessKey(
-        key: String
-    ):ADVKeyFunctionResponse
+    fun getNIDAdvancedDeviceAccessKey(key: String): ADVKeyFunctionResponse
 }
 
 class NIDAdvancedDeviceNetworkService(
     private var apiService: NIDAdvancedDeviceApiService,
     private val logger: NIDLogWrapper,
-    private val b64Decoder: Base64Decoder = Base64Decoder()
-):ADVNetworkService {
+    private val b64Decoder: Base64Decoder = Base64Decoder(),
+) : ADVNetworkService {
     companion object {
         const val RETRY_COUNT = 3
         const val TIMEOUT = 2L // 2000L = 2 sec?
         const val HTTP_SUCCESS = 200
     }
 
-    override fun getNIDAdvancedDeviceAccessKey(
-        key: String
-        ):ADVKeyFunctionResponse {
+    override fun getNIDAdvancedDeviceAccessKey(key: String): ADVKeyFunctionResponse {
         val call = apiService.getNIDAdvancedDeviceAccessKey(key)
         return retryRequests(call)
     }
 
-    internal fun retryRequests(
-        call: Call<ADVKeyNetworkResponse>
-    ):ADVKeyFunctionResponse {
+    internal fun retryRequests(call: Call<ADVKeyNetworkResponse>): ADVKeyFunctionResponse {
         try {
-            var finalResponse = ADVKeyFunctionResponse(
-                "",
-                false,
-                "Failed to retrieve key from NeuroID"
-            )
+            var finalResponse =
+                ADVKeyFunctionResponse(
+                    "",
+                    false,
+                    "Failed to retrieve key from NeuroID",
+                )
 
             for (retryCount in 1..RETRY_COUNT) {
                 // retain the existing call and always execute on clones of it so we can retry when
@@ -54,40 +49,51 @@ class NIDAdvancedDeviceNetworkService(
 
                     // Shouldn't be possible but retrofit says body can be null
                     if (responseBody == null) {
-                        finalResponse = ADVKeyFunctionResponse(
-                            "",
-                            false,
-                            message = "advanced signal not available: responseCode ${response.code()}"
-                        )
+                        finalResponse =
+                            ADVKeyFunctionResponse(
+                                "",
+                                false,
+                                message = "advanced signal not available: responseCode ${response.code()}",
+                            )
                         break
                     }
 
-                    if(responseBody.status != "OK") {
-                        finalResponse = ADVKeyFunctionResponse(
-                            "",
-                            false,
-                            message = "advanced signal not available: status ${responseBody.status}"
-                        )
+                    if (responseBody.status != "OK") {
+                        finalResponse =
+                            ADVKeyFunctionResponse(
+                                "",
+                                false,
+                                message = "advanced signal not available: status ${responseBody.status}",
+                            )
                         break
                     }
 
-                    val key = b64Decoder.decodeBase64(
-                        responseBody.key
-                    )
+                    val key =
+                        b64Decoder.decodeBase64(
+                            responseBody.key,
+                        )
 
-                    finalResponse = ADVKeyFunctionResponse(
-                        key,
-                        true,
-                    )
+                    finalResponse =
+                        ADVKeyFunctionResponse(
+                            key,
+                            true,
+                        )
                     break
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times
-                    logger.d(tag = "NeuroID ADV", msg = "Failed to get API key from NeuroID: ${response.message()} - Code: ${response.code()}. Retrying: ${retryCount < RETRY_COUNT}")
-                    finalResponse = ADVKeyFunctionResponse(
-                        "",
-                        false,
-                        response.message()
+                    logger.d(
+                        tag = "NeuroID ADV",
+                        msg =
+                            """
+                            Failed to get API key from NeuroID: ${response.message()} - Code: ${response.code()}. Retrying: ${retryCount < RETRY_COUNT}
+                            """.trimIndent(),
                     )
+                    finalResponse =
+                        ADVKeyFunctionResponse(
+                            "",
+                            false,
+                            response.message(),
+                        )
                 }
             }
 
@@ -101,18 +107,22 @@ class NIDAdvancedDeviceNetworkService(
             return ADVKeyFunctionResponse(
                 "",
                 false,
-                errorMessage
+                errorMessage,
             )
         }
     }
 }
 
-fun getADVNetworkService(endpoint:String, logger: NIDLogWrapper):ADVNetworkService = NIDAdvancedDeviceNetworkService(
-    getRetroFitInstance(
-        endpoint,
+fun getADVNetworkService(
+    endpoint: String,
+    logger: NIDLogWrapper,
+): ADVNetworkService =
+    NIDAdvancedDeviceNetworkService(
+        getRetroFitInstance(
+            endpoint,
+            logger,
+            NIDAdvancedDeviceApiService::class.java,
+            NIDAdvancedDeviceNetworkService.TIMEOUT,
+        ),
         logger,
-        NIDAdvancedDeviceApiService::class.java,
-        NIDAdvancedDeviceNetworkService.TIMEOUT
-    ),
-    logger
-)
+    )

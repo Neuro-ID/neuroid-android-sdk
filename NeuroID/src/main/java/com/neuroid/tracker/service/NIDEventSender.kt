@@ -35,7 +35,6 @@ interface NIDSendingService {
  * we retry requests that connect and come back with bad response codes.
  */
 class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService, RetrySender() {
-
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 

@@ -97,7 +97,7 @@ data class NIDEventModel(
     val isWifi: Boolean? = null,
     val isConnected: Boolean? = null,
     val cp: String? = null,
-    val l: Long? = null
+    val l: Long? = null,
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
         return toJSON().toString()
@@ -182,7 +182,7 @@ data class NIDEventModel(
             isWifi?.let { jsonObject.put("iswifi", it) }
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
-            l?.let { jsonObject.put("l", it)}
+            l?.let { jsonObject.put("l", it) }
         }
 
         return jsonObject

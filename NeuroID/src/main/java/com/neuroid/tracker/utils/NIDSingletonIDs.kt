@@ -18,11 +18,10 @@ object NIDSingletonIDs {
         var existingSalt = sharedDefaults?.getDeviceSalt()
 
         if (existingSalt != null) {
-            if (existingSalt.isNotBlank())
-                {
-                    saltId = existingSalt
-                    return existingSalt
-                }
+            if (existingSalt.isNotBlank()) {
+                saltId = existingSalt
+                return existingSalt
+            }
         }
         saltId = UUID.randomUUID().toString()
         sharedDefaults?.putDeviceSalt(saltId)

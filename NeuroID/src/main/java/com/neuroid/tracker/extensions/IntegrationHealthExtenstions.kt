@@ -2,8 +2,8 @@ package com.neuroid.tracker.extensions
 
 import android.os.Build
 import com.google.gson.Gson
-import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.models.DeviceOrientation
 import com.neuroid.tracker.models.IntegrationHealthDeviceInfo
 import com.neuroid.tracker.models.NIDEventModel
@@ -11,7 +11,8 @@ import com.neuroid.tracker.utils.*
 import org.json.JSONObject
 
 internal fun generateIntegrationHealthDeviceReport() {
-    val deviceInfo = IntegrationHealthDeviceInfo(
+    val deviceInfo =
+        IntegrationHealthDeviceInfo(
             name = "${Build.MANUFACTURER} - ${Build.BRAND} - ${Build.DEVICE} - ${Build.PRODUCT}",
             systemName = "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
             systemVersion = "${Build.VERSION.SDK_INT}",
