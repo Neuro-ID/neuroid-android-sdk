@@ -7,17 +7,21 @@ import androidx.core.app.ActivityCompat
 
 class LocationPermissionUtils {
     fun isNotAllowedToCollectLocations(context: Context): Boolean {
-        val fineResult = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
+        val fineResult =
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
 
-        val coarseResult = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+        val coarseResult =
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
 
-        return (fineResult != PackageManager.PERMISSION_GRANTED &&
-                coarseResult != PackageManager.PERMISSION_GRANTED)
+        return (
+            fineResult != PackageManager.PERMISSION_GRANTED &&
+                coarseResult != PackageManager.PERMISSION_GRANTED
+        )
     }
-}
+} 

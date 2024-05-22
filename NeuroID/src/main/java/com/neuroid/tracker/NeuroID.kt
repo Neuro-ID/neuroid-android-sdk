@@ -56,8 +56,8 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        serverEnvironment: String = PRODUCTION
-    ): NeuroIDPublic {
+        serverEnvironment: String = PRODUCTION,
+    ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
         private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -113,9 +113,10 @@ class NeuroID
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             application?.let {
                 locationService = LocationService()
-                metaData = NIDMetaData(
-                    it.applicationContext,
-                )
+                metaData =
+                    NIDMetaData(
+                        it.applicationContext,
+                    )
 
                 nidJobServiceManager =
                     NIDJobServiceManager(
@@ -155,7 +156,7 @@ class NeuroID
                     ?.let { nidCallActivityListener?.setCallActivityListener(it) }
             }
 
-            //get connectivity info on startup
+            // get connectivity info on startup
             application?.let {
                 val connectivityManager =
                     it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -201,26 +202,30 @@ class NeuroID
             return "noNetwork"
         }
 
-        private fun setRemoteConfig() = runBlocking {
-            val deferred = CoroutineScope(Dispatchers.IO).async {
-                NIDConfigurationService(
-                    getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
-                    object : OnRemoteConfigReceivedListener {
-                        override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
-                            nidSDKConfig = remoteConfig
-                            logger.e("init", "remoteConfig: $remoteConfig")
-                        }
+        private fun setRemoteConfig() =
+            runBlocking {
+                val deferred =
+                    CoroutineScope(Dispatchers.IO).async {
+                        NIDConfigurationService(
+                            getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                            object : OnRemoteConfigReceivedListener {
+                                override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                                    nidSDKConfig = remoteConfig
+                                    logger.e("init", "remoteConfig: $remoteConfig")
+                                }
 
-                        override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                            logger.e(
-                                "init", "error getting remote config: $errorMessage"
-                            )
-                        }
-                    }, clientKey
-                )
+                                override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                                    logger.e(
+                                        "init",
+                                        "error getting remote config: $errorMessage",
+                                    )
+                                }
+                            },
+                            clientKey,
+                        )
+                    }
+                deferred.await()
             }
-            deferred.await()
-        }
 
         @Synchronized
         private fun setupCallbacks() {
@@ -233,9 +238,11 @@ class NeuroID
             }
         }
 
-        data class Builder(val application: Application? = null,
-                           val clientKey: String = "",
-                           val serverEnvironment: String = PRODUCTION) {
+        data class Builder(
+            val application: Application? = null,
+            val clientKey: String = "",
+            val serverEnvironment: String = PRODUCTION,
+        ) {
             fun build() {
                 val neuroID = NeuroID(application, clientKey, serverEnvironment)
                 neuroID.setupCallbacks()
@@ -751,8 +758,6 @@ class NeuroID
             return SessionStartResult(true, finalSessionID)
         }
 
-
-
         private fun sendOriginEvent(originResult: SessionIDOriginResult) {
             // sending these as individual items.
             captureEvent(
@@ -936,7 +941,7 @@ class NeuroID
             level: String? = null,
             c: Boolean? = null,
             isConnected: Boolean? = null,
-            l: Long = 0
+            l: Long = 0,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
                 return
@@ -1009,7 +1014,7 @@ class NeuroID
                     level,
                     c,
                     isConnected,
-                    l = l
+                    l = l,
                 )
 
             if (queuedEvent) {

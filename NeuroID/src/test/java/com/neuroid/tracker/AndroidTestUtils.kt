@@ -11,7 +11,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 
-internal fun getMockedNeuroID(forceStart:Boolean = false): NeuroID {
+internal fun getMockedNeuroID(forceStart: Boolean = false): NeuroID {
     val nidMock = mockk<NeuroID>()
 
     every { nidMock.forceStart } returns forceStart
@@ -96,7 +96,7 @@ internal fun getMockedRegistrationIdentificationHelper(): RegistrationIdentifica
     return mocked
 }
 
-internal fun getMockedActivity():Activity{
+internal fun getMockedActivity(): Activity  {
     val mockedConfiguration = mockk<Configuration>()
     mockedConfiguration.orientation = 0
 
@@ -110,21 +110,18 @@ internal fun getMockedActivity():Activity{
 
 internal fun verifyCaptureEvent(
     mockedNeuroID: NeuroID,
-    eventType:String,
-    count:Int = 1,
-
+    eventType: String,
+    count: Int = 1,
     // Add params as needed for testing
-    attrs:List<Map<String, Any>>? = null,
-    o:String? = null
-){
+    attrs: List<Map<String, Any>>? = null,
+    o: String? = null,
+) {
     verify(exactly = count) {
         mockedNeuroID.captureEvent(
             any(),
-            type=eventType,
+            type = eventType,
             any(),
-            attrs=attrs?:any(),
-            any(),
-            any(),
+            attrs = attrs ?: any(),
             any(),
             any(),
             any(),
@@ -167,14 +164,16 @@ internal fun verifyCaptureEvent(
             any(),
             any(),
             any(),
-            o=o?:any(),
+            any(),
+            any(),
+            o = o ?: any(),
             any(),
             any(),
             any(),
             any(),
             any(),
             any(),
-            any()
+            any(),
         )
     }
 }
