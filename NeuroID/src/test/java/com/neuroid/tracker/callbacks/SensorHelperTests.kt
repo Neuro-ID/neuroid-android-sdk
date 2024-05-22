@@ -19,7 +19,7 @@ import java.lang.reflect.Field
 
 enum class SensorTypes {
     GYRO,
-    ACCEL
+    ACCEL,
 }
 
 class SensorHelperTests {
@@ -45,7 +45,7 @@ class SensorHelperTests {
         every { sensorManager.getSensorList(Sensor.TYPE_ALL) } returns listOf(sensor)
         every {
             sensorManager.getDefaultSensor(
-                if (type == SensorTypes.GYRO) Sensor.TYPE_GYROSCOPE else Sensor.TYPE_ACCELEROMETER
+                if (type == SensorTypes.GYRO) Sensor.TYPE_GYROSCOPE else Sensor.TYPE_ACCELEROMETER,
             )
         } returns sensor
         every {
@@ -53,7 +53,7 @@ class SensorHelperTests {
                 any<NIDSensorGenListener>(),
                 any(),
                 any(),
-                any<Int>()
+                any<Int>(),
             )
         } returns true
         every { sensorManager.requestTriggerSensor(any(), any()) } returns true
@@ -69,8 +69,10 @@ class SensorHelperTests {
         return context
     }
 
-
-    fun setupMockSensorEvent(type: SensorTypes, floatArray: FloatArray): SensorEvent {
+    fun setupMockSensorEvent(
+        type: SensorTypes,
+        floatArray: FloatArray,
+    ): SensorEvent {
         val sensor = setupMockSensor(type)
         val sensorEvent = mockk<SensorEvent>()
 
@@ -86,7 +88,7 @@ class SensorHelperTests {
     }
 
     fun setupMockNIDSensors(type: SensorTypes): NIDSensors {
-        //prepare the sensor
+        // prepare the sensor
         val nidSensors = mockk<NIDSensors>()
         if (type == SensorTypes.GYRO) {
             every {
@@ -95,7 +97,7 @@ class SensorHelperTests {
                     any(),
                     any(),
                     any(),
-                    any()
+                    any(),
                 )
             } returns mockk()
             every { nidSensors.gyroscopeData = any() } just runs
@@ -106,7 +108,7 @@ class SensorHelperTests {
                     any(),
                     any(),
                     any(),
-                    any()
+                    any(),
                 )
             } returns mockk()
             every { nidSensors.accelerometer = any() } just runs
@@ -144,22 +146,22 @@ class SensorHelperTests {
                 any(),
                 sensorPair.first,
                 10000,
-                10000
+                10000,
             )
         }
     }
 
-
     fun verifyNIDSensorValues(
         type: SensorTypes,
         expectedValueArray: FloatArray,
-        nidSensors: NIDSensors
+        nidSensors: NIDSensors,
     ) {
-        val sensor = if (type == SensorTypes.GYRO) {
-            nidSensors.gyroscopeData
-        } else {
-            nidSensors.accelerometer
-        }
+        val sensor =
+            if (type == SensorTypes.GYRO) {
+                nidSensors.gyroscopeData
+            } else {
+                nidSensors.accelerometer
+            }
 
         verify {
             sensor.copy(
@@ -167,12 +169,17 @@ class SensorHelperTests {
                 any(),
                 expectedValueArray[0],
                 expectedValueArray[1],
-                expectedValueArray[2]
+                expectedValueArray[2],
             )
         }
     }
 
-    fun verifySensorValues(sensor: NIDSensorData, xAxis: Float, yAxis: Float, zAxis: Float) {
+    fun verifySensorValues(
+        sensor: NIDSensorData,
+        xAxis: Float,
+        yAxis: Float,
+        zAxis: Float,
+    ) {
         verify { sensor setProperty "axisX" value xAxis }
         verify { sensor setProperty "axisY" value yAxis }
         verify { sensor setProperty "axisZ" value zAxis }
@@ -216,11 +223,10 @@ class SensorHelperTests {
         verifySensorPair(sensorPair)
     }
 
-
     @Test
     fun test_sensorListener_gyroscope() {
         val expectedValueArray = floatArrayOf(1.0f, 2.0f, 3.0f)
-        
+
         // prepare the gyroscope event (reflection)
         val sensorEvent = setupMockSensorEvent(SensorTypes.GYRO, expectedValueArray)
         val nidSensors = setupMockNIDSensors(SensorTypes.GYRO)
@@ -239,7 +245,7 @@ class SensorHelperTests {
             sensorPair.first,
             expectedValueArray[0],
             expectedValueArray[1],
-            expectedValueArray[2]
+            expectedValueArray[2],
         )
     }
 
@@ -265,7 +271,7 @@ class SensorHelperTests {
             sensorPair.second,
             expectedValueArray[0],
             expectedValueArray[1],
-            expectedValueArray[2]
+            expectedValueArray[2],
         )
     }
 }

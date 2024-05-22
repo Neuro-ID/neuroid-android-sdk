@@ -2,7 +2,6 @@ package com.neuroid.tracker.service
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Handler
@@ -25,17 +24,17 @@ import kotlinx.coroutines.launch
  * one using the PROVIDER_MAP. Highest number is the most desired (most accurate) provider.
  */
 class LocationService(private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
-
     private var nidLocation: NIDLocation? = null
     private var isStarted = false
     private var locationScope: CoroutineScope? = null
 
     @SuppressLint("MissingPermission")
-    private val locationListener = LocationListener { location ->
-        nidLocation?.longitude = location.longitude
-        nidLocation?.latitude = location.latitude
-        nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
-    }
+    private val locationListener =
+        LocationListener { location ->
+            nidLocation?.longitude = location.longitude
+            nidLocation?.latitude = location.latitude
+            nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
+        }
 
     /**
      * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a
@@ -78,13 +77,18 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
      * internal coroutine scope.
      */
     @SuppressLint("MissingPermission")
-    fun getLastKnownLocation(context: Context, nidLocation: NIDLocation,
-                             scope: CoroutineScope? = locationScope,
-                             locationManager: LocationManager, isLocationAllowed: Boolean) {
-        if (locationPermissionUtils.isNotAllowedToCollectLocations(context) || !isLocationAllowed){
-            shutdownLocationCoroutine(locationManager)
-            return
-        }
+    fun getLastKnownLocation(
+        context: Context,
+        nidLocation: NIDLocation,
+        scope: CoroutineScope? = locationScope,
+        locationManager: LocationManager,
+        isLocationAllowed: Boolean,
+    ) {
+        if (locationPermissionUtils.isNotAllowedToCollectLocations(context) || !isLocationAllowed)
+            {
+                shutdownLocationCoroutine(locationManager)
+                return
+            }
         this.nidLocation = nidLocation
         // get last position if available, take highest accuracy from available providers
         var smallestAccuracyMeters = Float.MAX_VALUE
@@ -111,7 +115,11 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
      * last collected location.
      */
     @SuppressLint("MissingPermission")
-    private fun requestLocation(context: Context, scope: CoroutineScope?, locationManager: LocationManager) {
+    private fun requestLocation(
+        context: Context,
+        scope: CoroutineScope?,
+        locationManager: LocationManager,
+    ) {
         if (!isStarted) {
             if (locationPermissionUtils.isNotAllowedToCollectLocations(context)) {
                 shutdownLocationCoroutine(locationManager)
@@ -133,7 +141,7 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
                             MIN_TIME_INTERVAL,
                             MIN_DISTANCE_INTERVAL,
                             locationListener,
-                            Looper.myLooper()
+                            Looper.myLooper(),
                         )
                         Looper.loop()
                         isStarted = true
@@ -160,13 +168,13 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
     }
 
     companion object {
-        private val PROVIDER_MAP = mapOf(
-            LocationManager.GPS_PROVIDER to 3,
-            LocationManager.PASSIVE_PROVIDER to 2,
-            LocationManager.NETWORK_PROVIDER to 1
-        )
+        private val PROVIDER_MAP =
+            mapOf(
+                LocationManager.GPS_PROVIDER to 3,
+                LocationManager.PASSIVE_PROVIDER to 2,
+                LocationManager.NETWORK_PROVIDER to 1,
+            )
         const val MIN_TIME_INTERVAL = 10000L // milliseconds
         const val MIN_DISTANCE_INTERVAL = 10F // meters
     }
-
 }

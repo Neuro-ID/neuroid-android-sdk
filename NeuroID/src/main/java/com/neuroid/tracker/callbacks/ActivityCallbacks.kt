@@ -193,7 +193,7 @@ class ActivityCallbacks(
     }
 
     @VisibleForTesting
-    internal fun setTestAuxOrientation(newValue: Int)  {
+    internal fun setTestAuxOrientation(newValue: Int) {
         auxOrientation = newValue
     }
 }

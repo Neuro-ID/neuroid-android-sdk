@@ -5,13 +5,13 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
+import com.neuroid.tracker.service.getADVNetworkService
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.neuroid.tracker.service.getADVNetworkService
-import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.Constants
 
 /**
  * Start the SDK and start a new session using the userID as the sessionID. Takes in a boolean to
@@ -45,11 +45,12 @@ fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
  */
 fun NeuroIDPublic.startSession(
     sessionID: String? = null,
-    advancedDeviceSignals: Boolean
+    advancedDeviceSignals: Boolean,
 ): SessionStartResult {
-    val sessionRes = startSession(
-        sessionID
-    )
+    val sessionRes =
+        startSession(
+            sessionID,
+        )
 
     if (!sessionRes.started) {
         return sessionRes
@@ -70,29 +71,29 @@ internal fun getADVSignal(
     clientKey: String,
     applicationContext: Context,
     neuroID: NeuroID,
-    logger: NIDLogWrapper
+    logger: NIDLogWrapper,
 ) {
     CoroutineScope(Dispatchers.IO).launch {
-        val advancedDeviceIDManagerService = AdvancedDeviceIDManager(
-            applicationContext,
-            logger,
-            NIDSharedPrefsDefaults(applicationContext),
-            neuroID,
-            getADVNetworkService(
-                NeuroID.endpoint,
-                logger
-            ),
-           null
-        )
+        val advancedDeviceIDManagerService =
+            AdvancedDeviceIDManager(
+                applicationContext,
+                logger,
+                NIDSharedPrefsDefaults(applicationContext),
+                neuroID,
+                getADVNetworkService(
+                    NeuroID.endpoint,
+                    logger,
+                ),
+                null,
+            )
 
         // check for cachedID first
-        if(!advancedDeviceIDManagerService.getCachedID()) {
+        if (!advancedDeviceIDManagerService.getCachedID()) {
             // no cached ID - contact NID & FPJS
             advancedDeviceIDManagerService.getRemoteID(
                 clientKey,
-                Constants.fpjsProdDomain.displayName
+                Constants.fpjsProdDomain.displayName,
             )
         }
     }
-
 }

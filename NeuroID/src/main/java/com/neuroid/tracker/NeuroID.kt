@@ -7,11 +7,31 @@ import android.content.Context
 import android.content.IntentFilter
 import android.location.LocationManager
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.ATTEMPTED_LOGIN
+import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CLOSE_SESSION
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FORM_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.FULL_BUFFER
+import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
+import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
+import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
@@ -54,8 +74,8 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        serverEnvironment: String = PRODUCTION
-    ): NeuroIDPublic {
+        serverEnvironment: String = PRODUCTION,
+    ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
         private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -90,6 +110,7 @@ class NeuroID
         internal var lowMemory: Boolean = false
         internal var isConnected = false
         internal var locationService: LocationService? = null
+        internal var networkConnectionType = "unknown"
 
         init {
             when (serverEnvironment) {
@@ -110,9 +131,10 @@ class NeuroID
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             application?.let {
                 locationService = LocationService()
-                metaData = NIDMetaData(
-                    it.applicationContext,
-                )
+                metaData =
+                    NIDMetaData(
+                        it.applicationContext,
+                    )
 
                 nidJobServiceManager =
                     NIDJobServiceManager(
@@ -151,28 +173,77 @@ class NeuroID
                 this.getApplicationContext()
                     ?.let { nidCallActivityListener?.setCallActivityListener(it) }
             }
-        }
 
-        private fun setRemoteConfig() = runBlocking {
-            val deferred = CoroutineScope(Dispatchers.IO).async {
-                NIDConfigurationService(
-                    getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
-                    object : OnRemoteConfigReceivedListener {
-                        override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
-                            nidSDKConfig = remoteConfig
-                            logger.e("init", "remoteConfig: $remoteConfig")
-                        }
-
-                        override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                            logger.e(
-                                "init", "error getting remote config: $errorMessage"
-                            )
-                        }
-                    }, clientKey
-                )
+            // get connectivity info on startup
+            application?.let {
+                val connectivityManager =
+                    it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val info = connectivityManager.activeNetworkInfo
+                val isConnectingOrConnected = info?.isConnectedOrConnecting()
+                if (isConnectingOrConnected != null) {
+                    isConnected = isConnectingOrConnected
+                }
+                networkConnectionType = this.getNetworkType(it)
             }
-            deferred.await()
         }
+
+        /**
+         * Function to retrieve the current network type (wifi, cell, eth, unknown)
+         */
+        internal fun getNetworkType(context: Context): String {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val activeNetwork = connectivityManager.activeNetwork
+                activeNetwork?.let {
+                    val networkCapabilities = connectivityManager.getNetworkCapabilities(it)
+                    networkCapabilities?.let { capabilities ->
+                        return when {
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cell"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "eth"
+                            else -> "unknown"
+                        }
+                    }
+                }
+            } else {
+                // For devices below API level 23
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.let {
+                    return when (it.type) {
+                        ConnectivityManager.TYPE_WIFI -> "wifi"
+                        ConnectivityManager.TYPE_MOBILE -> "cell"
+                        ConnectivityManager.TYPE_ETHERNET -> "eth"
+                        else -> "unknown"
+                    }
+                }
+            }
+            return "noNetwork"
+        }
+
+        private fun setRemoteConfig() =
+            runBlocking {
+                val deferred =
+                    CoroutineScope(Dispatchers.IO).async {
+                        NIDConfigurationService(
+                            getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
+                            object : OnRemoteConfigReceivedListener {
+                                override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
+                                    nidSDKConfig = remoteConfig
+                                    logger.e("init", "remoteConfig: $remoteConfig")
+                                }
+
+                                override fun onRemoteConfigReceivedFailed(errorMessage: String) {
+                                    logger.e(
+                                        "init",
+                                        "error getting remote config: $errorMessage",
+                                    )
+                                }
+                            },
+                            clientKey,
+                        )
+                    }
+                deferred.await()
+            }
 
         @Synchronized
         private fun setupCallbacks() {
@@ -185,9 +256,11 @@ class NeuroID
             }
         }
 
-        data class Builder(val application: Application? = null,
-                           val clientKey: String = "",
-                           val serverEnvironment: String = PRODUCTION) {
+        data class Builder(
+            val application: Application? = null,
+            val clientKey: String = "",
+            val serverEnvironment: String = PRODUCTION,
+        ) {
             fun build() {
                 val neuroID = NeuroID(application, clientKey, serverEnvironment)
                 neuroID.setupCallbacks()
@@ -329,6 +402,12 @@ class NeuroID
         }
 
         override fun setRegisteredUserID(registeredUserId: String): Boolean {
+            if (this.registeredUserID.isNotEmpty() && registeredUserId != this.registeredUserID) {
+                this.captureEvent(type = LOG, level = "warn", m = "Multiple Registered User Id Attempts")
+                logger.e(msg = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
+                return false
+            }
+
             val validID =
                 setGenericUserID(
                     SET_REGISTERED_USER_ID,
@@ -764,8 +843,6 @@ class NeuroID
             return SessionStartResult(true, finalSessionID)
         }
 
-
-
         private fun sendOriginEvent(originResult: SessionIDOriginResult) {
             // sending these as individual items.
             captureEvent(
@@ -949,6 +1026,7 @@ class NeuroID
             level: String? = null,
             c: Boolean? = null,
             isConnected: Boolean? = null,
+            l: Long = 0,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
                 return
@@ -1021,6 +1099,7 @@ class NeuroID
                     level,
                     c,
                     isConnected,
+                    l = l,
                 )
 
             if (queuedEvent) {

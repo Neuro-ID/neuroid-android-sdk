@@ -9,12 +9,12 @@ interface NeuroIDPublic {
      * Deprecated, do not use!
      */
     @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
-    fun getClientId():String
+    fun getClientId(): String
 
     /**
      * Return the currently set client id (use this one).
      */
-    fun getClientID():String
+    fun getClientID(): String
 
     /**
      * Update the test event sender endpoint to a new collection endpoint. This will generally be
@@ -39,10 +39,12 @@ interface NeuroIDPublic {
      */
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId(): String
+
     /**
      * Return the currently set user id.
      */
     fun getUserID(): String
+
     /**
      * Return the currently set registered user id.
      */

@@ -1,8 +1,8 @@
 package com.neuroid.tracker.storage
 
 import androidx.annotation.VisibleForTesting
-import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel

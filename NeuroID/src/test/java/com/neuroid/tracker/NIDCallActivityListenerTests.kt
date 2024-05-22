@@ -22,7 +22,6 @@ import java.util.Calendar
 import java.util.concurrent.Executor
 
 class NIDCallActivityListenerTests {
-
     @Test
     fun test_callActivityListener_call_in_progress_sdk_greater_than_31() {
         callActivityListenerHarness(CallInProgress.ACTIVE.state, CallInProgress.ACTIVE.event, true)
@@ -33,7 +32,7 @@ class NIDCallActivityListenerTests {
         callActivityListenerHarness(
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
-            true
+            true,
         )
     }
 
@@ -47,11 +46,15 @@ class NIDCallActivityListenerTests {
         callActivityListenerHarness(
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
-            false
+            false,
         )
     }
 
-    fun callActivityListenerHarness(callState: Int, isActive: String, sdkGreaterThan31: Boolean) {
+    fun callActivityListenerHarness(
+        callState: Int,
+        isActive: String,
+        sdkGreaterThan31: Boolean,
+    ) {
         val calendar = mockk<Calendar>()
         every { calendar.timeInMillis } returns 5
         mockkStatic(Calendar::class)
@@ -83,16 +86,22 @@ class NIDCallActivityListenerTests {
 
         listener.onReceive(context, intent)
 
-        val callActivityEvent = NIDEventModel(
-            type = CALL_IN_PROGRESS, cp = isActive, ts = Calendar.getInstance().timeInMillis
-        )
+        val callActivityEvent =
+            NIDEventModel(
+                type = CALL_IN_PROGRESS,
+                cp = isActive,
+                ts = Calendar.getInstance().timeInMillis,
+            )
 
         verify { dataStoreManager.saveEvent((callActivityEvent)) }
         unmockkAll()
     }
 
     // Mocking Callback
-    fun mockCallBack(callState: Int, listener: NIDCallActivityListener) {
+    fun mockCallBack(
+        callState: Int,
+        listener: NIDCallActivityListener,
+    ) {
         when (callState) {
             CallInProgress.INACTIVE.state -> {
                 listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
@@ -103,5 +112,4 @@ class NIDCallActivityListenerTests {
             }
         }
     }
-
 }
