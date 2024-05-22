@@ -13,7 +13,25 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.ATTEMPTED_LOGIN
+import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CLOSE_SESSION
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FORM_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.FULL_BUFFER
+import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
+import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
+import com.neuroid.tracker.events.SET_USER_ID
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
@@ -364,6 +382,12 @@ class NeuroID
         }
 
         override fun setRegisteredUserID(registeredUserId: String): Boolean {
+            if (this.registeredUserID.isNotEmpty() && registeredUserId != this.registeredUserID) {
+                this.captureEvent(type = LOG, level = "warn", m = "Multiple Registered User Id Attempts")
+                logger.e(msg = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
+                return false
+            }
+
             val validID =
                 setGenericUserID(
                     SET_REGISTERED_USER_ID,
