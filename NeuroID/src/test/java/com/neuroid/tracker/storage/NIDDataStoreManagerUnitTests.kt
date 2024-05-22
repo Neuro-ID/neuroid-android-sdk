@@ -4,21 +4,16 @@ import android.content.Context
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.utils.NIDLogWrapper
-
 import io.mockk.spyk
 import io.mockk.unmockkAll
-
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-
 class NIDDataStoreManagerUnitTests {
-
     private lateinit var mockContext: Context
 
     private fun mockDataStore(): NIDDataStoreManagerImp {
@@ -38,109 +33,113 @@ class NIDDataStoreManagerUnitTests {
 
     //    queueEvent
     @Test
-    fun testQueueEvent() = runTest {
-        val dataStore = mockDataStore()
-        advanceUntilIdle()
+    fun testQueueEvent() =
+        runTest {
+            val dataStore = mockDataStore()
+            advanceUntilIdle()
 
-        Assert.assertEquals(0, dataStore.queuedEvents.count())
-        dataStore.queueEvent(
-            NIDEventModel(
-                type = INPUT,
-                ts = System.currentTimeMillis()
+            Assert.assertEquals(0, dataStore.queuedEvents.count())
+            dataStore.queueEvent(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = System.currentTimeMillis(),
+                ),
             )
-        )
 
-        Assert.assertEquals(1, dataStore.queuedEvents.count())
-        dataStore.queuedEvents.clear()
-    }
+            Assert.assertEquals(1, dataStore.queuedEvents.count())
+            dataStore.queuedEvents.clear()
+        }
 
     //    saveAndClearAllQueuedEvents
     @Test
-    fun testSaveAndClearAllQueuedEvents() = runTest {
-        val dataStore = mockDataStore()
-        advanceUntilIdle()
+    fun testSaveAndClearAllQueuedEvents() =
+        runTest {
+            val dataStore = mockDataStore()
+            advanceUntilIdle()
 
-        dataStore.queuedEvents.add(
-            NIDEventModel(
-                type = INPUT,
-                ts = System.currentTimeMillis()
+            dataStore.queuedEvents.add(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = System.currentTimeMillis(),
+                ),
             )
-        )
-        Assert.assertEquals(1, dataStore.queuedEvents.count())
+            Assert.assertEquals(1, dataStore.queuedEvents.count())
 
+            dataStore.saveAndClearAllQueuedEvents()
+            advanceUntilIdle()
 
-        dataStore.saveAndClearAllQueuedEvents()
-        advanceUntilIdle()
+            Assert.assertEquals(0, dataStore.queuedEvents.count())
 
-        Assert.assertEquals(0, dataStore.queuedEvents.count())
-
-        val events = dataStore.getAllEvents()
-        Assert.assertEquals(1, events.count())
-    }
+            val events = dataStore.getAllEvents()
+            Assert.assertEquals(1, events.count())
+        }
 
     //     saveEvent
     @Test
-    fun testSaveEvent() = runTest {
-        val dataStore = mockDataStore()
-        advanceUntilIdle()
+    fun testSaveEvent() =
+        runTest {
+            val dataStore = mockDataStore()
+            advanceUntilIdle()
 
-      dataStore.saveEvent(
-            NIDEventModel(
-                type = INPUT,
-                ts = System.currentTimeMillis()
+            dataStore.saveEvent(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = System.currentTimeMillis(),
+                ),
             )
-        )
 
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        val events = dataStore.getAllEvents()
-        Assert.assertEquals(1, events.count())
-        Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
-    }
+            val events = dataStore.getAllEvents()
+            Assert.assertEquals(1, events.count())
+            Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
+        }
 
     //    getAllEvents
     @Test
-    fun testGetAllEvents() = runTest {
-        val dataStore = mockDataStore()
-        advanceUntilIdle()
+    fun testGetAllEvents() =
+        runTest {
+            val dataStore = mockDataStore()
+            advanceUntilIdle()
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = INPUT,
-                ts = System.currentTimeMillis()
+            dataStore.saveEvent(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = System.currentTimeMillis(),
+                ),
             )
-        )
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        var events = dataStore.getAllEvents()
-        advanceUntilIdle()
+            var events = dataStore.getAllEvents()
+            advanceUntilIdle()
 
-        Assert.assertEquals(1, events.count())
-        Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
+            Assert.assertEquals(1, events.count())
+            Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
 
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        events = dataStore.getAllEvents()
-        Assert.assertEquals(0, events.count())
-    }
+            events = dataStore.getAllEvents()
+            Assert.assertEquals(0, events.count())
+        }
 
     //    clearEvents
     @Test
-    fun testClearEvents() = runTest {
-        val dataStore = mockDataStore()
-        advanceUntilIdle()
+    fun testClearEvents() =
+        runTest {
+            val dataStore = mockDataStore()
+            advanceUntilIdle()
 
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = INPUT,
-                ts = System.currentTimeMillis()
+            dataStore.saveEvent(
+                NIDEventModel(
+                    type = INPUT,
+                    ts = System.currentTimeMillis(),
+                ),
             )
-        )
 
-        dataStore.clearEvents()
-        advanceUntilIdle()
+            dataStore.clearEvents()
+            advanceUntilIdle()
 
-        val events = dataStore.getAllEvents()
-        Assert.assertEquals(0, events.count())
-    }
+            val events = dataStore.getAllEvents()
+            Assert.assertEquals(0, events.count())
+        }
 }

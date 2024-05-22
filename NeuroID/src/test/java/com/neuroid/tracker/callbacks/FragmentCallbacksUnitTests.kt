@@ -20,10 +20,9 @@ import io.mockk.verify
 import org.junit.Test
 
 internal class FragmentCallbacksUnitTests {
-
     //    onFragmentAttached
     @Test
-    fun test_onFragmentAttached_no_list(){
+    fun test_onFragmentAttached_no_list()  {
         val mocks = getFragmentCallbackMocks()
 
         NeuroID.firstScreenName = ""
@@ -34,7 +33,7 @@ internal class FragmentCallbacksUnitTests {
         mocks.fragmentCallbacks.onFragmentAttached(
             mocks.mockedFragmentManager,
             mocks.mockedFragment,
-            mocks.mockedContext
+            mocks.mockedContext,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
@@ -48,9 +47,9 @@ internal class FragmentCallbacksUnitTests {
             "listFragment count mismatch"
         }
 
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentAttached $expectedActivityName"
+                msg = "onFragmentAttached $expectedActivityName",
             )
 
             mocks.mockedRegistration.registerTargetFromScreen(
@@ -58,7 +57,7 @@ internal class FragmentCallbacksUnitTests {
                 true,
                 true,
                 "fragment",
-                parent = expectedActivityName
+                parent = expectedActivityName,
             )
         }
 
@@ -66,20 +65,21 @@ internal class FragmentCallbacksUnitTests {
             mocks.mockedNeuroID,
             WINDOW_LOAD,
             1,
-            attrs = listOf(
-                mapOf(
-                    "component" to "fragment",
-                    "lifecycle" to "attached",
-                    "className" to expectedActivityName
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "fragment",
+                        "lifecycle" to "attached",
+                        "className" to expectedActivityName,
+                    ),
+                ),
         )
 
         mocks.fragmentCallbacks.listFragment.clear()
     }
 
     @Test
-    fun test_onFragmentAttached_existing_list(){
+    fun test_onFragmentAttached_existing_list()  {
         val mocks = getFragmentCallbackMocks()
 
         NeuroID.firstScreenName = ""
@@ -87,20 +87,20 @@ internal class FragmentCallbacksUnitTests {
         NeuroID.screenFragName = ""
         NeuroID.screenName = ""
 
-
         val concatName = mocks.mockedFragment.toString().split(" ")
-        val fragName = if (concatName.isNotEmpty()) {
-            concatName[0]
-        } else {
-            ""
-        }
+        val fragName =
+            if (concatName.isNotEmpty()) {
+                concatName[0]
+            } else {
+                ""
+            }
         mocks.fragmentCallbacks.listFragment.clear()
         mocks.fragmentCallbacks.listFragment.add(fragName)
 
         mocks.fragmentCallbacks.onFragmentAttached(
             mocks.mockedFragmentManager,
             mocks.mockedFragment,
-            mocks.mockedContext
+            mocks.mockedContext,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
@@ -114,19 +114,19 @@ internal class FragmentCallbacksUnitTests {
             "listFragment count mismatch actual count ${mocks.fragmentCallbacks.listFragment.count()}"
         }
 
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentAttached $expectedActivityName"
+                msg = "onFragmentAttached $expectedActivityName",
             )
         }
 
-        verify (exactly = 0){
+        verify(exactly = 0) {
             mocks.mockedRegistration.registerTargetFromScreen(
                 mocks.mockedFragmentActivity,
                 true,
                 true,
                 "fragment",
-                parent = expectedActivityName
+                parent = expectedActivityName,
             )
         }
 
@@ -134,77 +134,76 @@ internal class FragmentCallbacksUnitTests {
             mocks.mockedNeuroID,
             WINDOW_LOAD,
             1,
-            attrs = listOf(
-                mapOf(
-                    "component" to "fragment",
-                    "lifecycle" to "attached",
-                    "className" to expectedActivityName
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "fragment",
+                        "lifecycle" to "attached",
+                        "className" to expectedActivityName,
+                    ),
+                ),
         )
 
-
         mocks.fragmentCallbacks.listFragment.remove("Fragment(#13)")
-
     }
 
     //    onFragmentCreated
     @Test
-    fun test_onFragmentCreated(){
+    fun test_onFragmentCreated()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentCreated(
             mocks.mockedFragmentManager,
             mocks.mockedFragment,
-            null
+            null,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentViewCreated $expectedActivityName"
+                msg = "onFragmentViewCreated $expectedActivityName",
             )
         }
     }
 
     //    onFragmentViewCreated
     @Test
-    fun test_onFragmentViewCreated(){
+    fun test_onFragmentViewCreated()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentViewCreated(
             mocks.mockedFragmentManager,
             mocks.mockedFragment,
             mockk<View>(),
-            null
+            null,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentViewCreated $expectedActivityName"
+                msg = "onFragmentViewCreated $expectedActivityName",
             )
         }
     }
 
     //    onFragmentResumed
     @Test
-    fun test_onFragmentResumed_force_start_false(){
+    fun test_onFragmentResumed_force_start_false()  {
         val mocks = getFragmentCallbackMocks(false)
 
         mocks.fragmentCallbacks.onFragmentResumed(
             mocks.mockedFragmentManager,
-            mocks.mockedFragment
+            mocks.mockedFragment,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName"
+                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName",
             )
 
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName"
+                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName",
             )
 
             mocks.mockedNeuroID.shouldForceStart()
@@ -214,25 +213,24 @@ internal class FragmentCallbacksUnitTests {
                 false,
                 true,
                 "fragment",
-                parent = expectedActivityName
+                parent = expectedActivityName,
             )
         }
-
     }
 
     @Test
-    fun test_onFragmentResumed_force_start_true(){
+    fun test_onFragmentResumed_force_start_true()  {
         val mocks = getFragmentCallbackMocks(true)
 
         mocks.fragmentCallbacks.onFragmentResumed(
             mocks.mockedFragmentManager,
-            mocks.mockedFragment
+            mocks.mockedFragment,
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName"
+                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName",
             )
 
             mocks.mockedNeuroID.shouldForceStart()
@@ -242,20 +240,20 @@ internal class FragmentCallbacksUnitTests {
                 true,
                 true,
                 "fragment",
-                parent = expectedActivityName
+                parent = expectedActivityName,
             )
         }
 
-        verify (exactly = 0){
+        verify(exactly = 0) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName"
+                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName",
             )
         }
     }
 
     //    onFragmentPaused
     @Test
-    fun test_onFragmentPaused(){
+    fun test_onFragmentPaused()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentPaused(
@@ -264,16 +262,16 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentPaused $expectedActivityName"
+                msg = "onFragmentPaused $expectedActivityName",
             )
         }
     }
 
     //    onFragmentStopped
     @Test
-    fun test_onFragmentStopped(){
+    fun test_onFragmentStopped()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentStopped(
@@ -282,16 +280,16 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentStopped $expectedActivityName"
+                msg = "onFragmentStopped $expectedActivityName",
             )
         }
     }
 
     //    onFragmentDestroyed
     @Test
-    fun test_onFragmentDestroyed(){
+    fun test_onFragmentDestroyed()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentDestroyed(
@@ -300,16 +298,16 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentDestroyed $expectedActivityName"
+                msg = "onFragmentDestroyed $expectedActivityName",
             )
         }
     }
 
     //    onFragmentDetached
     @Test
-    fun test_onFragmentDetached(){
+    fun test_onFragmentDetached()  {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentDetached(
@@ -318,13 +316,13 @@ internal class FragmentCallbacksUnitTests {
         )
 
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
-        verify (exactly = 1){
+        verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Detached $expectedActivityName"
+                msg = "Fragment - Detached $expectedActivityName",
             )
 
             mocks.mockedLogger.d(
-                msg = "Fragment - Detached - WINDOW UNLOAD $expectedActivityName"
+                msg = "Fragment - Detached - WINDOW UNLOAD $expectedActivityName",
             )
         }
 
@@ -332,31 +330,32 @@ internal class FragmentCallbacksUnitTests {
             mocks.mockedNeuroID,
             WINDOW_UNLOAD,
             1,
-            attrs = listOf(
-                mapOf(
-                    "component" to "fragment",
-                    "lifecycle" to "detached",
-                    "className" to expectedActivityName
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "component" to "fragment",
+                        "lifecycle" to "detached",
+                        "className" to expectedActivityName,
+                    ),
+                ),
         )
     }
 
     /*
         Mocks and Helper Functions
-         */
+     */
     data class MockedFragmentCallBackSetup(
         val mockedNeuroID: NeuroID,
         val mockedLogger: NIDLogWrapper,
         val mockedRegistration: RegistrationIdentificationHelper,
         val mockedFragmentManager: FragmentManager,
-        val mockedFragmentActivity:FragmentActivity,
-        val mockedFragment:Fragment,
+        val mockedFragmentActivity: FragmentActivity,
+        val mockedFragment: Fragment,
         val mockedContext: Context,
-        val fragmentCallbacks: FragmentCallbacks
+        val fragmentCallbacks: FragmentCallbacks,
     )
 
-    fun getFragmentCallbackMocks(NIDForceStart:Boolean = false): MockedFragmentCallBackSetup {
+    fun getFragmentCallbackMocks(NIDForceStart: Boolean = false): MockedFragmentCallBackSetup {
         val mockedNeuroID = getMockedNeuroID(forceStart = NIDForceStart)
         val mockedLogger = getMockedLogger()
         val mockedRegistration = getMockedRegistrationIdentificationHelper()
@@ -371,12 +370,13 @@ internal class FragmentCallbacksUnitTests {
 
         val mockedContext = mockk<Context>()
 
-        val fragmentCallbacks = FragmentCallbacks(
-            true,
-            neuroID = mockedNeuroID,
-            logger = mockedLogger,
-            registrationHelper = mockedRegistration
-        )
+        val fragmentCallbacks =
+            FragmentCallbacks(
+                true,
+                neuroID = mockedNeuroID,
+                logger = mockedLogger,
+                registrationHelper = mockedRegistration,
+            )
 
         return MockedFragmentCallBackSetup(
             mockedNeuroID,
@@ -386,7 +386,7 @@ internal class FragmentCallbacksUnitTests {
             mockedFragmentActivity,
             mockedFragment,
             mockedContext,
-            fragmentCallbacks
+            fragmentCallbacks,
         )
     }
 }
