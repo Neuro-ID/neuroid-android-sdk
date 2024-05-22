@@ -1033,8 +1033,10 @@ class NeuroID
             m: String? = null,
             level: String? = null,
             c: Boolean? = null,
+            isWifi: Boolean? = null,
             isConnected: Boolean? = null,
-            l: Long = 0,
+            cp: String? = null,
+            l: Long? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
                 return
@@ -1106,8 +1108,10 @@ class NeuroID
                     m,
                     level,
                     c,
+                    isWifi,
                     isConnected,
-                    l = l,
+                    cp,
+                    l,
                 )
 
             if (queuedEvent) {

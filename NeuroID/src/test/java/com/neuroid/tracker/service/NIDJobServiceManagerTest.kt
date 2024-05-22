@@ -191,6 +191,10 @@ class NIDJobServiceManagerTest {
                 any(),
                 any(),
                 any(),
+                any(),
+                any(),
+                any(),
+                any(),
             )
         } just runs
 
