@@ -29,6 +29,7 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -441,10 +442,13 @@ class NeuroID
         /**
          * ported from the iOS implementation
          */
-        override fun startAppFlow(linkedSiteId: String, userID: String?): SessionStartResult {
-            // reset linked site id (in case of failure)
-            linkedSiteID = ""
-            if (!verifyClientKeyExists() || !validateSiteId(linkedSiteId)) {
+        override fun startAppFlow(
+            siteID: String,
+            userID: String?,
+        ): SessionStartResult {
+            if (!verifyClientKeyExists() || !validateSiteId(siteID)) {
+                // reset linked site id (in case of failure)
+                linkedSiteID = ""
                 return SessionStartResult(false, "")
             }
 
@@ -454,27 +458,30 @@ class NeuroID
                 saveIntegrationHealthEvents()
             }
             // If not started then start
-            var startStatus: SessionStartResult = if (!isSDKStarted) {
-                // if userID passed then startSession else start
-                if (userID != null) {
-                    startSession(userID)
+            val startStatus: SessionStartResult =
+                if (!isSDKStarted) {
+                    // if userID passed then startSession else start
+                    if (userID != null) {
+                        startSession(userID)
+                    } else {
+                        val started = start()
+                        SessionStartResult(started, "")
+                    }
                 } else {
-                    start()
-                    SessionStartResult(isSDKStarted, "")
+                    createMobileMetadata()
+                    createSession()
+                    SessionStartResult(true, userID ?: "")
                 }
-            } else {
-                createMobileMetadata()
-                createSession()
-                SessionStartResult(true, userID ?: "")
-            }
 
             if (!startStatus.started) {
                 return startStatus
             }
 
             // add linkedSite var
-            linkedSiteID = linkedSiteId
-            captureEvent(type=SET_LINKED_SITE, v=linkedSiteId)
+            linkedSiteID = siteID
+
+            // capture linkedSiteEvent for MIHR - not relevant for collection
+            captureEvent(type = SET_LINKED_SITE, v = siteID)
 
             return startStatus
         }
@@ -794,6 +801,7 @@ class NeuroID
         fun clearSessionVariables() {
             userID = ""
             registeredUserID = ""
+            linkedSiteID = ""
         }
 
         override fun startSession(sessionID: String?): SessionStartResult {

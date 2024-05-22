@@ -197,10 +197,10 @@ interface NeuroIDPublic {
     fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
 
     /**
-     * Start a new app flow session with the specified linked site id argument for the flow
+     * Start a new app flow session with the specified site id argument for the flow
      * that you wish to start a session for. ALl events after this will be linked to the site
      * id that is specified here until a new flow is specified (startAppFlow() is called
-     * with a new linked site id).
+     * with a new site id).
      *
      * If the SDK was not started previously, start will be called
      * here for you with a user ID that is specified in the optional userID argument. If the
