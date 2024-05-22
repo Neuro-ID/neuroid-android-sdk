@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 interface AdvancedDeviceIDManagerService {
     fun getCachedID(): Boolean
@@ -65,7 +66,10 @@ internal class AdvancedDeviceIDManager(
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
             ts = System.currentTimeMillis(),
-            c = true
+            c = true,
+            l = 0,
+            // wifi/cell
+            ct = neuroID.networkConnectionType,
         )
 
         return true
@@ -104,28 +108,36 @@ internal class AdvancedDeviceIDManager(
                 }
 
         val remoteIDJob =
-                CoroutineScope(Dispatchers.IO).launch {
-                    val maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
+            CoroutineScope(Dispatchers.IO).launch {
+                val maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
 
-                    var jobComplete = false
-                    var jobErrorMessage = ""
-                    for (retryCount in 1..maxRetryCount) {
-                        // returns a Bool - success, String - key OR error message
-                        val requestResponse = getVisitorId(fpjsClient)
+                var jobComplete = false
+                var jobErrorMessage = ""
+                for (retryCount in 1..maxRetryCount) {
+                    // we want to see the latency from FPJS on each reuest
+                    val startTime = Calendar.getInstance().timeInMillis
 
-                        // If Success - capture ID and cache, end loop
-                        if (requestResponse.first) {
-                            logger.d(
-                                    msg =
-                                            "Generating Request ID for Advanced Device Signals: ${requestResponse.second}"
-                            )
+                    // returns a Bool - success, String - key OR error message
+                    val requestResponse = getVisitorId(fpjsClient)
 
-                            neuroID.captureEvent(
-                                type = ADVANCED_DEVICE_REQUEST,
-                                rid = requestResponse.second,
-                                ts = System.currentTimeMillis(),
-                                c = false
-                            )
+                    // If Success - capture ID and cache, end loop
+                    if (requestResponse.first) {
+                        logger.d(
+                            msg =
+                                "Generating Request ID for Advanced Device Signals: ${requestResponse.second}",
+                        )
+
+                        val stopTime = Calendar.getInstance().timeInMillis
+                        neuroID.captureEvent(
+                            type = ADVANCED_DEVICE_REQUEST,
+                            rid = requestResponse.second,
+                            ts = Calendar.getInstance().timeInMillis,
+                            c = false,
+                            // time start to end time
+                            l = stopTime - startTime,
+                            // wifi/cell
+                            ct = neuroID.networkConnectionType,
+                        )
 
                             logger.d(msg = "Caching Request ID: ${requestResponse.second}")
                             // Cache request Id for 24 hours

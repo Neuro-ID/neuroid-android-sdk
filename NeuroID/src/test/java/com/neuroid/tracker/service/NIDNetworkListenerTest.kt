@@ -145,6 +145,9 @@ class NIDNetworkListenerTest {
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
         val neuroID = mockk<NeuroID>()
+        every {neuroID.networkConnectionType = any()} just runs // mock for setting the variable
+        every { neuroID.networkConnectionType} returns if(isWifiAssert){ "wifi"} else { "cell"}
+        every { neuroID.getNetworkType(context = any()) } returns  if(isWifiAssert){ "wifi"} else { "cell"}
         every { neuroID.isConnected = any() } just runs
         every { neuroID.isConnected } returns isConnectedOrConnecting
         every { neuroID.isStopped() } returns isStopped
@@ -170,7 +173,9 @@ class NIDNetworkListenerTest {
             ts = Calendar.getInstance().timeInMillis,
             type = NETWORK_STATE,
             isConnected = isConnectedAssert,
-            isWifi = isWifiAssert)
+            isWifi = isWifiAssert,
+            ct = if(isWifiAssert){ "wifi"} else { "cell"}
+        )
 
         verify { dataStoreManager.saveEvent(networkEvent) }
         verify { neuroID.isConnected = isConnectedAssert}

@@ -81,17 +81,21 @@ class AdvancedDeviceIDManagerServiceTest {
     @Test
     fun testGetCachedID_valid_cache(){
         val keyValue = "ValidKey"
-        val mocks = buildAdvancedDeviceIDManagerService(
-            "{\"key\":\"$keyValue\", \"exp\":${System.currentTimeMillis()+(1 * 60 * 60 * 1000)}}"
-        ) { e: NIDEventModel ->
-            assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
-            assert(e.rid == keyValue) { "Expected event requestID to be ${keyValue}, found ${e.rid}" }
-            assert(e.c == true) { "Expected event c value to be true, found false" }
-        }
+        val mocks =
+            buildAdvancedDeviceIDManagerService(
+                "{\"key\":\"$keyValue\", \"exp\":${System.currentTimeMillis() + (1 * 60 * 60 * 1000)}}",
+            ) { e: NIDEventModel ->
+                assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
+                assert(e.rid == keyValue) { "Expected event requestID to be $keyValue, found ${e.rid}" }
+                assert(e.c == true) { "Expected event c value to be true, found false" }
+                assert(e.l == 0L) { "Expected event l value to be 0, found ${e.l}" }
+                assert(e.ct == "wifi") { "Expected event ct value to be wifi, found ${e.ct}" }
+            }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
         val mockedNID = mocks["mockedNeuroID"] as NeuroID
+        every { mockedNID.networkConnectionType } returns "wifi"
 
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
@@ -162,14 +166,17 @@ class AdvancedDeviceIDManagerServiceTest {
     fun testGetRemoteID_fpjs_success(){
         val validRID = "Valid RID Key"
 
-        val mocks = buildAdvancedDeviceIDManagerService(
-            networkServiceResult = Triple("", true, ""),
-            fpjsResponse = Pair(validRID, null)
-        ) { e: NIDEventModel ->
-            assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
-            assert(e.rid == validRID) { "Expected event requestID to be ${validRID}, found ${e.rid}" }
-            assert(e.c == false) { "Expected event c value to be false, found true" }
-        }
+        val mocks =
+            buildAdvancedDeviceIDManagerService(
+                networkServiceResult = Triple("", true, ""),
+                fpjsResponse = Pair(validRID, null),
+            ) { e: NIDEventModel ->
+                assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
+                assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
+                assert(e.c == false) { "Expected event c value to be false, found true" }
+                assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
+                assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
+            }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
