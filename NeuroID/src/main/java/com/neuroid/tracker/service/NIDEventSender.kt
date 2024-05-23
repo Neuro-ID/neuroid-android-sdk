@@ -35,7 +35,6 @@ interface NIDSendingService {
  * we retry requests that connect and come back with bad response codes.
  */
 class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService, RetrySender() {
-
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 
@@ -75,7 +74,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
             data = getRequestPayloadJSON(events)
 
             NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
-            NeuroID.getInstance()?.saveIntegrationHealthEvents()
+            NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload
@@ -118,6 +117,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
                 "sdkVersion" to NIDVersion.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
+                "linkedSiteId" to NeuroID.linkedSiteID,
             )
 
         // using this JSON library (already included) does not escape /

@@ -18,6 +18,6 @@ interface NIDApiService {
 
     @GET("/mobile/{key}.json")
     fun getConfig(
-        @Path("key") key: String
+        @Path("key") key: String,
     ): Call<NIDRemoteConfig>
-} 
+}

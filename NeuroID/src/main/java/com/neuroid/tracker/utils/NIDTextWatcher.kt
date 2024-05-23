@@ -35,7 +35,7 @@ class NIDTextWatcher(
         count: Int,
     ) {
         // Check if the change is due to a paste operation
-        val clipboard = NeuroID.getInstance()?.getClipboardManagerInstance()
+        val clipboard = NeuroID.getInternalInstance()?.getClipboardManagerInstance()
         val clipData = clipboard?.primaryClip
         if (clipData != null && clipData.itemCount > 0) {
             var pastedText = ""

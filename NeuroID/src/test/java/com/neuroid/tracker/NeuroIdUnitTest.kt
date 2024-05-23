@@ -5,10 +5,10 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
-import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParentsOfView
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk

@@ -171,7 +171,10 @@ internal class NIDJobServiceManager(
                     clientKey,
                     getEventsToSend(it),
                     object : NIDResponseCallBack {
-                        override fun <T> onSuccess(code: Int, response: T) {
+                        override fun <T> onSuccess(
+                            code: Int,
+                            response: T,
+                        ) {
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }
 
@@ -180,7 +183,7 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
-                            neuroID.captureEvent(type=LOG, m="network failure, sendEventsNow() failed retrylimitHit: $message $code")
+                            neuroID.captureEvent(type = LOG, m = "network failure, sendEventsNow() failed retrylimitHit: $message $code")
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },
@@ -205,7 +208,7 @@ internal class NIDJobServiceManager(
             activityManager?.getMemoryInfo(memoryInfo)
         }
 
-        NeuroID.getInstance()?.lowMemory = memoryInfo.lowMemory
+        NeuroID.getInternalInstance()?.lowMemory = memoryInfo.lowMemory
 
         if (memoryInfo.lowMemory) {
             return NIDEventModel(

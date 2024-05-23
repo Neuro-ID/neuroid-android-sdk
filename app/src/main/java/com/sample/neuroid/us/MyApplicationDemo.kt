@@ -31,13 +31,12 @@ class MyApplicationDemo : MultiDexApplication() {
                 .penaltyLog()
                 .build()
         )
+
         // tied to form id: form_dream102
-        val neuroID = NeuroID.Builder(
+        NeuroID.Builder(
             this,
             "key_live_suj4CX90v0un2k1ufGrbItT5",
-            NeuroID.DEVELOPMENT
-        ).build()
-        NeuroID.setNeuroIDInstance(neuroID)
+            NeuroID.DEVELOPMENT).build()
         NeuroID.getInstance()?.setEnvironmentProduction(true)
         NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)

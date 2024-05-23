@@ -25,4 +25,4 @@ fun <T> getRetroFitInstance(
         )
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-        .create(service) 
+        .create(service)

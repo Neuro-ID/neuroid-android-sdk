@@ -7,5 +7,7 @@ import retrofit2.http.Path
 
 interface NIDAdvancedDeviceApiService {
     @GET("/a/{key}")
-    fun getNIDAdvancedDeviceAccessKey(@Path("key") key: String): Call<ADVKeyNetworkResponse>
-}
+    fun getNIDAdvancedDeviceAccessKey(
+        @Path("key") key: String,
+    ): Call<ADVKeyNetworkResponse>
+} 

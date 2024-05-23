@@ -21,7 +21,7 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
 
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
 
         val nidMock = getMockedNeuroID()
 
@@ -38,12 +38,17 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         every { clipData.getItemAt(any()).text.toString() } returns "copied text"
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
-        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),
-            "test", "myclass", "sgs".hashCode().toString()
-        )
+        val textWatcher =
+            NIDTextWatcher(
+                nidMock,
+                NIDLogWrapper(),
+                "test",
+                "myclass",
+                "sgs".hashCode().toString(),
+            )
 
         textWatcher.onTextChanged("existing copied text", 10, 1, 11)
 
@@ -53,10 +58,10 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
     @Test
     fun textWatcher_after_text_changed() {
         val clipboardManager = mockk<ClipboardManager>()
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
-        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),"test", "myclass", "")
+        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(), "test", "myclass", "")
         val seq = mockk<Editable>()
         every { seq.toString() } returns "changed text"
         every { seq.length } returns 12
@@ -73,12 +78,17 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         val clipboardManager = mockk<ClipboardManager>()
         every { clipboardManager.primaryClip } returns clipData
 
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
-        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),
-            "test", "myclass", "existing text".hashCode().toString()
-        )
+        val textWatcher =
+            NIDTextWatcher(
+                nidMock,
+                NIDLogWrapper(),
+                "test",
+                "myclass",
+                "existing text".hashCode().toString(),
+            )
         textWatcher.onTextChanged("existing copied text", 0, 11, 11)
         textWatcher.onTextChanged("existing copied text", 0, 11, 11)
 
@@ -88,10 +98,10 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
     @Test
     fun textWatcher_after_duplicate_text_changed() {
         val clipboardManager = mockk<ClipboardManager>()
-        NeuroID.getInstance()?.setClipboardManagerInstance(clipboardManager)
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
         val nidMock = getMockedNeuroID()
 
-        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(),"test", "myclass", "")
+        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(), "test", "myclass", "")
         val seq = mockk<Editable>()
         every { seq.toString() } returns "changed text"
         every { seq.length } returns 12
@@ -101,7 +111,10 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         verifyCaptureEvent(nidMock)
     }
 
-    private fun verifyCaptureEvent(nidMock: NeuroID, count:Int = 1){
+    private fun verifyCaptureEvent(
+        nidMock: NeuroID,
+        count: Int = 1,
+    )  {
         verify(exactly = count) {
             nidMock.captureEvent(
                 any(),
@@ -158,11 +171,10 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         }
     }
-
 
     private fun getMockedNeuroID(): NeuroID {
         val nidMock = mockk<NeuroID>()

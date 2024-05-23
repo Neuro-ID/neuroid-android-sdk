@@ -9,9 +9,9 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import kotlinx.coroutines.*
 import java.util.Calendar
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.*
 
 /**
  * This class will listen for network change intent messages that are sent from the OS. In
@@ -32,14 +32,13 @@ import kotlinx.coroutines.*
  * resume event collection
  */
 class NIDNetworkListener(
-        private val connectivityManager: ConnectivityManager,
-        private val dataStoreManager: NIDDataStoreManager,
-        private val neuroID: NeuroID,
-        private val dispatcher: CoroutineContext,
-        private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
-        private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE
+    private val connectivityManager: ConnectivityManager,
+    private val dataStoreManager: NIDDataStoreManager,
+    private val neuroID: NeuroID,
+    private val dispatcher: CoroutineContext,
+    private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
+    private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE,
 ) : BroadcastReceiver() {
-
     companion object {
         const val SLEEP_INTERVAL_PAUSE = 10000L
         const val SLEEP_INTERVAL_RESUME = 2000L
@@ -48,10 +47,13 @@ class NIDNetworkListener(
     private var haveNoNetworkJob: Job? = null
     private var haveNetworkJob: Job? = null
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+    ) {
         intent?.let {
             if (ConnectivityManager.CONNECTIVITY_ACTION == it.action) {
-                neuroID.isConnected = onNetworkAction()
+                neuroID.isConnected = onNetworkAction(context)
 
                 // act on the network change
                 handleNetworkChange()
@@ -71,37 +73,45 @@ class NIDNetworkListener(
                 return
             }
             haveNoNetworkJob =
-                    CoroutineScope(dispatcher).launch {
-                        delay(sleepIntervalPause)
-                        neuroID.pauseCollection(false)
-                    }
+                CoroutineScope(dispatcher).launch {
+                    delay(sleepIntervalPause)
+                    neuroID.pauseCollection(false)
+                }
         } else {
             if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
                 return
             }
             haveNetworkJob =
-                    CoroutineScope(dispatcher).launch {
-                        delay(sleepIntervalResume)
-                        neuroID.resumeCollection()
-                    }
+                CoroutineScope(dispatcher).launch {
+                    delay(sleepIntervalResume)
+                    neuroID.resumeCollection()
+                }
         }
     }
 
-    private fun onNetworkAction(): Boolean {
+    private fun onNetworkAction(context: Context?): Boolean {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         var isWifi = false
         var isConnected = false
+        var networkConnectionType = neuroID.networkConnectionType
         activeNetworkInfo?.let {
             isWifi = activeNetworkInfo.type == TYPE_WIFI
             isConnected = activeNetworkInfo.isConnectedOrConnecting()
         }
+
+        context?.let {
+            networkConnectionType = neuroID.getNetworkType(it)
+        }
+
         val networkEvent =
-                NIDEventModel(
-                        ts = Calendar.getInstance().timeInMillis,
-                        type = NETWORK_STATE,
-                        isConnected = isConnected,
-                        isWifi = isWifi,
-                )
+            NIDEventModel(
+                ts = Calendar.getInstance().timeInMillis,
+                type = NETWORK_STATE,
+                isConnected = isConnected,
+                isWifi = isWifi,
+                ct = neuroID.networkConnectionType,
+            )
+        neuroID.networkConnectionType = networkConnectionType
         dataStoreManager.saveEvent(networkEvent)
         return isConnected
     }
