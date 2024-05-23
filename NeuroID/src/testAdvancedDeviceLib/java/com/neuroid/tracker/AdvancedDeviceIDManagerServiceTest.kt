@@ -37,7 +37,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     //    getCachedID
     @Test
-    fun testGetCachedID_not_stored()  {
+    fun testGetCachedID_not_stored() {
         val mocks = buildAdvancedDeviceIDManagerService("")
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -51,7 +51,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetCachedID_default_value()  {
+    fun testGetCachedID_default_value() {
         val mocks = buildAdvancedDeviceIDManagerService()
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -65,7 +65,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetCachedID_expired_id()  {
+    fun testGetCachedID_expired_id() {
         val mocks = buildAdvancedDeviceIDManagerService("{\"key\":\"testingExp\", \"exp\":0}")
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -79,7 +79,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetCachedID_valid_cache()  {
+    fun testGetCachedID_valid_cache() {
         val keyValue = "ValidKey"
         val mocks =
             buildAdvancedDeviceIDManagerService(
@@ -109,7 +109,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     //    getRemoteID
     @Test
-    fun testGetRemoteID_no_nid_response()  {
+    fun testGetRemoteID_no_nid_response() {
         val errorMessage = "Network Error"
         val mocks =
             buildAdvancedDeviceIDManagerService(
@@ -164,7 +164,7 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetRemoteID_fpjs_success()  {
+    fun testGetRemoteID_fpjs_success() {
         val validRID = "Valid RID Key"
 
         val mocks =
@@ -204,7 +204,7 @@ class AdvancedDeviceIDManagerServiceTest {
         networkServiceResult: Triple<String, Boolean, String> = Triple("", false, ""),
         fpjsResponse: Pair<String?, String?> = Pair(null, null),
         saveEventTest: (e: NIDEventModel) -> Unit = {},
-    ): Map<String, Any>  {
+    ): Map<String, Any> {
         val mockedNeuroID = getMockedNeuroID()
         val mockedApplication = getMockedApplication()
         val mockedSharedPreferences = getMockedSharedPrefs(AdvancedDeviceIDManager.NID_RID, sharedPrefGetValue)
@@ -244,6 +244,10 @@ class AdvancedDeviceIDManagerServiceTest {
         val nidMock = mockk<NeuroID>()
         every {
             nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
                 any(),
                 any(),
                 any(),
@@ -374,13 +378,12 @@ class AdvancedDeviceIDManagerServiceTest {
     ): FingerprintJS {
         val mockedFPJSClient = mockk<FingerprintJS>()
         every { mockedFPJSClient.getVisitorId(listener = any(), errorListener = any()) }.answers {
-            if (successResponse != null)
-                {
-                    val successListener = args[0] as (FingerprintJSProResponse) -> Unit
-                    val mockSuccessResponse = mockk<FingerprintJSProResponse>()
-                    every { mockSuccessResponse.requestId } returns successResponse
-                    successListener(mockSuccessResponse)
-                }
+            if (successResponse != null) {
+                val successListener = args[0] as (FingerprintJSProResponse) -> Unit
+                val mockSuccessResponse = mockk<FingerprintJSProResponse>()
+                every { mockSuccessResponse.requestId } returns successResponse
+                successListener(mockSuccessResponse)
+            }
             if (errorResponse != null) {
                 val errorListener = args[1] as (Error) -> Unit
                 val mockSuccessResponse = mockk<Error>()
@@ -395,9 +398,13 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun verifyCaptureEvent(
         nidMock: NeuroID,
         count: Int = 1,
-    )  {
+    ) {
         verify(exactly = count) {
             nidMock.captureEvent(
+                any(),
+                any(),
+                any(),
+                any(),
                 any(),
                 any(),
                 any(),
