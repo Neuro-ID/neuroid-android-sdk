@@ -29,6 +29,7 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -286,6 +287,7 @@ class NeuroID
 
             internal var environment = ""
             internal var siteID = ""
+            internal var linkedSiteID: String? = null
             internal var rndmId = "mobile"
             internal var firstScreenName = ""
             internal var isConnected = false
@@ -359,6 +361,25 @@ class NeuroID
             }
         }
 
+        private fun verifyClientKeyExists(): Boolean {
+            if (clientKey.isNullOrEmpty()) {
+                logger.e(msg = "Missing Client Key - please call Builder.build() prior to calling start")
+                return false
+            }
+            return true
+        }
+
+        private fun validateSiteId(siteId: String): Boolean {
+            var valid = false
+            val regex = "form_[a-zA-Z0-9]{5}\\d{3}\$"
+
+            if (siteId.matches(regex.toRegex())) {
+                valid = true
+            }
+
+            return valid
+        }
+
         internal fun validateClientKey(clientKey: String): Boolean {
             var valid = false
             val regex = "key_(live|test)_[A-Za-z0-9]+"
@@ -416,6 +437,53 @@ class NeuroID
                 logger.e(msg = "exception in attemptedLogin() ${exception.message}")
                 return false
             }
+        }
+
+        /**
+         * ported from the iOS implementation
+         */
+        override fun startAppFlow(
+            siteID: String,
+            userID: String?,
+        ): SessionStartResult {
+            if (!verifyClientKeyExists() || !validateSiteId(siteID)) {
+                // reset linked site id (in case of failure)
+                linkedSiteID = ""
+                return SessionStartResult(false, "")
+            }
+
+            // immediately flush events before anything else
+            CoroutineScope(Dispatchers.IO).launch {
+                nidJobServiceManager.sendEvents(true)
+                saveIntegrationHealthEvents()
+            }
+            // If not started then start
+            val startStatus: SessionStartResult =
+                if (!isSDKStarted) {
+                    // if userID passed then startSession else start
+                    if (userID != null) {
+                        startSession(userID)
+                    } else {
+                        val started = start()
+                        SessionStartResult(started, "")
+                    }
+                } else {
+                    createMobileMetadata()
+                    createSession()
+                    SessionStartResult(true, userID ?: "")
+                }
+
+            if (!startStatus.started) {
+                return startStatus
+            }
+
+            // add linkedSite var
+            linkedSiteID = siteID
+
+            // capture linkedSiteEvent for MIHR - not relevant for collection
+            captureEvent(type = SET_LINKED_SITE, v = siteID)
+
+            return startStatus
         }
 
         override fun setUserID(userID: String): Boolean {
@@ -733,6 +801,7 @@ class NeuroID
         fun clearSessionVariables() {
             userID = ""
             registeredUserID = ""
+            linkedSiteID = ""
         }
 
         override fun startSession(sessionID: String?): SessionStartResult {
@@ -964,8 +1033,10 @@ class NeuroID
             m: String? = null,
             level: String? = null,
             c: Boolean? = null,
+            isWifi: Boolean? = null,
             isConnected: Boolean? = null,
-            l: Long = 0,
+            cp: String? = null,
+            l: Long? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
                 return
@@ -1037,8 +1108,10 @@ class NeuroID
                     m,
                     level,
                     c,
+                    isWifi,
                     isConnected,
-                    l = l,
+                    cp,
+                    l,
                 )
 
             if (queuedEvent) {

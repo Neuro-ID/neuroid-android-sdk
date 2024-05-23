@@ -12,10 +12,12 @@ import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
 import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
 import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.Constants
@@ -30,6 +32,7 @@ import io.mockk.unmockkAll
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -167,6 +170,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedNIDJobServiceManager)
     }
 
+    private fun mockCalendarTS() {
+        mockkStatic(Calendar::class)
+        every { Calendar.getInstance().timeInMillis } returns 0
+    }
+
     private fun clearLogCounts() {
         errorCount = 0
         infoCount = 0
@@ -277,7 +285,7 @@ open class NeuroIDClassUnitTests {
         setupAttemptedLoginTestEnvironment()
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = "$expectedUserId", l = 0)) }
+        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
         assertEquals(expectedResult, actualResult)
         unmockkStatic(Calendar::class)
     }
@@ -291,7 +299,7 @@ open class NeuroIDClassUnitTests {
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
         val logger = NeuroID.getInternalInstance()?.logger
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = "$expectedUserId", l = 0)) }
+        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
         verify { logger?.e(any(), msg = "exception in attemptedLogin() save event exception") }
         assertEquals(expectedResult, actualResult)
         unmockkStatic(Calendar::class)
@@ -1255,4 +1263,152 @@ open class NeuroIDClassUnitTests {
 
         assertWarningCount(1)
     }
+
+    // startAppFlow - Tests and Helper Functions
+    private fun setupStartAppFlowTest(linkedSiteIDStartingVal: String? = null) {
+        mockCalendarTS()
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+        NeuroID.linkedSiteID = linkedSiteIDStartingVal
+    }
+
+    private fun validateStartAppFlowTest(
+        flowResult: SessionStartResult,
+        siteID: String,
+        userID: String = "",
+        startedExpectation: Boolean = true,
+    ) {
+        assertEquals(startedExpectation, flowResult.started)
+        assertEquals(userID, flowResult.sessionID)
+        assertEquals(!startedExpectation, NeuroID.getInstance()?.isStopped())
+
+        if (startedExpectation) {
+            verify {
+                NeuroID.getInternalInstance()?.nidJobServiceManager?.sendEvents(
+                    true,
+                )
+            }
+            verify {
+                NeuroID.getInternalInstance()?.dataStore?.saveEvent(
+                    NIDEventModel(
+                        type = SET_LINKED_SITE,
+                        v = siteID,
+                    ),
+                )
+            }
+        } else {
+            verify(exactly = 0) {
+                NeuroID.getInternalInstance()?.nidJobServiceManager?.sendEvents(
+                    true,
+                )
+            }
+            verify(exactly = 0) {
+                NeuroID.getInternalInstance()?.dataStore?.saveEvent(
+                    NIDEventModel(
+                        type = SET_LINKED_SITE,
+                        v = siteID,
+                    ),
+                )
+            }
+        }
+
+        assert(
+            if (startedExpectation) {
+                siteID
+            } else {
+                ""
+            } ==
+                NeuroID.linkedSiteID,
+        ) { "NeuroID.linkedSiteID value mismatch" }
+        assert(startedExpectation == NeuroID.isSDKStarted) { "NeuroID.isSDKStarted value mismatch" }
+    }
+
+    @Test
+    fun testStartAppFlow_no_userID_session_started() =
+        runTest {
+            val siteID = "form_zzzzz123"
+            setupStartAppFlowTest()
+
+            NeuroID.isSDKStarted = false
+            NeuroID.getInternalInstance()?.let {
+                it.clientKey = "dummyKey"
+
+                val flowResult = it.startAppFlow(siteID)
+                validateStartAppFlowTest(
+                    flowResult,
+                    siteID,
+                    "",
+                    true,
+                )
+            }
+            unmockkStatic(Calendar::class)
+        }
+
+    @Test
+    fun testStartAppFlow_userID_session_started() =
+        runTest {
+            val siteID = "form_zzzzz123"
+            val userID = "test_1234"
+
+            setupStartAppFlowTest()
+            NeuroID.isSDKStarted = false
+
+            NeuroID.getInternalInstance()?.let {
+                it.clientKey = "dummyKey"
+                val flowResult = it.startAppFlow(siteID, userID)
+
+                validateStartAppFlowTest(
+                    flowResult,
+                    siteID,
+                    userID,
+                    true,
+                )
+            }
+            unmockkStatic(Calendar::class)
+        }
+
+    @Test
+    fun testStartAppFlow_userID_session_already_started_no_userID_set() =
+        runTest {
+            val siteID = "form_zzzzz123"
+            NeuroID.isSDKStarted = true
+
+            setupStartAppFlowTest("oldSite")
+
+            NeuroID.getInternalInstance()?.let {
+                it.clientKey = "dummyKey"
+                val flowResult = it.startAppFlow(siteID)
+
+                validateStartAppFlowTest(
+                    flowResult,
+                    siteID,
+                    "",
+                    true,
+                )
+            }
+            unmockkStatic(Calendar::class)
+        }
+
+    @Test
+    fun testStartAppFlow_bad_form_id() =
+        runTest {
+            val siteID = "flow_zzzzz123"
+
+            NeuroID.isSDKStarted = false
+
+            setupStartAppFlowTest("")
+
+            NeuroID.getInternalInstance()?.let {
+                it.clientKey = "dummyKey"
+                val flowResult = it.startAppFlow(siteID)
+
+                validateStartAppFlowTest(
+                    flowResult,
+                    siteID,
+                    "",
+                    false,
+                )
+            }
+            unmockkStatic(Calendar::class)
+        }
 }
