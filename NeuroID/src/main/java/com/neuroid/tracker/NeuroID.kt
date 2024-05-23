@@ -163,7 +163,12 @@ class NeuroID
                 val connectivityManager =
                     it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 application?.registerReceiver(
-                    NIDNetworkListener(connectivityManager, dataStore, this, Dispatchers.IO),
+                    NIDNetworkListener(
+                        connectivityManager,
+                        dataStore,
+                        this,
+                        Dispatchers.IO,
+                    ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
             }
@@ -1134,10 +1139,10 @@ class NeuroID
 
             when (type) {
                 BLUR -> {
-                    ioDispatcher.launch { nidJobServiceManager.sendEvents() }
+                    nidJobServiceManager.sendEvents()
                 }
                 CLOSE_SESSION -> {
-                    ioDispatcher.launch { nidJobServiceManager.sendEvents(true) }
+                    nidJobServiceManager.sendEvents(true)
                 }
             }
         }
