@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.extensions.startSession
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NeuroID.getInstance()?.startSession()
+        NeuroID.getInstance()?.startSession("gasdgdasg", true)
         // ensure that the phone stays on for the duration of the test
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         val keyguardLock = km.newKeyguardLock("TAG")

@@ -58,6 +58,7 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
+        internal var isRN: Boolean,
         serverEnvironment: String = PRODUCTION
     ): NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -79,8 +80,6 @@ class NeuroID
         internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
             mutableListOf<NIDEventModel>()
 
-        internal var isRN = false
-
         // Dependency Injections
         internal var logger: NIDLogWrapper = NIDLogWrapper()
         internal var dataStore: NIDDataStoreManager
@@ -94,8 +93,6 @@ class NeuroID
         internal var lowMemory: Boolean = false
         internal var isConnected = false
         internal var locationService: LocationService? = null
-
-        internal var isAdvancedDevice = false
 
         init {
             when (serverEnvironment) {
@@ -193,9 +190,10 @@ class NeuroID
 
         data class Builder(val application: Application? = null,
                            val clientKey: String = "",
+                           val isRN: Boolean = false,
                            val serverEnvironment: String = PRODUCTION) {
             fun build() {
-                val neuroID = NeuroID(application, clientKey, serverEnvironment)
+                val neuroID = NeuroID(application, clientKey, isRN, serverEnvironment)
                 neuroID.setupCallbacks()
                 setNeuroIDInstance(neuroID)
             }
@@ -361,7 +359,7 @@ class NeuroID
          * throw because of the undependable nature of reflection. We cannot afford to throw any
          * exception to the host app causing a crash because of this .
          */
-        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isAdvancedDevice) {
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isRN) {
             val packageName = "com.neuroid.tracker.extensions"
             val methodName = "captureAdvancedDevice"
             val extensionName = ".AdvancedDeviceExtensionKt"

@@ -23,6 +23,8 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.*
 import kotlinx.coroutines.Job
 
+import org.junit.jupiter.api.Assertions.assertThrows
+
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -30,6 +32,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.jupiter.api.assertThrows
 import java.util.Calendar
 
 
@@ -67,7 +70,7 @@ open class NeuroIDClassUnitTests {
 
     // Helper Functions
     private fun setNeuroIDInstance() {
-        NeuroID.Builder(null, "key_test_fake1234", NeuroID.DEVELOPMENT).build()
+        NeuroID.Builder(null, "key_test_fake1234", false, NeuroID.DEVELOPMENT).build()
     }
 
     private fun setNeuroIDMockedLogger(
@@ -133,7 +136,7 @@ open class NeuroIDClassUnitTests {
         return dataStoreManager
     }
 
-    private fun setMockedApplication() {
+    internal fun setMockedApplication() {
         val mockedApplication = mockk<Application>()
 
         every { mockedApplication.applicationContext } answers {
@@ -735,6 +738,11 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.isSDKStarted = false
         NeuroID.getInternalInstance()?.clientKey = "abcd"
+
+        val logger = mockk<NIDLogWrapper>()
+        every{logger.e(msg = any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
+
         val value = NeuroID.getInstance()?.start()
 
         assertEquals(true, value)
@@ -889,6 +897,9 @@ open class NeuroIDClassUnitTests {
     fun testStartSession_success_no_id() {
         setMockedNIDJobServiceManager()
         setMockedDataStore()
+        val logger = mockk<NIDLogWrapper>()
+        every{logger.e(msg = any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
             val (started, id) = it.startSession()
@@ -901,6 +912,9 @@ open class NeuroIDClassUnitTests {
     fun testStartSession_success_id() {
         setMockedNIDJobServiceManager()
         setMockedDataStore()
+        val logger = mockk<NIDLogWrapper>()
+        every{logger.e(msg = any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
             val (started, id) = it.startSession("testID")
@@ -928,14 +942,16 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testStartSession_failure_userID() {
         setMockedNIDJobServiceManager()
-        setNeuroIDMockedLogger(errorMessage = "Invalid UserID")
+        val logger = mockk<NIDLogWrapper>()
+        every{logger.e(tag=any(), msg = any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
+
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
             val result = it.startSession("bad user 343%%^")
             assertEquals(false, result.started)
             assertEquals("", result.sessionID)
-
-            assertErrorCount(1)
+            verify { logger.e(msg = "Invalid UserID") }
         }
     }
 
@@ -1085,6 +1101,13 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testSetUserId_not_empty() {
         unsetDefaultMockedLogger()
+        val logger = mockk<NIDLogWrapper>()
+        every {logger.e(tag=any(), msg=any())} just runs
+        every {logger.w(tag=any(), msg=any())} just runs
+        every {logger.d(tag=any(), msg=any())} just runs
+        every {logger.i(tag=any(), msg=any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
+        NeuroID.getInternalInstance()?.userID = ""
         NeuroID.getInstance()?.let {
             val result = it.setUserID("gdsgdsgsdzzzz")
             assertTrue(result)
@@ -1222,4 +1245,5 @@ open class NeuroIDClassUnitTests {
 
         assertWarningCount(1)
     }
+
 }

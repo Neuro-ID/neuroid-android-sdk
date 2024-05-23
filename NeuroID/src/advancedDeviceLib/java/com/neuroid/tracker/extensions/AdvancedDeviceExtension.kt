@@ -19,13 +19,12 @@ import com.neuroid.tracker.utils.Constants
  * Return false if not started.
  */
 fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
-    NeuroID.getInternalInstance()?.isAdvancedDevice = advancedDeviceSignals
     val started = start()
 
     if (!started) {
         return started
     }
-
+    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
     return started
 }
 
@@ -40,7 +39,6 @@ fun NeuroIDPublic.startSession(
     sessionID: String? = null,
     advancedDeviceSignals: Boolean
 ): SessionStartResult {
-    NeuroID.getInternalInstance()?.isAdvancedDevice = advancedDeviceSignals
     val sessionRes = startSession(
         sessionID
     )
@@ -48,7 +46,7 @@ fun NeuroIDPublic.startSession(
     if (!sessionRes.started) {
         return sessionRes
     }
-
+    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
     return sessionRes
 }
 
