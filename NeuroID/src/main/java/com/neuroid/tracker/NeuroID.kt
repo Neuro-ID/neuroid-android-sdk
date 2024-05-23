@@ -115,12 +115,12 @@ class NeuroID
         init {
             when (serverEnvironment) {
                 DEVELOPMENT -> {
-                    endpoint = "${Constants.devEndpoint.displayName}"
-                    scriptEndpoint = "${Constants.devScriptsEndpoint.displayName}"
+                    endpoint = Constants.devEndpoint.displayName
+                    scriptEndpoint = Constants.devScriptsEndpoint.displayName
                 }
                 else -> {
-                    endpoint = "${Constants.productionEndpoint.displayName}"
-                    scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
+                    endpoint = Constants.productionEndpoint.displayName
+                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
                 }
             }
 
@@ -272,8 +272,17 @@ class NeuroID
             const val PRODUCTION = "production"
             const val DEVELOPMENT = "development"
 
+            // public exposed variable to determine if logs should show see
+            //  `enableLogging`
             var showLogs: Boolean = true
-            var isSDKStarted = false
+
+            // Internal accessible property to allow internal get/set
+            @Suppress("ktlint:standard:backing-property-naming")
+            internal var _isSDKStarted: Boolean = false
+
+            // public exposed variable for customers to see but NOT write to
+            val isSDKStarted: Boolean
+                get() = _isSDKStarted
 
             @get:Synchronized @set:Synchronized
             internal var screenName = ""
@@ -292,8 +301,8 @@ class NeuroID
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
 
-            internal var endpoint = "${Constants.productionEndpoint.displayName}"
-            internal var scriptEndpoint = "${Constants.productionScriptsEndpoint.displayName}"
+            internal var endpoint = Constants.productionEndpoint.displayName
+            internal var scriptEndpoint = Constants.productionScriptsEndpoint.displayName
             private var singleton: NeuroID? = null
 
             // configuration state
@@ -582,7 +591,7 @@ class NeuroID
             }
 
             application?.let { nidJobServiceManager.startJob(it, clientKey) }
-            isSDKStarted = true
+            _isSDKStarted = true
             NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
             CoroutineScope(Dispatchers.IO).launch {
@@ -753,7 +762,7 @@ class NeuroID
 
             resumeCollection()
 
-            isSDKStarted = true
+            _isSDKStarted = true
             NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
             CoroutineScope(Dispatchers.IO).launch {
@@ -838,7 +847,7 @@ class NeuroID
 
         @Synchronized
         internal fun pauseCollection(flushEvents: Boolean) {
-            isSDKStarted = false
+            _isSDKStarted = false
             if (pauseCollectionJob == null ||
                 pauseCollectionJob?.isCancelled == true ||
                 pauseCollectionJob?.isCompleted == true
@@ -878,7 +887,7 @@ class NeuroID
         }
 
         private fun resumeCollectionCompletion() {
-            isSDKStarted = true
+            _isSDKStarted = true
             application?.let {
                 if (!nidJobServiceManager.isSetup) {
                     nidJobServiceManager.startJob(it, clientKey)
