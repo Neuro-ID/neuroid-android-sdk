@@ -49,16 +49,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Calendar
-import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.memberFunctions
-import kotlin.reflect.jvm.isAccessible
 
 class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        internal var isRN: Boolean,
+        internal val isAdvancedDevice: Boolean,
         serverEnvironment: String = PRODUCTION
     ): NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -79,6 +75,8 @@ class NeuroID
         internal var verifyIntegrationHealth: Boolean = false
         internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
             mutableListOf<NIDEventModel>()
+
+        internal var isRN = false
 
         // Dependency Injections
         internal var logger: NIDLogWrapper = NIDLogWrapper()
@@ -190,10 +188,10 @@ class NeuroID
 
         data class Builder(val application: Application? = null,
                            val clientKey: String = "",
-                           val isRN: Boolean = false,
+                           val isAdvancedDevice: Boolean = false,
                            val serverEnvironment: String = PRODUCTION) {
             fun build() {
-                val neuroID = NeuroID(application, clientKey, isRN, serverEnvironment)
+                val neuroID = NeuroID(application, clientKey, isAdvancedDevice, serverEnvironment)
                 neuroID.setupCallbacks()
                 setNeuroIDInstance(neuroID)
             }
@@ -359,7 +357,7 @@ class NeuroID
          * throw because of the undependable nature of reflection. We cannot afford to throw any
          * exception to the host app causing a crash because of this .
          */
-        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isRN) {
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isAdvancedDevice) {
             val packageName = "com.neuroid.tracker.extensions"
             val methodName = "captureAdvancedDevice"
             val extensionName = ".AdvancedDeviceExtensionKt"
@@ -427,6 +425,7 @@ class NeuroID
                         uid = genericUserId,
                     )
                 }
+
                 return true
             } catch (exception: Exception) {
                 logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
