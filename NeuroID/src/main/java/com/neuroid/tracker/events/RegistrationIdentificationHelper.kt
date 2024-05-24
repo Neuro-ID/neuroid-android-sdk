@@ -320,6 +320,7 @@ class SingleTargetListenerRegister(
         rts: String? = null,
         activityOrFragment: String = "",
         parent: String = "",
+        onComplete: () -> Unit = {},
     ) {
         val simpleName = view.javaClass.simpleName
 
@@ -353,7 +354,9 @@ class SingleTargetListenerRegister(
             v,
             simpleName,
             attrJson,
-        )
+        ) {
+            onComplete()
+        }
     }
 
     fun registerFinalComponent(
@@ -363,6 +366,7 @@ class SingleTargetListenerRegister(
         v: String,
         simpleName: String,
         attrJson: List<Map<String, Any>>,
+        onComplete: () -> Unit = {},
     ) {
         val pathFrag =
             if (NeuroID.screenFragName.isEmpty()) {
@@ -390,6 +394,8 @@ class SingleTargetListenerRegister(
             url = urlView,
             rts = rts,
         )
+
+        onComplete()
     }
 
     fun createAtrrList(

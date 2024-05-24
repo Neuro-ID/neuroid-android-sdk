@@ -15,12 +15,17 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
 import androidx.annotation.RequiresApi
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.FOCUS
+import com.neuroid.tracker.events.SingleTargetListenerRegister
+import com.neuroid.tracker.events.TEXT_CHANGE
+import com.neuroid.tracker.events.TouchEventManager
+import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
 import com.neuroid.tracker.utils.NIDLogWrapper
-import java.util.*
+import java.util.UUID
 
 class NIDGlobalEventCallback(
     private val windowCallback: Window.Callback,
@@ -241,11 +246,32 @@ class NIDGlobalEventCallback(
         type: String,
     ) {
         val idName = view.getIdOrTag()
-        val simpleJavaClassName = view.javaClass.simpleName
-
         val text = view.text.toString()
 
-        // do a check to see if we have registered this Field yet
+        // Do a check to see if we have registered this Field yet
+        // used a callback to ensure the registration event happens before the second event
+        // if no registration is needed callback fires immediately
+        checkOrRegisterTarget(
+            view,
+        ) {
+            neuroID.captureEvent(
+                type = type,
+                tg =
+                    hashMapOf(
+                        "attr" to getAttrJson(text),
+                    ),
+                tgs = idName,
+            )
+        }
+    }
+
+    private fun checkOrRegisterTarget(
+        view: EditText,
+        onComplete: () -> Unit,
+    ) {
+        val idName = view.getIdOrTag()
+        val simpleJavaClassName = view.javaClass.simpleName
+
         if (!NeuroID.registeredViews.contains(idName)) {
             logger.d(
                 msg = "Late registration: registeringView $simpleJavaClassName",
@@ -254,25 +280,22 @@ class NIDGlobalEventCallback(
             val guid =
                 UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 
+            // Used a callback to ensure the registration event happens before the callback
             singleTargetListenerRegister.registerComponent(
                 view,
                 guid,
                 "targetInteractionEvent",
-            )
-            NeuroID.registeredViews.add(idName)
+            ) {
+                NeuroID.registeredViews.add(idName)
+
+                onComplete()
+            }
         } else {
             logger.d(
                 msg = "view already registered: registeringView $simpleJavaClassName tag: $idName",
             )
-        }
 
-        neuroID.captureEvent(
-            type = type,
-            tg =
-                hashMapOf(
-                    "attr" to getAttrJson(text),
-                ),
-            tgs = idName,
-        )
+            onComplete()
+        }
     }
 }
