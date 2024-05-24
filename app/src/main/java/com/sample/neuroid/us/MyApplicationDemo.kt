@@ -38,11 +38,6 @@ class MyApplicationDemo : MultiDexApplication() {
             "key_live_3K92Tq4hxJPzCoq1VJ8Dr7vl",
             true,
             NeuroID.DEVELOPMENT).build()
-        //NeuroID.getInstance()?.setEnvironmentProduction(true)
-        //NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
-        //NeuroID.getInstance()?.setUserID(configHelper.userId)
-        //NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
-        // NeuroID.getInstance()?.startSession("testSession")
     }
 }
