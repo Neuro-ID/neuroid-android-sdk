@@ -66,6 +66,7 @@ const val LOW_MEMORY = "LOW_MEMORY"
 const val FULL_BUFFER = "FULL_BUFFER"
 const val OUT_OF_MEMORY = "OUT_OF_MEMORY"
 const val ATTEMPTED_LOGIN = "ATTEMPTED_LOGIN"
+const val SET_LINKED_SITE = "SET_LINKED_SITE"
 
 // NID origin codes
 const val NID_ORIGIN_NID_SET = "nid"
