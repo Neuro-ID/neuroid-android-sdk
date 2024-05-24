@@ -12,41 +12,41 @@ import io.mockk.mockk
 import org.junit.Test
 
 internal class NIDContextMenuCallbacksUnitTests {
-
     // NOTE: Only testing the `saveEvent` function because everything else is the same for
     //          the NIDTextContextMenuCallbacks and NIDLongPressContextMenuCallbacks classes
     //          and we couldn't create an instance of the underlying abstract NIDContextMenuCallBacks
     @Test
-    fun test_saveEvent(){
+    fun test_saveEvent()  {
         val mocks = getCallbackMocks()
-        val callbackClass = NIDTextContextMenuCallbacks(
-            mocks.first,
-            mocks.second,
-            null
-        )
+        val callbackClass =
+            NIDTextContextMenuCallbacks(
+                mocks.first,
+                mocks.second,
+                null,
+            )
 
         val mockedMenuItem = mockk<MenuItem>()
         every { mockedMenuItem.itemId } returns 16908322
 
         callbackClass.onActionItemClicked(
             null,
-            mockedMenuItem
+            mockedMenuItem,
         )
 
         verifyCaptureEvent(
             mocks.first,
             CONTEXT_MENU,
             1,
-            attrs = listOf(
-                mapOf(
-                    "option" to "${16908322}",
-                    "item" to mockedMenuItem.toString(),
-                    "type" to "PASTE"
-                )
-            )
+            attrs =
+                listOf(
+                    mapOf(
+                        "option" to "${16908322}",
+                        "item" to mockedMenuItem.toString(),
+                        "type" to "PASTE",
+                    ),
+                ),
         )
     }
-
 
     fun getCallbackMocks(): Pair<NeuroID, NIDLogWrapper> {
         val mockedNeuroID = getMockedNeuroID()
@@ -54,7 +54,7 @@ internal class NIDContextMenuCallbacksUnitTests {
 
         return Pair(
             mockedNeuroID,
-            mockedLogger
+            mockedLogger,
         )
     }
 }

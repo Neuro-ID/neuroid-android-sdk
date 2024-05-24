@@ -36,11 +36,12 @@ import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 data class NIDEventModel(
     val type: String,
     val ts: Long =
-        System.currentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
+        Calendar.getInstance().timeInMillis, // Default 0 because the DataStore.saveEvent method will
     // always add real timestamp
     val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
@@ -97,6 +98,7 @@ data class NIDEventModel(
     val isWifi: Boolean? = null,
     val isConnected: Boolean? = null,
     val cp: String? = null,
+    val l: Long? = null,
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
         return toJSON().toString()
@@ -181,6 +183,7 @@ data class NIDEventModel(
             isWifi?.let { jsonObject.put("iswifi", it) }
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
+            l?.let { jsonObject.put("l", it) }
         }
 
         return jsonObject
@@ -226,7 +229,7 @@ data class NIDEventModel(
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
-                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}"
+                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"

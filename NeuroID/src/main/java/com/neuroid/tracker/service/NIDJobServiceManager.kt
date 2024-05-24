@@ -98,13 +98,13 @@ internal class NIDJobServiceManager(
      * Notify the send events server to initiate a send.
      */
     fun sendEvents(forceSendEvents: Boolean = false) {
-        CoroutineScope(dispatcher).launch {
-            sendEventsNotification.send(forceSendEvents)
-        }
+        sendEventsNotification.trySend(forceSendEvents)
     }
 
     /**
      * Creates a job that synchronizes all requests to send events.
+     *   The function will loop through all the current sendEventNotifications
+     *   and collapse them into one request to be sent rather than multiple
      */
     private fun createSendEventsServer(): Job {
         return CoroutineScope(dispatcher).launch {
@@ -171,7 +171,10 @@ internal class NIDJobServiceManager(
                     clientKey,
                     getEventsToSend(it),
                     object : NIDResponseCallBack {
-                        override fun <T> onSuccess(code: Int, response: T) {
+                        override fun <T> onSuccess(
+                            code: Int,
+                            response: T,
+                        ) {
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }
 
@@ -180,7 +183,7 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
-                            neuroID.captureEvent(type=LOG, m="network failure, sendEventsNow() failed retrylimitHit: $message $code")
+                            neuroID.captureEvent(type = LOG, m = "network failure, sendEventsNow() failed retrylimitHit: $message $code")
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },

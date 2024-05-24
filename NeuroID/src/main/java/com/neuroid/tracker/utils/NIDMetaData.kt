@@ -10,9 +10,8 @@ import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import com.neuroid.tracker.models.NIDLocation
-import org.json.JSONObject
-
 import com.neuroid.tracker.service.LocationService
+import org.json.JSONObject
 
 class NIDMetaData(context: Context) {
     private val brand = Build.BRAND
@@ -89,10 +88,17 @@ class NIDMetaData(context: Context) {
         }
     }
 
-    internal fun getLastKnownLocation(context: Context, isLocationAllowed: Boolean, locationService: LocationService?) {
-        locationService?.getLastKnownLocation(context, gpsCoordinates,
-            locationManager=context.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-            isLocationAllowed=isLocationAllowed)
+    internal fun getLastKnownLocation(
+        context: Context,
+        isLocationAllowed: Boolean,
+        locationService: LocationService?,
+    ) {
+        locationService?.getLastKnownLocation(
+            context,
+            gpsCoordinates,
+            locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
+            isLocationAllowed = isLocationAllowed,
+        )
     }
 
     fun toJson(): JSONObject {
@@ -117,10 +123,9 @@ class NIDMetaData(context: Context) {
 
     override fun toString(): String = toJson().toString()
 
-    companion object{
+    companion object {
         const val LOCATION_DENIED = "denied"
         const val LOCATION_UNKNOWN = "unknown"
         const val LOCATION_AUTHORIZED_ALWAYS = "authorized"
     }
-
 }

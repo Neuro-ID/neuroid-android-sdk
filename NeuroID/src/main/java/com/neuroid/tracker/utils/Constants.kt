@@ -11,5 +11,5 @@ enum class Constants(val displayName: String) {
     productionEndpoint("https://receiver.neuroid.cloud/"),
     productionScriptsEndpoint("https://scripts.neuro-id.com/"),
     devEndpoint("https://receiver.neuro-dev.com/"),
-    devScriptsEndpoint("https://scripts.neuro-dev.com/")
-} 
+    devScriptsEndpoint("https://scripts.neuro-dev.com/"),
+}

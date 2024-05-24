@@ -5,7 +5,7 @@ import org.json.JSONObject
 data class NIDLocation(
     var latitude: Double,
     var longitude: Double,
-    var authorizationStatus: String
+    var authorizationStatus: String,
 ) {
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()

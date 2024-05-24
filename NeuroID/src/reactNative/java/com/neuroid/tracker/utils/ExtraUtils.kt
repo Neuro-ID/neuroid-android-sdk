@@ -7,16 +7,15 @@ import com.facebook.react.views.image.ReactImageView
 import com.facebook.react.views.text.ReactTextView
 import com.facebook.react.views.textinput.ReactEditText
 import com.facebook.react.views.view.ReactViewGroup
-
 import com.neuroid.tracker.events.ComponentValuesResult
 import com.neuroid.tracker.events.detectBasicAndroidViewType
 import com.neuroid.tracker.events.isCommonAndroidComponent
-import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.extensions.getIdOrTag
+import com.neuroid.tracker.extensions.getSHA256withSalt
 
 // In RN users call registerPageTargets so we don't
 //    want to run this code and double register
-internal fun registrationHelpers(r:Runnable){
+internal fun registrationHelpers(r: Runnable)  {
 }
 
 fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
@@ -37,13 +36,12 @@ fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
                 val child = view.children.firstOrNull()
                 if (child is ReactTextView) {
                     et = "ReactButton::${child.javaClass.simpleName}"
-                    idName = "${idName}-${
+                    idName = "$idName-${
                         child?.getIdOrTag()
                     }-${child?.text.toString().getSHA256withSalt()?.take(8)}"
-
                 } else if (child is ReactImageView) {
                     et = "ReactButton::${child.javaClass.simpleName}"
-                    idName = "${idName}-${
+                    idName = "$idName-${
                         child?.getIdOrTag()
                     }"
                 }
@@ -55,7 +53,7 @@ fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
         idName,
         et,
         v,
-        metaData
+        metaData,
     )
 }
 
@@ -76,39 +74,39 @@ fun verifyComponentType(view: View): ComponentValuesResult {
         idName,
         et,
         v,
-        metaData
+        metaData,
     )
 }
 
 // run the function after a 300ms delay in react native
-internal fun handleIdentifyAllViews(r:Runnable){
+internal fun handleIdentifyAllViews(r: Runnable)  {
     android.os.Handler(Looper.getMainLooper()).postDelayed({
         r.run()
     }, 300)
 }
 
-
-internal fun detectViewType(currentView:View?):Int {
-    var typeOfView = when (currentView) {
-        is ReactEditText
-        -> 1
-        is ReactViewGroup -> {
-            if (currentView.isFocusable) {
-                2
-            } else {
-                0
+internal fun detectViewType(currentView: View?): Int {
+    var typeOfView =
+        when (currentView) {
+            is ReactEditText,
+            -> 1
+            is ReactViewGroup -> {
+                if (currentView.isFocusable) {
+                    2
+                } else {
+                    0
+                }
             }
+            else -> 0
         }
-        else -> 0
-    }
 
     if (typeOfView == 0) {
-        typeOfView  = detectBasicAndroidViewType(currentView)
+        typeOfView = detectBasicAndroidViewType(currentView)
     }
 
     return typeOfView
 }
 
-internal fun getEtnSenderName(currentView:View?): String{
+internal fun getEtnSenderName(currentView: View?): String  {
     return currentView?.getIdOrTag() ?: "main_view"
 }

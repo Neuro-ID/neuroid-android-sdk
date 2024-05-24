@@ -9,12 +9,12 @@ interface NeuroIDPublic {
      * Deprecated, do not use!
      */
     @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
-    fun getClientId():String
+    fun getClientId(): String
 
     /**
      * Return the currently set client id (use this one).
      */
-    fun getClientID():String
+    fun getClientID(): String
 
     /**
      * Update the test event sender endpoint to a new collection endpoint. This will generally be
@@ -39,10 +39,12 @@ interface NeuroIDPublic {
      */
     @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
     fun getUserId(): String
+
     /**
      * Return the currently set user id.
      */
     fun getUserID(): String
+
     /**
      * Return the currently set registered user id.
      */
@@ -193,4 +195,16 @@ interface NeuroIDPublic {
      * exception is thrown during the process.
      */
     fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
+
+    /**
+     * Start a new app flow session with the specified site id argument for the flow
+     * that you wish to start a session for. ALl events after this will be linked to the site
+     * id that is specified here until a new flow is specified (startAppFlow() is called
+     * with a new site id).
+     *
+     * If the SDK was not started previously, start will be called
+     * here for you with a user ID that is specified in the optional userID argument. If the
+     * SDK is already started, the optional user id is not used and the SDK will not be restarted.
+     */
+    fun startAppFlow(siteID: String, userID: String? = null): SessionStartResult
 }

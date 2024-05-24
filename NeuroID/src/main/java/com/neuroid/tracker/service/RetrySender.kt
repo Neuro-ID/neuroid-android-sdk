@@ -12,7 +12,7 @@ abstract class RetrySender {
     fun <T> retryRequests(
         call: Call<T>,
         responseCallback: NIDResponseCallBack,
-    )  {
+    ) {
         try {
             var retryCount = 0
             while (retryCount < RETRY_COUNT) {
