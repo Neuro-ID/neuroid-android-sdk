@@ -779,9 +779,7 @@ open class NeuroIDClassUnitTests {
         NeuroID._isSDKStarted = false
         NeuroID.getInternalInstance()?.clientKey = "abcd"
 
-        val logger = mockk<NIDLogWrapper>()
-        every{logger.e(msg = any())} just runs
-        NeuroID.getInternalInstance()?.logger = logger
+        setMockedEmptyLogger()
 
         val value = NeuroID.getInstance()?.start()
 
@@ -936,9 +934,7 @@ open class NeuroIDClassUnitTests {
     fun testStartSession_success_no_id() {
         setMockedNIDJobServiceManager()
         setMockedDataStore()
-        val logger = mockk<NIDLogWrapper>()
-        every{logger.e(msg = any())} just runs
-        NeuroID.getInternalInstance()?.logger = logger
+        setMockedEmptyLogger()
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
             val (started, id) = it.startSession()
@@ -951,9 +947,7 @@ open class NeuroIDClassUnitTests {
     fun testStartSession_success_id() {
         setMockedNIDJobServiceManager()
         setMockedDataStore()
-        val logger = mockk<NIDLogWrapper>()
-        every{logger.e(msg = any())} just runs
-        NeuroID.getInternalInstance()?.logger = logger
+        setMockedEmptyLogger()
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
             val (started, id) = it.startSession("testID")
@@ -981,9 +975,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testStartSession_failure_userID() {
         setMockedNIDJobServiceManager()
-        val logger = mockk<NIDLogWrapper>()
-        every{logger.e(tag=any(), msg = any())} just runs
-        NeuroID.getInternalInstance()?.logger = logger
+        val logger = setMockedEmptyLogger()
 
         NeuroID.getInternalInstance()?.let {
             it.clientKey = "dummyKey"
@@ -1137,12 +1129,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testSetUserId_not_empty() {
         unsetDefaultMockedLogger()
-        val logger = mockk<NIDLogWrapper>()
-        every {logger.e(tag=any(), msg=any())} just runs
-        every {logger.w(tag=any(), msg=any())} just runs
-        every {logger.d(tag=any(), msg=any())} just runs
-        every {logger.i(tag=any(), msg=any())} just runs
-        NeuroID.getInternalInstance()?.logger = logger
+        setMockedEmptyLogger()
         NeuroID.getInternalInstance()?.userID = ""
         NeuroID.getInstance()?.let {
             val result = it.setUserID("gdsgdsgsdzzzz")
@@ -1350,14 +1337,9 @@ open class NeuroIDClassUnitTests {
             val siteID = "form_zzzzz123"
             setupStartAppFlowTest()
 
-            val logger = mockk<NIDLogWrapper>()
-            every {logger.e(tag=any(), msg=any())} just runs
-            every {logger.i(tag=any(), msg=any())} just runs
-            every {logger.d(tag=any(), msg=any())} just runs
-            every {logger.w(tag=any(), msg=any())} just runs
-            NeuroID.getInternalInstance()?.logger = logger
+            setMockedEmptyLogger()
 
-            NeuroID.isSDKStarted = false
+            NeuroID._isSDKStarted = false
             NeuroID.getInternalInstance()?.let {
                 it.clientKey = "dummyKey"
 
@@ -1381,14 +1363,9 @@ open class NeuroIDClassUnitTests {
 
             setupStartAppFlowTest()
 
-            val logger = mockk<NIDLogWrapper>()
-            every {logger.e(tag=any(), msg=any())} just runs
-            every {logger.i(tag=any(), msg=any())} just runs
-            every {logger.d(tag=any(), msg=any())} just runs
-            every {logger.w(tag=any(), msg=any())} just runs
-            NeuroID.getInternalInstance()?.logger = logger
+            setMockedEmptyLogger()
 
-            NeuroID.isSDKStarted = false
+            NeuroID._isSDKStarted = false
 
             NeuroID.getInternalInstance()?.let {
                 it.clientKey = "dummyKey"
@@ -1408,16 +1385,11 @@ open class NeuroIDClassUnitTests {
     fun testStartAppFlow_userID_session_already_started_no_userID_set() =
         runTest {
             val siteID = "form_zzzzz123"
-            NeuroID.isSDKStarted = true
+            NeuroID._isSDKStarted = true
 
             setupStartAppFlowTest("oldSite")
 
-            val logger = mockk<NIDLogWrapper>()
-            every {logger.e(tag=any(), msg=any())} just runs
-            every {logger.i(tag=any(), msg=any())} just runs
-            every {logger.e(tag=any(), msg=any())} just runs
-            every {logger.w(tag=any(), msg=any())} just runs
-            NeuroID.getInternalInstance()?.logger = logger
+            setMockedEmptyLogger()
 
             NeuroID.getInternalInstance()?.let {
                 it.clientKey = "dummyKey"
@@ -1433,21 +1405,26 @@ open class NeuroIDClassUnitTests {
             unmockkStatic(Calendar::class)
         }
 
+    fun setMockedEmptyLogger(): NIDLogWrapper {
+        val logger = mockk<NIDLogWrapper>()
+        every {logger.e(tag=any(), msg=any())} just runs
+        every {logger.i(tag=any(), msg=any())} just runs
+        every {logger.d(tag=any(), msg=any())} just runs
+        every {logger.w(tag=any(), msg=any())} just runs
+        NeuroID.getInternalInstance()?.logger = logger
+        return logger
+    }
+
     @Test
     fun testStartAppFlow_bad_form_id() =
         runTest {
             val siteID = "flow_zzzzz123"
 
-            NeuroID.isSDKStarted = false
+            NeuroID._isSDKStarted = false
 
             setupStartAppFlowTest("")
 
-            val logger = mockk<NIDLogWrapper>()
-            every {logger.e(tag=any(), msg=any())} just runs
-            every {logger.i(tag=any(), msg=any())} just runs
-            every {logger.d(tag=any(), msg=any())} just runs
-            every {logger.w(tag=any(), msg=any())} just runs
-            NeuroID.getInternalInstance()?.logger = logger
+            setMockedEmptyLogger()
 
             NeuroID.getInternalInstance()?.let {
                 it.clientKey = "dummyKey"
