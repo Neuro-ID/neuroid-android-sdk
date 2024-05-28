@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        NeuroID.getInstance()?.startSession()
+        NeuroID.getInstance()?.startSession("gasdgdasg")
         // ensure that the phone stays on for the duration of the test
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         val keyguardLock = km.newKeyguardLock("TAG")

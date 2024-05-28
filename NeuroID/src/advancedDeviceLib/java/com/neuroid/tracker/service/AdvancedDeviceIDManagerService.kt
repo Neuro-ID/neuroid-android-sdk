@@ -11,11 +11,13 @@ import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -25,6 +27,8 @@ interface AdvancedDeviceIDManagerService {
     fun getRemoteID(
         clientKey: String,
         remoteUrl: String,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+        delay: Long = 5000L
     ): Job?
 }
 
@@ -81,6 +85,8 @@ internal class AdvancedDeviceIDManager(
     override fun getRemoteID(
         clientKey: String,
         remoteUrl: String,
+        dispatcher: CoroutineDispatcher,
+        delay: Long
     ): Job? {
         // Retrieving the API key from NeuroID
         val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey)
@@ -114,7 +120,7 @@ internal class AdvancedDeviceIDManager(
             }
 
         val remoteIDJob =
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(dispatcher).launch {
                 val maxRetryCount = NIDAdvancedDeviceNetworkService.RETRY_COUNT
 
                 var jobComplete = false
@@ -172,7 +178,7 @@ internal class AdvancedDeviceIDManager(
                         msg =
                             "Error retrieving Advanced Device Signal Request ID:$jobErrorMessage: $retryCount",
                     )
-                    Thread.sleep(5000)
+                    Thread.sleep(delay)
                 }
 
                 if (!jobComplete) {
@@ -181,7 +187,7 @@ internal class AdvancedDeviceIDManager(
 
                     neuroID.captureEvent(
                         type = LOG,
-                        ts = System.currentTimeMillis(),
+                        ts = Calendar.getInstance().timeInMillis,
                         level = "error",
                         m = msg,
                     )
@@ -195,7 +201,8 @@ internal class AdvancedDeviceIDManager(
     private suspend fun getVisitorId(fpjsClient: FingerprintJS): Pair<Boolean, String> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
-                listener = { result -> continuation.resume(Pair(true, result.requestId)) },
+                listener = { result ->
+                    continuation.resume(Pair(true, result.requestId)) },
                 errorListener = { error ->
                     continuation.resume(
                         Pair(

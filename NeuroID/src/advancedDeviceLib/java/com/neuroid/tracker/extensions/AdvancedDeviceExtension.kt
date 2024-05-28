@@ -24,15 +24,7 @@ fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
     if (!started) {
         return started
     }
-
-    if (advancedDeviceSignals) {
-        NeuroID.getInternalInstance()?.apply {
-            getApplicationContext()?.let { context ->
-                getADVSignal(clientKey, context, this, logger)
-            }
-        }
-    }
-
+    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
     return started
 }
 
@@ -55,16 +47,18 @@ fun NeuroIDPublic.startSession(
     if (!sessionRes.started) {
         return sessionRes
     }
+    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
+    return sessionRes
+}
 
-    if (advancedDeviceSignals) {
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
+    if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
                 getADVSignal(clientKey, context, this, logger)
             }
         }
     }
-
-    return sessionRes
 }
 
 internal fun getADVSignal(

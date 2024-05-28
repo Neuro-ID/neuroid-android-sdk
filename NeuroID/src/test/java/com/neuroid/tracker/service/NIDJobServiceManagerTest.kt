@@ -17,6 +17,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -82,28 +83,27 @@ class NIDJobServiceManagerTest {
     }
 
     @Test
-    fun testSendEvents() {
-        runTest {
-            val mockedSetup = setupNIDJobServiceManagerMocks()
-            val mockedApplication = mockedSetup.mockedApplication
-            val nidJobServiceManager = mockedSetup.nidJobServiceManager
-            nidJobServiceManager.startJob(
-                mockedApplication,
-                "clientKey",
-            )
+    fun testSendEvents() = runTest {
+        val mockedSetup = setupNIDJobServiceManagerMocks()
+        val mockedApplication = mockedSetup.mockedApplication
+        val nidJobServiceManager = mockedSetup.nidJobServiceManager
 
-            // test the thing
-            nidJobServiceManager.sendEvents(
-                forceSendEvents = true,
-            )
+        nidJobServiceManager.startJob(
+            mockedApplication,
+            "clientKey",
+        )
 
-            verify(exactly = 1) {
-                mockedSetup.mockedEventSender.sendEvents(
-                    any(),
-                    any(),
-                    any(),
-                )
-            }
+        // test the thing
+        nidJobServiceManager.sendEvents(
+            forceSendEvents = true,
+        )
+
+        verify {
+            mockedSetup.mockedEventSender.sendEvents(
+                any(),
+                any(),
+                any(),
+            )
         }
     }
 

@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.verify.domain.DomainVerificationUserState
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -19,16 +20,24 @@ import com.neuroid.tracker.service.ADVNetworkService
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import io.mockk.called
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.unmockkAll
+import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import java.util.Calendar
 
 class AdvancedDeviceIDManagerServiceTest {
     /*
@@ -123,7 +132,8 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedNID = mocks["mockedNeuroID"] as NeuroID
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
 
-        advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
+        advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint",
+            Dispatchers.Unconfined, 10)
 
         verifyCaptureEvent(mockedNID, 1)
         verify(exactly = 1) {
@@ -146,25 +156,33 @@ class AdvancedDeviceIDManagerServiceTest {
                 assert(e.m == fullErrorMessage) { "Expected event m value to be $fullErrorMessage, found ${e.m}" }
             }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
+        val mockedNeuroID = mocks["mockedNeuroID"] as NeuroID
 
-        val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
+        mockkStatic(Calendar::class)
+        every{Calendar.getInstance().timeInMillis} returns 0
+
+        // need to let the job complete so the verification step can commence.
+        // we do this with an unconfined dispatcher.
+        val job = advancedDeviceIDManagerService.getRemoteID("testKey",
+            "testEndpoint", dispatcher = Dispatchers.Unconfined, delay = 10)
 
         job?.invokeOnCompletion {
             verify(exactly = 1) {
                 mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 1")
                 mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 2")
                 mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 3")
-
-                mockedDataStore.saveEvent(any())
-                mockedLogger.e(msg = fullErrorMessage)
+                mockedLogger.e(msg = "Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure")
+                mockedNeuroID.captureEvent(type="LOG", ts=0, level = "error",
+                    m="Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure")
             }
         }
+        unmockkAll()
+        unmockkStatic(Calendar::class)
     }
 
     @Test
-    fun testGetRemoteID_fpjs_success() {
+    fun testGetRemoteID_fpjs_success() = runTest {
         val validRID = "Valid RID Key"
 
         val mocks =
@@ -180,20 +198,24 @@ class AdvancedDeviceIDManagerServiceTest {
             }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
-        val mockedDataStore = mocks["mockedDataStore"] as NIDDataStoreManager
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
+        mockkStatic(Calendar::class)
+        every{Calendar.getInstance().timeInMillis} returns 0
 
-        val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint")
+        // need to let the job complete so the verification step can commence.
+        // we do this with an unconfined dispatcher.
+        val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint", Dispatchers.Unconfined, 10)
 
         job?.invokeOnCompletion {
-            verify(exactly = 1) {
-                mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                mockedDataStore.saveEvent(any())
-                mockedLogger.d(msg = "Caching Request ID: $validRID")
-
+            verify (exactly = 1){
+                mockedLogger.d(msg="Generating Request ID for Advanced Device Signals: $validRID")
+                mockedNID.captureEvent(type=ADVANCED_DEVICE_REQUEST, rid=any(), ts=any(), c = false, l=0, ct=any())
+                mockedLogger.d(msg="Caching Request ID: $validRID")
                 mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
             }
         }
+
     }
 
     /*
@@ -242,6 +264,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     private fun getMockedNeuroID(): NeuroID {
         val nidMock = mockk<NeuroID>()
+        every {nidMock.networkConnectionType} returns "wifi"
         every {
             nidMock.captureEvent(
                 any(),
@@ -326,6 +349,7 @@ class AdvancedDeviceIDManagerServiceTest {
             saveEventTest(args[0] as NIDEventModel)
             mockk<Job>()
         }
+        every {dataStoreManager.saveEvent(any()) } just runs
         return dataStoreManager
     }
 
@@ -335,7 +359,6 @@ class AdvancedDeviceIDManagerServiceTest {
         every { logger.e(any(), any()) } just runs
         return logger
     }
-
     private fun getMockedApplication(): Application {
         val sensorManager = mockk<SensorManager>()
         every { sensorManager.getSensorList(any()) } returns listOf()
