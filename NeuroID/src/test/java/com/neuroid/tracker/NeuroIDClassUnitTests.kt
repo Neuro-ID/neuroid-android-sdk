@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
+import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
@@ -17,11 +18,14 @@ import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDLinkedSiteOption
+import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.RandomGenerator
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -31,6 +35,8 @@ import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
 import kotlinx.coroutines.test.runTest
@@ -1283,26 +1289,41 @@ open class NeuroIDClassUnitTests {
     private fun validateStartAppFlowTest(
         flowResult: SessionStartResult,
         siteID: String,
-        userID: String = "",
+        userID: String?,
         startedExpectation: Boolean = true,
+        throttleTest: Boolean = false
     ) {
         assertEquals(startedExpectation, flowResult.started)
         assertEquals(userID, flowResult.sessionID)
         assertEquals(!startedExpectation, NeuroID.getInstance()?.isStopped())
 
-        if (startedExpectation) {
-            verify {
-                NeuroID.getInternalInstance()?.nidJobServiceManager?.sendEvents(
-                    true,
-                )
-            }
-            verify {
+        if (startedExpectation || throttleTest) {
+            if (throttleTest) {
+                verify {
+                    NeuroID.getInternalInstance()?.nidJobServiceManager?.sendEvents(
+                        true,
+                    )
+                }
                 NeuroID.getInternalInstance()?.dataStore?.saveEvent(
                     NIDEventModel(
-                        type = SET_LINKED_SITE,
+                        type = CLOSE_SESSION,
                         v = siteID,
                     ),
                 )
+            } else {
+                verify {
+                    NeuroID.getInternalInstance()?.nidJobServiceManager?.sendEvents(
+                        true,
+                    )
+                }
+                verify {
+                    NeuroID.getInternalInstance()?.dataStore?.saveEvent(
+                        NIDEventModel(
+                            type = SET_LINKED_SITE,
+                            v = siteID,
+                        ),
+                    )
+                }
             }
         } else {
             verify(exactly = 0) {
@@ -1439,4 +1460,142 @@ open class NeuroIDClassUnitTests {
             }
             unmockkStatic(Calendar::class)
         }
+
+    fun mockSampleServiceSupport(clockTimeInMS: Long, randomNumber: Double) {
+        mockkStatic(Calendar::class)
+        every {Calendar.getInstance().timeInMillis} returns clockTimeInMS
+
+        // cannot mock Math (FA-Q GOOGLE!!!!) so we wrap it in a helper class that can be mocked
+        val randomGenerator = mockk<RandomGenerator>()
+        every {randomGenerator.getRandom(any())} returns randomNumber
+        NeuroID.getInternalInstance()?.nidSamplingService?.randomGenerator = randomGenerator
+
+        NeuroID.nidSDKConfig = NIDRemoteConfig(linkedSiteOptions=hashMapOf(
+            "form_testa123" to NIDLinkedSiteOption(10),
+            "form_testa124" to NIDLinkedSiteOption(50),
+            "form_testa125" to NIDLinkedSiteOption(70)),
+            siteID = "form_zappa345")
+    }
+
+    fun runThrottleTestStartAppFlow(siteID: String,
+                        userId: String,
+                        startedExpectation: Boolean,
+                        isThrottleTest: Boolean,
+                        clientKey: String,
+                        isStarted: Boolean,
+                        startingLinkedId: String,
+                        clockTimeInMS: Long,
+                        randomNumber: Double) {
+        runTest {
+            NeuroID._isSDKStarted = isStarted
+            setupStartAppFlowTest(startingLinkedId)
+            setMockedEmptyLogger()
+            mockSampleServiceSupport(clockTimeInMS, randomNumber)
+            NeuroID.getInternalInstance()?.userID = userId
+            NeuroID.getInternalInstance()?.dispatcher = Dispatchers.Unconfined
+            NeuroID.getInternalInstance()?.let {
+                it.clientKey = clientKey
+                val flowResult = it.startAppFlow(siteID = siteID, userId)
+                validateStartAppFlowTest(
+                    flowResult,
+                    siteID,
+                    userId,
+                    startedExpectation,
+                    throttleTest = isThrottleTest
+                )
+            }
+            unmockkStatic(Calendar::class)
+        }
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_throttle() {
+        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_throttle_user_null() {
+        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_no_throttle_change_flow() {
+        runThrottleTestStartAppFlow("form_testa124", "gsdgsda", true,
+            true, "dummykey", true, "form_testa125",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_no_throttle() {
+        runThrottleTestStartAppFlow("form_testa124", "gsdgsda", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_parent_site_id() {
+        runThrottleTestStartAppFlow("form_zappa345", "gsdgsda", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_incorrect_linked_id_no_throttle() {
+        runThrottleTestStartAppFlow("form_fsdee345", "gsdgsda", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_throttle_no_userId() {
+        runThrottleTestStartAppFlow("form_testa123", "", false,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_throttle_user_null_no_userId() {
+        runThrottleTestStartAppFlow("form_testa123", "", false,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_no_throttle_change_flow_no_userId() {
+        runThrottleTestStartAppFlow("form_testa124", "", true,
+            true, "dummykey", true, "form_testa125",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_no_throttle_no_userId() {
+        runThrottleTestStartAppFlow("form_testa124", "", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_parent_site_id_no_userId() {
+        runThrottleTestStartAppFlow("form_zappa345", "", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_incorrect_linked_id_should_sample_no_userId() {
+        runThrottleTestStartAppFlow("form_fsdee345", "", true,
+            true, "dummykey", true, "",
+            0, 10.0)
+    }
+
+    @Test
+    fun throttleTestHasLinkedSiteID_throttle_sdkNotStarted() {
+        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
+            true, "dummykey", false, "",
+            0, 10.0)
+    }
 }

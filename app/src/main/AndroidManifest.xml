@@ -16,6 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NeuroIdAndroidSdk"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:ignore="DataExtractionRules,UnusedAttribute">
         <activity
             android:name=".activities.MainActivity"
