@@ -35,7 +35,7 @@ class NIDSamplingService(
 
 
     /**
-     * Return the sample rate, 0 indicates sample everything, 100 indicates sample nothing!
+     * Return the sample rate, 100 indicates sample everything, 0 indicates sample nothing!
      */
     private fun retrieveSampleRate(siteID: String?): Int {
         // is the site id passed in a linked site id in the options?, if so return the linked site

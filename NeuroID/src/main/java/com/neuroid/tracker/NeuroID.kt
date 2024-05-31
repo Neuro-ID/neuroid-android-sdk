@@ -123,6 +123,10 @@ class NeuroID
             nidSamplingService = NIDSamplingService(logger, randomGenerator, nidRemoteConfigService)
 
             when (serverEnvironment) {
+                PRODSCRIPT_DEVCOLLECTION -> {
+                    endpoint = Constants.devEndpoint.displayName
+                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                }
                 DEVELOPMENT -> {
                     endpoint = Constants.devEndpoint.displayName
                     scriptEndpoint = Constants.devScriptsEndpoint.displayName
@@ -261,6 +265,7 @@ class NeuroID
         companion object {
             const val PRODUCTION = "production"
             const val DEVELOPMENT = "development"
+            const val PRODSCRIPT_DEVCOLLECTION = "prodscriptdevcollection"
 
             // public exposed variable to determine if logs should show see
             //  `enableLogging`
@@ -500,24 +505,25 @@ class NeuroID
                 if (!isSDKStarted) {
                     // if userID passed then startSession else start
                     if (userID != null) {
-                        startSession(userID)
+                        startSession(siteID, userID)
                     } else {
-                        val started = start()
+                        val started = start(siteID)
                         SessionStartResult(started, "")
                     }
                 } else {
+                    nidSamplingService.updateIsSampledStatus(linkedSiteID)
+                    logger.d(msg="startAppFlow() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} $siteID")
+
                     createMobileMetadata()
                     createSession()
                     SessionStartResult(true, userID ?: "")
                 }
 
-            linkedSiteID = siteID
-            nidSamplingService.updateIsSampledStatus(linkedSiteID)
-            logger.d(msg="startSession() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} ${Companion.siteID}")
-
             if (!startStatus.started) {
                 return startStatus
             }
+
+            linkedSiteID = siteID
 
             // capture linkedSiteEvent for MIHR - not relevant for collection
             captureEvent(type = SET_LINKED_SITE, v = siteID)
@@ -682,11 +688,17 @@ class NeuroID
             saveIntegrationHealthEvents()
         }
 
-        override fun start(): Boolean {
+        override fun start(): Boolean = start(siteID = null)
+
+        // internal start() with siteID
+        fun start(siteID: String?): Boolean {
             if (clientKey == "") {
                 logger.e(msg = "Missing Client Key - please call configure prior to calling start")
                 return false
             }
+
+            nidSamplingService.updateIsSampledStatus(siteID)
+            logger.d(msg="start() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} for $siteID")
 
             application?.let { nidJobServiceManager.startJob(it, clientKey) }
             _isSDKStarted = true
@@ -844,7 +856,8 @@ class NeuroID
             linkedSiteID = ""
         }
 
-        override fun startSession(sessionID: String?): SessionStartResult {
+        // internal startSession() with siteID
+        fun startSession(siteID: String?, sessionID: String? = null): SessionStartResult {
             if (clientKey == "") {
                 logger.e(msg = "Missing Client Key - please call configure prior to calling start")
                 return SessionStartResult(false, "")
@@ -859,6 +872,9 @@ class NeuroID
             if (!setUserID(finalSessionID, sessionID != null)) {
                 return SessionStartResult(false, "")
             }
+
+            nidSamplingService.updateIsSampledStatus(siteID)
+            logger.d(msg="startSession() isSampling: ${nidSamplingService.isSessionFlowSampled()} for target $siteID" )
 
             resumeCollection()
 
@@ -890,6 +906,8 @@ class NeuroID
             checkThenCaptureAdvancedDevice()
             return SessionStartResult(true, finalSessionID)
         }
+
+        override fun startSession(sessionID: String?) = startSession(null, sessionID)
 
         private fun sendOriginEvent(originResult: SessionIDOriginResult) {
             // sending these as individual items.
