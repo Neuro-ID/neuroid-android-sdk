@@ -11,7 +11,7 @@ fun <T> getRetroFitInstance(
     endpoint: String,
     logger: NIDLogWrapper,
     service: Class<T>,
-    timeOut: Long = NeuroID.nidSDKConfig.requestTimeout,
+    timeOut: Long
 ): T =
     Retrofit.Builder()
         .baseUrl(endpoint)

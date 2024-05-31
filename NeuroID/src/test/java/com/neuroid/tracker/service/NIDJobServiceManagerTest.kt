@@ -10,6 +10,7 @@ import android.hardware.SensorManager
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.coEvery
@@ -119,6 +120,8 @@ class NIDJobServiceManagerTest {
         val mockedApplication = getMockedApplication()
         val logger = getMockedLogger()
         val mockedEventSender = getMockEventSender()
+        val nidRemoteConfigService = mockk<NIDRemoteConfigService>()
+        every {nidRemoteConfigService.getRemoteNIDConfig()} returns NIDRemoteConfig()
 
         val nidJobServiceManager =
             NIDJobServiceManager(
@@ -126,6 +129,7 @@ class NIDJobServiceManagerTest {
                 getMockedDatastoreManager(),
                 mockedEventSender,
                 logger,
+                nidRemoteConfigService,
                 UnconfinedTestDispatcher(),
             )
 

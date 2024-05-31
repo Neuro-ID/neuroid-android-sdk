@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // NeuroID.getInstance()?.startSession("gasdgdasg")
         // ensure that the phone stays on for the duration of the test
-        println("kurt_test MainActivity: isStopped() ${NeuroID.getInstance()?.isStopped()}")
+        println("MainActivity: isStopped() ${NeuroID.getInstance()?.isStopped()}")
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         val keyguardLock = km.newKeyguardLock("TAG")
         keyguardLock.disableKeyguard()

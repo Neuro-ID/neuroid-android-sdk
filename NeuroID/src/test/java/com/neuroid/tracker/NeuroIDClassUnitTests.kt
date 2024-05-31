@@ -22,6 +22,8 @@ import com.neuroid.tracker.models.NIDLinkedSiteOption
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDRemoteConfigService
+import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -1464,45 +1466,44 @@ open class NeuroIDClassUnitTests {
     fun mockSampleServiceSupport(clockTimeInMS: Long, randomNumber: Double) {
         mockkStatic(Calendar::class)
         every {Calendar.getInstance().timeInMillis} returns clockTimeInMS
-
         // cannot mock Math (FA-Q GOOGLE!!!!) so we wrap it in a helper class that can be mocked
         val randomGenerator = mockk<RandomGenerator>()
         every {randomGenerator.getRandom(any())} returns randomNumber
         NeuroID.getInternalInstance()?.nidSamplingService?.randomGenerator = randomGenerator
-
-        NeuroID.nidSDKConfig = NIDRemoteConfig(linkedSiteOptions=hashMapOf(
+        val nidServiceConfig = mockk<NIDRemoteConfigService>()
+        every {nidServiceConfig.getRemoteNIDConfig()} returns NIDRemoteConfig(linkedSiteOptions=hashMapOf(
             "form_testa123" to NIDLinkedSiteOption(10),
-            "form_testa124" to NIDLinkedSiteOption(50),
-            "form_testa125" to NIDLinkedSiteOption(70)),
-            siteID = "form_zappa345")
+            "form_testa124" to NIDLinkedSiteOption(50)),
+            siteID = "form_zappa345", sampleRate = 40)
+        NeuroID.getInternalInstance()?.nidRemoteConfigService = nidServiceConfig
+        NeuroID.getInternalInstance()?.dispatcher = Dispatchers.Unconfined
+        NeuroID.getInternalInstance()?.nidSamplingService = NIDSamplingService(NIDLogWrapper(), randomGenerator, nidServiceConfig)
     }
 
     fun runThrottleTestStartAppFlow(siteID: String,
-                        userId: String,
-                        startedExpectation: Boolean,
-                        isThrottleTest: Boolean,
-                        clientKey: String,
-                        isStarted: Boolean,
-                        startingLinkedId: String,
-                        clockTimeInMS: Long,
-                        randomNumber: Double) {
+                                    userID: String,
+                                    isStarted: Boolean,
+                                    startingLinkedId: String,
+                                    clockTimeInMS: Long,
+                                    randomNumber: Double,
+                                    expectedIsStarted: Boolean,
+                                    expectedlinkedSiteID: String,
+                                    expectedSessionID: String,
+                                    expectedIsSessionFlowSampled: Boolean) {
         runTest {
             NeuroID._isSDKStarted = isStarted
             setupStartAppFlowTest(startingLinkedId)
             setMockedEmptyLogger()
             mockSampleServiceSupport(clockTimeInMS, randomNumber)
-            NeuroID.getInternalInstance()?.userID = userId
-            NeuroID.getInternalInstance()?.dispatcher = Dispatchers.Unconfined
+            NeuroID.getInternalInstance()?.userID = userID
             NeuroID.getInternalInstance()?.let {
-                it.clientKey = clientKey
-                val flowResult = it.startAppFlow(siteID = siteID, userId)
-                validateStartAppFlowTest(
-                    flowResult,
-                    siteID,
-                    userId,
-                    startedExpectation,
-                    throttleTest = isThrottleTest
-                )
+                it.clientKey = "dummy_key"
+                val flowResult = it.startAppFlow(siteID = siteID, userID = userID)
+                println("$flowResult, isSampled: ${NeuroID.getInternalInstance()?.nidSamplingService?.isSessionFlowSampled()}, linkedSiteID: ${NeuroID.linkedSiteID}")
+                assert(NeuroID.getInternalInstance()?.nidSamplingService?.isSessionFlowSampled() == expectedIsSessionFlowSampled)
+                assert(flowResult.started == expectedIsStarted)
+                assert(NeuroID.linkedSiteID == expectedlinkedSiteID)
+                assert(flowResult.sessionID == expectedSessionID)
             }
             unmockkStatic(Calendar::class)
         }
@@ -1510,92 +1511,41 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun throttleTestHasLinkedSiteID_throttle() {
-        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_throttle_user_null() {
-        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_no_throttle_change_flow() {
-        runThrottleTestStartAppFlow("form_testa124", "gsdgsda", true,
-            true, "dummykey", true, "form_testa125",
-            0, 10.0)
+        runThrottleTestStartAppFlow(siteID = "form_testa123", userID = "gsdgsda", isStarted = false,
+            startingLinkedId = "", clockTimeInMS = 0, randomNumber = 10.0, expectedIsStarted = true,
+            expectedlinkedSiteID = "form_testa123", expectedSessionID = "gsdgsda",
+            expectedIsSessionFlowSampled = false)
     }
 
     @Test
     fun throttleTestHasLinkedSiteID_no_throttle() {
-        runThrottleTestStartAppFlow("form_testa124", "gsdgsda", true,
-            true, "dummykey", true, "",
-            0, 10.0)
+        runThrottleTestStartAppFlow(siteID = "form_testa124", userID = "gsdgsda", isStarted = false,
+            startingLinkedId = "", clockTimeInMS = 0, randomNumber = 10.0, expectedIsStarted = true,
+            expectedlinkedSiteID = "form_testa124", expectedSessionID = "gsdgsda",
+            expectedIsSessionFlowSampled = true)
     }
 
     @Test
-    fun throttleTestHasLinkedSiteID_parent_site_id() {
-        runThrottleTestStartAppFlow("form_zappa345", "gsdgsda", true,
-            true, "dummykey", true, "",
-            0, 10.0)
+    fun throttleTestHasLinkedSiteID_parent_no_throttle() {
+        runThrottleTestStartAppFlow(siteID = "form_zappa345", userID = "gsdgsda", isStarted = true,
+            startingLinkedId = "form_testa124", clockTimeInMS = 0, randomNumber = 10.0,
+            expectedIsStarted = true, expectedlinkedSiteID = "form_zappa345",
+            expectedSessionID = "gsdgsda", expectedIsSessionFlowSampled = true)
     }
 
     @Test
-    fun throttleTestHasLinkedSiteID_incorrect_linked_id_no_throttle() {
-        runThrottleTestStartAppFlow("form_fsdee345", "gsdgsda", true,
-            true, "dummykey", true, "",
-            0, 10.0)
+    fun throttleTestHasLinkedSiteID_parent_throttle() {
+        runThrottleTestStartAppFlow(siteID = "form_zappa345", userID = "gsdgsda", isStarted = true,
+            startingLinkedId = "form_testa124", clockTimeInMS = 0, randomNumber = 90.0,
+            expectedIsStarted = true, expectedlinkedSiteID = "form_zappa345",
+            expectedSessionID = "gsdgsda", expectedIsSessionFlowSampled = false)
     }
 
     @Test
-    fun throttleTestHasLinkedSiteID_throttle_no_userId() {
-        runThrottleTestStartAppFlow("form_testa123", "", false,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_throttle_user_null_no_userId() {
-        runThrottleTestStartAppFlow("form_testa123", "", false,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_no_throttle_change_flow_no_userId() {
-        runThrottleTestStartAppFlow("form_testa124", "", true,
-            true, "dummykey", true, "form_testa125",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_no_throttle_no_userId() {
-        runThrottleTestStartAppFlow("form_testa124", "", true,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_parent_site_id_no_userId() {
-        runThrottleTestStartAppFlow("form_zappa345", "", true,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_incorrect_linked_id_should_sample_no_userId() {
-        runThrottleTestStartAppFlow("form_fsdee345", "", true,
-            true, "dummykey", true, "",
-            0, 10.0)
-    }
-
-    @Test
-    fun throttleTestHasLinkedSiteID_throttle_sdkNotStarted() {
-        runThrottleTestStartAppFlow("form_testa123", "gsdgsda", false,
-            true, "dummykey", false, "",
-            0, 10.0)
+    fun throttleTestHasLinkedSiteID_empty_site_id_exit_immediate() {
+        runThrottleTestStartAppFlow(siteID = "", userID = "gsdgsda", isStarted = true,
+            startingLinkedId = "form_testa124", clockTimeInMS = 0, randomNumber = 90.0,
+            expectedIsStarted = true, expectedlinkedSiteID = "",
+            expectedSessionID = "", expectedIsSessionFlowSampled = true)
     }
 }

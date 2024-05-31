@@ -6,6 +6,8 @@ import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDRemoteConfigService
+import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import java.util.LinkedList
@@ -32,10 +34,10 @@ fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
 
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
+    var samplingService: NIDSamplingService,
+    var configService: NIDRemoteConfigService
 ) : NIDDataStoreManager {
     companion object {
-        private var eventBufferMaxCount = NeuroID.nidSDKConfig.eventQueueFlushSize
-
         private val listNonActiveEvents =
             listOf(
                 USER_INACTIVE,
@@ -53,6 +55,11 @@ internal class NIDDataStoreManagerImp(
             logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, ${tempEvent.type} dropped")
             return
         }
+        if (!samplingService.isSessionFlowSampled()) {
+            logger.d(msg="queueEvent() we are not sampling right now for session ${NeuroID.linkedSiteID}")
+            return
+        }
+        logger.d(msg="queueEvent() we are sampling right now for session ${NeuroID.linkedSiteID}")
         val event =
             tempEvent.copy(
                 ts = System.currentTimeMillis(),
@@ -74,6 +81,11 @@ internal class NIDDataStoreManagerImp(
      */
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
+        if (!samplingService.isSessionFlowSampled()) {
+            logger.d(msg="saveEvent() we are not sampling right now for session ${NeuroID.linkedSiteID}")
+            return
+        }
+        logger.d(msg="saveEvent() we are sampling right now for session ${NeuroID.linkedSiteID}")
         if (!listNonActiveEvents.contains(event.type)) {
             NIDTimerActive.restartTimerActive()
         }
@@ -149,7 +161,7 @@ internal class NIDDataStoreManagerImp(
 
         if (lastEventType == FULL_BUFFER) {
             return true
-        } else if (eventsList.size + queuedEvents.size > eventBufferMaxCount) {
+        } else if ((eventsList.size + queuedEvents.size) > configService.getRemoteNIDConfig().eventQueueFlushSize) {
             // add a full buffer event and drop the new event
             saveEvent(
                 NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),

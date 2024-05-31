@@ -34,7 +34,10 @@ interface NIDSendingService {
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
  * we retry requests that connect and come back with bad response codes.
  */
-class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService, RetrySender() {
+class NIDEventSender(private var apiService: NIDApiService,
+                     private val context: Context
+
+    ) : NIDSendingService, RetrySender() {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 
@@ -130,12 +133,14 @@ fun getSendingService(
     endpoint: String,
     logger: NIDLogWrapper,
     context: Context,
+    timeout: Long
 ): NIDSendingService =
     NIDEventSender(
         getRetroFitInstance(
             endpoint,
             logger,
             NIDApiService::class.java,
+            timeout
         ),
         context,
     )

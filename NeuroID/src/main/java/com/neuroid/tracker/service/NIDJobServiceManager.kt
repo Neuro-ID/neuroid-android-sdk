@@ -26,6 +26,7 @@ internal class NIDJobServiceManager(
     private var dataStore: NIDDataStoreManager,
     private var eventSender: NIDSendingService,
     private var logger: NIDLogWrapper,
+    private var configService: NIDRemoteConfigService,
     private var dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     @Volatile
@@ -133,7 +134,7 @@ internal class NIDJobServiceManager(
     private fun createSendCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
             while (userActive && isActive) {
-                delay(NeuroID.nidSDKConfig.eventQueueFlushInterval * 1000L)
+                delay(configService.getRemoteNIDConfig().eventQueueFlushInterval * 1000L)
                 sendEventsNotification.send(false)
             }
         }
@@ -144,17 +145,17 @@ internal class NIDJobServiceManager(
      */
     private fun createGyroCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
-            while (NeuroID.isSDKStarted && NeuroID.nidSDKConfig.gyroAccelCadence) {
-                delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime)
+            while (NeuroID.isSDKStarted && configService.getRemoteNIDConfig().gyroAccelCadence) {
+                delay(configService.getRemoteNIDConfig().gyroAccelCadenceTime)
 
                 neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,
                     attrs =
-                        listOf(
-                            mapOf(
-                                "interval" to "${NeuroID.nidSDKConfig.gyroAccelCadenceTime}sec",
-                            ),
+                    listOf(
+                        mapOf(
+                            "interval" to "${configService.getRemoteNIDConfig().gyroAccelCadenceTime}sec",
                         ),
+                    ),
                 )
             }
         }
