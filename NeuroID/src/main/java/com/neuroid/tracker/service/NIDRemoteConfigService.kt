@@ -43,12 +43,12 @@ class NIDRemoteConfigService(private var dispatcher: CoroutineDispatcher,
                         object : OnRemoteConfigReceivedListener {
                             override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
                                 remoteNIDRemoteConfig = remoteConfig
-                                logger.d(msg = "remoteConfig: $remoteConfig")
+                                logger.i(msg = "NID remoteConfig: $remoteConfig")
                                 lastUpdateTime = Calendar.getInstance().timeInMillis
                             }
 
                             override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                                logger.e(msg = "error getting remote config: $errorMessage")
+                                logger.e(msg = "NID error getting remote config: $errorMessage")
                             }
                         },
                         clientKey,

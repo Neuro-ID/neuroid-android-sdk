@@ -56,10 +56,10 @@ internal class NIDDataStoreManagerImp(
             return
         }
         if (!samplingService.isSessionFlowSampled()) {
-            logger.d(msg="queueEvent() we are not sampling right now for session ${NeuroID.linkedSiteID}")
+            logger.i(msg="NID queueEvent() is not sampling ${tempEvent.type} siteID: ${NeuroID.linkedSiteID}")
             return
         }
-        logger.d(msg="queueEvent() we are sampling right now for session ${NeuroID.linkedSiteID}")
+        logger.i(msg="NID queueEvent() is sampling ${tempEvent.type} siteID: ${NeuroID.linkedSiteID}")
         val event =
             tempEvent.copy(
                 ts = System.currentTimeMillis(),
@@ -82,10 +82,10 @@ internal class NIDDataStoreManagerImp(
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
         if (!samplingService.isSessionFlowSampled()) {
-            logger.d(msg="saveEvent() we are not sampling right now for session ${NeuroID.linkedSiteID}")
+            logger.i(msg="NID saveEvent() is not sampling ${event.type} siteID: ${NeuroID.linkedSiteID}")
             return
         }
-        logger.d(msg="saveEvent() we are sampling right now for session ${NeuroID.linkedSiteID}")
+        logger.i(msg="NID saveEvent() is sampling ${event.type} siteID: ${NeuroID.linkedSiteID}")
         if (!listNonActiveEvents.contains(event.type)) {
             NIDTimerActive.restartTimerActive()
         }

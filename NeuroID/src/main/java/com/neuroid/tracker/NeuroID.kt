@@ -511,8 +511,9 @@ class NeuroID
                         SessionStartResult(started, "")
                     }
                 } else {
-                    nidSamplingService.updateIsSampledStatus(linkedSiteID)
+                    nidSamplingService.updateIsSampledStatus(siteID)
                     logger.d(msg="startAppFlow() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} $siteID")
+                    linkedSiteID = siteID
 
                     createMobileMetadata()
                     createSession()
@@ -522,8 +523,6 @@ class NeuroID
             if (!startStatus.started) {
                 return startStatus
             }
-
-            linkedSiteID = siteID
 
             // capture linkedSiteEvent for MIHR - not relevant for collection
             captureEvent(type = SET_LINKED_SITE, v = siteID)
@@ -698,7 +697,8 @@ class NeuroID
             }
 
             nidSamplingService.updateIsSampledStatus(siteID)
-            logger.d(msg="start() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} for $siteID")
+            linkedSiteID = siteID
+            logger.i(msg="NID start() isSessionFlowSampled ${nidSamplingService.isSessionFlowSampled()} for $linkedSiteID")
 
             application?.let { nidJobServiceManager.startJob(it, clientKey) }
             _isSDKStarted = true
@@ -873,10 +873,11 @@ class NeuroID
                 return SessionStartResult(false, "")
             }
 
-            nidSamplingService.updateIsSampledStatus(siteID)
-            logger.d(msg="startSession() isSampling: ${nidSamplingService.isSessionFlowSampled()} for target $siteID" )
-
             resumeCollection()
+
+            nidSamplingService.updateIsSampledStatus(siteID)
+            linkedSiteID = siteID
+            logger.d(msg="startSession() isSampling: ${nidSamplingService.isSessionFlowSampled()} for target $linkedSiteID" )
 
             _isSDKStarted = true
             NIDSingletonIDs.retrieveOrCreateLocalSalt()

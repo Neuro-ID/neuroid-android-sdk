@@ -124,6 +124,7 @@ class NIDEventSender(private var apiService: NIDApiService,
             )
 
         // using this JSON library (already included) does not escape /
+        NIDLog.i(msg="NID logging events (${events.count()}) as linkedSiteID: ${NeuroID.linkedSiteID}")
         val gson: Gson = GsonBuilder().create()
         return gson.toJson(jsonBody)
     }

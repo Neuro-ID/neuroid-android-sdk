@@ -17,22 +17,21 @@ class NIDSamplingService(
     fun updateIsSampledStatus(siteID: String?) {
         val currentSampleRate = retrieveSampleRate(siteID)
         if (currentSampleRate >= MAX_SAMPLE_RATE) {
-            logger.d(msg="updateIsSampledStatus() we are sampling at max or > than max ($currentSampleRate)")
+            logger.i(msg="NID updateIsSampledStatus() for $siteID we are sampling at max or > than max ($currentSampleRate) for this")
             isSessionFlowSampled = true
             return
         }
         val randomValue = randomGenerator.getRandom(MAX_SAMPLE_RATE)
-        logger.d(msg="updateIsSampledStatus() random value: $randomValue sampleRate: $currentSampleRate")
+        logger.i(msg="NID updateIsSampledStatus() random value: $randomValue sampleRate($siteID): $currentSampleRate")
         if (randomValue < currentSampleRate) {
             isSessionFlowSampled = true
-            logger.d(msg="updateIsSampledStatus() we are sampling")
+            logger.i(msg="NID updateIsSampledStatus() we are sampling $siteID")
             return
         }
 
-        logger.d(msg="updateIsSampledStatus() we are not sampling")
+        logger.i(msg="NID updateIsSampledStatus() we are not sampling $siteID")
         isSessionFlowSampled = false
     }
-
 
     /**
      * Return the sample rate, 100 indicates sample everything, 0 indicates sample nothing!
@@ -42,18 +41,18 @@ class NIDSamplingService(
         // id sample rate
         if (isLinkedSiteID(siteID)) {
             configService.getRemoteNIDConfig().linkedSiteOptions[siteID]?.let {
-                logger.d(msg = "retrieveSampleRate site id is in options, ${it.sampleRate}")
+                logger.i(msg = "NID retrieveSampleRate siteID:$siteID is in options, rate:${it.sampleRate}")
                 return it.sampleRate
             }
         }
         // is the site id passed in a parent site id? if so, return the parent site id sample rate.
         if (isCollectionSiteID(siteID)) {
-            logger.d(msg = "retrieveSampleRate parent site, ${configService.getRemoteNIDConfig().sampleRate}")
+            logger.i(msg = "NID retrieveSampleRate parentSite:$siteID, ${configService.getRemoteNIDConfig().sampleRate}")
             return configService.getRemoteNIDConfig().sampleRate
         }
 
         // else capture all
-        logger.d(msg="retrieveSampleRate not in options and not parent, capture all, 0")
+        logger.i(msg="retrieveSampleRate $siteID not in options and not parent, capture all, 100")
         return DEFAULT_SAMPLE_RATE
     }
 

@@ -36,7 +36,7 @@ class MyApplicationDemo : MultiDexApplication() {
         // NeuroID.getInstance()?.start()
         // NeuroID.getInstance()?.setEnvironmentProduction(true)
         // NeuroID.getInstance()?.setSiteId(configHelper.formId)
-        NeuroID.getInstance()?.startAppFlow("form_parks912", "testSession")
+        NeuroID.getInstance()?.startAppFlow("form_parks912", null)
         // NeuroID.getInstance()?.startAppFlow("form_skein469", "testSession")
         // NeuroID.getInstance()?.startSession("hasdklghs")
         // NeuroID.getInstance()?.setUserID("fgdsgasdgsdg")
