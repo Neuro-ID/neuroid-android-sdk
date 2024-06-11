@@ -25,6 +25,7 @@ internal class NIDConfigService(
     private val logger: NIDLogWrapper,
     private val neuroID: NeuroID,
     private val httpService: HttpService,
+    private val validationService: NIDValidationService,
     private val gson: Gson = GsonBuilder().create(),
 ) : ConfigService {
     companion object {
@@ -38,7 +39,7 @@ internal class NIDConfigService(
 
     internal fun retrieveConfig(completion: () -> Unit): Unit =
         runBlocking {
-            if (!neuroID.verifyClientKeyExists()) {
+            if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
                 cacheSetWithRemote = false
                 completion()
                 return@runBlocking

@@ -26,6 +26,7 @@ internal class NIDSessionService(
     private val configService: ConfigService,
     private val samplingService: NIDSamplingService,
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
+    private val validationService: NIDValidationService,
 ) {
     internal fun createSession() {
         neuroID.timestamp = System.currentTimeMillis()
@@ -85,7 +86,7 @@ internal class NIDSessionService(
         siteID: String?,
         completion: (Boolean) -> Unit = {},
     ) {
-        if (!neuroID.verifyClientKeyExists()) {
+        if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
             completion(false)
             return
         }
@@ -112,7 +113,7 @@ internal class NIDSessionService(
         sessionID: String? = null,
         completion: (SessionStartResult) -> Unit = { },
     ) {
-        if (!neuroID.verifyClientKeyExists()) {
+        if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
             completion(SessionStartResult(false, ""))
             return
         }
@@ -238,7 +239,7 @@ internal class NIDSessionService(
         userID: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     ) {
-        if (!neuroID.verifyClientKeyExists() || !neuroID.validateSiteID(siteID)) {
+        if (!validationService.verifyClientKeyExists(neuroID.clientKey) || !validationService.validateSiteID(siteID)) {
             // reset linked site id (in case of failure)
             neuroID.linkedSiteID = ""
             neuroID.captureEvent(
