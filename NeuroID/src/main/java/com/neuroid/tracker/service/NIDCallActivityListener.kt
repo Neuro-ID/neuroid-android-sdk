@@ -12,16 +12,14 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.VersionChecker
-import java.util.Calendar
 
 class NIDCallActivityListener(
-    private val dataStoreManager: NIDDataStoreManager,
+    private val neuroID: NeuroID,
     private val versionChecker: VersionChecker,
 ) : BroadcastReceiver() {
     private lateinit var intentFilter: IntentFilter
@@ -63,34 +61,25 @@ class NIDCallActivityListener(
         when (state) {
             CallInProgress.INACTIVE.state -> {
                 NIDLog.d(msg = "Call inactive")
-                dataStoreManager.saveEvent(
-                    NIDEventModel(
-                        type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.INACTIVE.event,
-                        ts = Calendar.getInstance().timeInMillis,
-                    ),
+                neuroID.captureEvent(
+                    type = CALL_IN_PROGRESS,
+                    cp = CallInProgress.INACTIVE.event,
                 )
             }
 
             CallInProgress.ACTIVE.state -> {
                 NIDLog.d(msg = "Call in progress")
-                dataStoreManager.saveEvent(
-                    NIDEventModel(
-                        type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.ACTIVE.event,
-                        ts = Calendar.getInstance().timeInMillis,
-                    ),
+                neuroID.captureEvent(
+                    type = CALL_IN_PROGRESS,
+                    cp = CallInProgress.ACTIVE.event,
                 )
             }
 
             CallInProgress.UNAUTHORIZED.state -> {
                 NIDLog.d(msg = "Call status not authorized")
-                dataStoreManager.saveEvent(
-                    NIDEventModel(
-                        type = CALL_IN_PROGRESS,
-                        cp = CallInProgress.UNAUTHORIZED.event,
-                        ts = Calendar.getInstance().timeInMillis,
-                    ),
+                neuroID.captureEvent(
+                    type = CALL_IN_PROGRESS,
+                    cp = CallInProgress.UNAUTHORIZED.event,
                 )
             }
         }

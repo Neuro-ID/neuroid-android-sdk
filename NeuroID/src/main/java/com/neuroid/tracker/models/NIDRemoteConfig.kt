@@ -1,7 +1,7 @@
 package com.neuroid.tracker.models
 
 import com.google.gson.annotations.SerializedName
-import kotlin.reflect.jvm.internal.impl.types.AbstractStubType.Companion
+import com.neuroid.tracker.service.NIDConfigService
 
 data class NIDRemoteConfig(
     @SerializedName(value = "call_in_progress")
@@ -21,7 +21,7 @@ data class NIDRemoteConfig(
     @SerializedName(value = "linked_site_options")
     val linkedSiteOptions: HashMap<String, NIDLinkedSiteOption> = hashMapOf(),
     @SerializedName(value = "sample_rate")
-    val sampleRate: Int = 100,
+    val sampleRate: Int = NIDConfigService.DEFAULT_SAMPLE_RATE,
     @SerializedName(value = "site_id")
-    val siteID: String = ""
+    val siteID: String = "",
 )

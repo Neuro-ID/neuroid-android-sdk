@@ -7,7 +7,7 @@ class NIDSamplingService(
     val logger: NIDLogWrapper,
     // we need this to be replaceable for the tests!
     var randomGenerator: RandomGenerator,
-    var configService: NIDRemoteConfigService,
+    var configService: ConfigService,
 ) {
     private var isSessionFlowSampled = true
 
@@ -17,19 +17,19 @@ class NIDSamplingService(
     fun updateIsSampledStatus(siteID: String?) {
         val currentSampleRate = retrieveSampleRate(siteID)
         if (currentSampleRate >= MAX_SAMPLE_RATE) {
-            logger.i(msg="NID updateIsSampledStatus() for $siteID we are sampling at max or > than max ($currentSampleRate) for this")
+            logger.i(msg = "NID updateIsSampledStatus() for $siteID we are sampling at max or > than max ($currentSampleRate) for this")
             isSessionFlowSampled = true
             return
         }
         val randomValue = randomGenerator.getRandom(MAX_SAMPLE_RATE)
-        logger.i(msg="NID updateIsSampledStatus() random value: $randomValue sampleRate($siteID): $currentSampleRate")
+        logger.i(msg = "NID updateIsSampledStatus() random value: $randomValue sampleRate($siteID): $currentSampleRate")
         if (randomValue < currentSampleRate) {
             isSessionFlowSampled = true
-            logger.i(msg="NID updateIsSampledStatus() we are sampling $siteID")
+            logger.i(msg = "NID updateIsSampledStatus() we are sampling $siteID")
             return
         }
 
-        logger.i(msg="NID updateIsSampledStatus() we are not sampling $siteID")
+        logger.i(msg = "NID updateIsSampledStatus() we are not sampling $siteID")
         isSessionFlowSampled = false
     }
 
@@ -40,19 +40,19 @@ class NIDSamplingService(
         // is the site id passed in a linked site id in the options?, if so return the linked site
         // id sample rate
         if (isLinkedSiteID(siteID)) {
-            configService.getRemoteNIDConfig().linkedSiteOptions[siteID]?.let {
+            configService.configCache.linkedSiteOptions[siteID]?.let {
                 logger.i(msg = "NID retrieveSampleRate siteID:$siteID is in options, rate:${it.sampleRate}")
                 return it.sampleRate
             }
         }
         // is the site id passed in a parent site id? if so, return the parent site id sample rate.
         if (isCollectionSiteID(siteID)) {
-            logger.i(msg = "NID retrieveSampleRate parentSite:$siteID, ${configService.getRemoteNIDConfig().sampleRate}")
-            return configService.getRemoteNIDConfig().sampleRate
+            logger.i(msg = "NID retrieveSampleRate parentSite:$siteID, ${configService.configCache.sampleRate}")
+            return configService.configCache.sampleRate
         }
 
         // else capture all
-        logger.i(msg="retrieveSampleRate $siteID not in options and not parent, capture all, 100")
+        logger.i(msg = "retrieveSampleRate $siteID not in options and not parent, capture all, 100")
         return DEFAULT_SAMPLE_RATE
     }
 
@@ -62,20 +62,18 @@ class NIDSamplingService(
      * is this a linked site id?
      */
     private fun isLinkedSiteID(siteID: String?): Boolean {
-        return configService.getRemoteNIDConfig().linkedSiteOptions.contains(siteID)
+        return configService.configCache.linkedSiteOptions.contains(siteID)
     }
-
 
     /**
      * is this a parent site id (siteID parameter matches the config parent siteID or is null)?
      */
     private fun isCollectionSiteID(siteID: String?): Boolean {
-        if (siteID == null || siteID == configService.getRemoteNIDConfig().siteID) {
+        if (siteID == null || siteID == configService.configCache.siteID) {
             return true
         }
         return false
     }
-
 
     companion object {
         const val MAX_SAMPLE_RATE = 100

@@ -4,7 +4,7 @@ import android.content.Context
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRemoteConfig
-import com.neuroid.tracker.service.NIDRemoteConfigService
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
@@ -22,10 +22,10 @@ class NIDDataStoreManagerUnitTests {
     private lateinit var mockContext: Context
 
     private fun mockDataStore(): NIDDataStoreManagerImp {
-        val serviceConfig = mockk<NIDRemoteConfigService>()
-        every {serviceConfig.getRemoteNIDConfig()} returns NIDRemoteConfig()
+        val serviceConfig = mockk<ConfigService>()
+        every { serviceConfig.configCache } returns NIDRemoteConfig()
         val samplingService = mockk<NIDSamplingService>()
-        every {samplingService.isSessionFlowSampled()} returns true
+        every { samplingService.isSessionFlowSampled() } returns true
         return NIDDataStoreManagerImp(NIDLogWrapper(), samplingService, serviceConfig)
     }
 

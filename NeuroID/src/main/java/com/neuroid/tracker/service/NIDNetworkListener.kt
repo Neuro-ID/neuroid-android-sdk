@@ -7,10 +7,7 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.TYPE_WIFI
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import kotlinx.coroutines.*
-import java.util.Calendar
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -33,7 +30,6 @@ import kotlin.coroutines.CoroutineContext
  */
 class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
-    private val dataStoreManager: NIDDataStoreManager,
     private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
@@ -75,7 +71,7 @@ class NIDNetworkListener(
             haveNoNetworkJob =
                 CoroutineScope(dispatcher).launch {
                     delay(sleepIntervalPause)
-                    neuroID.pauseCollection(false)
+                    neuroID.sessionService.pauseCollection(false)
                 }
         } else {
             if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
@@ -84,7 +80,7 @@ class NIDNetworkListener(
             haveNetworkJob =
                 CoroutineScope(dispatcher).launch {
                     delay(sleepIntervalResume)
-                    neuroID.resumeCollection()
+                    neuroID.sessionService.resumeCollection()
                 }
         }
     }
@@ -103,16 +99,13 @@ class NIDNetworkListener(
             networkConnectionType = neuroID.getNetworkType(it)
         }
 
-        val networkEvent =
-            NIDEventModel(
-                ts = Calendar.getInstance().timeInMillis,
-                type = NETWORK_STATE,
-                isConnected = isConnected,
-                isWifi = isWifi,
-                ct = neuroID.networkConnectionType,
-            )
         neuroID.networkConnectionType = networkConnectionType
-        dataStoreManager.saveEvent(networkEvent)
+        neuroID.captureEvent(
+            type = NETWORK_STATE,
+            isConnected = isConnected,
+            isWifi = isWifi,
+            ct = neuroID.networkConnectionType,
+        )
         return isConnected
     }
 }

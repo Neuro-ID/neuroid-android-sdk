@@ -7,10 +7,12 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
+import com.neuroid.tracker.getMockedConfigService
+import com.neuroid.tracker.getMockedLogger
+import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDRemoteConfig
+import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.coEvery
@@ -18,7 +20,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -84,29 +85,30 @@ class NIDJobServiceManagerTest {
     }
 
     @Test
-    fun testSendEvents() = runTest {
-        val mockedSetup = setupNIDJobServiceManagerMocks()
-        val mockedApplication = mockedSetup.mockedApplication
-        val nidJobServiceManager = mockedSetup.nidJobServiceManager
+    fun testSendEvents() =
+        runTest {
+            val mockedSetup = setupNIDJobServiceManagerMocks()
+            val mockedApplication = mockedSetup.mockedApplication
+            val nidJobServiceManager = mockedSetup.nidJobServiceManager
 
-        nidJobServiceManager.startJob(
-            mockedApplication,
-            "clientKey",
-        )
-
-        // test the thing
-        nidJobServiceManager.sendEvents(
-            forceSendEvents = true,
-        )
-
-        verify {
-            mockedSetup.mockedEventSender.sendEvents(
-                any(),
-                any(),
-                any(),
+            nidJobServiceManager.startJob(
+                mockedApplication,
+                "clientKey",
             )
+
+            // test the thing
+            nidJobServiceManager.sendEvents(
+                forceSendEvents = true,
+            )
+
+            verify {
+                mockedSetup.mockedEventSender.sendEvents(
+                    any(),
+                    any(),
+                    any(),
+                )
+            }
         }
-    }
 
     internal data class MockedServices(
         val nidJobServiceManager: NIDJobServiceManager,
@@ -120,9 +122,7 @@ class NIDJobServiceManagerTest {
         val mockedApplication = getMockedApplication()
         val logger = getMockedLogger()
         val mockedEventSender = getMockEventSender()
-        val nidRemoteConfigService = mockk<NIDRemoteConfigService>()
-        every {nidRemoteConfigService.getRemoteNIDConfig()} returns NIDRemoteConfig()
-
+        val nidRemoteConfigService = getMockedConfigService()
         val nidJobServiceManager =
             NIDJobServiceManager(
                 getMockedNeuroID(),
@@ -136,87 +136,11 @@ class NIDJobServiceManagerTest {
         return MockedServices(nidJobServiceManager, mockedApplication, logger, mockedEventSender)
     }
 
-    private fun getMockedNeuroID(): NeuroID {
-        val nidMock = mockk<NeuroID>()
-        every {
-            nidMock.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-            )
-        } just runs
-
-        return nidMock
-    }
-
     private fun getMockedDatastoreManager(): NIDDataStoreManager {
         val dataStoreManager = mockk<NIDDataStoreManager>()
         val event = NIDEventModel(type = "TEST_EVENT", ts = 1)
         coEvery { dataStoreManager.getAllEvents() } returns listOf(event)
         return dataStoreManager
-    }
-
-    private fun getMockedLogger(): NIDLogWrapper {
-        val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
-        return logger
     }
 
     private fun getMockedApplication(): Application {
@@ -242,7 +166,7 @@ class NIDJobServiceManagerTest {
     private fun getMockEventSender(): NIDSendingService {
         val eventSender = mockk<NIDEventSender>()
 
-        every { eventSender.sendEvents(any<String>(), any<List<NIDEventModel>>(), any<NIDResponseCallBack>()) } just runs
+        every { eventSender.sendEvents(any<String>(), any<List<NIDEventModel>>(), any<NIDResponseCallBack<Any>>()) } just runs
 
         return eventSender
     }

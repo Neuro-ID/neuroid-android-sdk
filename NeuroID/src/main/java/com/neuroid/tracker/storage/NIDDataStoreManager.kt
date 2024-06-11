@@ -6,7 +6,7 @@ import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.*
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDRemoteConfigService
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -35,7 +35,7 @@ fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
     var samplingService: NIDSamplingService,
-    var configService: NIDRemoteConfigService
+    var configService: ConfigService,
 ) : NIDDataStoreManager {
     companion object {
         private val listNonActiveEvents =
@@ -56,10 +56,10 @@ internal class NIDDataStoreManagerImp(
             return
         }
         if (!samplingService.isSessionFlowSampled()) {
-            logger.i(msg="NID queueEvent() is not sampling ${tempEvent.type} siteID: ${NeuroID.linkedSiteID}")
+            logger.i(msg = "NID queueEvent() is not sampling ${tempEvent.type} siteID: ${NeuroID.getInternalInstance()?.linkedSiteID}")
             return
         }
-        logger.i(msg="NID queueEvent() is sampling ${tempEvent.type} siteID: ${NeuroID.linkedSiteID}")
+        logger.i(msg = "NID queueEvent() is sampling ${tempEvent.type} siteID: ${NeuroID.getInternalInstance()?.linkedSiteID}")
         val event =
             tempEvent.copy(
                 ts = System.currentTimeMillis(),
@@ -82,10 +82,10 @@ internal class NIDDataStoreManagerImp(
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
         if (!samplingService.isSessionFlowSampled()) {
-            logger.i(msg="NID saveEvent() is not sampling ${event.type} siteID: ${NeuroID.linkedSiteID}")
+            logger.i(msg = "NID saveEvent() is not sampling ${event.type} siteID: ${NeuroID.getInternalInstance()?.linkedSiteID}")
             return
         }
-        logger.i(msg="NID saveEvent() is sampling ${event.type} siteID: ${NeuroID.linkedSiteID}")
+        logger.i(msg = "NID saveEvent() is sampling ${event.type} siteID: ${NeuroID.getInternalInstance()?.linkedSiteID}")
         if (!listNonActiveEvents.contains(event.type)) {
             NIDTimerActive.restartTimerActive()
         }
@@ -161,7 +161,7 @@ internal class NIDDataStoreManagerImp(
 
         if (lastEventType == FULL_BUFFER) {
             return true
-        } else if ((eventsList.size + queuedEvents.size) > configService.getRemoteNIDConfig().eventQueueFlushSize) {
+        } else if ((eventsList.size + queuedEvents.size) > configService.configCache.eventQueueFlushSize) {
             // add a full buffer event and drop the new event
             saveEvent(
                 NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),

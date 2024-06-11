@@ -135,7 +135,7 @@ interface NeuroIDPublic {
      * the SDK is started. Returns false if the SDK is stopped. In the case of
      * a false return, check that the client key is set properly in the NeuroID.Builder() call.
      */
-    fun start(): Boolean
+    fun start(completion: (Boolean) -> Unit = {})
 
     /**
      * Stop the SDK and close the current session. Return true to indicate that
@@ -188,7 +188,10 @@ interface NeuroIDPublic {
      * Return a session result that contains the session ID and a boolean
      * indicating the started state of the SDK.
      */
-    fun startSession(sessionID: String? = null): SessionStartResult
+    fun startSession(
+        sessionID: String? = null,
+        completion: (SessionStartResult) -> Unit = {},
+    )
 
     /**
      * This should be called when the user attempts to login. Returns true always. Returns false if
@@ -206,5 +209,9 @@ interface NeuroIDPublic {
      * here for you with a user ID that is specified in the optional userID argument. If the
      * SDK is already started, the optional user id is not used and the SDK will not be restarted.
      */
-    fun startAppFlow(siteID: String, userID: String? = null): SessionStartResult
+    fun startAppFlow(
+        siteID: String,
+        userID: String? = null,
+        completion: (SessionStartResult) -> Unit = {},
+    )
 }

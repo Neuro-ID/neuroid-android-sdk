@@ -11,7 +11,6 @@ import io.mockk.runs
 import org.junit.Test
 
 class NIDSamplingServiceTest {
-
     @Test
     fun testParentNoThrottle() {
         testSampleService("form_zappa345", 10.0, true)
@@ -42,20 +41,30 @@ class NIDSamplingServiceTest {
         testSampleService(null, 10.0, true)
     }
 
-    fun testSampleService(siteID: String?, randomNumber: Double, expectedValue: Boolean) {
+    fun testSampleService(
+        siteID: String?,
+        randomNumber: Double,
+        expectedValue: Boolean,
+    ) {
         val logger = mockk<NIDLogWrapper>()
-        every {logger.d(any(), any())} just runs
-        every {logger.w(any(), any())} just runs
-        every {logger.e(any(), any())} just runs
-        every {logger.i(any(), any())} just runs
+        every { logger.d(any(), any()) } just runs
+        every { logger.w(any(), any()) } just runs
+        every { logger.e(any(), any()) } just runs
+        every { logger.i(any(), any()) } just runs
 
         val randomGenerator = mockk<RandomGenerator>()
-        every {randomGenerator.getRandom(any())} returns randomNumber
-        val configService = mockk<NIDRemoteConfigService>()
-        every {configService.getRemoteNIDConfig()} returns NIDRemoteConfig(linkedSiteOptions=hashMapOf(
-            "form_testa123" to NIDLinkedSiteOption(10),
-            "form_testa124" to NIDLinkedSiteOption(50)
-        ), siteID = "form_zappa345", sampleRate = 40)
+        every { randomGenerator.getRandom(any()) } returns randomNumber
+        val configService = mockk<NIDConfigService>()
+        every { configService.configCache } returns
+            NIDRemoteConfig(
+                linkedSiteOptions =
+                    hashMapOf(
+                        "form_testa123" to NIDLinkedSiteOption(10),
+                        "form_testa124" to NIDLinkedSiteOption(50),
+                    ),
+                siteID = "form_zappa345",
+                sampleRate = 40,
+            )
 
         val sampleService = NIDSamplingService(logger, randomGenerator, configService)
         sampleService.updateIsSampledStatus(siteID)

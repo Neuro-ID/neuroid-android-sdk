@@ -7,9 +7,7 @@ import android.net.ConnectivityManager.TYPE_MOBILE
 import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkInfo
 import com.neuroid.tracker.events.NETWORK_STATE
-import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDNetworkListener
-import com.neuroid.tracker.storage.NIDDataStoreManager
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -260,7 +258,13 @@ class NIDNetworkListenerTest {
         every { calendar.timeInMillis } returns 5
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
-        val neuroID = mockk<NeuroID>()
+
+        val mockedSessionService = getMockedSessionService()
+
+        val neuroID =
+            getMockedNeuroID(
+                mockSessionService = mockedSessionService,
+            )
         every { neuroID.networkConnectionType = any() } just runs // mock for setting the variable
         every { neuroID.networkConnectionType } returns
             if (isWifiAssert) {
@@ -277,23 +281,22 @@ class NIDNetworkListenerTest {
         every { neuroID.isConnected = any() } just runs
         every { neuroID.isConnected } returns isConnectedOrConnecting
         every { neuroID.isStopped() } returns isStopped
-        every { neuroID.pauseCollection(any()) } just runs
-        every { neuroID.resumeCollection() } just runs
+
         every { neuroID.userID } returns userId
+
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType
         every { networkInfo.isConnectedOrConnecting } returns isConnectedOrConnecting
+
         val connectivityManager = mockk<ConnectivityManager>()
         every { connectivityManager.activeNetworkInfo } returns networkInfo
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } just runs
         val context = mockk<Context>()
         val intent = mockk<Intent>()
         every { intent.action } returns ConnectivityManager.CONNECTIVITY_ACTION
+
         val listener =
             NIDNetworkListener(
                 connectivityManager,
-                dataStoreManager,
                 neuroID,
                 UnconfinedTestDispatcher(),
                 0,
@@ -301,24 +304,22 @@ class NIDNetworkListenerTest {
             )
         listener.onReceive(context, intent)
 
-        val networkEvent =
-            NIDEventModel(
-                ts = Calendar.getInstance().timeInMillis,
-                type = NETWORK_STATE,
-                isConnected = isConnectedAssert,
-                isWifi = isWifiAssert,
-                ct =
-                    if (isWifiAssert) {
-                        "wifi"
-                    } else {
-                        "cell"
-                    },
-            )
-
-        verify { dataStoreManager.saveEvent(networkEvent) }
+        verifyCaptureEvent(
+            neuroID,
+            NETWORK_STATE,
+            1,
+            isConnected = isConnectedAssert,
+            isWifi = isWifiAssert,
+            ct =
+                if (isWifiAssert) {
+                    "wifi"
+                } else {
+                    "cell"
+                },
+        )
         verify { neuroID.isConnected = isConnectedAssert }
-        verify(exactly = pauseCalledCount) { neuroID.pauseCollection(any()) }
-        verify(exactly = resumeCalledCount) { neuroID.resumeCollection() }
+        verify(exactly = pauseCalledCount) { mockedSessionService.pauseCollection(any()) }
+        verify(exactly = resumeCalledCount) { mockedSessionService.resumeCollection() }
         unmockkAll()
     }
 }

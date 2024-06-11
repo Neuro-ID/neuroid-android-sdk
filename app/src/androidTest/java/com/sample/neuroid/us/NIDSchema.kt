@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDEventSender
+import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
@@ -20,14 +20,13 @@ import java.io.InputStream
 import java.io.InputStreamReader
 
 class NIDSchema {
-
     /**
      * if validateEvent == false, only schema validation is done.
      */
     suspend fun validateEvents(
         eventList: Set<String>,
         eventType: String = "",
-        maxEventsCount: Int = 1
+        maxEventsCount: Int = 1,
     ) {
         val events: Set<String>
         if (eventType.isNotEmpty() && eventList.isNotEmpty()) {
@@ -36,7 +35,7 @@ class NIDSchema {
                 assertEquals(
                     eventList.toList().joinToString(",").ifEmpty { "No Events" },
                     maxEventsCount,
-                    events.size
+                    events.size,
                 )
             } else {
                 assertTrue(events.isNotEmpty())
@@ -44,13 +43,11 @@ class NIDSchema {
         }
     }
 
-    suspend fun validateSchema(
-        eventList: List<NIDEventModel>,
-    ) {
+    suspend fun validateSchema(eventList: List<NIDEventModel>) {
         val json =
             getJsonData(
                 context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext,
-                eventList
+                eventList,
             )
         validateSchema(json)
 
@@ -78,53 +75,56 @@ class NIDSchema {
         val rawSchema = JSONObject(readFileWithoutNewLineFromResources("schema.json"))
         val schema =
             SchemaLoader.builder().schemaJson(rawSchema).draftV6Support().build().load().build()
-        val validator = Validator.builder().withListener(object : ValidationListener {
-            override fun combinedSchemaMatch(event: CombinedSchemaMatchEvent?) {
-                Assert.assertTrue(event?.schema.toString(), true)
-                super.combinedSchemaMatch(event)
-            }
+        val validator =
+            Validator.builder().withListener(
+                object : ValidationListener {
+                    override fun combinedSchemaMatch(event: CombinedSchemaMatchEvent?) {
+                        Assert.assertTrue(event?.schema.toString(), true)
+                        super.combinedSchemaMatch(event)
+                    }
 
-            override fun combinedSchemaMismatch(event: CombinedSchemaMismatchEvent?) {
-                //Assert.fail(event.toString())
-                Log.e("Fail", event?.toJSON(true, true).toString())
-                super.combinedSchemaMismatch(event)
-            }
+                    override fun combinedSchemaMismatch(event: CombinedSchemaMismatchEvent?) {
+                        // Assert.fail(event.toString())
+                        Log.e("Fail", event?.toJSON(true, true).toString())
+                        super.combinedSchemaMismatch(event)
+                    }
 
-            override fun schemaReferenced(event: SchemaReferencedEvent?) {
-                Assert.assertTrue(event?.schema.toString(), true)
-                super.schemaReferenced(event)
-            }
+                    override fun schemaReferenced(event: SchemaReferencedEvent?) {
+                        Assert.assertTrue(event?.schema.toString(), true)
+                        super.schemaReferenced(event)
+                    }
 
-            override fun ifSchemaMatch(event: ConditionalSchemaMatchEvent?) {
-                Assert.assertTrue(event?.schema.toString(), true)
-                super.ifSchemaMatch(event)
-            }
+                    override fun ifSchemaMatch(event: ConditionalSchemaMatchEvent?) {
+                        Assert.assertTrue(event?.schema.toString(), true)
+                        super.ifSchemaMatch(event)
+                    }
 
-            override fun ifSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Log.e("Fail", event?.toJSON(true, true).toString())
-                super.ifSchemaMismatch(event)
-            }
+                    override fun ifSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
+                        Log.e("Fail", event?.toJSON(true, true).toString())
+                        super.ifSchemaMismatch(event)
+                    }
 
-            override fun thenSchemaMatch(event: ConditionalSchemaMatchEvent?) {
-                Assert.assertTrue(event?.schema.toString(), true)
-                super.thenSchemaMatch(event)
-            }
+                    override fun thenSchemaMatch(event: ConditionalSchemaMatchEvent?) {
+                        Assert.assertTrue(event?.schema.toString(), true)
+                        super.thenSchemaMatch(event)
+                    }
 
-            override fun thenSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Log.e("Fail", event?.toJSON(true, true).toString())
-                super.thenSchemaMismatch(event)
-            }
+                    override fun thenSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
+                        Log.e("Fail", event?.toJSON(true, true).toString())
+                        super.thenSchemaMismatch(event)
+                    }
 
-            override fun elseSchemaMatch(event: ConditionalSchemaMatchEvent?) {
-                Assert.assertTrue(event?.schema.toString(), true)
-                super.elseSchemaMatch(event)
-            }
+                    override fun elseSchemaMatch(event: ConditionalSchemaMatchEvent?) {
+                        Assert.assertTrue(event?.schema.toString(), true)
+                        super.elseSchemaMatch(event)
+                    }
 
-            override fun elseSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
-                Log.e("Fail", event?.toJSON(true, true).toString())
-                super.elseSchemaMismatch(event)
-            }
-        }).build()
+                    override fun elseSchemaMismatch(event: ConditionalSchemaMismatchEvent?) {
+                        Log.e("Fail", event?.toJSON(true, true).toString())
+                        super.elseSchemaMismatch(event)
+                    }
+                },
+            ).build()
         validator.performValidation(schema, JSONObject(json))
     }
 
@@ -147,10 +147,23 @@ class NIDSchema {
         }
     }
 
-    private fun getInputStreamFromResource(fileName: String) =
-        javaClass.classLoader?.getResourceAsStream(fileName)
+    private fun getInputStreamFromResource(fileName: String) = javaClass.classLoader?.getResourceAsStream(fileName)
 
-    private fun getJsonData(context: Context, listEvents: List<NIDEventModel>): String {
-        return getSendingService("", NIDLogWrapper(), context).getRequestPayloadJSON(listEvents)
+    private fun getJsonData(
+        context: Context,
+        listEvents: List<NIDEventModel>,
+    ): String {
+        return getSendingService(
+            NIDHttpService(
+                collectionEndpoint = "",
+                configEndpoint = "",
+                logger = NIDLogWrapper(),
+                // We can't use the config value because it hasn't been called.
+                // Might have to recreate once config is retrieved
+                collectionTimeout = 5,
+                configTimeout = 5,
+            ),
+            context,
+        ).getRequestPayloadJSON(listEvents)
     }
 }

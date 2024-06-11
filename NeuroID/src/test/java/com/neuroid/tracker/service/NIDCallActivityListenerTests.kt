@@ -1,22 +1,19 @@
-package com.neuroid.tracker
+package com.neuroid.tracker.service
 
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
-import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.CallBack
-import com.neuroid.tracker.service.NIDCallActivityListener
-import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.utils.VersionChecker
+import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
-import io.mockk.verify
 import org.junit.Test
 import java.util.Calendar
 import java.util.concurrent.Executor
@@ -55,12 +52,11 @@ class NIDCallActivityListenerTests {
         isActive: String,
         sdkGreaterThan31: Boolean,
     ) {
+        val mockedNID = getMockedNeuroID()
         val calendar = mockk<Calendar>()
         every { calendar.timeInMillis } returns 5
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.saveEvent(any()) } just runs
         val context = mockk<Context>()
         val telephonyManager = mockk<TelephonyManager>()
         every { context.getSystemService(any()) } returns telephonyManager
@@ -70,7 +66,7 @@ class NIDCallActivityListenerTests {
         val callback = mockk<CallBack>()
         val version = mockk<VersionChecker>()
         every { version.isBuildVersionGreaterThan31() } returns sdkGreaterThan31
-        val listener = NIDCallActivityListener(dataStoreManager, version)
+        val listener = NIDCallActivityListener(mockedNID, version)
 
         if (sdkGreaterThan31) {
             every { telephonyManager.registerTelephonyCallback(any(), any()) } answers {
@@ -86,14 +82,12 @@ class NIDCallActivityListenerTests {
 
         listener.onReceive(context, intent)
 
-        val callActivityEvent =
-            NIDEventModel(
-                type = CALL_IN_PROGRESS,
-                cp = isActive,
-                ts = Calendar.getInstance().timeInMillis,
-            )
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = isActive,
+        )
 
-        verify { dataStoreManager.saveEvent((callActivityEvent)) }
         unmockkAll()
     }
 
