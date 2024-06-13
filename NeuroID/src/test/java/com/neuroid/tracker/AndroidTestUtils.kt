@@ -18,6 +18,7 @@ import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
+import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
@@ -103,6 +104,7 @@ internal fun getMockedNeuroID(
 
     every {
         nidMock.captureEvent(
+            queuedEvent = any(),
             type = any(),
             ts = any(),
             attrs = any(),
@@ -393,6 +395,12 @@ internal fun getMockedValidationService(): NIDValidationService {
     } returns false
 
     return mockedNIDValidationService
+}
+
+internal fun getMockedIdentifierService(): NIDIdentifierService {
+    val mockedIdentifierService = mockk<NIDIdentifierService>()
+
+    return mockedIdentifierService
 }
 
 internal fun getMockedJob(

@@ -26,6 +26,7 @@ internal class NIDSessionService(
     private val configService: ConfigService,
     private val samplingService: NIDSamplingService,
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
+    private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
 ) {
     internal fun createSession() {
@@ -123,7 +124,7 @@ internal class NIDSessionService(
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID()
-        if (!neuroID.setUserID(finalSessionID, sessionID != null)) {
+        if (!identifierService.setUserID(finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }
