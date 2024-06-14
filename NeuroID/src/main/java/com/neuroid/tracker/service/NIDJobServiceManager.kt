@@ -10,6 +10,7 @@ import com.neuroid.tracker.events.CADENCE_READING_ACCEL
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.LOW_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,6 +27,7 @@ internal class NIDJobServiceManager(
     private var dataStore: NIDDataStoreManager,
     private var eventSender: NIDSendingService,
     private var logger: NIDLogWrapper,
+    private var configService: ConfigService,
     private var dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     @Volatile
@@ -133,7 +135,7 @@ internal class NIDJobServiceManager(
     private fun createSendCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
             while (userActive && isActive) {
-                delay(NeuroID.nidSDKConfig.eventQueueFlushInterval * 1000L)
+                delay(configService.configCache.eventQueueFlushInterval * 1000L)
                 sendEventsNotification.send(false)
             }
         }
@@ -144,15 +146,15 @@ internal class NIDJobServiceManager(
      */
     private fun createGyroCadenceServer(): Job {
         return CoroutineScope(dispatcher).launch {
-            while (NeuroID.isSDKStarted && NeuroID.nidSDKConfig.gyroAccelCadence) {
-                delay(NeuroID.nidSDKConfig.gyroAccelCadenceTime)
+            while (NeuroID.isSDKStarted && configService.configCache.gyroAccelCadence) {
+                delay(configService.configCache.gyroAccelCadenceTime)
 
                 neuroID.captureEvent(
                     type = CADENCE_READING_ACCEL,
                     attrs =
                         listOf(
                             mapOf(
-                                "interval" to "${NeuroID.nidSDKConfig.gyroAccelCadenceTime}sec",
+                                "interval" to "${configService.configCache.gyroAccelCadenceTime}sec",
                             ),
                         ),
                 )
@@ -170,10 +172,10 @@ internal class NIDJobServiceManager(
                 eventSender.sendEvents(
                     clientKey,
                     getEventsToSend(it),
-                    object : NIDResponseCallBack {
-                        override fun <T> onSuccess(
+                    object : NIDResponseCallBack<Any> {
+                        override fun onSuccess(
                             code: Int,
-                            response: T,
+                            response: Any,
                         ) {
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }

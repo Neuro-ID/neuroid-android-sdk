@@ -18,14 +18,19 @@ import kotlinx.coroutines.launch
  * enable/disable the advanced signal collection. Return true to indicate that the SDK is started.
  * Return false if not started.
  */
-fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
-    val started = start()
+fun NeuroIDPublic.start(
+    advancedDeviceSignals: Boolean,
+    completion: (Boolean) -> Unit = {},
+) {
+    start {
+        if (!it) {
+            completion(it)
+        } else {
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
 
-    if (!started) {
-        return started
+            completion(it)
+        }
     }
-    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
-    return started
 }
 
 /**
@@ -38,17 +43,19 @@ fun NeuroIDPublic.start(advancedDeviceSignals: Boolean): Boolean {
 fun NeuroIDPublic.startSession(
     sessionID: String? = null,
     advancedDeviceSignals: Boolean,
-): SessionStartResult {
-    val sessionRes =
-        startSession(
-            sessionID,
-        )
+    completion: (SessionStartResult) -> Unit = {},
+) {
+    startSession(
+        sessionID,
+    ) {
+        if (!it.started) {
+            completion(it)
+        } else {
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
 
-    if (!sessionRes.started) {
-        return sessionRes
+            completion(it)
+        }
     }
-    NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
-    return sessionRes
 }
 
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {

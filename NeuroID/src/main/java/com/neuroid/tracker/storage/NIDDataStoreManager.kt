@@ -4,8 +4,13 @@ import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
+import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FULL_BUFFER
+import com.neuroid.tracker.events.USER_INACTIVE
+import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
 import java.util.LinkedList
@@ -32,10 +37,9 @@ fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
 
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
+    var configService: ConfigService,
 ) : NIDDataStoreManager {
     companion object {
-        private var eventBufferMaxCount = NeuroID.nidSDKConfig.eventQueueFlushSize
-
         private val listNonActiveEvents =
             listOf(
                 USER_INACTIVE,
@@ -46,13 +50,15 @@ internal class NIDDataStoreManagerImp(
     private var eventsList = mutableListOf<NIDEventModel>()
     internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
 
-    // Queue events that are set before sdk is started
+    /**
+     * This function is to store events prior to the SDK being started. Events are stored in a
+     * separate queue from the main eventsList when the SDK is running
+     *
+     * NOTE: The safety checks to storing events (full buffer, low memory, and sampling status) should
+     *       happen PRIOR to calling this function. See `NeuroID.captureEvent`
+     */
     @Synchronized
     override fun queueEvent(tempEvent: NIDEventModel) {
-        if (isFullBuffer()) {
-            logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, ${tempEvent.type} dropped")
-            return
-        }
         val event =
             tempEvent.copy(
                 ts = System.currentTimeMillis(),
@@ -69,8 +75,11 @@ internal class NIDDataStoreManagerImp(
         queuedEvents.clear()
     }
 
-    /*
-        Returns a Boolean indicating if the event was successfully saved or not
+    /**
+     * This function is to store events while the SDK is running
+     *
+     * NOTE: The safety checks to storing events (full buffer, low memory, and sampling status) should
+     *       happen PRIOR to calling this function. See `NeuroID.captureEvent`
      */
     @Synchronized
     override fun saveEvent(event: NIDEventModel) {
@@ -149,7 +158,7 @@ internal class NIDDataStoreManagerImp(
 
         if (lastEventType == FULL_BUFFER) {
             return true
-        } else if (eventsList.size + queuedEvents.size > eventBufferMaxCount) {
+        } else if ((eventsList.size + queuedEvents.size) > configService.configCache.eventQueueFlushSize) {
             // add a full buffer event and drop the new event
             saveEvent(
                 NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),

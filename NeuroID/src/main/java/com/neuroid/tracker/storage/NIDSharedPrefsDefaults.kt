@@ -26,7 +26,7 @@ class NIDSharedPrefsDefaults(
         return sid
     }
 
-    fun getClientId(): String {
+    fun getClientID(): String {
         var cid = getString(NID_CID)
         return if (cid == "") {
             cid = UUID.randomUUID().toString()
@@ -37,8 +37,8 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun resetClientId(): String {
-        return this.getClientId()
+    fun resetClientID(): String {
+        return this.getClientID()
     }
 
     /**
@@ -53,7 +53,7 @@ class NIDSharedPrefsDefaults(
         return salt
     }
 
-    fun getDeviceId(): String {
+    fun getDeviceID(): String {
         var deviceId = getString(NID_DID)
 
         return if (deviceId == "") {
@@ -66,7 +66,7 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getIntermediateId(): String {
+    fun getIntermediateID(): String {
         var iid = getString(NID_IID, "")
 
         return if (iid == "") {
@@ -76,11 +76,6 @@ class NIDSharedPrefsDefaults(
         } else {
             iid
         }
-    }
-
-    fun generateUniqueHexId(): String {
-        // use random UUID to ensure uniqueness amongst devices,
-        return UUID.randomUUID().toString()
     }
 
     fun getLocale(): String = Locale.getDefault().toString()
@@ -121,6 +116,10 @@ class NIDSharedPrefsDefaults(
         return sharedPref?.getString(key, "") ?: default
     }
 
+    internal fun getDisplayWidth() = Resources.getSystem().displayMetrics.widthPixels
+
+    internal fun getDisplayHeight() = Resources.getSystem().displayMetrics.heightPixels
+
     companion object {
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
         private const val NID_UID = "NID_UID_KEY"
@@ -131,14 +130,5 @@ class NIDSharedPrefsDefaults(
         private const val NID_DID = "NID_DID_KEY"
         private const val NID_IID = "NID_IID_KEY"
         private const val NID_DEVICE_SALT = "NID_DEVICE_SALT"
-
-        fun getHexRandomID(): String =
-            List(12) {
-                (('a'..'f') + ('0'..'9')).random()
-            }.joinToString("")
-
-        fun getDisplayWidth() = Resources.getSystem().displayMetrics.widthPixels
-
-        fun getDisplayHeight() = Resources.getSystem().displayMetrics.heightPixels
     }
 }

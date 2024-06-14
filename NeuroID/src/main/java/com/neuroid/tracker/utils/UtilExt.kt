@@ -8,7 +8,7 @@ fun Activity.getGUID(): String {
     return UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 }
 
-internal fun generateUniqueHexId(): String {
+internal fun generateUniqueHexID(): String {
     // use random UUID to ensure uniqueness amongst devices,
     return UUID.randomUUID().toString()
 }

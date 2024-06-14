@@ -8,11 +8,11 @@ import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.OUT_OF_MEMORY
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDVersion
-import com.neuroid.tracker.utils.getRetroFitInstance
+import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -20,7 +20,7 @@ interface NIDSendingService {
     fun sendEvents(
         key: String,
         events: List<NIDEventModel>,
-        responseCallback: NIDResponseCallBack,
+        responseCallback: NIDResponseCallBack<Any>,
     )
 
 // Request Prep Functions
@@ -34,7 +34,10 @@ interface NIDSendingService {
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
  * we retry requests that connect and come back with bad response codes.
  */
-class NIDEventSender(private var apiService: NIDApiService, private val context: Context) : NIDSendingService, RetrySender() {
+class NIDEventSender(
+    private var httpService: HttpService,
+    private val context: Context,
+) : NIDSendingService, RetrySender() {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 
@@ -62,7 +65,7 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
     override fun sendEvents(
         key: String,
         events: List<NIDEventModel>,
-        responseCallback: NIDResponseCallBack,
+        responseCallback: NIDResponseCallBack<Any>,
     ) {
         var data = ""
         try {
@@ -81,8 +84,12 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
         }
 
         val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
-        val call = apiService.sendEvents(requestBody, key)
-        retryRequests(call, responseCallback)
+
+        httpService.sendEvents(
+            requestBody,
+            key,
+            responseCallback,
+        )
     }
 
     override fun getRequestPayloadJSON(events: List<NIDEventModel>): String {
@@ -101,41 +108,39 @@ class NIDEventSender(private var apiService: NIDApiService, private val context:
                 null
             }
 
+        val linkedSiteID: String? = NeuroID.getInternalInstance()?.linkedSiteID
+
         val jsonBody =
             mapOf(
                 "siteId" to NeuroID.siteID,
                 "userId" to userID,
-                "clientId" to sharedDefaults.getClientId(),
+                "clientId" to sharedDefaults.getClientID(),
                 "identityId" to userID,
                 "registeredUserId" to registeredUserID,
                 "pageTag" to NeuroID.screenActivityName,
                 "pageId" to NeuroID.rndmId,
                 "tabId" to NeuroID.rndmId,
-                "responseId" to sharedDefaults.generateUniqueHexId(),
+                "responseId" to generateUniqueHexID(),
                 "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",
                 "sdkVersion" to NIDVersion.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
-                "linkedSiteId" to NeuroID.linkedSiteID,
+                "linkedSiteId" to linkedSiteID,
             )
 
         // using this JSON library (already included) does not escape /
+        NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
         val gson: Gson = GsonBuilder().create()
         return gson.toJson(jsonBody)
     }
 }
 
 fun getSendingService(
-    endpoint: String,
-    logger: NIDLogWrapper,
+    httpService: HttpService,
     context: Context,
 ): NIDSendingService =
     NIDEventSender(
-        getRetroFitInstance(
-            endpoint,
-            logger,
-            NIDApiService::class.java,
-        ),
+        httpService,
         context,
     )

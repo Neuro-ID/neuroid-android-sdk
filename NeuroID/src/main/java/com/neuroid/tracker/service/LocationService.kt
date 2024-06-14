@@ -84,11 +84,10 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
         locationManager: LocationManager,
         isLocationAllowed: Boolean,
     ) {
-        if (locationPermissionUtils.isNotAllowedToCollectLocations(context) || !isLocationAllowed)
-            {
-                shutdownLocationCoroutine(locationManager)
-                return
-            }
+        if (locationPermissionUtils.isNotAllowedToCollectLocations(context) || !isLocationAllowed) {
+            shutdownLocationCoroutine(locationManager)
+            return
+        }
         this.nidLocation = nidLocation
         // get last position if available, take highest accuracy from available providers
         var smallestAccuracyMeters = Float.MAX_VALUE

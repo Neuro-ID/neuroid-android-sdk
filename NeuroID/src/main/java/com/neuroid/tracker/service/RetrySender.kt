@@ -1,5 +1,6 @@
 package com.neuroid.tracker.service
 
+import com.neuroid.tracker.models.NIDResponseCallBack
 import retrofit2.Call
 
 abstract class RetrySender {
@@ -9,9 +10,9 @@ abstract class RetrySender {
         const val HTTP_SUCCESS = 200
     }
 
-    fun <T> retryRequests(
+    fun <T, R> retryRequests(
         call: Call<T>,
-        responseCallback: NIDResponseCallBack,
+        responseCallback: NIDResponseCallBack<R>,
     ) {
         try {
             var retryCount = 0
@@ -23,7 +24,7 @@ abstract class RetrySender {
                 // only allow 200 codes to succeed, everything else is failure, 204 is a failure
                 // which is weird!
                 if (response.code() == HTTP_SUCCESS) {
-                    responseCallback.onSuccess(response.code(), response.body())
+                    responseCallback.onSuccess(response.code(), response.body() as R)
                     break
                 } else {
                     // response code is not 200, retry these up to RETRY_COUNT times

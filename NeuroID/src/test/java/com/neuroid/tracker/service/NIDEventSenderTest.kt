@@ -8,7 +8,9 @@ import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
+import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDResponseCallBack
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -21,68 +23,67 @@ import org.junit.Test
 import retrofit2.Call
 import retrofit2.Response
 
-class NeuroIDSendEventTest {
+class NIDEventSenderTest {
+    val testEventList = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
+
     //    sendEvents
     @Test
     fun testSendEvents_success() =
         runBlocking {
-            val mockedAPIService =
-                getMockedAPIService(
+            val clientKey = "test_key"
+            val responseCode = 200
+            val responseMessage = ""
+
+            val mockedHttpService =
+                getMockedHTTPService(
                     true,
-                    200,
-                    "should not happen",
+                    responseCode,
+                    responseMessage,
                 )
             val callback = getMockedNIDCallback()
 
-            val events = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
-            val eventSender = NIDEventSender(mockedAPIService, getMockedApplication())
+            val eventSender = NIDEventSender(mockedHttpService, getMockedApplication())
 
-            eventSender.sendEvents("test_key", events, callback)
-            verify {
-                callback.onSuccess(200, any<ResponseBody>())
+            eventSender.sendEvents(clientKey, testEventList, callback)
+
+            verify(exactly = 1) {
+                mockedHttpService.sendEvents(
+                    any(),
+                    clientKey,
+                    callback,
+                )
+                callback.onSuccess(responseCode, responseMessage)
             }
         }
 
     @Test
     fun testSendEvents_fail_3_times() =
         runBlocking {
-            val mockedAPIService =
-                getMockedAPIService(
+            val clientKey = "test_key"
+            val responseCode = 400
+            val responseMessage = "your request is junk, fix it!"
+
+            val mockedHttpService =
+                getMockedHTTPService(
                     false,
-                    400,
-                    "your request is junk, fix it!",
+                    responseCode,
+                    responseMessage,
                 )
             val callback = getMockedNIDCallback()
 
-            val events = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
-            val eventSender = NIDEventSender(mockedAPIService, getMockedApplication())
+            val eventSender = NIDEventSender(mockedHttpService, getMockedApplication())
 
-            eventSender.sendEvents("test_key", events, callback)
+            eventSender.sendEvents(clientKey, testEventList, callback)
 
-            verify(exactly = 3) {
-                callback.onFailure(400, "your request is junk, fix it!", any())
-            }
-        }
-
-    @Test
-    fun testSendEvents_fail_exception() =
-        runBlocking {
-            val mockedAPIService =
-                getMockedAPIService(
-                    false,
-                    400,
-                    "your request is junk, fix it!",
-                    "we blew it, sorry",
+            verify(exactly = 1) {
+                mockedHttpService.sendEvents(
+                    any(),
+                    clientKey,
+                    callback,
                 )
-            val callback = getMockedNIDCallback()
 
-            val events = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
-            val eventSender = NIDEventSender(mockedAPIService, getMockedApplication())
-
-            eventSender.sendEvents("test_key", events, callback)
-
-            verify {
-                callback.onFailure(-1, "we blew it, sorry", any())
+                // NOT verifying 3x call because the class is mocked. That is a separate test
+                callback.onFailure(responseCode, responseMessage, false)
             }
         }
 
@@ -90,7 +91,7 @@ class NeuroIDSendEventTest {
     @Test
     fun testgetRequestPayloadJSON() {
         val mockedAPIService =
-            getMockedAPIService(
+            getMockedHTTPsService(
                 false,
                 400,
                 "",
@@ -115,7 +116,7 @@ class NeuroIDSendEventTest {
     @Test
     fun testRetryRequests_success() {
         val mockedAPIService =
-            getMockedAPIService(
+            getMockedHTTPsService(
                 true,
                 200,
                 "",
@@ -140,7 +141,7 @@ class NeuroIDSendEventTest {
     @Test
     fun testRetryRequests_failed() {
         val mockedAPIService =
-            getMockedAPIService(
+            getMockedHTTPsService(
                 true,
                 200,
                 "",
@@ -165,7 +166,7 @@ class NeuroIDSendEventTest {
     @Test
     fun testRetryRequests_exception() {
         val mockedAPIService =
-            getMockedAPIService(
+            getMockedHTTPsService(
                 true,
                 200,
                 "",
@@ -211,12 +212,12 @@ class NeuroIDSendEventTest {
         return application
     }
 
-    private fun getMockedAPIService(
+    private fun getMockedHTTPsService(
         isSuccessful: Boolean,
         responseCode: Int,
         responseMessage: String,
         retryErrorMessage: String? = null,
-    ): NIDApiService {
+    ): HttpService {
         val call =
             getMockedOkHTTPCall(
                 isSuccessful,
@@ -225,10 +226,13 @@ class NeuroIDSendEventTest {
                 retryErrorMessage,
             )
 
-        val apiService = mockk<NIDApiService>()
-        every { apiService.sendEvents(any(), any()) } returns call
+        val mockedHttpService = getMockedHTTPService()
 
-        return apiService
+        every { mockedHttpService.sendEvents(any(), any(), any()) } answers {
+            call
+        }
+
+        return mockedHttpService
     }
 
     private fun getMockedOkHTTPCall(
@@ -259,9 +263,9 @@ class NeuroIDSendEventTest {
         return call
     }
 
-    private fun getMockedNIDCallback(): NIDResponseCallBack {
-        val callback = mockk<NIDResponseCallBack>()
-        every { callback.onSuccess(any(), null) } just Runs
+    private fun getMockedNIDCallback(): NIDResponseCallBack<Any> {
+        val callback = mockk<NIDResponseCallBack<Any>>()
+        every { callback.onSuccess(any(), any()) } just Runs
         every { callback.onFailure(any(), any(), any()) } just Runs
 
         return callback

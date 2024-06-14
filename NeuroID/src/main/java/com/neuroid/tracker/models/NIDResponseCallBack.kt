@@ -1,7 +1,7 @@
-package com.neuroid.tracker.service
+package com.neuroid.tracker.models
 
-interface NIDResponseCallBack {
-    fun <T> onSuccess(
+interface NIDResponseCallBack<T> {
+    fun onSuccess(
         code: Int,
         response: T,
     )

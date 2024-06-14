@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.IntentFilter
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -16,13 +15,11 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
-import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.FORM_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.FULL_BUFFER
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
 import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
@@ -35,20 +32,20 @@ import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
-import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.LocationService
-import com.neuroid.tracker.service.NIDApiService
 import com.neuroid.tracker.service.NIDCallActivityListener
-import com.neuroid.tracker.service.NIDConfigurationService
+import com.neuroid.tracker.service.NIDConfigService
+import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
-import com.neuroid.tracker.service.OnRemoteConfigReceivedListener
+import com.neuroid.tracker.service.NIDSamplingService
+import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -56,19 +53,14 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
-import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
-import com.neuroid.tracker.utils.generateUniqueHexId
 import com.neuroid.tracker.utils.getGUID
-import com.neuroid.tracker.utils.getRetroFitInstance
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.Calendar
 
 class NeuroID
@@ -76,23 +68,23 @@ class NeuroID
         internal var application: Application?,
         internal var clientKey: String,
         internal val isAdvancedDevice: Boolean,
-        serverEnvironment: String = PRODUCTION
-    ): NeuroIDPublic {
-
+        serverEnvironment: String = PRODUCTION,
+    ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
-        private val ioDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
         private var firstTime = true
         internal var sessionID = ""
         internal var clientID = ""
         internal var userID = ""
+        internal var linkedSiteID: String? = null
+
         internal var registeredUserID = ""
         internal var timestamp: Long = 0L
         internal val excludedTestIDList = arrayListOf<String>()
 
         internal var forceStart: Boolean = false
 
-        private var metaData: NIDMetaData? = null
+        internal var metaData: NIDMetaData? = null
 
         internal var verifyIntegrationHealth: Boolean = false
         internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
@@ -101,22 +93,33 @@ class NeuroID
         internal var isRN = false
 
         // Dependency Injections
+        internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
+        internal var randomGenerator = RandomGenerator()
         internal var logger: NIDLogWrapper = NIDLogWrapper()
+        internal var configService: ConfigService
         internal var dataStore: NIDDataStoreManager
         internal var registrationIdentificationHelper: RegistrationIdentificationHelper
         internal var nidActivityCallbacks: ActivityCallbacks
+        internal var samplingService: NIDSamplingService
+        internal val httpService: NIDHttpService
+
+        internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
+        internal lateinit var nidCallActivityListener: NIDCallActivityListener
+        internal lateinit var locationService: LocationService
 
         internal var clipboardManager: ClipboardManager? = null
+        internal var networkConnectionType = "unknown"
 
-        internal var nidCallActivityListener: NIDCallActivityListener? = null
         internal var lowMemory: Boolean = false
         internal var isConnected = false
-        internal var locationService: LocationService? = null
-        internal var networkConnectionType = "unknown"
 
         init {
             when (serverEnvironment) {
+                PRODSCRIPT_DEVCOLLECTION -> {
+                    endpoint = Constants.devEndpoint.displayName
+                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                }
                 DEVELOPMENT -> {
                     endpoint = Constants.devEndpoint.displayName
                     scriptEndpoint = Constants.devScriptsEndpoint.displayName
@@ -127,12 +130,50 @@ class NeuroID
                 }
             }
 
-            setRemoteConfig()
+            // TO-DO - If invalid key passed we should be exiting
+            if (!validateClientKey(clientKey)) {
+                logger.e(msg = "Invalid Client Key")
+                clientKey = ""
+            } else {
+                environment =
+                    if (clientKey.contains("_live_")) {
+                        "LIVE"
+                    } else {
+                        "TEST"
+                    }
+            }
 
-            dataStore = NIDDataStoreManagerImp(logger)
+            // We have to have two different retrofit instances because it requires a
+            // `base_url` to work off of and our Collection and Config endpoints are
+            // different
+            httpService =
+                NIDHttpService(
+                    collectionEndpoint = endpoint,
+                    configEndpoint = scriptEndpoint,
+                    logger = logger,
+                    // We can't use the config value because it hasn't been called.
+                    // Might have to recreate once config is retrieved
+                    collectionTimeout = 10,
+                    configTimeout = 10,
+                )
+
+            configService = NIDConfigService(dispatcher, logger, this, httpService)
+            samplingService = NIDSamplingService(logger, randomGenerator, configService)
+            dataStore = NIDDataStoreManagerImp(logger, configService)
+
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+
             application?.let {
+                sessionService =
+                    NIDSessionService(
+                        logger,
+                        this,
+                        configService,
+                        samplingService,
+                        NIDSharedPrefsDefaults(it),
+                    )
+
                 locationService = LocationService()
                 metaData =
                     NIDMetaData(
@@ -143,55 +184,37 @@ class NeuroID
                     NIDJobServiceManager(
                         this,
                         dataStore,
-                        getSendingService(endpoint, logger, it),
+                        getSendingService(
+                            httpService,
+                            it,
+                        ),
                         logger,
+                        configService,
                     )
-            }
 
-            if (!validateClientKey(clientKey)) {
-                logger.e(msg = "Invalid Client Key")
-                clientKey = ""
-            } else {
-                if (clientKey.contains("_live_")) {
-                    environment = "LIVE"
-                } else {
-                    environment = "TEST"
-                }
-            }
+                nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
-            // register network listener here. >=API24 will not receive if registered
-            // in the manifest so we do it here for full compatibility
-            application?.let {
+                // get connectivity info on startup
+                // register network listener here. >=API24 will not receive if registered
+                // in the manifest so we do it here for full compatibility
                 val connectivityManager =
                     it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                application?.registerReceiver(
-                    NIDNetworkListener(
-                        connectivityManager,
-                        dataStore,
-                        this,
-                        Dispatchers.IO,
-                    ),
-                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
-                )
-            }
 
-            // set call activity listener
-            if (nidSDKConfig.callInProgress) {
-                nidCallActivityListener = NIDCallActivityListener(dataStore, VersionChecker())
-                this.getApplicationContext()
-                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
-            }
-
-            // get connectivity info on startup
-            application?.let {
-                val connectivityManager =
-                    it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
                 val info = connectivityManager.activeNetworkInfo
                 val isConnectingOrConnected = info?.isConnectedOrConnecting()
                 if (isConnectingOrConnected != null) {
                     isConnected = isConnectingOrConnected
                 }
                 networkConnectionType = this.getNetworkType(it)
+
+                application?.registerReceiver(
+                    NIDNetworkListener(
+                        connectivityManager,
+                        this,
+                        Dispatchers.IO,
+                    ),
+                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
+                )
             }
         }
 
@@ -228,31 +251,6 @@ class NeuroID
             return "noNetwork"
         }
 
-        private fun setRemoteConfig() =
-            runBlocking {
-                val deferred =
-                    CoroutineScope(Dispatchers.IO).async {
-                        NIDConfigurationService(
-                            getRetroFitInstance(scriptEndpoint, logger, NIDApiService::class.java),
-                            object : OnRemoteConfigReceivedListener {
-                                override fun onRemoteConfigReceived(remoteConfig: NIDRemoteConfig) {
-                                    nidSDKConfig = remoteConfig
-                                    logger.e("init", "remoteConfig: $remoteConfig")
-                                }
-
-                                override fun onRemoteConfigReceivedFailed(errorMessage: String) {
-                                    logger.e(
-                                        "init",
-                                        "error getting remote config: $errorMessage",
-                                    )
-                                }
-                            },
-                            clientKey,
-                        )
-                    }
-                deferred.await()
-            }
-
         @Synchronized
         private fun setupCallbacks() {
             if (firstTime) {
@@ -264,13 +262,20 @@ class NeuroID
             }
         }
 
-        data class Builder(val application: Application? = null,
-                           val clientKey: String = "",
-                           val isAdvancedDevice: Boolean = false,
-                           val serverEnvironment: String = PRODUCTION) {
-
+        data class Builder(
+            val application: Application? = null,
+            val clientKey: String = "",
+            val isAdvancedDevice: Boolean = false,
+            val serverEnvironment: String = PRODUCTION,
+        ) {
             fun build() {
-                val neuroID = NeuroID(application, clientKey, isAdvancedDevice, serverEnvironment)
+                val neuroID =
+                    NeuroID(
+                        application,
+                        clientKey,
+                        isAdvancedDevice,
+                        serverEnvironment,
+                    )
                 neuroID.setupCallbacks()
                 setNeuroIDInstance(neuroID)
             }
@@ -279,6 +284,7 @@ class NeuroID
         companion object {
             const val PRODUCTION = "production"
             const val DEVELOPMENT = "development"
+            const val PRODSCRIPT_DEVCOLLECTION = "prodscriptdevcollection"
 
             // public exposed variable to determine if logs should show see
             //  `enableLogging`
@@ -303,7 +309,6 @@ class NeuroID
 
             internal var environment = ""
             internal var siteID = ""
-            internal var linkedSiteID: String? = null
             internal var rndmId = "mobile"
             internal var firstScreenName = ""
             internal var isConnected = false
@@ -313,9 +318,6 @@ class NeuroID
             internal var endpoint = Constants.productionEndpoint.displayName
             internal var scriptEndpoint = Constants.productionScriptsEndpoint.displayName
             private var singleton: NeuroID? = null
-
-            // configuration state
-            internal var nidSDKConfig = NIDRemoteConfig()
 
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
@@ -363,7 +365,20 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
+                nidJobServiceManager.setTestEventSender(
+                    getSendingService(
+                        NIDHttpService(
+                            collectionEndpoint = endpoint,
+                            configEndpoint = scriptEndpoint,
+                            logger = logger,
+                            // We can't use the config value because it hasn't been called.
+                            // Might have to recreate once config is retrieved
+                            collectionTimeout = 10,
+                            configTimeout = 10,
+                        ),
+                        it,
+                    ),
+                )
             }
         }
 
@@ -373,19 +388,33 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager.setTestEventSender(getSendingService(endpoint, logger, it))
+                nidJobServiceManager.setTestEventSender(
+                    getSendingService(
+                        httpService =
+                            NIDHttpService(
+                                collectionEndpoint = endpoint,
+                                configEndpoint = scriptEndpoint,
+                                logger = logger,
+                                // We can't use the config value because it hasn't been called.
+                                // Might have to recreate once config is retrieved
+                                collectionTimeout = 10,
+                                configTimeout = 10,
+                            ),
+                        it,
+                    ),
+                )
             }
         }
 
-        private fun verifyClientKeyExists(): Boolean {
+        internal fun verifyClientKeyExists(): Boolean {
             if (clientKey.isNullOrEmpty()) {
-                logger.e(msg = "Missing Client Key - please call Builder.build() prior to calling start")
+                logger.e(msg = "Missing Client Key - please call Builder.build() prior to calling a starting function")
                 return false
             }
             return true
         }
 
-        private fun validateSiteId(siteId: String): Boolean {
+        internal fun validateSiteID(siteId: String): Boolean {
             var valid = false
             val regex = "form_[a-zA-Z0-9]{5}\\d{3}\$"
 
@@ -407,7 +436,7 @@ class NeuroID
             return valid
         }
 
-        internal fun validateUserId(userId: String): Boolean {
+        internal fun validateUserID(userId: String): Boolean {
             val regex = "^[a-zA-Z0-9-_.]{3,100}$"
 
             if (!userId.matches(regex.toRegex())) {
@@ -442,7 +471,7 @@ class NeuroID
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             try {
                 attemptedRegisteredUserId?.let {
-                    if (validateUserId(attemptedRegisteredUserId)) {
+                    if (validateUserID(attemptedRegisteredUserId)) {
                         captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
                         return true
                     }
@@ -471,16 +500,18 @@ class NeuroID
          * throw because of the undependable nature of reflection. We cannot afford to throw any
          * exception to the host app causing a crash because of this .
          */
-        internal fun checkThenCaptureAdvancedDevice(shouldCapture:Boolean = isAdvancedDevice) {
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
             val packageName = "com.neuroid.tracker.extensions"
             val methodName = "captureAdvancedDevice"
             val extensionName = ".AdvancedDeviceExtensionKt"
             try {
                 val extensionFunctions = Class.forName(packageName + extensionName)
-                val method = extensionFunctions.getDeclaredMethod(
-                    methodName, NeuroID::class.java,
-                    Boolean::class.java
-                )
+                val method =
+                    extensionFunctions.getDeclaredMethod(
+                        methodName,
+                        NeuroID::class.java,
+                        Boolean::class.java,
+                    )
                 if (method != null) {
                     method.isAccessible = true
                     // Invoke the method
@@ -496,58 +527,11 @@ class NeuroID
             }
         }
 
-        /**
-         * ported from the iOS implementation
-         */
-        override fun startAppFlow(
-            siteID: String,
-            userID: String?,
-        ): SessionStartResult {
-            if (!verifyClientKeyExists() || !validateSiteId(siteID)) {
-                // reset linked site id (in case of failure)
-                linkedSiteID = ""
-                return SessionStartResult(false, "")
-            }
-
-            // immediately flush events before anything else
-            CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEvents(true)
-                saveIntegrationHealthEvents()
-            }
-            // If not started then start
-            val startStatus: SessionStartResult =
-                if (!isSDKStarted) {
-                    // if userID passed then startSession else start
-                    if (userID != null) {
-                        startSession(userID)
-                    } else {
-                        val started = start()
-                        SessionStartResult(started, "")
-                    }
-                } else {
-                    createMobileMetadata()
-                    createSession()
-                    SessionStartResult(true, userID ?: "")
-                }
-
-            if (!startStatus.started) {
-                return startStatus
-            }
-
-            // add linkedSite var
-            linkedSiteID = siteID
-
-            // capture linkedSiteEvent for MIHR - not relevant for collection
-            captureEvent(type = SET_LINKED_SITE, v = siteID)
-
-            return startStatus
-        }
-
         override fun setUserID(userID: String): Boolean {
             return setUserID(userID, true)
         }
 
-        private fun setUserID(
+        internal fun setUserID(
             userId: String,
             userGenerated: Boolean,
         ): Boolean {
@@ -567,7 +551,7 @@ class NeuroID
             userGenerated: Boolean = true,
         ): Boolean {
             try {
-                val validID = validateUserId(genericUserId)
+                val validID = validateUserID(genericUserId)
                 val originRes =
                     getOriginResult(genericUserId, validID = validID, userGenerated = userGenerated)
                 sendOriginEvent(originRes)
@@ -610,7 +594,7 @@ class NeuroID
             }
 
             screenName = screen.replace("\\s".toRegex(), "%20")
-            createMobileMetadata()
+            sessionService.createMobileMetadata()
 
             return true
         }
@@ -700,57 +684,19 @@ class NeuroID
             saveIntegrationHealthEvents()
         }
 
-        override fun start(): Boolean {
-            if (clientKey == "") {
-                logger.e(msg = "Missing Client Key - please call configure prior to calling start")
-                return false
+        override fun start(completion: (Boolean) -> Unit) =
+            sessionService.start(siteID = null) {
+                completion(it)
             }
-
-            application?.let { nidJobServiceManager.startJob(it, clientKey) }
-            _isSDKStarted = true
-            NIDSingletonIDs.retrieveOrCreateLocalSalt()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                startIntegrationHealthCheck()
-                createSession()
-                saveIntegrationHealthEvents()
-            }
-            dataStore.saveAndClearAllQueuedEvents()
-
-            this.getApplicationContext()?.let {
-                if (nidSDKConfig.callInProgress) {
-                    nidCallActivityListener?.setCallActivityListener(it)
-                }
-                if (nidSDKConfig.geoLocation) {
-                    locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                }
-            }
-            checkThenCaptureAdvancedDevice()
-            return true
-        }
 
         override fun stop(): Boolean {
-            pauseCollection()
-            nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
-
-            locationService?.let {
-                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-            }
-
-            return true
-        }
-
-        fun closeSession() {
-            if (!isStopped()) {
-                captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
-                stop()
-            }
+            return sessionService.stop()
         }
 
         internal fun resetClientId() {
             application?.let {
                 val sharedDefaults = NIDSharedPrefsDefaults(it)
-                clientID = sharedDefaults.resetClientId()
+                clientID = sharedDefaults.resetClientID()
             }
         }
 
@@ -774,77 +720,6 @@ class NeuroID
             return this.application?.applicationContext
         }
 
-        private fun createSession() {
-            timestamp = System.currentTimeMillis()
-            application?.let {
-                val sharedDefaults = NIDSharedPrefsDefaults(it)
-                sessionID = sharedDefaults.getNewSessionID()
-                clientID = sharedDefaults.getClientId()
-
-                captureEvent(
-                    type = CREATE_SESSION,
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData,
-                )
-
-                createMobileMetadata()
-            }
-        }
-
-        private fun createMobileMetadata() {
-            application?.let {
-                val sharedDefaults = NIDSharedPrefsDefaults(it)
-                // get updated GPS location if possible
-                metaData?.getLastKnownLocation(it, nidSDKConfig.geoLocation, locationService)
-                captureEvent(
-                    type = MOBILE_METADATA_ANDROID,
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData,
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                    attrs = listOf(mapOf("isRN" to isRN)),
-                )
-            }
-        }
-
         override fun setIsRN() {
             this.isRN = true
         }
@@ -856,57 +731,12 @@ class NeuroID
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
         // new Session Commands
-        fun clearSessionVariables() {
-            userID = ""
-            registeredUserID = ""
-            linkedSiteID = ""
-        }
 
-        override fun startSession(sessionID: String?): SessionStartResult {
-            if (clientKey == "") {
-                logger.e(msg = "Missing Client Key - please call configure prior to calling start")
-                return SessionStartResult(false, "")
-            }
-
-            if (userID != "" || isSDKStarted) {
-                stopSession()
-            }
-
-            var finalSessionID = sessionID ?: generateUniqueHexId()
-
-            if (!setUserID(finalSessionID, sessionID != null)) {
-                return SessionStartResult(false, "")
-            }
-
-            resumeCollection()
-
-            _isSDKStarted = true
-            NIDSingletonIDs.retrieveOrCreateLocalSalt()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                startIntegrationHealthCheck()
-                createSession()
-                saveIntegrationHealthEvents()
-            }
-
-            dataStore.saveAndClearAllQueuedEvents()
-
-            if (nidSDKConfig.callInProgress) {
-                this.getApplicationContext()
-                    ?.let { nidCallActivityListener?.setCallActivityListener(it) }
-            }
-
-            // we need to set finalSessionID with the set random user id
-            // if a sessionID was not passed in
-            finalSessionID = getUserID()
-
-            if (nidSDKConfig.geoLocation) {
-                locationService?.let {
-                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                }
-            }
-            checkThenCaptureAdvancedDevice()
-            return SessionStartResult(true, finalSessionID)
+        override fun startSession(
+            sessionID: String?,
+            completion: (SessionStartResult) -> Unit,
+        ) = sessionService.startSession(null, sessionID) {
+            completion(it)
         }
 
         private fun sendOriginEvent(originResult: SessionIDOriginResult) {
@@ -960,73 +790,49 @@ class NeuroID
 
         @Synchronized
         override fun pauseCollection() {
-            pauseCollection(true)
-        }
-
-        @Synchronized
-        internal fun pauseCollection(flushEvents: Boolean) {
-            _isSDKStarted = false
-            if (pauseCollectionJob == null ||
-                pauseCollectionJob?.isCancelled == true ||
-                pauseCollectionJob?.isCompleted == true
-            ) {
-                pauseCollectionJob =
-                    CoroutineScope(Dispatchers.IO).launch {
-                        nidJobServiceManager.sendEvents(flushEvents)
-                        nidJobServiceManager.stopJob()
-                        saveIntegrationHealthEvents()
-                    }
-            }
-            locationService?.let {
-                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-            }
+            sessionService.pauseCollection(true)
         }
 
         @Synchronized
         override fun resumeCollection() {
-            // Don't allow resume to be called if SDK has not been started
-            if (userID.isEmpty() && !isSDKStarted) {
-                return
-            }
-            if (pauseCollectionJob?.isCompleted == true ||
-                pauseCollectionJob?.isCancelled == true ||
-                pauseCollectionJob == null
-            ) {
-                resumeCollectionCompletion()
-            } else {
-                pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
-            }
-
-            if (nidSDKConfig.geoLocation) {
-                locationService?.let {
-                    it.setupLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                }
-            }
-        }
-
-        private fun resumeCollectionCompletion() {
-            _isSDKStarted = true
-            application?.let {
-                if (!nidJobServiceManager.isSetup) {
-                    nidJobServiceManager.startJob(it, clientKey)
-                } else {
-                    nidJobServiceManager.restart()
-                }
-            }
+            sessionService.resumeCollection()
         }
 
         override fun stopSession(): Boolean {
-            captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
+            return sessionService.stopSession()
+        }
 
-            pauseCollection()
-            clearSessionVariables()
-            nidCallActivityListener?.unregisterCallActivityListener(this.getApplicationContext())
+        /**
+         * ported from the iOS implementation
+         */
+        override fun startAppFlow(
+            siteID: String,
+            userID: String?,
+            completion: (SessionStartResult) -> Unit,
+        ) {
+            sessionService.startAppFlow(
+                siteID,
+                userID,
+            ) {
+                completion(it)
+            }
+        }
 
-            locationService?.let {
-                it.shutdownLocationCoroutine(getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+        internal fun addLinkedSiteID(siteID: String) {
+            if (!validateSiteID(siteID)) {
+                captureEvent(
+                    type = LOG,
+                    level = "ERROR",
+                    m = "Invalid Linked SiteID $siteID, failed to set",
+                )
+
+                return
             }
 
-            return true
+            linkedSiteID = siteID
+
+            // capture linkedSiteEvent for MIHR - not relevant for collection
+            captureEvent(type = SET_LINKED_SITE, v = siteID)
         }
 
     /*
@@ -1101,6 +907,10 @@ class NeuroID
             }
 
             if (excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
+                return
+            }
+
+            if (!samplingService.isSessionFlowSampled()) {
                 return
             }
 
