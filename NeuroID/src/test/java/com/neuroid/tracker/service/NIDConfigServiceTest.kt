@@ -7,6 +7,7 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
+import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.verifyCaptureEvent
@@ -32,6 +33,7 @@ class NIDConfigServiceTest {
     private lateinit var logger: NIDLogWrapper
     private lateinit var httpService: HttpService
     private lateinit var configService: NIDConfigService
+    private lateinit var validationService: NIDValidationService
 
     @Before
     fun setup() {
@@ -39,7 +41,15 @@ class NIDConfigServiceTest {
         dispatcher = neuroID.dispatcher
         logger = getMockedLogger()
         httpService = getMockedHTTPService()
-        configService = NIDConfigService(dispatcher, logger, neuroID, httpService)
+        validationService = getMockedValidationService()
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                validationService,
+            )
     }
 
     @After
@@ -62,7 +72,7 @@ class NIDConfigServiceTest {
     fun test_retrieveConfig_failure() =
         runBlocking {
             // Given
-            every { neuroID.verifyClientKeyExists() } returns false
+            every { validationService.verifyClientKeyExists(any()) } returns false
             configService.cacheSetWithRemote = true
 
             // When
@@ -98,7 +108,14 @@ class NIDConfigServiceTest {
                 200,
                 remoteConfig,
             )
-        configService = NIDConfigService(dispatcher, logger, neuroID, httpService)
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                validationService,
+            )
 
         var completionRun = false
         configService.retrieveConfigCoroutine {
@@ -133,7 +150,14 @@ class NIDConfigServiceTest {
                 400,
                 "ERROR",
             )
-        configService = NIDConfigService(dispatcher, logger, neuroID, httpService)
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                validationService,
+            )
 
         var completionRun = false
         configService.retrieveConfigCoroutine {
@@ -199,7 +223,15 @@ class NIDConfigServiceTest {
         val gsonMock = mockk<Gson>()
         every { gsonMock.toJson(any()) } throws Error("NOPE")
 
-        configService = NIDConfigService(dispatcher, logger, neuroID, httpService, gsonMock)
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                validationService,
+                gsonMock,
+            )
 
         val remoteConfig = NIDRemoteConfig()
 

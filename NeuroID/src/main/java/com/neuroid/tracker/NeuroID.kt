@@ -46,6 +46,7 @@ import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
+import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -102,6 +103,7 @@ class NeuroID
         internal var nidActivityCallbacks: ActivityCallbacks
         internal var samplingService: NIDSamplingService
         internal val httpService: NIDHttpService
+        internal val validationService: NIDValidationService = NIDValidationService(logger)
 
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
@@ -131,7 +133,7 @@ class NeuroID
             }
 
             // TO-DO - If invalid key passed we should be exiting
-            if (!validateClientKey(clientKey)) {
+            if (!validationService.validateClientKey(clientKey)) {
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
             } else {
@@ -157,7 +159,7 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            configService = NIDConfigService(dispatcher, logger, this, httpService)
+            configService = NIDConfigService(dispatcher, logger, this, httpService, validationService)
             samplingService = NIDSamplingService(logger, randomGenerator, configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
@@ -172,6 +174,7 @@ class NeuroID
                         configService,
                         samplingService,
                         NIDSharedPrefsDefaults(it),
+                        validationService,
                     )
 
                 locationService = LocationService()
@@ -406,47 +409,6 @@ class NeuroID
             }
         }
 
-        internal fun verifyClientKeyExists(): Boolean {
-            if (clientKey.isNullOrEmpty()) {
-                logger.e(msg = "Missing Client Key - please call Builder.build() prior to calling a starting function")
-                return false
-            }
-            return true
-        }
-
-        internal fun validateSiteID(siteId: String): Boolean {
-            var valid = false
-            val regex = "form_[a-zA-Z0-9]{5}\\d{3}\$"
-
-            if (siteId.matches(regex.toRegex())) {
-                valid = true
-            }
-
-            return valid
-        }
-
-        internal fun validateClientKey(clientKey: String): Boolean {
-            var valid = false
-            val regex = "key_(live|test)_[A-Za-z0-9]+"
-
-            if (clientKey.matches(regex.toRegex())) {
-                valid = true
-            }
-
-            return valid
-        }
-
-        internal fun validateUserID(userId: String): Boolean {
-            val regex = "^[a-zA-Z0-9-_.]{3,100}$"
-
-            if (!userId.matches(regex.toRegex())) {
-                logger.e(msg = "Invalid UserID")
-                return false
-            }
-
-            return true
-        }
-
         override fun setRegisteredUserID(registeredUserId: String): Boolean {
             if (this.registeredUserID.isNotEmpty() && registeredUserId != this.registeredUserID) {
                 this.captureEvent(type = LOG, level = "warn", m = "Multiple Registered User Id Attempts")
@@ -471,7 +433,7 @@ class NeuroID
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             try {
                 attemptedRegisteredUserId?.let {
-                    if (validateUserID(attemptedRegisteredUserId)) {
+                    if (validationService.validateUserID(attemptedRegisteredUserId)) {
                         captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
                         return true
                     }
@@ -551,7 +513,7 @@ class NeuroID
             userGenerated: Boolean = true,
         ): Boolean {
             try {
-                val validID = validateUserID(genericUserId)
+                val validID = validationService.validateUserID(genericUserId)
                 val originRes =
                     getOriginResult(genericUserId, validID = validID, userGenerated = userGenerated)
                 sendOriginEvent(originRes)
@@ -819,7 +781,7 @@ class NeuroID
         }
 
         internal fun addLinkedSiteID(siteID: String) {
-            if (!validateSiteID(siteID)) {
+            if (!validationService.validateSiteID(siteID)) {
                 captureEvent(
                     type = LOG,
                     level = "ERROR",

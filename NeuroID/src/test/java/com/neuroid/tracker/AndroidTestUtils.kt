@@ -21,6 +21,7 @@ import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
+import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -370,6 +371,28 @@ internal fun getMockedHTTPService(
     }
 
     return mockedHttpService
+}
+
+internal fun getMockedValidationService(): NIDValidationService {
+    val mockedNIDValidationService = mockk<NIDValidationService>()
+
+    every {
+        mockedNIDValidationService.validateClientKey(any())
+    } returns false
+
+    every {
+        mockedNIDValidationService.verifyClientKeyExists(any())
+    } returns false
+
+    every {
+        mockedNIDValidationService.validateSiteID(any())
+    } returns false
+
+    every {
+        mockedNIDValidationService.validateUserID(any())
+    } returns false
+
+    return mockedNIDValidationService
 }
 
 internal fun getMockedJob(

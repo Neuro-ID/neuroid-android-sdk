@@ -16,6 +16,7 @@ import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNIDJobServiceManager
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.getMockedSharedPreferenceDefaults
+import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -41,6 +42,7 @@ class NIDSessionServiceTest {
         val mockedCallListener: NIDCallActivityListener,
         val mockedConfigService: ConfigService,
         val mockedSampleService: NIDSamplingService,
+        val mockedValidationService: NIDValidationService,
     )
 
     private fun setNeuroIDInstance() {
@@ -75,6 +77,8 @@ class NIDSessionServiceTest {
                 configService = mockedConfigService,
             )
 
+        val mockedValidationService = getMockedValidationService()
+
         return MockedServices(
             mockedNeuroID,
             mockedJobServiceManager,
@@ -83,6 +87,7 @@ class NIDSessionServiceTest {
             mockedCallListener,
             mockedConfigService,
             mockedSampleService,
+            mockedValidationService,
         )
     }
 
@@ -94,6 +99,7 @@ class NIDSessionServiceTest {
                 0L,
                 10.0,
             ),
+        validationService: NIDValidationService = getMockedValidationService(),
     ): NIDSessionService {
         return NIDSessionService(
             getMockedLogger(),
@@ -101,6 +107,7 @@ class NIDSessionServiceTest {
             configService,
             samplingService,
             getMockedSharedPreferenceDefaults(),
+            validationService,
         )
     }
 
@@ -243,16 +250,18 @@ class NIDSessionServiceTest {
     // START
     @Test
     fun test_start_failure_noClientKey() {
-        val mockedNeuroID =
-            getMockedNeuroID()
+        val mockedServices = buildMockClasses()
+        val mockedValidationService = mockedServices.mockedValidationService
+        val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedNeuroID.verifyClientKeyExists()
+            mockedValidationService.verifyClientKeyExists(any())
         } returns false
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var isStarted: Boolean? = null
@@ -275,15 +284,17 @@ class NIDSessionServiceTest {
     fun test_start_success() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedValidationService = mockedServices.mockedValidationService
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedNeuroID.verifyClientKeyExists()
+            mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var isStarted: Boolean? = null
@@ -304,16 +315,18 @@ class NIDSessionServiceTest {
     // START SESSION
     @Test
     fun test_startSession_failure_noClientKey() {
-        val mockedNeuroID =
-            getMockedNeuroID()
+        val mockedServices = buildMockClasses()
+        val mockedValidationService = mockedServices.mockedValidationService
+        val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedNeuroID.verifyClientKeyExists()
+            mockedValidationService.verifyClientKeyExists(any())
         } returns false
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var isStarted: Boolean? = null
@@ -338,10 +351,11 @@ class NIDSessionServiceTest {
     fun test_startSession_failure_badSessionID() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedValidationService = mockedServices.mockedValidationService
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedNeuroID.verifyClientKeyExists()
+            mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
         every { mockedNeuroID.userID } returns "fakeID"
@@ -383,10 +397,11 @@ class NIDSessionServiceTest {
     fun test_startSession_existing_UID_success() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedValidationService = mockedServices.mockedValidationService
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedNeuroID.verifyClientKeyExists()
+            mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
         every { mockedNeuroID.userID } returns "fakeID"
@@ -396,6 +411,7 @@ class NIDSessionServiceTest {
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var isStarted: Boolean? = null
@@ -818,16 +834,17 @@ class NIDSessionServiceTest {
      */
     @Test
     fun test_startAppFlow_failure_noClientKey() {
-        val mockedNeuroID =
-            getMockedNeuroID(
-                shouldMockApplication = true,
-            )
+        val mockedServices = buildMockClasses()
+        val mockedValidationService = mockedServices.mockedValidationService
 
-        every { mockedNeuroID.verifyClientKeyExists() } returns false
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        every { mockedValidationService.verifyClientKeyExists(any()) } returns false
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var completionFuncSuccess: Boolean? = null
@@ -857,17 +874,18 @@ class NIDSessionServiceTest {
      */
     @Test
     fun test_startAppFlow_failure_invalidSiteID() {
-        val mockedNeuroID =
-            getMockedNeuroID(
-                shouldMockApplication = true,
-            )
+        val mockedServices = buildMockClasses()
+        val mockedValidationService = mockedServices.mockedValidationService
 
-        every { mockedNeuroID.verifyClientKeyExists() } returns true
-        every { mockedNeuroID.validateSiteID(testSiteID) } returns false
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        every { mockedValidationService.verifyClientKeyExists(any()) } returns true
+        every { mockedValidationService.validateSiteID(testSiteID) } returns false
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                validationService = mockedValidationService,
             )
 
         var completionFuncSuccess: Boolean? = null
@@ -902,6 +920,7 @@ class NIDSessionServiceTest {
     fun test_startAppFlow_alreadyStarted() {
         val mockedServices = buildMockClasses()
         val mockedSampleService = mockedServices.mockedSampleService
+        val mockedValidationService = mockedServices.mockedValidationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -909,8 +928,8 @@ class NIDSessionServiceTest {
             mockedSampleService.isSessionFlowSampled()
         } returns false
 
-        every { mockedNeuroID.verifyClientKeyExists() } returns true
-        every { mockedNeuroID.validateSiteID(testSiteID) } returns true
+        every { mockedValidationService.verifyClientKeyExists(any()) } returns true
+        every { mockedValidationService.validateSiteID(testSiteID) } returns true
         every { mockedNeuroID.getUserID() } returns "GoodUID"
         NeuroID._isSDKStarted = true
 
@@ -918,6 +937,7 @@ class NIDSessionServiceTest {
             createSessionServiceInstance(
                 mockedNeuroID,
                 samplingService = mockedSampleService,
+                validationService = mockedValidationService,
             )
 
         var completionFuncResult: SessionStartResult? = null
@@ -953,6 +973,7 @@ class NIDSessionServiceTest {
     fun test_startAppFlow_start_noUID() {
         val mockedServices = buildMockClasses()
         val mockedSampleService = mockedServices.mockedSampleService
+        val mockedValidationService = mockedServices.mockedValidationService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
 
         val mockedNeuroID = mockedServices.mockedNeuroID
@@ -961,8 +982,8 @@ class NIDSessionServiceTest {
             mockedSampleService.isSessionFlowSampled()
         } returns false
 
-        every { mockedNeuroID.verifyClientKeyExists() } returns true
-        every { mockedNeuroID.validateSiteID(testSiteID) } returns true
+        every { mockedValidationService.verifyClientKeyExists(any()) } returns true
+        every { mockedValidationService.validateSiteID(testSiteID) } returns true
         every { mockedNeuroID.getUserID() } returns "GoodUID"
         NeuroID._isSDKStarted = false
 
@@ -970,6 +991,7 @@ class NIDSessionServiceTest {
             createSessionServiceInstance(
                 mockedNeuroID,
                 samplingService = mockedSampleService,
+                validationService = mockedValidationService,
             )
 
         var completionFuncResult: SessionStartResult? = null
@@ -1008,6 +1030,7 @@ class NIDSessionServiceTest {
         val userID = "myUserID"
 
         val mockedServices = buildMockClasses()
+        val mockedValidationService = mockedServices.mockedValidationService
         val mockedSampleService = mockedServices.mockedSampleService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
@@ -1016,8 +1039,8 @@ class NIDSessionServiceTest {
             mockedSampleService.isSessionFlowSampled()
         } returns false
 
-        every { mockedNeuroID.verifyClientKeyExists() } returns true
-        every { mockedNeuroID.validateSiteID(testSiteID) } returns true
+        every { mockedValidationService.verifyClientKeyExists(any()) } returns true
+        every { mockedValidationService.validateSiteID(testSiteID) } returns true
         every { mockedNeuroID.getUserID() } returns userID
         every { mockedNeuroID.setUserID(userID, true) } returns true
 
@@ -1027,6 +1050,7 @@ class NIDSessionServiceTest {
             createSessionServiceInstance(
                 mockedNeuroID,
                 samplingService = mockedSampleService,
+                validationService = mockedValidationService,
             )
 
         var completionFuncResult: SessionStartResult? = null

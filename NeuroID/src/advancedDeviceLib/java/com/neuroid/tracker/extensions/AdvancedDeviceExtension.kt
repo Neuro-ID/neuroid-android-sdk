@@ -65,6 +65,8 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
                 getADVSignal(clientKey, context, this, logger)
             }
         }
+    } else {
+        logger.d(msg = "in captureAdvancedDevice(), advanced device not active.")
     }
 }
 
