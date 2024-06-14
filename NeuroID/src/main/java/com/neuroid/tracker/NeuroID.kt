@@ -154,7 +154,7 @@ class NeuroID
 
             configService = NIDConfigService(dispatcher, logger, this, httpService, validationService)
             samplingService = NIDSamplingService(logger, randomGenerator, configService)
-            dataStore = NIDDataStoreManagerImp(logger, samplingService, configService)
+            dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
                 NIDIdentifierService(
@@ -755,6 +755,10 @@ class NeuroID
             }
 
             if (excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
+                return
+            }
+
+            if (!samplingService.isSessionFlowSampled()) {
                 return
             }
 
