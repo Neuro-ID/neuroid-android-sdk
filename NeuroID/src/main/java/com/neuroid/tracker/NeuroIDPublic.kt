@@ -53,7 +53,7 @@ interface NeuroIDPublic {
     /**
      * Set a registered user id.
      */
-    fun setRegisteredUserID(registeredUserId: String): Boolean
+    fun setRegisteredUserID(registeredUserID: String): Boolean
 
     /**
      * Set a screen name for the current page in a session. This should be called

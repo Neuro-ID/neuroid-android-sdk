@@ -20,28 +20,20 @@ import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.FULL_BUFFER
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
-import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
-import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
-import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
-import com.neuroid.tracker.events.SET_USER_ID
-import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
-import com.neuroid.tracker.models.SessionIDOriginResult
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
+import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.NIDSamplingService
@@ -104,6 +96,7 @@ class NeuroID
         internal var samplingService: NIDSamplingService
         internal val httpService: NIDHttpService
         internal val validationService: NIDValidationService = NIDValidationService(logger)
+        internal var identifierService: NIDIdentifierService
 
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
@@ -163,6 +156,13 @@ class NeuroID
             samplingService = NIDSamplingService(logger, randomGenerator, configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
+            identifierService =
+                NIDIdentifierService(
+                    logger,
+                    neuroID = this,
+                    validationService,
+                )
+
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
 
@@ -174,6 +174,7 @@ class NeuroID
                         configService,
                         samplingService,
                         NIDSharedPrefsDefaults(it),
+                        identifierService,
                         validationService,
                     )
 
@@ -409,27 +410,6 @@ class NeuroID
             }
         }
 
-        override fun setRegisteredUserID(registeredUserId: String): Boolean {
-            if (this.registeredUserID.isNotEmpty() && registeredUserId != this.registeredUserID) {
-                this.captureEvent(type = LOG, level = "warn", m = "Multiple Registered User Id Attempts")
-                logger.e(msg = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
-                return false
-            }
-
-            val validID =
-                setGenericUserID(
-                    SET_REGISTERED_USER_ID,
-                    registeredUserId,
-                )
-
-            if (!validID) {
-                return false
-            }
-
-            this.registeredUserID = registeredUserId
-            return true
-        }
-
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             try {
                 attemptedRegisteredUserId?.let {
@@ -488,66 +468,6 @@ class NeuroID
                 logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
             }
         }
-
-        override fun setUserID(userID: String): Boolean {
-            return setUserID(userID, true)
-        }
-
-        internal fun setUserID(
-            userId: String,
-            userGenerated: Boolean,
-        ): Boolean {
-            val validID = setGenericUserID(SET_USER_ID, userId, userGenerated)
-
-            if (!validID) {
-                return false
-            }
-
-            this.userID = userId
-            return true
-        }
-
-        internal fun setGenericUserID(
-            type: String,
-            genericUserId: String,
-            userGenerated: Boolean = true,
-        ): Boolean {
-            try {
-                val validID = validationService.validateUserID(genericUserId)
-                val originRes =
-                    getOriginResult(genericUserId, validID = validID, userGenerated = userGenerated)
-                sendOriginEvent(originRes)
-
-                if (!validID) {
-                    return false
-                }
-
-                if (isSDKStarted) {
-                    captureEvent(
-                        type = type,
-                        uid = genericUserId,
-                    )
-                } else {
-                    captureEvent(
-                        queuedEvent = true,
-                        type = type,
-                        uid = genericUserId,
-                    )
-                }
-
-                return true
-            } catch (exception: Exception) {
-                logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
-                return false
-            }
-        }
-
-        @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-        override fun getUserId() = getUserID()
-
-        override fun getUserID() = userID
-
-        override fun getRegisteredUserID() = registeredUserID
 
         override fun setScreenName(screen: String): Boolean {
             if (!isSDKStarted) {
@@ -692,62 +612,28 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
-        // new Session Commands
+        // Identifier Commands
+        @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
+        override fun getUserId() = identifierService.getUserID()
 
+        override fun getUserID() = identifierService.getUserID()
+
+        override fun setUserID(userID: String): Boolean {
+            return identifierService.setUserID(userID, true)
+        }
+
+        override fun getRegisteredUserID() = identifierService.getRegisteredUserID()
+
+        override fun setRegisteredUserID(registeredUserID: String): Boolean {
+            return identifierService.setRegisteredUserID(registeredUserID)
+        }
+
+        // new Session Commands
         override fun startSession(
             sessionID: String?,
             completion: (SessionStartResult) -> Unit,
         ) = sessionService.startSession(null, sessionID) {
             completion(it)
-        }
-
-        private fun sendOriginEvent(originResult: SessionIDOriginResult) {
-            // sending these as individual items.
-            captureEvent(
-                queuedEvent = !isSDKStarted,
-                type = SET_VARIABLE,
-                key = "sessionIdCode",
-                v = originResult.originCode,
-            )
-
-            captureEvent(
-                queuedEvent = !isSDKStarted,
-                type = SET_VARIABLE,
-                key = "sessionIdSource",
-                v = originResult.origin,
-            )
-
-            captureEvent(
-                queuedEvent = !isSDKStarted,
-                type = SET_VARIABLE,
-                key = "sessionId",
-                v = originResult.sessionID,
-            )
-        }
-
-        internal fun getOriginResult(
-            sessionID: String,
-            validID: Boolean,
-            userGenerated: Boolean,
-        ): SessionIDOriginResult {
-            var origin =
-                if (userGenerated) {
-                    NID_ORIGIN_CUSTOMER_SET
-                } else {
-                    NID_ORIGIN_NID_SET
-                }
-
-            var originCode =
-                if (validID) {
-                    if (userGenerated) {
-                        NID_ORIGIN_CODE_CUSTOMER
-                    } else {
-                        NID_ORIGIN_CODE_NID
-                    }
-                } else {
-                    NID_ORIGIN_CODE_FAIL
-                }
-            return SessionIDOriginResult(origin, originCode, sessionID)
         }
 
         @Synchronized

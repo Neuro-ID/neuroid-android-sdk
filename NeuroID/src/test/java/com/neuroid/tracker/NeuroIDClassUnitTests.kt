@@ -7,14 +7,6 @@ import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
-import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
-import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
-import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
-import com.neuroid.tracker.events.SET_USER_ID
-import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -32,8 +24,6 @@ import io.mockk.verify
 import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -338,136 +328,6 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.setTestingNeuroIDDevURL()
 
         assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
-    }
-
-    //    setUserID
-    @Test
-    fun testSetUserID_success_notStarted() {
-        setMockedDataStore()
-        NeuroID._isSDKStarted = false
-
-        val value = NeuroID.getInstance()?.setUserID("myUserID")
-
-        assertEquals(true, value)
-        assertEquals(4, queuedEvents.count())
-        assertEquals(1, queuedEvents.count { it.type === SET_USER_ID })
-        assertEquals(3, queuedEvents.count { it.type === SET_VARIABLE })
-    }
-
-    @Test
-    fun testUserID_success_Started() {
-        setMockedDataStore()
-        setNeuroIDMockedLogger()
-        setMockedNIDJobServiceManager(false)
-
-        NeuroID._isSDKStarted = true
-
-        val value = NeuroID.getInstance()?.setUserID("myUserID")
-
-        assertEquals(true, value)
-        assertEquals(4, storedEvents.count())
-        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
-        assertEquals(1, storedEvents.count { x -> x.type === SET_USER_ID })
-    }
-
-    @Test
-    fun testSetUserID_failure() {
-        setMockedDataStore(false)
-
-        val value = NeuroID.getInstance()?.setUserID("Bad UserID")
-
-        assertEquals(false, value)
-    }
-
-    //    setRegisteredUserID
-
-    @Test
-    fun testSetRegisteredUserID_success_notStarted() {
-        setMockedDataStore()
-        NeuroID._isSDKStarted = false
-
-        val value = NeuroID.getInstance()?.setRegisteredUserID("myUserID")
-
-        assertEquals(true, value)
-        assertEquals(4, queuedEvents.count())
-        assertEquals(1, queuedEvents.count { it.type === SET_REGISTERED_USER_ID })
-        assertEquals(3, queuedEvents.count { it.type === SET_VARIABLE })
-    }
-
-    @Test
-    fun testRegisteredUserID_success_Started() {
-        setMockedDataStore()
-        setNeuroIDMockedLogger()
-        setMockedNIDJobServiceManager(false)
-        NeuroID.getInternalInstance()?.registeredUserID = ""
-        NeuroID._isSDKStarted = true
-
-        val value = NeuroID.getInstance()?.setRegisteredUserID("myRegisteredUserID")
-
-        assertEquals(true, value)
-        assertEquals(4, storedEvents.count())
-        assertEquals(3, storedEvents.count { x -> x.type == SET_VARIABLE })
-        assertEquals(1, storedEvents.count { x -> x.type === SET_REGISTERED_USER_ID })
-    }
-
-    @Test
-    fun testSetRegisteredUserID_failure() {
-        NeuroID.getInternalInstance()?.registeredUserID = ""
-
-        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
-
-        assertEquals(false, value)
-        assertEquals(0, storedEvents.count())
-    }
-
-    @Test
-    fun testSetRegisteredUserID_failure_Started() {
-        setMockedNIDJobServiceManager(true)
-        NeuroID.getInternalInstance()?.registeredUserID = ""
-        NeuroID._isSDKStarted = true
-
-        val value = NeuroID.getInstance()?.setRegisteredUserID("Bad User REGISTERED ID")
-
-        assertEquals(false, value)
-        assertEquals(0, storedEvents.count())
-    }
-
-    @Test
-    fun testSetRegisteredUserID_failure_different_id() {
-        setMockedDataStore()
-        setMockedNIDJobServiceManager(false)
-        setNeuroIDMockedLogger(errorMessage = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
-        NeuroID.getInternalInstance()?.registeredUserID = ""
-        NeuroID._isSDKStarted = true
-
-        val value = NeuroID.getInstance()?.setRegisteredUserID("userID")
-        storedEvents.clear()
-
-        val secondValue = NeuroID.getInstance()?.setRegisteredUserID("seconduserID")
-
-        assertEquals(true, value)
-        assertEquals(false, secondValue)
-        assertErrorCount(1)
-        assertEquals(1, storedEvents.count())
-    }
-
-    //    getUserId
-    @Test
-    fun testGetUserID() {
-        val expectedValue = "testID"
-        NeuroID.getInternalInstance()?.userID = expectedValue
-        val value = NeuroID.getInstance()?.getUserID()
-
-        assertEquals(expectedValue, value)
-    }
-
-    @Test
-    fun testGetRegisteredUserID() {
-        val expectedValue = "testRegisteredID"
-        NeuroID.getInternalInstance()?.registeredUserID = expectedValue
-        val value = NeuroID.getInstance()?.getRegisteredUserID()
-
-        assertEquals(expectedValue, value)
     }
 
     //    setScreenName
@@ -827,95 +687,6 @@ open class NeuroIDClassUnitTests {
         val version = NeuroID.getInstance()?.getSDKVersion()
 
         assertEquals(true, version?.contains("5.android-rn"))
-    }
-
-    @Test
-    fun testGetOriginResult_CUSTOMER_SET_OK() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInternalInstance()?.let {
-            val sessionID = "gasdgasdgdsgds"
-            val result = it.getOriginResult(sessionID, true, true)
-            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
-            assertEquals(result.originCode, NID_ORIGIN_CODE_CUSTOMER)
-            assertEquals(result.sessionID, sessionID)
-        }
-    }
-
-    @Test
-    fun testGetOriginResult_CUSTOMER_SET_FAIL() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInternalInstance()?.let {
-            val badSessionID = "gasdgas dgdsgds"
-            val result = it.getOriginResult(badSessionID, false, true)
-            assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
-            assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
-        }
-    }
-
-    @Test
-    fun testGetOriginResult_CUSTOMER_SET_EMPTY_SESSION_ID() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInternalInstance()?.let {
-            val emptySessionID = ""
-            val result = it.getOriginResult(emptySessionID, true, false)
-            assertEquals(result.origin, NID_ORIGIN_NID_SET)
-            assertEquals(result.originCode, NID_ORIGIN_CODE_NID)
-        }
-    }
-
-    @Test
-    fun testGetOriginResult_NID_SET_EMPTY_SESSION_ID() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInternalInstance()?.let {
-            val emptySessionID = ""
-            val result = it.getOriginResult(emptySessionID, false, false)
-            assertEquals(result.origin, NID_ORIGIN_NID_SET)
-            assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
-        }
-    }
-
-    @Test
-    fun testSetRegisteredUserId_not_empty() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInstance()?.let {
-            val result = it.setRegisteredUserID("gdsgdsgsd")
-            assertTrue(result)
-            assertEquals(it.getRegisteredUserID(), "gdsgdsgsd")
-        }
-    }
-
-    @Test
-    fun testSetRegisteredUserId_empty() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInstance()?.let {
-            it.setRegisteredUserID("gdsgdsgsd")
-            val result = it.setRegisteredUserID("")
-            assertFalse(result)
-            assertEquals("gdsgdsgsd", it.getRegisteredUserID())
-        }
-    }
-
-    @Test
-    fun testSetUserId_not_empty() {
-        unsetDefaultMockedLogger()
-        setMockedEmptyLogger()
-        NeuroID.getInternalInstance()?.userID = ""
-        NeuroID.getInstance()?.let {
-            val result = it.setUserID("gdsgdsgsdzzzz")
-            assertTrue(result)
-            assertEquals(it.getUserID(), "gdsgdsgsdzzzz")
-        }
-    }
-
-    @Test
-    fun testSetUserId_empty() {
-        unsetDefaultMockedLogger()
-        NeuroID.getInstance()?.let {
-            it.setUserID("gdsgdsgsdzzzz")
-            val result = it.setUserID("")
-            assertFalse(result)
-            assertEquals("gdsgdsgsdzzzz", it.getUserID())
-        }
     }
 
     //    captureEvent
