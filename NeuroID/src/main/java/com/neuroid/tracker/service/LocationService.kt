@@ -2,11 +2,11 @@ package com.neuroid.tracker.service
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
+import androidx.core.location.LocationListenerCompat
 import com.neuroid.tracker.models.NIDLocation
 import com.neuroid.tracker.utils.LocationPermissionUtils
 import com.neuroid.tracker.utils.NIDMetaData
@@ -29,12 +29,11 @@ class LocationService(private val locationPermissionUtils: LocationPermissionUti
     private var locationScope: CoroutineScope? = null
 
     @SuppressLint("MissingPermission")
-    private val locationListener =
-        LocationListener { location ->
-            nidLocation?.longitude = location.longitude
-            nidLocation?.latitude = location.latitude
-            nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
-        }
+    private val locationListener = LocationListenerCompat { location ->
+        nidLocation?.longitude = location.longitude
+        nidLocation?.latitude = location.latitude
+        nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
+    }
 
     /**
      * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a
