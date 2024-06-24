@@ -23,6 +23,7 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.After
@@ -72,6 +73,12 @@ class NIDSessionServiceTest {
             )
 
         val mockedConfigService = getMockedConfigService()
+
+        // we need to mock these two to create listeners in the test,
+        // these are set to false by default
+        every {mockedConfigService.configCache.geoLocation} returns true
+        every {mockedConfigService.configCache.callInProgress} returns true
+
         val mockedSampleService =
             getMockSampleService(
                 0L,
@@ -567,9 +574,15 @@ class NIDSessionServiceTest {
 
         every { mockedNeuroID.pauseCollectionJob } returns null
 
+        // need to mock config and return true for location service since this is now
+        // set false by default
+        val mockedConfigService = mockk<NIDConfigService>()
+        every {mockedConfigService.configCache.geoLocation} returns true
+
         val sessionService =
             createSessionServiceInstance(
-                mockedNeuroID,
+                configService = mockedConfigService,
+                mockedNeuroID = mockedNeuroID,
             )
 
         sessionService.resumeCollection()
@@ -608,9 +621,15 @@ class NIDSessionServiceTest {
                 isCompleted = false,
             )
 
+        // need to mock config and return true for location service since this is now
+        // set false by default
+        val mockedConfigService = mockk<NIDConfigService>()
+        every {mockedConfigService.configCache.geoLocation} returns true
+
         val sessionService =
             createSessionServiceInstance(
-                mockedNeuroID,
+                configService = mockedConfigService,
+                mockedNeuroID = mockedNeuroID,
             )
 
         sessionService.resumeCollection()

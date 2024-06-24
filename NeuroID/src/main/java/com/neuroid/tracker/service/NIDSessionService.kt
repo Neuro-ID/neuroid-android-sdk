@@ -87,7 +87,7 @@ internal class NIDSessionService(
         siteID: String?,
         completion: (Boolean) -> Unit = {},
     ) {
-        if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
+        if (NeuroID.isSDKStarted || !validationService.verifyClientKeyExists(neuroID.clientKey)) {
             completion(false)
             return
         }
