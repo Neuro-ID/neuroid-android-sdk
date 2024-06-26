@@ -1179,6 +1179,36 @@ class NIDSessionServiceTest {
         }
     }
 
+    @Test
+    fun testStartWhileSDKIsStarted() {
+        val mockedServices = buildMockClasses()
+        val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedValidationService = mockedServices.mockedValidationService
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        NeuroID._isSDKStarted = true
+
+        every {
+            mockedValidationService.verifyClientKeyExists(any())
+        } returns true
+
+        val sessionService =
+            createSessionServiceInstance(
+                mockedNeuroID,
+                validationService = mockedValidationService,
+            )
+
+        sessionService.start(
+            siteID = testSiteID
+        ) {
+            assert(!it)
+
+            verify(exactly = 0) {
+                mockedJobServiceManager.startJob(any(), any())
+            }
+        }
+    }
+
     private fun validateStartAppFlowTest(
         flowResult: SessionStartResult,
         siteID: String,
