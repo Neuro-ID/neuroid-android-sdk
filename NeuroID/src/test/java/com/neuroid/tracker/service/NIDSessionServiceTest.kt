@@ -1068,7 +1068,6 @@ class NIDSessionServiceTest {
     fun test_startAppFlow_start_noUID() {
         val mockedServices = buildMockClasses()
         val mockedSampleService = mockedServices.mockedSampleService
-        every {mockedSampleService.isSessionFlowSampled()} returns true
         val mockedValidationService = mockedServices.mockedValidationService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
 
