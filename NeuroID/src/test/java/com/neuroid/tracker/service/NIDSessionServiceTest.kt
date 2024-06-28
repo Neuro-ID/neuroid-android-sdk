@@ -320,8 +320,6 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedDataStore.saveAndClearAllQueuedEvents()
-        }
-        verify(exactly = 0) {
             mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
     }
@@ -1047,8 +1045,6 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedSampleService.updateIsSampledStatus(testSiteID)
             mockedNeuroID.addLinkedSiteID(testSiteID)
-        }
-        verify(exactly = 0) {
             mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
 
@@ -1103,9 +1099,6 @@ class NIDSessionServiceTest {
             mockedSampleService.updateIsSampledStatus(testSiteID)
             mockedNeuroID.addLinkedSiteID(testSiteID)
             mockedJobServiceManager.startJob(any(), any())
-        }
-
-        verify(exactly = 0) {
             mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
 
@@ -1164,13 +1157,9 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedNeuroID.addLinkedSiteID(testSiteID)
-
             mockedIdentifierService.setUserID(userID, any())
-
-            mockedSampleService.updateIsSampledStatus(testSiteID)
-        }
-        verify(exactly = 0){
             mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedSampleService.updateIsSampledStatus(testSiteID)
         }
 
         verifyCaptureEvent(
