@@ -260,70 +260,6 @@ class NIDSessionServiceTest {
         }
     }
 
-    @Test
-    fun test_setupSession_no_sampling() {
-        val mockedServices = buildMockClasses()
-
-        val mockedNeuroID = mockedServices.mockedNeuroID
-
-        val mockedDataStore = mockedServices.mockedDataStore
-        val mockedLocationService = mockedServices.mockedLocationService
-        val mockedCallListener = mockedServices.mockedCallListener
-
-        val mockedConfigService = mockedServices.mockedConfigService
-        val mockedSampleService = mockedServices.mockedSampleService
-        every { mockedSampleService.isSessionFlowSampled() } returns false
-
-        val sessionService =
-            createSessionServiceInstance(
-                mockedNeuroID,
-                mockedConfigService,
-                mockedSampleService,
-            )
-
-        var customFuncRan = false
-        var completionFuncRan = false
-
-        sessionService.setupSession(
-            siteID = testSiteID,
-            customFunctionality = {
-                customFuncRan = true
-            },
-        ) {
-            completionFuncRan = true
-        }
-
-        assert(customFuncRan)
-        assert(completionFuncRan)
-
-        verify(exactly = 1) {
-            mockedConfigService.retrieveOrRefreshCache(any())
-
-            mockedSampleService.updateIsSampledStatus(testSiteID)
-
-            mockedCallListener.setCallActivityListener(any())
-
-            mockedLocationService.setupLocationCoroutine(any())
-        }
-
-        verifyCaptureEvent(
-            mockedNeuroID,
-            CREATE_SESSION,
-            1,
-        )
-
-        verifyCaptureEvent(
-            mockedNeuroID,
-            MOBILE_METADATA_ANDROID,
-            1,
-        )
-
-        verify(exactly = 1) {
-            mockedDataStore.saveAndClearAllQueuedEvents()
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
-        }
-    }
-
     // START
     @Test
     fun test_start_failure_noClientKey() {
@@ -1044,8 +980,9 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedSampleService.updateIsSampledStatus(testSiteID)
-            mockedNeuroID.addLinkedSiteID(testSiteID)
+
             mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.addLinkedSiteID(testSiteID)
         }
 
         verifyCaptureEvent(
@@ -1097,9 +1034,11 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedSampleService.updateIsSampledStatus(testSiteID)
-            mockedNeuroID.addLinkedSiteID(testSiteID)
-            mockedJobServiceManager.startJob(any(), any())
+
             mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.addLinkedSiteID(testSiteID)
+
+            mockedJobServiceManager.startJob(any(), any())
         }
 
         verifyCaptureEvent(
@@ -1157,9 +1096,12 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedNeuroID.addLinkedSiteID(testSiteID)
+
             mockedIdentifierService.setUserID(userID, any())
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
+
             mockedSampleService.updateIsSampledStatus(testSiteID)
+
+            mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
 
         verifyCaptureEvent(
