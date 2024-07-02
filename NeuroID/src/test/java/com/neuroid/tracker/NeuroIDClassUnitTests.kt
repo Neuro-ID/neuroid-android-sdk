@@ -330,39 +330,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
     }
 
-    fun setupEmptyLogger(): NIDLogWrapper {
-        val logger = mockk<NIDLogWrapper>()
-        every {logger.e(any(), any()) } just runs
-        every {logger.w(any(), any()) } just runs
-        every {logger.v(any(), any()) } just runs
-        every {logger.d(any(), any()) } just runs
-        return logger
-    }
-
-    @Test
-    fun testCheckThenCaptureAdvancedDevice_sample_false() {
-        NeuroID._isSDKStarted = true
-        val mockedSessionService = getMockedSessionService()
-        val logger = setupEmptyLogger()
-        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
-        NeuroID.getInternalInstance()?.logger = logger
-        NeuroID.getInternalInstance()?.samplingService = getMockSampleService(0,0.0, false)
-        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(true)
-        verify{logger.d(any(), "Currently not sampling, method check not invoked!")}
-    }
-
-    @Test
-    fun testCheckThenCaptureAdvancedDevice_sample_true() {
-        NeuroID._isSDKStarted = true
-        val mockedSessionService = getMockedSessionService()
-        val logger = setupEmptyLogger()
-        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
-        NeuroID.getInternalInstance()?.logger = logger
-        NeuroID.getInternalInstance()?.samplingService = getMockSampleService(0,0.0, true)
-        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(true)
-        verify(exactly=0){logger.d(any(), "Currently not sampling, method check not invoked!")}
-    }
-
     //    setScreenName
     @Test
     fun testSetScreenName_success() {
@@ -606,8 +573,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.formSubmitSuccess()
         assertInfoCount(1)
 
-        assertEquals(0, storedEvents.count())
-        assertEquals(false, storedEvents.firstOrNull()?.type === FORM_SUBMIT_SUCCESS)
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_SUCCESS)
     }
 
     //    formSubmitFailure - Deprecated
@@ -621,8 +588,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInstance()?.formSubmitFailure()
         assertInfoCount(1)
 
-        assertEquals(0, storedEvents.count())
-        assertEquals(false, storedEvents.firstOrNull()?.type === FORM_SUBMIT_FAILURE)
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_FAILURE)
     }
 
 //    closeSession - Need to mock NIDJobServiceManager
@@ -823,7 +790,7 @@ open class NeuroIDClassUnitTests {
 
         assertEquals(0, storedEvents.count())
 
-        assertWarningCount(0)
+        assertWarningCount(1)
 
         NeuroID.getInternalInstance()?.lowMemory = false
     }

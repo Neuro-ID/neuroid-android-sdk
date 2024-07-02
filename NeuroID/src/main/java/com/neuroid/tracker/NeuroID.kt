@@ -447,24 +447,20 @@ class NeuroID
             val methodName = "captureAdvancedDevice"
             val extensionName = ".AdvancedDeviceExtensionKt"
             try {
-                if (samplingService.isSessionFlowSampled()) {
-                    val extensionFunctions = Class.forName(packageName + extensionName)
-                    val method =
-                        extensionFunctions.getDeclaredMethod(
-                            methodName,
-                            NeuroID::class.java,
-                            Boolean::class.java,
-                        )
-                    if (method != null) {
-                        method.isAccessible = true
-                        // Invoke the method
-                        method.invoke(null, this, shouldCapture)
-                        logger.d(msg = "Method $methodName invoked successfully")
-                    } else {
-                        logger.d(msg = "No $methodName method found")
-                    }
+                val extensionFunctions = Class.forName(packageName + extensionName)
+                val method =
+                    extensionFunctions.getDeclaredMethod(
+                        methodName,
+                        NeuroID::class.java,
+                        Boolean::class.java,
+                    )
+                if (method != null) {
+                    method.isAccessible = true
+                    // Invoke the method
+                    method.invoke(null, this, shouldCapture)
+                    logger.d(msg = "Method $methodName invoked successfully")
                 } else {
-                    logger.d(msg = "Currently not sampling, method check not invoked!")
+                    logger.d(msg = "No $methodName method found")
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
