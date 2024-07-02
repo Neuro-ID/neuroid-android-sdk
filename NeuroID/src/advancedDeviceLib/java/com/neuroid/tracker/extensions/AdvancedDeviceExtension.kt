@@ -59,7 +59,7 @@ fun NeuroIDPublic.startSession(
 }
 
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
-    if (shouldCapture && NeuroID.getInternalInstance()?.samplingService?.isSessionFlowSampled() == true) {
+    if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
                 getADVSignal(clientKey, context, this, logger)
