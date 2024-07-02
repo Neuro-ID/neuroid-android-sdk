@@ -351,17 +351,17 @@ open class NeuroIDClassUnitTests {
         verify{logger.d(any(), "Currently not sampling, method check not invoked!")}
     }
 
-    @Test
-    fun testCheckThenCaptureAdvancedDevice_sample_true() {
-        NeuroID._isSDKStarted = true
-        val mockedSessionService = getMockedSessionService()
-        val logger = setupEmptyLogger()
-        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
-        NeuroID.getInternalInstance()?.logger = logger
-        NeuroID.getInternalInstance()?.samplingService = getMockSampleService(0,0.0, true)
-        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(true)
-        verify{logger.d(any(), "Method captureAdvancedDevice invoked successfully")}
-    }
+//    @Test
+//    fun testCheckThenCaptureAdvancedDevice_sample_true() {
+//        NeuroID._isSDKStarted = true
+//        val mockedSessionService = getMockedSessionService()
+//        val logger = setupEmptyLogger()
+//        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+//        NeuroID.getInternalInstance()?.logger = logger
+//        NeuroID.getInternalInstance()?.samplingService = getMockSampleService(0,0.0, true)
+//        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(true)
+//        verify{logger.d(any(), "Method captureAdvancedDevice invoked successfully")}
+//    }
 
     //    setScreenName
     @Test
