@@ -7,6 +7,7 @@ import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -687,6 +688,18 @@ open class NeuroIDClassUnitTests {
         val version = NeuroID.getInstance()?.getSDKVersion()
 
         assertEquals(true, version?.contains("5.android-rn"))
+    }
+
+    @Test
+    fun test_setVariable() {
+        NeuroID._isSDKStarted = true
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+
+        NeuroID.getInstance()?.setVariable("test", "value")
+
+        assertEquals(1, storedEvents.count())
+        assertEquals(true, storedEvents.firstOrNull()?.type === SET_VARIABLE)
     }
 
     //    captureEvent
