@@ -700,6 +700,8 @@ open class NeuroIDClassUnitTests {
 
         assertEquals(1, storedEvents.count())
         assertEquals(true, storedEvents.firstOrNull()?.type === SET_VARIABLE)
+        assertEquals(true, storedEvents.firstOrNull()?.key === "test")
+        assertEquals(true, storedEvents.firstOrNull()?.v === "value")
     }
 
     //    captureEvent
