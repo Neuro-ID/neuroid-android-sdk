@@ -22,6 +22,7 @@ import com.neuroid.tracker.events.FULL_BUFFER
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
+import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.models.NIDEventModel
@@ -664,6 +665,17 @@ class NeuroID
             ) {
                 completion(it)
             }
+        }
+
+        override fun setVariable(
+            key: String,
+            value: String,
+        ) {
+            captureEvent(
+                type = SET_VARIABLE,
+                key = key,
+                v = value,
+            )
         }
 
         internal fun addLinkedSiteID(siteID: String) {
