@@ -214,4 +214,12 @@ interface NeuroIDPublic {
         userID: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     )
+
+    /**
+     * This method allows a custom variable and value to be set. e.g. Funnels
+     */
+    fun setVariable(
+        key: String,
+        value: String,
+    )
 }
