@@ -5,6 +5,8 @@ import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.extensions.RNConfigOptions
+import com.neuroid.tracker.extensions.Builder
 import com.sample.neuroid.us.domain.config.ConfigHelper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -33,6 +35,13 @@ class MyApplicationDemo : MultiDexApplication() {
         NeuroID.Builder(this, "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
             isAdvancedDevice = false, serverEnvironment = NeuroID.PRODSCRIPT_DEVCOLLECTION
         ).build()
+//        val t = mutableMapOf<RNConfigOptions, Any>()
+//        t[RNConfigOptions.isAdvancedDevice]= true
+//        t[RNConfigOptions.environment] = NeuroID.PRODSCRIPT_DEVCOLLECTION
+//        Builder(this, "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",t).build {
+//            println("builder.build() $it")
+//        }
+
         // NeuroID.getInstance()?.start()
         // NeuroID.getInstance()?.setEnvironmentProduction(true)
         // NeuroID.getInstance()?.setSiteId(configHelper.formId)
