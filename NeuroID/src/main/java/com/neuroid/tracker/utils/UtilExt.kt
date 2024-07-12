@@ -10,5 +10,5 @@ fun Activity.getGUID(): String {
 
 internal fun generateUniqueHexID(): String {
     // use random UUID to ensure uniqueness amongst devices,
-    return UUID.randomUUID().toString()
+    return "nid-${UUID.randomUUID()}"
 }
