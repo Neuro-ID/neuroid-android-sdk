@@ -16,6 +16,7 @@ class NIDRNBuilder( val application: Application? = null,
         NeuroID.Builder(application, clientKey,
             options[RNConfigOptions.isAdvancedDevice] as Boolean,
             options[RNConfigOptions.environment] as String).build()
+        NeuroID.getInstance()?.setIsRN()
     }
 
     /**
