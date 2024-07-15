@@ -394,6 +394,10 @@ internal fun getMockedValidationService(): NIDValidationService {
         mockedNIDValidationService.validateUserID(any())
     } returns false
 
+    every {
+        mockedNIDValidationService.scrubIdentifier(any())
+    } returns "MOCK_SCRUBBED_ID"
+
     return mockedNIDValidationService
 }
 

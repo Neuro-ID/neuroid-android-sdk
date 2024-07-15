@@ -125,6 +125,7 @@ internal class NIDJobServiceManager(
             } catch (exception: Exception) {
                 logger.e("NeuroID", exception.toString())
             }
+            neuroID.captureEvent(type = LOG, m = "Send Event Job Exited", level = "ERROR")
             logger.e("NeuroID", "Send Event Job Exited")
         }
     }

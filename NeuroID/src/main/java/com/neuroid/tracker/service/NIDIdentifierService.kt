@@ -63,7 +63,7 @@ internal class NIDIdentifierService(
             queuedEvent = !NeuroID.isSDKStarted,
             type = SET_VARIABLE,
             key = "sessionId",
-            v = originResult.sessionID,
+            v = "'${originResult.sessionID}'",
         )
     }
 
@@ -102,6 +102,7 @@ internal class NIDIdentifierService(
 
             return true
         } catch (exception: Exception) {
+            neuroID.captureEvent(type = LOG, m = "failure processing user id! $type, $genericUserId $exception", level = "ERROR")
             logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
             return false
         }
@@ -113,6 +114,12 @@ internal class NIDIdentifierService(
         userId: String,
         userGenerated: Boolean,
     ): Boolean {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "Set User Id Attempt ${validationService.scrubIdentifier(userId)}",
+        )
+
         val validID = setGenericUserID(SET_USER_ID, userId, userGenerated)
 
         if (!validID) {
@@ -127,10 +134,20 @@ internal class NIDIdentifierService(
 
     fun setRegisteredUserID(registeredUserID: String): Boolean {
         if (neuroID.registeredUserID.isNotEmpty() && registeredUserID != neuroID.registeredUserID) {
-            neuroID.captureEvent(type = LOG, level = "warn", m = "Multiple Registered User Id Attempts")
+            neuroID.captureEvent(
+                type = LOG,
+                level = "warn",
+                m = "Multiple Registered User Id Attempts ${validationService.scrubIdentifier(registeredUserID)}",
+            )
             logger.e(msg = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
             return false
         }
+
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "Set Registered User Id Attempt ${validationService.scrubIdentifier(registeredUserID)}",
+        )
 
         val validID =
             setGenericUserID(
