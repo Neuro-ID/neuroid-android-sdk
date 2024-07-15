@@ -51,6 +51,7 @@ import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
+import com.neuroid.tracker.utils.generateUniqueHexID
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +73,7 @@ class NeuroID
         internal var clientID = ""
         internal var userID = ""
         internal var linkedSiteID: String? = null
+        internal var tabID: String
 
         internal var registeredUserID = ""
         internal var timestamp: Long = 0L
@@ -132,6 +134,7 @@ class NeuroID
                 captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
+                tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
             } else {
                 environment =
                     if (clientKey.contains("_live_")) {
@@ -139,6 +142,8 @@ class NeuroID
                     } else {
                         "TEST"
                     }
+
+                tabID = "$rndmId-${generateUniqueHexID()}"
             }
 
             // We have to have two different retrofit instances because it requires a
@@ -347,8 +352,14 @@ class NeuroID
         }
 
         @TestOnly
-        internal fun setValidationServiceInstance(vs: NIDValidationService) {
-            validationService = vs
+        internal fun resetSingletonInstance()  {
+            singleton =
+                NeuroID(
+                    application,
+                    clientKey,
+                    isAdvancedDevice,
+                    PRODUCTION,
+                )
         }
 
         internal fun setClipboardManagerInstance(cm: ClipboardManager) {
@@ -555,7 +566,7 @@ class NeuroID
             nidActivityCallbacks.forceStart(activity)
         }
 
-        internal fun getTabId(): String = rndmId
+        internal fun getTabId(): String = tabID
 
         internal fun getFirstTS(): Long = timestamp
 

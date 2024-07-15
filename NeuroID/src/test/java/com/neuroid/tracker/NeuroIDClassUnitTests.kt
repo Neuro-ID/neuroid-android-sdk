@@ -237,6 +237,17 @@ open class NeuroIDClassUnitTests {
 
     //   setTestURL
 
+    // Class Init Test
+    @Test
+    fun test_configure_tab_id() {
+        setMockedNIDJobServiceManager(false)
+        val ogTabID = NeuroID.getInternalInstance()?.tabID
+
+        NeuroID.getInternalInstance()?.resetSingletonInstance()
+
+        assert(ogTabID != NeuroID.getInternalInstance()?.tabID)
+    }
+
     private fun setupAttemptedLoginTestEnvironment(validID: Boolean = false) {
         // fake out the clock
         mockkStatic(Calendar::class)
@@ -504,7 +515,7 @@ open class NeuroIDClassUnitTests {
     fun testGetTabId() {
         val expectedValue = "MyRNDID"
 
-        NeuroID.rndmId = expectedValue
+        NeuroID.getInternalInstance()?.tabID = expectedValue
 
         val value = NeuroID.getInternalInstance()?.getTabId()
 
