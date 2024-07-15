@@ -81,6 +81,14 @@ internal class NIDConfigService(
                     message: String,
                     isRetry: Boolean,
                 ) {
+                    neuroID.captureEvent(
+                        type = LOG,
+                        m =
+                            """
+                             Failed to retrieve NID Config for key ${neuroID.clientKey}. Default values will be used
+                            """,
+                        level = "ERROR",
+                    )
                     logger.e(
                         msg =
                             """

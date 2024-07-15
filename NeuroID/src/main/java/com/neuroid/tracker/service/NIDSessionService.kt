@@ -87,6 +87,12 @@ internal class NIDSessionService(
         siteID: String?,
         completion: (Boolean) -> Unit = {},
     ) {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "start attempt - siteID:$siteID",
+        )
+
         if (NeuroID.isSDKStarted || !validationService.verifyClientKeyExists(neuroID.clientKey)) {
             completion(false)
             return
@@ -114,6 +120,16 @@ internal class NIDSessionService(
         sessionID: String? = null,
         completion: (SessionStartResult) -> Unit = { },
     ) {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "startSession attempt - siteID:$siteID - userID:${if (sessionID != null) {
+                validationService.scrubIdentifier(sessionID)
+            } else {
+                "null"
+            }}",
+        )
+
         if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
             completion(SessionStartResult(false, ""))
             return
@@ -197,6 +213,12 @@ internal class NIDSessionService(
     }
 
     fun stopSession(): Boolean {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "stopSession attempt",
+        )
+
         neuroID.captureEvent(type = CLOSE_SESSION, ct = "SDK_EVENT")
 
         pauseCollection(true)
@@ -210,6 +232,12 @@ internal class NIDSessionService(
     }
 
     fun stop(): Boolean {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "stop attempt",
+        )
+
         pauseCollection(true)
 
         neuroID.linkedSiteID = ""
@@ -233,6 +261,12 @@ internal class NIDSessionService(
         neuroID.userID = ""
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
+
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "session variables cleared",
+        )
     }
 
     fun startAppFlow(
@@ -240,6 +274,16 @@ internal class NIDSessionService(
         userID: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     ) {
+        neuroID.captureEvent(
+            type = LOG,
+            level = "info",
+            m = "startAppFlow attempt - siteID:$siteID - userID:${if (userID != null) {
+                validationService.scrubIdentifier(userID)
+            } else {
+                "null"
+            }}",
+        )
+
         if (!validationService.verifyClientKeyExists(neuroID.clientKey) || !validationService.validateSiteID(siteID)) {
             // reset linked site id (in case of failure)
             neuroID.linkedSiteID = ""
@@ -267,6 +311,11 @@ internal class NIDSessionService(
                 samplingService.updateIsSampledStatus(siteID)
 
                 // capture CREATE_SESSION and METADATA events for new flow
+                neuroID.captureEvent(
+                    type = LOG,
+                    level = "info",
+                    m = "startAppFlow - SDK already started",
+                )
 
                 createSession()
 

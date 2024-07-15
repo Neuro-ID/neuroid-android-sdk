@@ -124,7 +124,7 @@ class NIDIdentifierServiceTest {
             SET_VARIABLE,
             queuedEvent = true,
             key = "sessionId",
-            v = originResult.sessionID,
+            v = "'${originResult.sessionID}'",
         )
     }
 
