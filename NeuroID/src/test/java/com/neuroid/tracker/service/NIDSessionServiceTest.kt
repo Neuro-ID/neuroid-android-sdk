@@ -76,8 +76,8 @@ class NIDSessionServiceTest {
 
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
-        every {mockedConfigService.configCache.geoLocation} returns true
-        every {mockedConfigService.configCache.callInProgress} returns true
+        every { mockedConfigService.configCache.geoLocation } returns true
+        every { mockedConfigService.configCache.callInProgress } returns true
 
         val mockedSampleService =
             getMockSampleService(
@@ -577,7 +577,7 @@ class NIDSessionServiceTest {
         // need to mock config and return true for location service since this is now
         // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
-        every {mockedConfigService.configCache.geoLocation} returns true
+        every { mockedConfigService.configCache.geoLocation } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -624,7 +624,7 @@ class NIDSessionServiceTest {
         // need to mock config and return true for location service since this is now
         // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
-        every {mockedConfigService.configCache.geoLocation} returns true
+        every { mockedConfigService.configCache.geoLocation } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -894,6 +894,7 @@ class NIDSessionServiceTest {
         verifyCaptureEvent(
             mockedNeuroID,
             eventType = LOG,
+            m = "Failed to set invalid Linked Site $testSiteID",
         )
     }
 
@@ -935,6 +936,7 @@ class NIDSessionServiceTest {
         verifyCaptureEvent(
             mockedNeuroID,
             eventType = LOG,
+            m = "Failed to set invalid Linked Site $testSiteID",
         )
     }
 
@@ -1199,7 +1201,7 @@ class NIDSessionServiceTest {
             )
 
         sessionService.start(
-            siteID = testSiteID
+            siteID = testSiteID,
         ) {
             assert(!it)
 

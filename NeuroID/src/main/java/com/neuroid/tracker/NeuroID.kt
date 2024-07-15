@@ -55,6 +55,7 @@ import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import org.jetbrains.annotations.TestOnly
 import java.util.Calendar
 
 class NeuroID
@@ -96,7 +97,7 @@ class NeuroID
         internal var nidActivityCallbacks: ActivityCallbacks
         internal var samplingService: NIDSamplingService
         internal val httpService: NIDHttpService
-        internal val validationService: NIDValidationService = NIDValidationService(logger)
+        internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
 
         internal lateinit var sessionService: NIDSessionService
@@ -128,6 +129,7 @@ class NeuroID
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
+                captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
             } else {
@@ -344,6 +346,11 @@ class NeuroID
             dataStore = store
         }
 
+        @TestOnly
+        internal fun setValidationServiceInstance(vs: NIDValidationService) {
+            validationService = vs
+        }
+
         internal fun setClipboardManagerInstance(cm: ClipboardManager) {
             clipboardManager = cm
         }
@@ -413,6 +420,15 @@ class NeuroID
 
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             try {
+                captureEvent(
+                    type = LOG,
+                    level = "info",
+                    m = "attemptedLogin attempt with attemptedRegisteredUserId:${if (attemptedRegisteredUserId != null) {
+                        validationService.scrubIdentifier(attemptedRegisteredUserId)
+                    } else {
+                        "null"
+                    }}",
+                )
                 attemptedRegisteredUserId?.let {
                     if (validationService.validateUserID(attemptedRegisteredUserId)) {
                         captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
@@ -422,6 +438,7 @@ class NeuroID
                 captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
                 return true
             } catch (exception: Exception) {
+                captureEvent(type = LOG, m = "exception in attemptedLogin() ${exception.message}", level = "ERROR")
                 logger.e(msg = "exception in attemptedLogin() ${exception.message}")
                 return false
             }
