@@ -113,7 +113,7 @@ class NIDValidationServiceTest {
     fun test_scrubIdentifier_ssn() {
         val value = validationService.scrubIdentifier("123-45-6789")
 
-        Assert.assertEquals("***-**-6789", value)
+        Assert.assertEquals("***-**-****", value)
     }
 
     @Test

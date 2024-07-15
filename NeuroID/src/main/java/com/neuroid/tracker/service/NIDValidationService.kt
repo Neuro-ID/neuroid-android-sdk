@@ -62,9 +62,7 @@ internal class NIDValidationService(
         // Check for SSN
         val ssnMatch = ssnRegex.find(identifier)
         if (ssnMatch != null) {
-            val ssn = ssnMatch.value
-            val maskedSsn = "***-**-" + ssn.substring(ssn.length - 4)
-            return identifier.replace(ssn, maskedSsn)
+            return "***-**-****"
         }
 
         // If no email or SSN is found, return the original string
