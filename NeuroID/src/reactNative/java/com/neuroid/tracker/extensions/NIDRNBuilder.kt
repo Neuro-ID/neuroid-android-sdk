@@ -41,7 +41,6 @@ class NIDRNBuilder( val application: Application? = null,
             if (rnOptionsMap.hasKey(RNConfigOptions.environment.name)) {
                 rnOptionsMap.getString(RNConfigOptions.environment.name)?.let {
                     when (it) {
-                        NeuroID.PRODUCTION -> environment = NeuroID.PRODUCTION
                         NeuroID.PRODSCRIPT_DEVCOLLECTION -> environment =
                             NeuroID.PRODSCRIPT_DEVCOLLECTION
 
