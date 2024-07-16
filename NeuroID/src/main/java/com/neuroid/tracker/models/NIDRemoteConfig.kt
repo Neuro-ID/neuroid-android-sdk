@@ -24,4 +24,8 @@ data class NIDRemoteConfig(
     val sampleRate: Int = NIDConfigService.DEFAULT_SAMPLE_RATE,
     @SerializedName(value = "site_id")
     val siteID: String = "",
+    @SerializedName(value = "low_memory_back_off")
+    val lowMemoryBackOff: Int = 3,
+    @SerializedName(value = "low_memory_threshold")
+    val lowMemoryThreshold: Int = 1000000000
 )

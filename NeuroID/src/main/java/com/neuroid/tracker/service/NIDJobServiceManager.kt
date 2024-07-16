@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -44,6 +45,7 @@ internal class NIDJobServiceManager(
     private var application: Application? = null
     private var activityManager: ActivityManager? = null
     private var sendEventsJob: Job = createSendEventsServer()
+    private var isLowMemoryWatchdogRunning = false
 
     @Synchronized
     fun startJob(
@@ -163,6 +165,40 @@ internal class NIDJobServiceManager(
     }
 
     /**
+     * Watchdog to clear low memory flag to allow events to flow back to the server.
+     * start job while low memory flag is true, recheck low memory every <low_memory_backoff>
+     * seconds, if low memory flag is false, kill this job. Default setting in remote config is
+     * 3 seconds.
+     */
+    private fun createResetLowMemoryWatchdog() {
+        println("createResetLowMemoryWatchdogServer() called")
+        if (isLowMemoryWatchdogRunning) {
+            println("createResetLowMemoryWatchdogServer() is running")
+            return
+        }
+        println("createResetLowMemoryWatchdogServer() is not running")
+        if (NeuroID.getInternalInstance()?.lowMemory == true) {
+            CoroutineScope(dispatcher).launch {
+                println("createResetLowMemoryWatchdogServer() is low, running watchdog")
+                while (NeuroID.getInternalInstance()?.lowMemory == true) {
+                    println("createResetLowMemoryWatchdogServer() in delay loop, memory is still low")
+                    delay(configService.configCache.lowMemoryBackOff * 1000L)
+                    println("createResetLowMemoryWatchdogServer() done waiting, check memory")
+                    checkMemoryLevel(false)
+                    // if the low memory situation is cleared, cancel the job.
+                    if (NeuroID.getInternalInstance()?.lowMemory != true) {
+                        println("createResetLowMemoryWatchdogServer() no longer low, reset watchdog flag")
+                        isLowMemoryWatchdogRunning = false
+                        println("createResetLowMemoryWatchdogServer() no longer low, cancel watchdog")
+                        this.cancel()
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
      * set here to show what timeouts are available in the OKHttp client.
      */
@@ -171,7 +207,7 @@ internal class NIDJobServiceManager(
             application?.let {
                 eventSender.sendEvents(
                     clientKey,
-                    getEventsToSend(it),
+                    getEventsToSend(),
                     object : NIDResponseCallBack<Any> {
                         override fun onSuccess(
                             code: Int,
@@ -197,35 +233,32 @@ internal class NIDJobServiceManager(
     }
 
     /**
-     * Get the current system memory state.
+     * Get the current system memory state. only send low memory event if sendEvent == true
      */
-    private fun checkMemoryLevel(context: Context): NIDEventModel? {
-        val memoryInfo = ActivityManager.MemoryInfo()
+    private fun checkMemoryLevel(sendEvent: Boolean = true): NIDEventModel? {
+        val max = Runtime.getRuntime().maxMemory()
+        val free = Runtime.getRuntime().freeMemory()
+        val total = Runtime.getRuntime().totalMemory()
 
-        // shouldn't ever be null because it is initialized with startJob, but putting this here as a safety check
-        if (activityManager == null) {
-            val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            activityManager.getMemoryInfo(memoryInfo)
-        } else {
-            activityManager?.getMemoryInfo(memoryInfo)
-        }
-
-        NeuroID.getInternalInstance()?.lowMemory = memoryInfo.lowMemory
-
-        if (memoryInfo.lowMemory) {
+        println("checkMemoryLevel() max: $max free: $free total: $total")
+        if (max == total && free <= configService.configCache.lowMemoryThreshold) {
+            println("checkMemoryLevel() low memory state!")
+            NeuroID.getInternalInstance()?.lowMemory = true
             return NIDEventModel(
                 type = LOW_MEMORY,
                 ts = System.currentTimeMillis(),
                 attrs =
                     listOf(
                         mapOf<String, Any>(
-                            "isLowMemory" to memoryInfo.lowMemory,
-                            "total" to memoryInfo.totalMem,
-                            "available" to memoryInfo.availMem,
-                            "threshold" to memoryInfo.threshold,
+                            "isLowMemory" to true,
+                            "total" to max,
+                            "available" to free,
+                            "threshold" to total,
                         ),
                     ),
             )
+        } else {
+            NeuroID.getInternalInstance()?.lowMemory = false
         }
 
         return null
@@ -233,14 +266,16 @@ internal class NIDJobServiceManager(
 
     /**
      * Get the events that should be sent.  The 2 scenarios are:
-     * 1. if system memory is low, create a low memory event and return that
+     * 1. if system memory is low, create a low memory event and return that,
+     *    start a memory check watchdog to reset the low memory flag when cleared.
      * 2. get the current list of events from the data store manager
      */
-    private fun getEventsToSend(context: Context): List<NIDEventModel> {
-        val lowMemEvent = checkMemoryLevel(context)
+    private fun getEventsToSend(): List<NIDEventModel> {
+        val lowMemEvent = checkMemoryLevel()
 
         if (lowMemEvent != null) {
-            // return the low memory event to be sent
+            // return the low memory event to be sent and start the low memory reset flag job.
+            createResetLowMemoryWatchdog()
             return listOf(lowMemEvent)
         }
 

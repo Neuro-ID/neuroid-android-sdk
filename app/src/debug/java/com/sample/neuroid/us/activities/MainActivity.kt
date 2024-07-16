@@ -1,21 +1,30 @@
 package com.sample.neuroid.us.activities
 
 import android.Manifest
+import android.app.ActivityManager
+import android.app.Application
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Debug
 import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import com.sample.neuroid.us.databinding.NidActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -24,7 +33,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // NeuroID.getInstance()?.startSession("gasdgdasg")
+
+        val memEater = MemEater(this)
+
+        NeuroID.getInstance()?.startSession("gasdgdasg")
         // ensure that the phone stays on for the duration of the test
         println("MainActivity: isStopped() ${NeuroID.getInstance()?.isStopped()}")
         val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
@@ -58,6 +70,12 @@ class MainActivity : AppCompatActivity() {
             buttonCloseSession.setOnClickListener {
                 NeuroID.getInstance()?.stopSession()
             }
+            startMemEater.setOnClickListener {
+                memEater.eat()
+            }
+            stopMemEater.setOnClickListener() {
+                memEater.stopEating()
+            }
         }
 
         val permissions = mutableListOf<String>()
@@ -75,6 +93,42 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(permissions.toTypedArray(), REQUEST_CODE)
         }
     }
+
+    class MemEater(val context: Context) {
+        var buffer = mutableListOf<String>()
+        var isRunning = false
+        var job: Job? = null
+
+        fun stopEating(){
+            job?.let {
+                it.cancel()
+                buffer.clear()
+                buffer = mutableListOf()
+                isRunning = false
+                println("createResetLowMemoryWatchdogServer canceling eater")
+            }
+        }
+        fun eat() {
+            isRunning = true
+            println("createResetLowMemoryWatchdogServer starting eater")
+            job = CoroutineScope(Dispatchers.IO).launch {
+                while(isRunning) {
+                    val stringBuffer = StringBuffer()
+                    for(i in 0..100000) {
+                        stringBuffer.append("h453")
+                    }
+                    buffer.add(stringBuffer.toString())
+                    val mi = ActivityManager.MemoryInfo()
+                    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                    activityManager.getMemoryInfo(mi)
+                    println("eater: total: ${mi.totalMem} avail: ${mi.availMem} threshold: ${mi.threshold} islow: ${mi.lowMemory}")
+                    println("eater: free ${Runtime.getRuntime().freeMemory()} max: ${Runtime.getRuntime().maxMemory()} total: ${Runtime.getRuntime().totalMemory()}")
+                    delay(500L)
+                }
+            }
+        }
+    }
+
 
     private fun isLocationPermissionGiven(): Boolean {
         val coarse = ActivityCompat.checkSelfPermission(
