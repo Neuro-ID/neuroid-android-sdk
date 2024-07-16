@@ -419,29 +419,28 @@ class NeuroID
         }
 
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
-            try {
-                captureEvent(
-                    type = LOG,
-                    level = "info",
-                    m = "attemptedLogin attempt with attemptedRegisteredUserId:${if (attemptedRegisteredUserId != null) {
-                        validationService.scrubIdentifier(attemptedRegisteredUserId)
-                    } else {
-                        "null"
-                    }}",
+            captureEvent(
+                type = LOG,
+                level = "info",
+                m = "attemptedLogin attempt with attemptedRegisteredUserId:'${if (attemptedRegisteredUserId != null) {
+                    validationService.scrubIdentifier(attemptedRegisteredUserId)
+                } else {
+                    "null"
+                }}'",
+            )
+
+            val captured =
+                identifierService.setGenericUserID(
+                    ATTEMPTED_LOGIN,
+                    attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
+                    attemptedRegisteredUserId != null,
                 )
-                attemptedRegisteredUserId?.let {
-                    if (validationService.validateUserID(attemptedRegisteredUserId)) {
-                        captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
-                        return true
-                    }
-                }
+
+            if (!captured) {
                 captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
-                return true
-            } catch (exception: Exception) {
-                captureEvent(type = LOG, m = "exception in attemptedLogin() ${exception.message}", level = "ERROR")
-                logger.e(msg = "exception in attemptedLogin() ${exception.message}")
-                return false
             }
+
+            return true
         }
 
         /**

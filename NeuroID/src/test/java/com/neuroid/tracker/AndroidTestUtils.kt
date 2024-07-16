@@ -213,6 +213,7 @@ internal fun getMockedDataStore(): NIDDataStoreManager {
 
     every { mockDataStore.saveAndClearAllQueuedEvents() } just runs
     every { mockDataStore.clearEvents() } just runs
+    every { mockDataStore.isFullBuffer() } returns false
 
     return mockDataStore
 }

@@ -2,11 +2,11 @@ package com.neuroid.tracker.service
 
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
-import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
-import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.ORIGIN_CODE_NID
+import com.neuroid.tracker.events.ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.ORIGIN_NID_SET
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -19,28 +19,29 @@ internal class NIDIdentifierService(
     val validationService: NIDValidationService,
 ) {
     internal fun getOriginResult(
-        sessionID: String,
+        idValue: String,
         validID: Boolean,
         userGenerated: Boolean,
+        idType: String,
     ): SessionIDOriginResult {
         var origin =
             if (userGenerated) {
-                NID_ORIGIN_CUSTOMER_SET
+                ORIGIN_CUSTOMER_SET
             } else {
-                NID_ORIGIN_NID_SET
+                ORIGIN_NID_SET
             }
 
         var originCode =
             if (validID) {
                 if (userGenerated) {
-                    NID_ORIGIN_CODE_CUSTOMER
+                    ORIGIN_CODE_CUSTOMER
                 } else {
-                    NID_ORIGIN_CODE_NID
+                    ORIGIN_CODE_NID
                 }
             } else {
-                NID_ORIGIN_CODE_FAIL
+                ORIGIN_CODE_FAIL
             }
-        return SessionIDOriginResult(origin, originCode, sessionID)
+        return SessionIDOriginResult(origin, originCode, idValue, idType)
     }
 
     internal fun sendOriginEvent(originResult: SessionIDOriginResult) {
@@ -63,22 +64,30 @@ internal class NIDIdentifierService(
             queuedEvent = !NeuroID.isSDKStarted,
             type = SET_VARIABLE,
             key = "sessionId",
-            v = "'${originResult.sessionID}'",
+            v = "'${originResult.idValue}'",
+        )
+
+        neuroID.captureEvent(
+            queuedEvent = !NeuroID.isSDKStarted,
+            type = SET_VARIABLE,
+            key = "idType",
+            v = "'${originResult.idType}'",
         )
     }
 
     fun setGenericUserID(
         type: String,
-        genericUserId: String,
+        genericUserID: String,
         userGenerated: Boolean = true,
     ): Boolean {
         try {
-            val validID = validationService.validateUserID(genericUserId)
+            val validID = validationService.validateUserID(genericUserID)
             val originRes =
                 getOriginResult(
-                    genericUserId,
+                    genericUserID,
                     validID = validID,
                     userGenerated = userGenerated,
+                    idType = type,
                 )
 
             sendOriginEvent(originRes)
@@ -90,20 +99,20 @@ internal class NIDIdentifierService(
             if (NeuroID.isSDKStarted) {
                 neuroID.captureEvent(
                     type = type,
-                    uid = genericUserId,
+                    uid = genericUserID,
                 )
             } else {
                 neuroID.captureEvent(
                     queuedEvent = true,
                     type = type,
-                    uid = genericUserId,
+                    uid = genericUserID,
                 )
             }
 
             return true
         } catch (exception: Exception) {
-            neuroID.captureEvent(type = LOG, m = "failure processing user id! $type, $genericUserId $exception", level = "ERROR")
-            logger.e(msg = "failure processing user id! $type, $genericUserId $exception")
+            neuroID.captureEvent(type = LOG, m = "failure processing user id! $type, $genericUserID $exception", level = "ERROR")
+            logger.e(msg = "failure processing user id! $type, $genericUserID $exception")
             return false
         }
     }

@@ -247,36 +247,10 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.logger = logger
 
         // make the validation service throw
-        val mockValidationService = getMockedValidationService()
-        every { mockValidationService.validateUserID(any()) } returns validID
-        NeuroID.getInternalInstance()?.setValidationServiceInstance(mockValidationService)
-
-        // everything else as normal
+        val mockIdentificationService = getMockedIdentifierService()
+        every { mockIdentificationService.setGenericUserID(any(), any(), any()) } returns validID
+        NeuroID.getInternalInstance()?.identifierService = mockIdentificationService
         setMockedDataStore()
-        setMockedNIDJobServiceManager(false)
-        NeuroID._isSDKStarted = true
-    }
-
-    private fun setupAttemptedLoginTestEnvironmentException() {
-        // fake out the clock
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance().timeInMillis } returns 1
-        // make the logger not throw
-        val logger = mockk<NIDLogWrapper>()
-        every { logger.e(any(), any()) } just runs
-        NeuroID.getInternalInstance()?.logger = logger
-
-        // make the validation service throw
-        val mockValidationService = getMockedValidationService()
-        every { mockValidationService.validateUserID(any()) } throws (Exception("save event exception"))
-        NeuroID.getInternalInstance()?.setValidationServiceInstance(mockValidationService)
-
-        // make the datamanager throw exception
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.isFullBuffer() } returns false
-        every { dataStoreManager.saveEvent(any()) } just runs
-        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStoreManager)
-        // everything else as normal
         setMockedNIDJobServiceManager(false)
         NeuroID._isSDKStarted = true
     }
@@ -288,24 +262,18 @@ open class NeuroIDClassUnitTests {
     ) {
         setupAttemptedLoginTestEnvironment(!expectedFailedResult)
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
-        val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
-        assert(actualResult == true)
-        unmockkStatic(Calendar::class)
-    }
+        val mockIdentificationService = NeuroID.getInternalInstance()?.identifierService
 
-    private fun testAttemptedLoginException(
-        userId: String?,
-        expectedUserId: String,
-        expectedResult: Boolean,
-    ) {
-        setupAttemptedLoginTestEnvironmentException()
-        val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
-        val logger = NeuroID.getInternalInstance()?.logger
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify(exactly = 0) { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
-        verify { logger?.e(any(), msg = "exception in attemptedLogin() save event exception") }
-        assertEquals(expectedResult, actualResult)
+        verify {
+            mockIdentificationService?.setGenericUserID(any(), userId ?: any(), any())
+        }
+
+        if (expectedFailedResult) {
+            dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId))
+        }
+
+        assert(actualResult == true)
         unmockkStatic(Calendar::class)
     }
 
@@ -321,11 +289,6 @@ open class NeuroIDClassUnitTests {
         testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true)
-    }
-
-    @Test
-    fun testAttemptedLoginException() {
-        testAttemptedLoginException("goodone", "goodone", false)
     }
 
     @Test

@@ -2,11 +2,11 @@ package com.neuroid.tracker.service
 
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_CUSTOMER
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_FAIL
-import com.neuroid.tracker.events.NID_ORIGIN_CODE_NID
-import com.neuroid.tracker.events.NID_ORIGIN_CUSTOMER_SET
-import com.neuroid.tracker.events.NID_ORIGIN_NID_SET
+import com.neuroid.tracker.events.ORIGIN_CODE_CUSTOMER
+import com.neuroid.tracker.events.ORIGIN_CODE_FAIL
+import com.neuroid.tracker.events.ORIGIN_CODE_NID
+import com.neuroid.tracker.events.ORIGIN_CUSTOMER_SET
+import com.neuroid.tracker.events.ORIGIN_NID_SET
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -26,7 +26,7 @@ import org.junit.Test
 
 class NIDIdentifierServiceTest {
     private lateinit var logger: NIDLogWrapper
-    private lateinit var neruoID: NeuroID
+    private lateinit var neuroID: NeuroID
     private lateinit var identifierService: NIDIdentifierService
     private lateinit var validationService: NIDValidationService
 
@@ -36,13 +36,13 @@ class NIDIdentifierServiceTest {
     @Before
     fun setup() {
         logger = getMockedLogger()
-        neruoID = getMockedNeuroID()
+        neuroID = getMockedNeuroID()
         validationService = getMockedValidationService()
 
         identifierService =
             NIDIdentifierService(
                 logger = logger,
-                neruoID,
+                neuroID,
                 validationService,
             )
 
@@ -51,8 +51,8 @@ class NIDIdentifierServiceTest {
 
     @After
     fun teardown() {
-        neruoID.registeredUserID = ""
-        neruoID.userID = ""
+        neuroID.registeredUserID = ""
+        neuroID.userID = ""
         unmockkAll()
     }
 
@@ -60,34 +60,34 @@ class NIDIdentifierServiceTest {
     @Test
     fun test_getOriginResult_CUSTOMER_SET_OK() {
         val sessionID = "gasdgasdgdsgds"
-        val result = identifierService.getOriginResult(sessionID, true, true)
-        Assert.assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
-        Assert.assertEquals(result.originCode, NID_ORIGIN_CODE_CUSTOMER)
-        Assert.assertEquals(result.sessionID, sessionID)
+        val result = identifierService.getOriginResult(sessionID, true, true, "generic")
+        Assert.assertEquals(result.origin, ORIGIN_CUSTOMER_SET)
+        Assert.assertEquals(result.originCode, ORIGIN_CODE_CUSTOMER)
+        Assert.assertEquals(result.idValue, sessionID)
     }
 
     @Test
     fun test_getOriginResult_CUSTOMER_SET_FAIL() {
         val badSessionID = "gasdgas dgdsgds"
-        val result = identifierService.getOriginResult(badSessionID, false, true)
-        Assert.assertEquals(result.origin, NID_ORIGIN_CUSTOMER_SET)
-        Assert.assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
+        val result = identifierService.getOriginResult(badSessionID, false, true, "generic")
+        Assert.assertEquals(result.origin, ORIGIN_CUSTOMER_SET)
+        Assert.assertEquals(result.originCode, ORIGIN_CODE_FAIL)
     }
 
     @Test
     fun test_getOriginResult_CUSTOMER_SET_EMPTY_SESSION_ID() {
         val emptySessionID = ""
-        val result = identifierService.getOriginResult(emptySessionID, true, false)
-        Assert.assertEquals(result.origin, NID_ORIGIN_NID_SET)
-        Assert.assertEquals(result.originCode, NID_ORIGIN_CODE_NID)
+        val result = identifierService.getOriginResult(emptySessionID, true, false, "generic")
+        Assert.assertEquals(result.origin, ORIGIN_NID_SET)
+        Assert.assertEquals(result.originCode, ORIGIN_CODE_NID)
     }
 
     @Test
     fun test_getOriginResult_NID_SET_EMPTY_SESSION_ID() {
         val emptySessionID = ""
-        val result = identifierService.getOriginResult(emptySessionID, false, false)
-        Assert.assertEquals(result.origin, NID_ORIGIN_NID_SET)
-        Assert.assertEquals(result.originCode, NID_ORIGIN_CODE_FAIL)
+        val result = identifierService.getOriginResult(emptySessionID, false, false, "generic")
+        Assert.assertEquals(result.origin, ORIGIN_NID_SET)
+        Assert.assertEquals(result.originCode, ORIGIN_CODE_FAIL)
     }
 
     //    sendOriginEvent
@@ -99,12 +99,13 @@ class NIDIdentifierServiceTest {
                 "testOrigin",
                 "testCode",
                 "sessionID",
+                "testType",
             )
 
         identifierService.sendOriginEvent(originResult)
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_VARIABLE,
             queuedEvent = true,
             key = "sessionIdCode",
@@ -112,7 +113,7 @@ class NIDIdentifierServiceTest {
         )
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_VARIABLE,
             queuedEvent = true,
             key = "sessionIdSource",
@@ -120,11 +121,11 @@ class NIDIdentifierServiceTest {
         )
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_VARIABLE,
             queuedEvent = true,
             key = "sessionId",
-            v = "'${originResult.sessionID}'",
+            v = "'${originResult.idValue}'",
         )
     }
 
@@ -143,9 +144,9 @@ class NIDIdentifierServiceTest {
         Assert.assertFalse(validID)
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_VARIABLE,
-            3,
+            4,
         )
     }
 
@@ -163,13 +164,13 @@ class NIDIdentifierServiceTest {
         assert(validID)
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_VARIABLE,
-            3,
+            4,
         )
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_USER_ID,
             1,
             uid = goodUID,
@@ -179,7 +180,7 @@ class NIDIdentifierServiceTest {
     //    getUserID
     @Test
     fun test_getUserID() {
-        every { neruoID.userID } returns goodUID
+        every { neuroID.userID } returns goodUID
 
         assert(identifierService.getUserID() == goodUID)
     }
@@ -194,11 +195,11 @@ class NIDIdentifierServiceTest {
         Assert.assertTrue(result)
 
         verify(exactly = 1) {
-            neruoID.userID = goodUID
+            neuroID.userID = goodUID
         }
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_USER_ID,
             1,
             queuedEvent = true,
@@ -209,7 +210,7 @@ class NIDIdentifierServiceTest {
     //    getRegisteredUserID
     @Test
     fun test_getRegisteredUserID() {
-        every { neruoID.registeredUserID } returns goodUID
+        every { neuroID.registeredUserID } returns goodUID
 
         assert(identifierService.getRegisteredUserID() == goodUID)
     }
@@ -223,11 +224,11 @@ class NIDIdentifierServiceTest {
 
         Assert.assertTrue(result)
         verify(exactly = 1) {
-            neruoID.registeredUserID = goodUID
+            neuroID.registeredUserID = goodUID
         }
 
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             SET_REGISTERED_USER_ID,
             1,
             queuedEvent = true,
@@ -237,16 +238,16 @@ class NIDIdentifierServiceTest {
 
     @Test
     fun test_setRegisteredUserId_failure_existingValue() {
-        every { neruoID.registeredUserID } returns goodUID
+        every { neuroID.registeredUserID } returns goodUID
 
         val result = identifierService.setRegisteredUserID("")
         Assert.assertFalse(result)
 
         verify(exactly = 0) {
-            neruoID.registeredUserID = any()
+            neuroID.registeredUserID = any()
         }
         verifyCaptureEvent(
-            neruoID,
+            neuroID,
             LOG,
             1,
             level = "warn",
