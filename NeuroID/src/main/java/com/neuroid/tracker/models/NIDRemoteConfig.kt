@@ -25,7 +25,7 @@ data class NIDRemoteConfig(
     @SerializedName(value = "site_id")
     val siteID: String = "",
     @SerializedName(value = "low_memory_back_off")
-    val lowMemoryBackOff: Int = 3,
+    val lowMemoryBackOff: Int = 5,
     @SerializedName(value = "low_memory_threshold")
-    val lowMemoryThreshold: Double = 0.15,
+    val lowMemoryThreshold: Double = 0.25,
 )
