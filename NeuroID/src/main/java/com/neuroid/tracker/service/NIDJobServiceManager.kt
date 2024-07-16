@@ -170,21 +170,23 @@ internal class NIDJobServiceManager(
      * seconds, if low memory flag is false, kill this job. Default setting in remote config is
      * 3 seconds.
      */
+    @Synchronized
     private fun createResetLowMemoryWatchdog() {
         println("createResetLowMemoryWatchdogServer() called")
         if (isLowMemoryWatchdogRunning) {
-            println("createResetLowMemoryWatchdogServer() is running")
+            println("createResetLowMemoryWatchdogServer() is running, exit")
             return
         }
         println("createResetLowMemoryWatchdogServer() is not running")
         if (NeuroID.getInternalInstance()?.lowMemory == true) {
+            isLowMemoryWatchdogRunning = true
             CoroutineScope(dispatcher).launch {
                 println("createResetLowMemoryWatchdogServer() is low, running watchdog")
                 while (NeuroID.getInternalInstance()?.lowMemory == true) {
                     println("createResetLowMemoryWatchdogServer() in delay loop, memory is still low")
                     delay(configService.configCache.lowMemoryBackOff * 1000L)
                     println("createResetLowMemoryWatchdogServer() done waiting, check memory")
-                    checkMemoryLevel(false)
+                    checkMemoryLevel()
                     // if the low memory situation is cleared, cancel the job.
                     if (NeuroID.getInternalInstance()?.lowMemory != true) {
                         println("createResetLowMemoryWatchdogServer() no longer low, reset watchdog flag")
@@ -194,6 +196,9 @@ internal class NIDJobServiceManager(
                     }
                 }
             }
+        } else {
+            isLowMemoryWatchdogRunning = false
+            println("createResetLowMemoryWatchdogServer() memory level good, exit")
         }
     }
 
@@ -234,14 +239,16 @@ internal class NIDJobServiceManager(
 
     /**
      * Get the current system memory state. only send low memory event if sendEvent == true
+     * Criteria for low memory state is:
+     * (total == max) and free <= (low memory threshold percentage * max)
      */
-    private fun checkMemoryLevel(sendEvent: Boolean = true): NIDEventModel? {
+    private fun checkMemoryLevel(): NIDEventModel? {
         val max = Runtime.getRuntime().maxMemory()
         val free = Runtime.getRuntime().freeMemory()
         val total = Runtime.getRuntime().totalMemory()
 
-        println("checkMemoryLevel() max: $max free: $free total: $total")
-        if (max == total && free <= configService.configCache.lowMemoryThreshold) {
+        println("checkMemoryLevel() max: $max free: $free total: $total threshold: ${(configService.configCache.lowMemoryThreshold * max).toInt()} ")
+        if (max == total && free <= (configService.configCache.lowMemoryThreshold * max).toInt()) {
             println("checkMemoryLevel() low memory state!")
             NeuroID.getInternalInstance()?.lowMemory = true
             return NIDEventModel(

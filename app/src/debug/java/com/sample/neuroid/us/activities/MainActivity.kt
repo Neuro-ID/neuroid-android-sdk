@@ -99,6 +99,9 @@ class MainActivity : AppCompatActivity() {
         var isRunning = false
         var job: Job? = null
 
+        /**
+         * Stop consuming memory and release consumed memory for the GC to collect.
+         */
         fun stopEating(){
             job?.let {
                 it.cancel()
@@ -108,21 +111,22 @@ class MainActivity : AppCompatActivity() {
                 println("createResetLowMemoryWatchdogServer canceling eater")
             }
         }
+
+        /**
+         * Consume memory till the allocated memory (total) equals the max allocated memory (max).
+         * Eats in ~400KB chunks.
+         */
         fun eat() {
             isRunning = true
             println("createResetLowMemoryWatchdogServer starting eater")
             job = CoroutineScope(Dispatchers.IO).launch {
-                while(isRunning) {
+                while(isRunning && Runtime.getRuntime().maxMemory() != Runtime.getRuntime().totalMemory()) {
                     val stringBuffer = StringBuffer()
                     for(i in 0..100000) {
                         stringBuffer.append("h453")
                     }
                     buffer.add(stringBuffer.toString())
-                    val mi = ActivityManager.MemoryInfo()
-                    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                    activityManager.getMemoryInfo(mi)
-                    println("eater: total: ${mi.totalMem} avail: ${mi.availMem} threshold: ${mi.threshold} islow: ${mi.lowMemory}")
-                    println("eater: free ${Runtime.getRuntime().freeMemory()} max: ${Runtime.getRuntime().maxMemory()} total: ${Runtime.getRuntime().totalMemory()}")
+                    println("eater: max ${Runtime.getRuntime().maxMemory()} free: ${Runtime.getRuntime().freeMemory()} total: ${Runtime.getRuntime().totalMemory()}")
                     delay(500L)
                 }
             }
