@@ -457,7 +457,7 @@ class NeuroID
                 sessionService.resumeCollection()
             }
 
-            return true
+            return
         }
 
         internal fun configSetupCompletion() {

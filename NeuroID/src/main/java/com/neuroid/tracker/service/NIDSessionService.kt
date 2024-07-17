@@ -56,7 +56,6 @@ internal class NIDSessionService(
         samplingService.updateIsSampledStatus(siteID)
         logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
 
-
         neuroID.setupListeners()
 
         customFunctionality()
@@ -303,8 +302,6 @@ internal class NIDSessionService(
 
             // If SDK is already started, update sampleStatus and continue
             if (NeuroID.isSDKStarted) {
-                neuroID.addLinkedSiteID(siteID)
-
                 // capture CREATE_SESSION and METADATA events for new flow
                 neuroID.captureEvent(
                     type = LOG,
@@ -315,6 +312,8 @@ internal class NIDSessionService(
                 createSession()
 
                 neuroID.checkThenCaptureAdvancedDevice()
+
+                neuroID.addLinkedSiteID(siteID)
 
                 completion(
                     SessionStartResult(
@@ -416,10 +415,3 @@ internal class NIDSessionService(
             }
         }
 }
-
-// problems
-// -- linked site id isn't there potentially for sample status update on init? - could make another var but it would only be used once
-//      because of the race condition
-// -- clearSendOldFlowEvents needs to complete before starting - could cause delay, but if we don't wait
-//          then old events could get mixed with new ones for linkedSiteID
-//      // do we introduce the concept of 2 queues? - one that is being sent and then shift to the other when switching site ids?
