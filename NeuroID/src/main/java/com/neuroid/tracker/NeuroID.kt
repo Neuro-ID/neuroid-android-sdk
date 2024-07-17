@@ -51,10 +51,12 @@ import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
+import com.neuroid.tracker.utils.generateUniqueHexID
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import org.jetbrains.annotations.TestOnly
 import java.util.Calendar
 
 class NeuroID
@@ -71,6 +73,7 @@ class NeuroID
         internal var clientID = ""
         internal var userID = ""
         internal var linkedSiteID: String? = null
+        internal var tabID: String
 
         internal var registeredUserID = ""
         internal var timestamp: Long = 0L
@@ -96,7 +99,7 @@ class NeuroID
         internal var nidActivityCallbacks: ActivityCallbacks
         internal var samplingService: NIDSamplingService
         internal val httpService: NIDHttpService
-        internal val validationService: NIDValidationService = NIDValidationService(logger)
+        internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
 
         internal lateinit var sessionService: NIDSessionService
@@ -128,8 +131,10 @@ class NeuroID
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
+                captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
+                tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
             } else {
                 environment =
                     if (clientKey.contains("_live_")) {
@@ -137,6 +142,8 @@ class NeuroID
                     } else {
                         "TEST"
                     }
+
+                tabID = "$rndmId-${generateUniqueHexID()}"
             }
 
             // We have to have two different retrofit instances because it requires a
@@ -344,6 +351,17 @@ class NeuroID
             dataStore = store
         }
 
+        @TestOnly
+        internal fun resetSingletonInstance()  {
+            singleton =
+                NeuroID(
+                    application,
+                    clientKey,
+                    isAdvancedDevice,
+                    PRODUCTION,
+                )
+        }
+
         internal fun setClipboardManagerInstance(cm: ClipboardManager) {
             clipboardManager = cm
         }
@@ -412,19 +430,28 @@ class NeuroID
         }
 
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
-            try {
-                attemptedRegisteredUserId?.let {
-                    if (validationService.validateUserID(attemptedRegisteredUserId)) {
-                        captureEvent(type = ATTEMPTED_LOGIN, uid = attemptedRegisteredUserId)
-                        return true
-                    }
-                }
+            captureEvent(
+                type = LOG,
+                level = "info",
+                m = "attemptedLogin attempt with attemptedRegisteredUserId:'${if (attemptedRegisteredUserId != null) {
+                    validationService.scrubIdentifier(attemptedRegisteredUserId)
+                } else {
+                    "null"
+                }}'",
+            )
+
+            val captured =
+                identifierService.setGenericUserID(
+                    ATTEMPTED_LOGIN,
+                    attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
+                    attemptedRegisteredUserId != null,
+                )
+
+            if (!captured) {
                 captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
-                return true
-            } catch (exception: Exception) {
-                logger.e(msg = "exception in attemptedLogin() ${exception.message}")
-                return false
             }
+
+            return true
         }
 
         /**
@@ -539,7 +566,7 @@ class NeuroID
             nidActivityCallbacks.forceStart(activity)
         }
 
-        internal fun getTabId(): String = rndmId
+        internal fun getTabId(): String = tabID
 
         internal fun getFirstTS(): Long = timestamp
 

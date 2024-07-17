@@ -100,4 +100,26 @@ class NIDValidationServiceTest {
 
         Assert.assertEquals(false, value)
     }
+
+    // scrubIdentifier
+    @Test
+    fun test_scrubIdentifier_email() {
+        val value = validationService.scrubIdentifier("test@test.com")
+
+        Assert.assertEquals("t**t@test.com", value)
+    }
+
+    @Test
+    fun test_scrubIdentifier_ssn() {
+        val value = validationService.scrubIdentifier("123-45-6789")
+
+        Assert.assertEquals("***-**-****", value)
+    }
+
+    @Test
+    fun test_scrubIdentifier_string() {
+        val value = validationService.scrubIdentifier("testID")
+
+        Assert.assertEquals("testID", value)
+    }
 }

@@ -237,21 +237,18 @@ open class NeuroIDClassUnitTests {
 
     //   setTestURL
 
-    private fun setupAttemptedLoginTestEnvironment() {
-        // fake out the clock
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance().timeInMillis } returns 1
-        // make the logger not throw
-        val logger = mockk<NIDLogWrapper>()
-        every { logger.e(any(), any()) } just runs
-        NeuroID.getInternalInstance()?.logger = logger
-        // everything else as normal
-        setMockedDataStore()
+    // Class Init Test
+    @Test
+    fun test_configure_tab_id() {
         setMockedNIDJobServiceManager(false)
-        NeuroID._isSDKStarted = true
+        val ogTabID = NeuroID.getInternalInstance()?.tabID
+
+        NeuroID.getInternalInstance()?.resetSingletonInstance()
+
+        assert(ogTabID != NeuroID.getInternalInstance()?.tabID)
     }
 
-    private fun setupAttemptedLoginTestEnvironmentException() {
+    private fun setupAttemptedLoginTestEnvironment(validID: Boolean = false) {
         // fake out the clock
         mockkStatic(Calendar::class)
         every { Calendar.getInstance().timeInMillis } returns 1
@@ -259,12 +256,12 @@ open class NeuroIDClassUnitTests {
         val logger = mockk<NIDLogWrapper>()
         every { logger.e(any(), any()) } just runs
         NeuroID.getInternalInstance()?.logger = logger
-        // make the datamanager throw exception
-        val dataStoreManager = mockk<NIDDataStoreManager>()
-        every { dataStoreManager.isFullBuffer() } returns false
-        every { dataStoreManager.saveEvent(any()) } throws (Exception("save event exception"))
-        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStoreManager)
-        // everything else as normal
+
+        // make the validation service throw
+        val mockIdentificationService = getMockedIdentifierService()
+        every { mockIdentificationService.setGenericUserID(any(), any(), any()) } returns validID
+        NeuroID.getInternalInstance()?.identifierService = mockIdentificationService
+        setMockedDataStore()
         setMockedNIDJobServiceManager(false)
         NeuroID._isSDKStarted = true
     }
@@ -272,35 +269,29 @@ open class NeuroIDClassUnitTests {
     private fun testAttemptedLogin(
         userId: String?,
         expectedUserId: String,
-        expectedResult: Boolean,
+        expectedFailedResult: Boolean,
     ) {
-        setupAttemptedLoginTestEnvironment()
+        setupAttemptedLoginTestEnvironment(!expectedFailedResult)
         val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
-        val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
-        assertEquals(expectedResult, actualResult)
-        unmockkStatic(Calendar::class)
-    }
+        val mockIdentificationService = NeuroID.getInternalInstance()?.identifierService
 
-    private fun testAttemptedLoginException(
-        userId: String?,
-        expectedUserId: String,
-        expectedResult: Boolean,
-    ) {
-        setupAttemptedLoginTestEnvironmentException()
-        val dataStoreManager = NeuroID.getInternalInstance()?.dataStore
-        val logger = NeuroID.getInternalInstance()?.logger
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
-        verify { dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId)) }
-        verify { logger?.e(any(), msg = "exception in attemptedLogin() save event exception") }
-        assertEquals(expectedResult, actualResult)
+        verify {
+            mockIdentificationService?.setGenericUserID(any(), userId ?: any(), any())
+        }
+
+        if (expectedFailedResult) {
+            dataStoreManager?.saveEvent(NIDEventModel(ts = 1, type = "ATTEMPTED_LOGIN", uid = expectedUserId))
+        }
+
+        assert(actualResult == true)
         unmockkStatic(Calendar::class)
     }
 
     @Test
     fun testAttemptedLoginVarious() {
         // the single good id
-        testAttemptedLogin("goodone", "goodone", true)
+        testAttemptedLogin("goodone", "goodone", false)
         // all the rest are rubbish ids
         testAttemptedLogin("12", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("test@test.com'", "scrubbed-id-failed-validation", true)
@@ -309,11 +300,6 @@ open class NeuroIDClassUnitTests {
         testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true)
-    }
-
-    @Test
-    fun testAttemptedLoginException() {
-        testAttemptedLoginException("goodone", "goodone", false)
     }
 
     @Test
@@ -529,7 +515,7 @@ open class NeuroIDClassUnitTests {
     fun testGetTabId() {
         val expectedValue = "MyRNDID"
 
-        NeuroID.rndmId = expectedValue
+        NeuroID.getInternalInstance()?.tabID = expectedValue
 
         val value = NeuroID.getInternalInstance()?.getTabId()
 

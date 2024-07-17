@@ -109,6 +109,12 @@ class NIDEventSender(
             }
 
         val linkedSiteID: String? = NeuroID.getInternalInstance()?.linkedSiteID
+        val tabID =
+            if (NeuroID.getInternalInstance()?.tabID != null) {
+                NeuroID.getInternalInstance()?.tabID
+            } else {
+                NeuroID.rndmId
+            }
 
         val jsonBody =
             mapOf(
@@ -119,7 +125,7 @@ class NIDEventSender(
                 "registeredUserId" to registeredUserID,
                 "pageTag" to NeuroID.screenActivityName,
                 "pageId" to NeuroID.rndmId,
-                "tabId" to NeuroID.rndmId,
+                "tabId" to tabID,
                 "responseId" to generateUniqueHexID(),
                 "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",

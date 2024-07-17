@@ -45,4 +45,27 @@ internal class NIDValidationService(
 
         return true
     }
+
+    fun scrubIdentifier(identifier: String): String {
+        val emailRegex = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+        val ssnRegex = Regex("\\b\\d{3}-\\d{2}-\\d{4}\\b")
+
+        // Check for email address
+        val emailMatch = emailRegex.find(identifier)
+        if (emailMatch != null) {
+            val email = emailMatch.value
+            val atIndex = email.indexOf('@')
+            val maskedEmail = email[0] + "*".repeat(atIndex - 2) + email[atIndex - 1] + email.substring(atIndex)
+            return identifier.replace(email, maskedEmail)
+        }
+
+        // Check for SSN
+        val ssnMatch = ssnRegex.find(identifier)
+        if (ssnMatch != null) {
+            return "***-**-****"
+        }
+
+        // If no email or SSN is found, return the original string
+        return identifier
+    }
 }

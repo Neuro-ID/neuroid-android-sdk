@@ -7,8 +7,10 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.getMockedHTTPService
+import com.neuroid.tracker.getMockedIdentifierService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import io.mockk.Runs
@@ -16,15 +18,32 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import retrofit2.Call
 import retrofit2.Response
 
 class NIDEventSenderTest {
     val testEventList = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
+
+    @Before
+    fun setup() {
+        val mockedIdentificationService = getMockedIdentifierService()
+        every { mockedIdentificationService.getUserID() } returns ""
+        every { mockedIdentificationService.getRegisteredUserID() } returns ""
+
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentificationService
+    }
+
+    @After
+    fun teardown() {
+        unmockkAll()
+    }
 
     //    sendEvents
     @Test

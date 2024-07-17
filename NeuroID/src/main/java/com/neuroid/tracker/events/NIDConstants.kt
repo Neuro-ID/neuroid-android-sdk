@@ -70,11 +70,11 @@ const val SET_LINKED_SITE = "SET_LINKED_SITE"
 const val CONFIG_CACHED = "CONFIG_CACHED"
 
 // NID origin codes
-const val NID_ORIGIN_NID_SET = "nid"
-const val NID_ORIGIN_CUSTOMER_SET = "customer"
-const val NID_ORIGIN_CODE_FAIL = "400"
-const val NID_ORIGIN_CODE_NID = "200"
-const val NID_ORIGIN_CODE_CUSTOMER = "201"
+const val ORIGIN_NID_SET = "nid"
+const val ORIGIN_CUSTOMER_SET = "customer"
+const val ORIGIN_CODE_FAIL = "400"
+const val ORIGIN_CODE_NID = "200"
+const val ORIGIN_CODE_CUSTOMER = "201"
 
 // Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
 enum class CallInProgress(val event: String, val state: Int) {

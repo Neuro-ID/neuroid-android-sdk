@@ -56,14 +56,18 @@ jobs:
           distribution: 'temurin'
 
       # Execute unit test neuroid lib
-      - name: Unit Test NeuroId
+      - name: Unit Test NeuroId (android lib)
         run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
 
-      # Execute unit test neuroid lib
+      # Execute unit test neuroid advanced lib
       - name: Unit Test NeuroId (advanced)
         run: ./gradlew :NeuroID:testAndroidAdvancedDeviceLibDebugUnitTest
 
-          # Execute unit tests
+      # Execute unit test neuroid reactnative lib
+      - name: Unit Test NeuroId (ReactNative)
+        run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
+
+        # Execute unit tests
       - name: Unit Test
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
