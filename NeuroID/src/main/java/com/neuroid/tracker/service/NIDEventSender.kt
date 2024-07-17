@@ -115,6 +115,7 @@ class NIDEventSender(
             } else {
                 NeuroID.rndmId
             }
+        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber?:0
 
         val jsonBody =
             mapOf(
@@ -133,6 +134,7 @@ class NIDEventSender(
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
+                "packetNumber" to packetNumber,
             )
 
         // using this JSON library (already included) does not escape /
