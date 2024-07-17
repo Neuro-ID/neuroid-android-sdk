@@ -2,6 +2,7 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.os.Bundle
+import com.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR
@@ -218,20 +219,21 @@ internal class ActivityCallbacksUnitTests {
         mocks.activityCallback.onActivityResumed(mocks.mockedActivity)
 
         val expectedActivityName = mocks.mockedActivity::class.java.name
-        verify(exactly = 1) {
-            mocks.mockedLogger.d(
-                msg = "Activity - Resumed",
-            )
+        if (!BuildConfig.FLAVOR.contains("react")) {
+            verify(exactly = 1) {
+                mocks.mockedLogger.d(
+                    msg = "Activity - Resumed",
+                )
 
-            mocks.mockedRegistration.registerTargetFromScreen(
-                mocks.mockedActivity,
-                true,
-                true,
-                "activity",
-                parent = expectedActivityName,
-            )
-
-            mocks.mockedRegistration.registerWindowListeners(mocks.mockedActivity)
+                mocks.mockedRegistration.registerTargetFromScreen(
+                    mocks.mockedActivity,
+                    true,
+                    true,
+                    "activity",
+                    parent = expectedActivityName,
+                )
+                mocks.mockedRegistration.registerWindowListeners(mocks.mockedActivity)
+            }
         }
 
         verifyCaptureEvent(

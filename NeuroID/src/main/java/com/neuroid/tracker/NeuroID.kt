@@ -456,6 +456,8 @@ class NeuroID
                 //  restart the gyroCadence job (config has a interval option)
                 sessionService.resumeCollection()
             }
+
+            return true
         }
 
         internal fun configSetupCompletion() {
