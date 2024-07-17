@@ -10,8 +10,7 @@ import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 interface ConfigService {
@@ -38,22 +37,19 @@ internal class NIDConfigService(
 
     override var configCache: NIDRemoteConfig = NIDRemoteConfig()
 
-    internal fun retrieveConfig(): Unit =
-        runBlocking {
-            if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
-                cacheSetWithRemote = false
-                configRetrievalCallback()
-                return@runBlocking
-            }
-
-            val deferred =
-                CoroutineScope(dispatcher).async {
-                    retrieveConfigCoroutine {
-                        configRetrievalCallback()
-                    }
-                }
-            deferred.await()
+    internal fun retrieveConfig() {
+        if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
+            cacheSetWithRemote = false
+            configRetrievalCallback()
+            return
         }
+
+        CoroutineScope(dispatcher).launch {
+            retrieveConfigCoroutine {
+                configRetrievalCallback()
+            }
+        }
+    }
 
     /***
      * This function is broke out from `retrieveConfig` in order to test because our coroutine
