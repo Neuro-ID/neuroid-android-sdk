@@ -17,7 +17,7 @@ import java.util.Calendar
 interface ConfigService {
     val configCache: NIDRemoteConfig
 
-    fun retrieveOrRefreshCache(completion: () -> Unit)
+    fun retrieveOrRefreshCache()
 }
 
 internal class NIDConfigService(
@@ -27,6 +27,7 @@ internal class NIDConfigService(
     private val httpService: HttpService,
     private val validationService: NIDValidationService,
     private val gson: Gson = GsonBuilder().create(),
+    private val configRetrievalCallback: () -> Unit = {},
 ) : ConfigService {
     companion object {
         const val DEFAULT_SAMPLE_RATE: Int = 100
@@ -37,18 +38,18 @@ internal class NIDConfigService(
 
     override var configCache: NIDRemoteConfig = NIDRemoteConfig()
 
-    internal fun retrieveConfig(completion: () -> Unit): Unit =
+    internal fun retrieveConfig(): Unit =
         runBlocking {
             if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
                 cacheSetWithRemote = false
-                completion()
+                configRetrievalCallback()
                 return@runBlocking
             }
 
             val deferred =
                 CoroutineScope(dispatcher).async {
                     retrieveConfigCoroutine {
-                        completion()
+                        configRetrievalCallback()
                     }
                 }
             deferred.await()
@@ -114,13 +115,9 @@ internal class NIDConfigService(
         return !cacheSetWithRemote
     }
 
-    override fun retrieveOrRefreshCache(completion: () -> Unit) {
+    override fun retrieveOrRefreshCache() {
         if (expiredCache()) {
-            retrieveConfig {
-                completion()
-            }
-        } else {
-            completion()
+            retrieveConfig()
         }
     }
 

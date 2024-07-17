@@ -97,6 +97,8 @@ internal fun getMockedNeuroID(
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
 
+    every { nidMock.setupListeners() } just runs
+
     if (shouldMockApplication) {
         every { nidMock.application } returns getMockedApplication()
         every { nidMock.getApplicationContext() } returns getMockedApplication()
@@ -257,13 +259,8 @@ internal fun getMockedConfigService(): ConfigService {
     val mockedConfigService = mockk<NIDConfigService>()
     every { mockedConfigService.configCache } returns NIDRemoteConfig()
     every {
-        mockedConfigService.retrieveOrRefreshCache(
-            completion = any(),
-        )
-    } answers {
-        val callback = it.invocation.args[0] as () -> Unit
-        callback()
-    }
+        mockedConfigService.retrieveOrRefreshCache()
+    } just runs
 
     return mockedConfigService
 }

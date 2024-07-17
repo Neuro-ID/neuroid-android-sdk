@@ -44,42 +44,37 @@ internal class NIDSessionService(
         }
     }
 
+    // Init listeners, begin config retrieval call, start session events
     internal fun setupSession(
+        // Leaving siteID for now for when we re-visit sampling update from config (ENG-8324)
         siteID: String?,
         customFunctionality: () -> Unit,
         completion: () -> Unit,
     ) {
-        configService.retrieveOrRefreshCache {
-            samplingService.updateIsSampledStatus(siteID)
-            logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
+        configService.retrieveOrRefreshCache()
 
-            // listeners
-            neuroID.getApplicationContext()?.let {
-                if (configService.configCache.callInProgress) {
-                    neuroID.nidCallActivityListener.setCallActivityListener(it)
-                }
-                if (configService.configCache.geoLocation) {
-                    neuroID.locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                }
-            }
+        samplingService.updateIsSampledStatus(siteID)
+        logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
 
-            customFunctionality()
 
-            NeuroID._isSDKStarted = true
+        neuroID.setupListeners()
 
-            CoroutineScope(neuroID.dispatcher).launch {
-                neuroID.startIntegrationHealthCheck()
-                createSession()
-                neuroID.saveIntegrationHealthEvents()
-            }
+        customFunctionality()
 
-            NIDSingletonIDs.retrieveOrCreateLocalSalt()
+        NeuroID._isSDKStarted = true
 
-            neuroID.dataStore.saveAndClearAllQueuedEvents()
-            neuroID.checkThenCaptureAdvancedDevice()
-
-            completion()
+        CoroutineScope(neuroID.dispatcher).launch {
+            neuroID.startIntegrationHealthCheck()
+            createSession()
+            neuroID.saveIntegrationHealthEvents()
         }
+
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
+
+        neuroID.dataStore.saveAndClearAllQueuedEvents()
+        neuroID.checkThenCaptureAdvancedDevice()
+
+        completion()
     }
 
     // internal start() with siteID
@@ -308,7 +303,7 @@ internal class NIDSessionService(
 
             // If SDK is already started, update sampleStatus and continue
             if (NeuroID.isSDKStarted) {
-                samplingService.updateIsSampledStatus(siteID)
+                neuroID.addLinkedSiteID(siteID)
 
                 // capture CREATE_SESSION and METADATA events for new flow
                 neuroID.captureEvent(
@@ -321,7 +316,6 @@ internal class NIDSessionService(
 
                 neuroID.checkThenCaptureAdvancedDevice()
 
-                neuroID.addLinkedSiteID(siteID)
                 completion(
                     SessionStartResult(
                         true,
@@ -422,3 +416,10 @@ internal class NIDSessionService(
             }
         }
 }
+
+// problems
+// -- linked site id isn't there potentially for sample status update on init? - could make another var but it would only be used once
+//      because of the race condition
+// -- clearSendOldFlowEvents needs to complete before starting - could cause delay, but if we don't wait
+//          then old events could get mixed with new ones for linkedSiteID
+//      // do we introduce the concept of 2 queues? - one that is being sent and then shift to the other when switching site ids?

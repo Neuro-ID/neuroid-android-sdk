@@ -1,6 +1,5 @@
 package com.neuroid.tracker.extensions
 
-import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.models.SessionStartResult
@@ -9,7 +8,6 @@ import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.getADVNetworkService
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
-import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,15 +62,19 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
-                val advancedDeviceIDManagerService = AdvancedDeviceIDManager(
-                    context,
-                    logger,
-                    NIDSharedPrefsDefaults(context),
-                    this,
-                    getADVNetworkService(
-                        NeuroID.endpoint,
+                val advancedDeviceIDManagerService =
+                    AdvancedDeviceIDManager(
+                        context,
                         logger,
-                    ), null)
+                        NIDSharedPrefsDefaults(context),
+                        this,
+                        getADVNetworkService(
+                            NeuroID.endpoint,
+                            logger,
+                        ),
+                        this.clientID,
+                        this.linkedSiteID ?: "",
+                    )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this)
             }
         }
