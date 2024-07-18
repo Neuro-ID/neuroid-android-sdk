@@ -97,8 +97,6 @@ internal fun getMockedNeuroID(
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
 
-    every { nidMock.incrementPacketNumber()} just runs
-
     if (shouldMockApplication) {
         every { nidMock.application } returns getMockedApplication()
         every { nidMock.getApplicationContext() } returns getMockedApplication()
