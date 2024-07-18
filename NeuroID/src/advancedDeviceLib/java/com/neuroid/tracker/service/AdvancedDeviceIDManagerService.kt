@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -28,7 +27,7 @@ interface AdvancedDeviceIDManagerService {
         clientKey: String,
         remoteUrl: String,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        delay: Long = 5000L
+        delay: Long = 5000L,
     ): Job?
 }
 
@@ -38,8 +37,10 @@ internal class AdvancedDeviceIDManager(
     private val sharedPrefs: NIDSharedPrefsDefaults,
     private val neuroID: NeuroID,
     private val advNetworkService: ADVNetworkService,
+    private val clientID: String,
+    private val linkedSiteID: String,
     // only for testing purposes, need to create in real time to pass NID Key
-    private val fpjsClient: FingerprintJS?,
+    private val fpjsClient: FingerprintJS? = null,
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -86,10 +87,10 @@ internal class AdvancedDeviceIDManager(
         clientKey: String,
         remoteUrl: String,
         dispatcher: CoroutineDispatcher,
-        delay: Long
+        delay: Long,
     ): Job? {
         // Retrieving the API key from NeuroID
-        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey)
+        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
 
         // if no key exit early
         if (!nidKeyResponse.success) {
@@ -202,7 +203,8 @@ internal class AdvancedDeviceIDManager(
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 listener = { result ->
-                    continuation.resume(Pair(true, result.requestId)) },
+                    continuation.resume(Pair(true, result.requestId))
+                },
                 errorListener = { error ->
                     continuation.resume(
                         Pair(

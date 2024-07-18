@@ -203,8 +203,6 @@ class NIDSessionServiceTest {
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         val mockedDataStore = mockedServices.mockedDataStore
-        val mockedLocationService = mockedServices.mockedLocationService
-        val mockedCallListener = mockedServices.mockedCallListener
 
         val mockedConfigService = mockedServices.mockedConfigService
         val mockedSampleService = mockedServices.mockedSampleService
@@ -232,13 +230,11 @@ class NIDSessionServiceTest {
         assert(completionFuncRan)
 
         verify(exactly = 1) {
-            mockedConfigService.retrieveOrRefreshCache(any())
+            mockedConfigService.retrieveOrRefreshCache()
 
             mockedSampleService.updateIsSampledStatus(testSiteID)
 
-            mockedCallListener.setCallActivityListener(any())
-
-            mockedLocationService.setupLocationCoroutine(any())
+            mockedNeuroID.setupListeners()
         }
 
         verifyCaptureEvent(
@@ -981,8 +977,6 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedSampleService.updateIsSampledStatus(testSiteID)
-
             mockedNeuroID.checkThenCaptureAdvancedDevice()
             mockedNeuroID.addLinkedSiteID(testSiteID)
         }
