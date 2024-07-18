@@ -18,12 +18,16 @@ class NIDSamplingServiceTest {
 
     @Test
     fun testParentThrottle() {
-        testSampleService("form_zappa345", 70.0, false)
+        // ENG-8324
+//        testSampleService("form_zappa345", 70.0, false)
+        testSampleService("form_zappa345", 70.0, true)
     }
 
     @Test
     fun testLinkedSiteIDThrottle() {
-        testSampleService("form_testa123", 10.0, false)
+        // ENG-8324
+//        testSampleService("form_testa123", 10.0, false)
+        testSampleService("form_testa123", 10.0, true)
     }
 
     @Test

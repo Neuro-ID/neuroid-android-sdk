@@ -8,7 +8,11 @@ import com.neuroid.tracker.utils.getRetroFitInstance
 import retrofit2.Call
 
 interface ADVNetworkService {
-    fun getNIDAdvancedDeviceAccessKey(key: String): ADVKeyFunctionResponse
+    fun getNIDAdvancedDeviceAccessKey(
+        key: String,
+        clientID: String,
+        linkedSiteID: String,
+    ): ADVKeyFunctionResponse
 }
 
 class NIDAdvancedDeviceNetworkService(
@@ -22,8 +26,12 @@ class NIDAdvancedDeviceNetworkService(
         const val HTTP_SUCCESS = 200
     }
 
-    override fun getNIDAdvancedDeviceAccessKey(key: String): ADVKeyFunctionResponse {
-        val call = apiService.getNIDAdvancedDeviceAccessKey(key)
+    override fun getNIDAdvancedDeviceAccessKey(
+        key: String,
+        clientID: String,
+        linkedSiteID: String,
+    ): ADVKeyFunctionResponse {
+        val call = apiService.getNIDAdvancedDeviceAccessKey(key, clientID, linkedSiteID)
         return retryRequests(call)
     }
 
