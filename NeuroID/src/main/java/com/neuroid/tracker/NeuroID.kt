@@ -231,13 +231,10 @@ class NeuroID
             }
         }
 
-        internal fun incrementPacketNumber() {
+        fun incrementPacketNumber() {
             packetNumber += 1
         }
 
-        internal fun resetPacketNumber() {
-            packetNumber = 0
-        }
         /**
          * Function to retrieve the current network type (wifi, cell, eth, unknown)
          */
