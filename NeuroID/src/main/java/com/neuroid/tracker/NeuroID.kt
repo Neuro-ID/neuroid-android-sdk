@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.IntentFilter
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -160,7 +161,15 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            configService = NIDConfigService(dispatcher, logger, this, httpService, validationService)
+            configService =
+                NIDConfigService(
+                    dispatcher,
+                    logger,
+                    this,
+                    httpService,
+                    validationService,
+                    configRetrievalCallback = { configSetupCompletion() },
+                )
             samplingService = NIDSamplingService(logger, randomGenerator, configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
@@ -352,7 +361,7 @@ class NeuroID
         }
 
         @TestOnly
-        internal fun resetSingletonInstance()  {
+        internal fun resetSingletonInstance() {
             singleton =
                 NeuroID(
                     application,
@@ -427,6 +436,35 @@ class NeuroID
                     ),
                 )
             }
+        }
+
+        internal fun setupListeners() {
+            getApplicationContext()?.let {
+                if (configService.configCache.callInProgress) {
+                    nidCallActivityListener.setCallActivityListener(it)
+                } else {
+                    nidCallActivityListener.unregisterCallActivityListener(it)
+                }
+
+                if (configService.configCache.geoLocation) {
+                    locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                } else {
+                    locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
+
+                // This will restart the collection job (config has a interval option) and
+                //  restart the gyroCadence job (config has a interval option)
+                sessionService.resumeCollection()
+            }
+
+            return
+        }
+
+        internal fun configSetupCompletion() {
+            // once the config comes back we update listeners that are dependent on a config option.
+            captureEvent(type = LOG, level = "info", m = "Remote Config Retrieval Attempt Completed")
+            logger.i(msg = "Remote Config Retrieval Attempt Completed")
+            setupListeners()
         }
 
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
