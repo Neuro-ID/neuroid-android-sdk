@@ -7,7 +7,6 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.getMockedConfigService
 import com.neuroid.tracker.getMockedLogger
@@ -22,7 +21,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -97,10 +95,12 @@ class NIDJobServiceManagerTest {
                 mockedApplication,
                 "clientKey",
             )
+
             // test the thing
             nidJobServiceManager.sendEvents(
                 forceSendEvents = true,
             )
+
             verify {
                 mockedSetup.mockedEventSender.sendEvents(
                     any(),
@@ -115,7 +115,6 @@ class NIDJobServiceManagerTest {
         val mockedApplication: Application,
         val mockedLogger: NIDLogWrapper,
         val mockedEventSender: NIDSendingService,
-        val mockedNeuroID: NeuroID
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -124,18 +123,17 @@ class NIDJobServiceManagerTest {
         val logger = getMockedLogger()
         val mockedEventSender = getMockEventSender()
         val nidRemoteConfigService = getMockedConfigService()
-        val mockedNeuroID = getMockedNeuroID()
         val nidJobServiceManager =
             NIDJobServiceManager(
-                mockedNeuroID,
+                getMockedNeuroID(),
                 getMockedDatastoreManager(),
                 mockedEventSender,
                 logger,
                 nidRemoteConfigService,
-                Dispatchers.Unconfined,
+                UnconfinedTestDispatcher(),
             )
 
-        return MockedServices(nidJobServiceManager, mockedApplication, logger, mockedEventSender, mockedNeuroID)
+        return MockedServices(nidJobServiceManager, mockedApplication, logger, mockedEventSender)
     }
 
     private fun getMockedDatastoreManager(): NIDDataStoreManager {
