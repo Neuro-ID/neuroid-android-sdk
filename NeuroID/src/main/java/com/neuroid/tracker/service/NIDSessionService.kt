@@ -300,6 +300,8 @@ internal class NIDSessionService(
             // 2. CREATE_SESSION and MOBILE_METADATA events captured
             // 3. Capture ADV (based on global config and lib installed)
 
+            neuroID.addLinkedSiteID(siteID)
+
             // If SDK is already started, update sampleStatus and continue
             if (NeuroID.isSDKStarted) {
                 // capture CREATE_SESSION and METADATA events for new flow
@@ -312,8 +314,6 @@ internal class NIDSessionService(
                 createSession()
 
                 neuroID.checkThenCaptureAdvancedDevice()
-
-                neuroID.addLinkedSiteID(siteID)
 
                 completion(
                     SessionStartResult(
@@ -331,12 +331,10 @@ internal class NIDSessionService(
                         siteID,
                         userID,
                     ) {
-                        neuroID.addLinkedSiteID(siteID)
                         completion(it)
                     }
                 } else {
                     start(siteID) {
-                        neuroID.addLinkedSiteID(siteID)
                         completion(
                             SessionStartResult(
                                 it,
