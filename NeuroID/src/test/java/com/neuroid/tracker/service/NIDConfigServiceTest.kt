@@ -35,6 +35,8 @@ class NIDConfigServiceTest {
     private lateinit var configService: NIDConfigService
     private lateinit var validationService: NIDValidationService
 
+    private var callbackCalled: Boolean = false
+
     @Before
     fun setup() {
         neuroID = getMockedNeuroID()
@@ -49,11 +51,15 @@ class NIDConfigServiceTest {
                 neuroID,
                 httpService,
                 validationService,
+                configRetrievalCallback = {
+                    callbackCalled = true
+                },
             )
     }
 
     @After
     fun teardown() {
+        callbackCalled = false
         unmockkAll()
     }
 
@@ -76,13 +82,10 @@ class NIDConfigServiceTest {
             configService.cacheSetWithRemote = true
 
             // When
-            var completionRun = false
-            configService.retrieveConfig {
-                completionRun = true
-            }
+            configService.retrieveConfig()
 
-            assert(completionRun)
             assert(!configService.cacheSetWithRemote)
+            assert(callbackCalled)
         }
 
     // retrieveConfigCoroutine

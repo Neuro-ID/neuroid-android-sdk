@@ -17,7 +17,7 @@ import retrofit2.Response
 class NIDAdvancedDeviceNetworkServiceUnitTests {
     //    getNIDAdvancedDeviceAccessKey
     @Test
-    fun testGetNIDAdvancedDeviceAccessKey_failed_retries()  {
+    fun testGetNIDAdvancedDeviceAccessKey_failed_retries() {
         val advancedDeviceNetworkService =
             NIDAdvancedDeviceNetworkService(
                 getMockedAPIService(
@@ -26,7 +26,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(response.message == "Error") { "Expected response.message should be Errors, found ${response.message}" }
@@ -34,7 +34,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
     }
 
     @Test
-    fun testGetNIDAdvancedDeviceAccessKey_failed_exception()  {
+    fun testGetNIDAdvancedDeviceAccessKey_failed_exception() {
         val advancedDeviceNetworkService =
             NIDAdvancedDeviceNetworkService(
                 getMockedAPIService(
@@ -46,7 +46,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(
@@ -56,7 +56,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
     }
 
     @Test
-    fun testGetNIDAdvancedDeviceAccessKey_failed_status_bad()  {
+    fun testGetNIDAdvancedDeviceAccessKey_failed_status_bad() {
         val errorMessage = "advanced signal not available: status BAD"
         val advancedDeviceNetworkService =
             NIDAdvancedDeviceNetworkService(
@@ -72,7 +72,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(response.message == errorMessage) { "Expected response.message should be \"$errorMessage\", found \"${response.message}\"" }
@@ -80,7 +80,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
     }
 
     @Test
-    fun testGetNIDAdvancedDeviceAccessKey_success()  {
+    fun testGetNIDAdvancedDeviceAccessKey_success() {
         val key = "VALIDKEY"
         val advancedDeviceNetworkService =
             NIDAdvancedDeviceNetworkService(
@@ -97,7 +97,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedBase64Decoder(key),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
 
         assert(response.success) { "Expected response.success should be true" }
         assert(response.message == null) { "Expected response.message should be \"\", found \"${response.message}\"" }
@@ -106,7 +106,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
 
     //    retryRequests
     @Test
-    fun testRetryRequests_failure_max_retry()  {
+    fun testRetryRequests_failure_max_retry() {
         val errorMessage = "Error Message"
         val call =
             getMockedOkHTTPCall(
@@ -144,7 +144,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
     }
 
     @Test
-    fun testRetryRequests_failure_exception()  {
+    fun testRetryRequests_failure_exception() {
         val exceptionMessage = "Exception Message"
         val call =
             getMockedOkHTTPCall(
@@ -171,7 +171,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
     }
 
     @Test
-    fun testRetryRequests_success()  {
+    fun testRetryRequests_success() {
         val key = "VALIDKEY"
         val call =
             getMockedOkHTTPCall(
@@ -215,7 +215,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
 
     private fun getMockedAPIService(call: Call<ADVKeyNetworkResponse>): NIDAdvancedDeviceApiService {
         val apiService = mockk<NIDAdvancedDeviceApiService>()
-        every { apiService.getNIDAdvancedDeviceAccessKey(any()) } returns call
+        every { apiService.getNIDAdvancedDeviceAccessKey(any(), any(), any()) } returns call
 
         return apiService
     }
@@ -225,10 +225,9 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
         retryErrorMessage: String? = null,
     ): Call<ADVKeyNetworkResponse> {
         var responseBody: Any? = ADVKeyNetworkResponse("", "")
-        if (responseItems.second != null)
-            {
-                responseBody = responseItems.second!!
-            }
+        if (responseItems.second != null) {
+            responseBody = responseItems.second!!
+        }
 
         val response = mockk<Response<ADVKeyNetworkResponse>>()
         every { response.code() } returns responseItems.first
