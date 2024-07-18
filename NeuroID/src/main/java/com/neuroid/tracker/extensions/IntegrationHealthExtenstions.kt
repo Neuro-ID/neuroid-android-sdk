@@ -28,7 +28,7 @@ internal fun generateIntegrationHealthDeviceReport() {
             model = Build.PRODUCT,
             type = Build.DEVICE,
             customDeviceType = "",
-            nidSDKVersion = NIDVersion.getSDKVersion(),
+            nidSDKVersion = NeuroID.getInstance()?.getSDKVersion()?:""
         )
 
     val jsonObj =

@@ -394,7 +394,7 @@ internal class NIDSessionService(
                 dnt = false,
                 url = "",
                 ns = "nid",
-                jsv = NIDVersion.getSDKVersion(),
+                jsv = NeuroID.getInstance()?.getSDKVersion(),
                 sw = sharedPreferenceDefaults.getDisplayWidth().toFloat(),
                 sh = sharedPreferenceDefaults.getDisplayHeight().toFloat(),
                 metadata = neuroID.metaData,

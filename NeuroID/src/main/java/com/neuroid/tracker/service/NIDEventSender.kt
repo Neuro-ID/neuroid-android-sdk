@@ -129,7 +129,7 @@ class NIDEventSender(
                 "responseId" to generateUniqueHexID(),
                 "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",
-                "sdkVersion" to NIDVersion.getSDKVersion(),
+                "sdkVersion" to NeuroID.getInstance()?.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
