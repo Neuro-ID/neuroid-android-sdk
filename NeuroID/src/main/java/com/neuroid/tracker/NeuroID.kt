@@ -548,7 +548,6 @@ class NeuroID
                         m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
                         level = "error",
                     )
-
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
