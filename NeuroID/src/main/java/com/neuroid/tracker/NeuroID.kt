@@ -74,6 +74,7 @@ class NeuroID
         internal var clientID = ""
         internal var userID = ""
         internal var linkedSiteID: String? = null
+        internal var packetNumber: Int = 0
         internal var tabID: String
 
         internal var registeredUserID = ""
@@ -239,6 +240,10 @@ class NeuroID
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
             }
+        }
+
+        fun incrementPacketNumber() {
+            packetNumber += 1
         }
 
         /**
