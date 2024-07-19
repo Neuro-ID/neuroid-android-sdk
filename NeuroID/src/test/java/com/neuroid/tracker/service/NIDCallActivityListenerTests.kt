@@ -37,7 +37,7 @@ class NIDCallActivityListenerTests {
     fun test_callActivityListener_call_ringing_sdk_greater_than_31() {
         callActivityListenerHarness(
             CallInProgress.RINGING.state,
-            CallInProgress.RINGING.event,
+            "false",
             false,
         )
     }
@@ -64,7 +64,7 @@ class NIDCallActivityListenerTests {
     fun test_callActivityListener_call_ringing_sdk_lesser_than_31() {
         callActivityListenerHarness(
             CallInProgress.RINGING.state,
-            CallInProgress.RINGING.event,
+            "false",
             false,
         )
     }
