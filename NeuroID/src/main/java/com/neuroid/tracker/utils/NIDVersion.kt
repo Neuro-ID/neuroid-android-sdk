@@ -25,6 +25,5 @@ object NIDVersion {
         nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper(),
     ): String {
         return getSDKVersion(nidBuildConfigWrapper) + " " + nidBuildConfigWrapper.getGitHash()
-
     }
 }

@@ -13,6 +13,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -53,6 +54,7 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
+import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -185,6 +187,9 @@ class NeuroID
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
 
             application?.let {
+
+                captureApplicationMetaData()
+
                 sessionService =
                     NIDSessionService(
                         logger,
@@ -538,7 +543,12 @@ class NeuroID
                     // reset advanced device flag to false, no method in class to invoke or
                     // wrong parameters
                     isAdvancedDevice = false
-                    captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke", level = "error")
+                    captureEvent(
+                        type = LOG,
+                        m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
+                        level = "error",
+                    )
+
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
@@ -776,6 +786,23 @@ class NeuroID
 
             // capture linkedSiteEvent for MIHR - not relevant for collection
             captureEvent(type = SET_LINKED_SITE, v = linkedSiteID)
+        }
+
+        internal fun captureApplicationMetaData() {
+            getApplicationContext()?.let {
+                val appInfo = getAppMetaData(it)
+                captureEvent(
+                    queuedEvent = !isSDKStarted,
+                    type = APPLICATION_METADATA,
+                    attrs =
+                        listOf(
+                            appInfo?.toMap()
+                                ?: mapOf(
+                                    "versionName" to "N/A",
+                                ),
+                        ),
+                )
+            }
         }
 
     /*
