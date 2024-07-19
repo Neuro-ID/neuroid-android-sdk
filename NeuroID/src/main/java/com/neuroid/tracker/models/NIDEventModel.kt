@@ -5,6 +5,7 @@ import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.COPY
@@ -233,6 +234,7 @@ data class NIDEventModel(
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
+                CALL_IN_PROGRESS -> contextString = "cp=${this.cp}, metadata=${this.attrs}"
                 else -> {}
             }
 
