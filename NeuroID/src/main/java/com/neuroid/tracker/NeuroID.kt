@@ -64,7 +64,7 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        internal val isAdvancedDevice: Boolean,
+        internal var isAdvancedDevice: Boolean,
         serverEnvironment: String = PRODUCTION,
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -514,6 +514,7 @@ class NeuroID
          * We must handle all exceptions that this method may
          * throw because of the undependable nature of reflection. We cannot afford to throw any
          * exception to the host app causing a crash because of this .
+         * Set isAdvancedFlag to false if method fails to invoke captureAdvancedDevice().
          */
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
             val packageName = "com.neuroid.tracker.extensions"
@@ -534,11 +535,21 @@ class NeuroID
                     logger.d(msg = "Method $methodName invoked successfully")
                 } else {
                     logger.d(msg = "No $methodName method found")
+                    // reset advanced device flag to false, no method in class to invoke or
+                    // wrong parameters
+                    isAdvancedDevice = false
+                    captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke", level = "error")
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
+                // reset advanced device flag to false, no class to invoke from
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no class to invoke from", level = "INFO")
             } catch (e: Exception) {
                 logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
+                // reset advanced device flag to false, don't know what happened
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, error: ${e.message}", level = "error")
             }
         }
 
