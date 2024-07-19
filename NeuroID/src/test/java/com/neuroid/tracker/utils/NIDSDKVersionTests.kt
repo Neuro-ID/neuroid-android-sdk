@@ -27,7 +27,7 @@ class NIDSDKVersionTests {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
         val version = NIDVersion.getSDKVersion(false, true, buildConfigWrapper)
-        assert(version == "5.android-yyyyyyy-adv")
+        assert(version == "5.android-adv-yyyyyyy")
     }
 
     @Test
@@ -35,6 +35,6 @@ class NIDSDKVersionTests {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
         val version = NIDVersion.getSDKVersion(true, true, buildConfigWrapper)
-        assert(version == "5.android-rn-yyyyyyy-adv")
+        assert(version == "5.android-rn-adv-yyyyyyy")
     }
 }

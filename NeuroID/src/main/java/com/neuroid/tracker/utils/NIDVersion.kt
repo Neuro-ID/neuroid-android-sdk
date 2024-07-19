@@ -8,7 +8,7 @@ object NIDVersion {
     ): String {
         val rnText =
             if (isRN) {
-                "rn-"
+                "-rn"
             } else {
                 ""
             }
@@ -20,7 +20,7 @@ object NIDVersion {
                 ""
             }
 
-        return "5.android-$rnText${nidBuildConfigWrapper.getBuildVersion()}$advText"
+        return "5.android$rnText$advText-${nidBuildConfigWrapper.getBuildVersion()}"
     }
 
     fun getInternalCurrentVersion(isRN: Boolean, isAdvancedDevice: Boolean,
