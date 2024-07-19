@@ -2,6 +2,7 @@ package com.neuroid.tracker.extensions
 
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDPublic
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
@@ -59,6 +60,7 @@ fun NeuroIDPublic.startSession(
 }
 
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
+    captureEvent(type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
