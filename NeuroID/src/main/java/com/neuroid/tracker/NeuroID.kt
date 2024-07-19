@@ -147,8 +147,6 @@ class NeuroID
                 tabID = "$rndmId-${generateUniqueHexID()}"
             }
 
-            captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
-
             // We have to have two different retrofit instances because it requires a
             // `base_url` to work off of and our Collection and Config endpoints are
             // different
@@ -214,6 +212,8 @@ class NeuroID
                         logger,
                         configService,
                     )
+
+                captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
 
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
