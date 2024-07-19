@@ -775,7 +775,7 @@ class NeuroID
             linkedSiteID = siteID
 
             // capture linkedSiteEvent for MIHR - not relevant for collection
-            captureEvent(type = SET_LINKED_SITE, v = siteID)
+            captureEvent(type = SET_LINKED_SITE, v = linkedSiteID)
         }
 
     /*
