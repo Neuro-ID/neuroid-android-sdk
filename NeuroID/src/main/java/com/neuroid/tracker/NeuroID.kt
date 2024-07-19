@@ -694,7 +694,7 @@ class NeuroID
             showLogs = enable
         }
 
-        override fun getSDKVersion() = NIDVersion.getSDKVersion(isRN, isAdvancedDevice)
+        override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
         // Identifier Commands
         @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))

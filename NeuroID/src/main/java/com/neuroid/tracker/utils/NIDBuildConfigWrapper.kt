@@ -13,4 +13,8 @@ class NIDBuildConfigWrapper {
     fun getGitHash(): String {
         return BuildConfig.GIT_HASH
     }
+
+    fun getFlavor(): String {
+        return BuildConfig.FLAVOR
+    }
 }

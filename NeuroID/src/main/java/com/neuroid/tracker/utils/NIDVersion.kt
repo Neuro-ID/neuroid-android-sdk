@@ -1,20 +1,18 @@
 package com.neuroid.tracker.utils
 
-import com.neuroid.tracker.BuildConfig
-
 object NIDVersion {
-    fun getSDKVersion(isRN: Boolean, isAdvancedDevice: Boolean,
-                      nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper()
+    internal fun getSDKVersion(
+        nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper(),
     ): String {
         val rnText =
-            if (isRN) {
+            if (nidBuildConfigWrapper.getFlavor().lowercase().contains("react")) {
                 "-rn"
             } else {
                 ""
             }
 
         val advText =
-            if (isAdvancedDevice) {
+            if (nidBuildConfigWrapper.getFlavor().lowercase().contains("advanceddevice")) {
                 "-adv"
             } else {
                 ""
@@ -23,8 +21,10 @@ object NIDVersion {
         return "5.android$rnText$advText-${nidBuildConfigWrapper.getBuildVersion()}"
     }
 
-    fun getInternalCurrentVersion(isRN: Boolean, isAdvancedDevice: Boolean,
-                                  nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper()): String {
-        return getSDKVersion(isRN, isAdvancedDevice) + " " + nidBuildConfigWrapper.getGitHash()
+    internal fun getInternalCurrentVersion(
+        nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper(),
+    ): String {
+        return getSDKVersion(nidBuildConfigWrapper) + " " + nidBuildConfigWrapper.getGitHash()
+
     }
 }

@@ -656,26 +656,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(false, NeuroID.showLogs)
     }
 
-    //    getSDKVersion
-    @Test
-    fun testGetSDKVersion_notRN() {
-        NeuroID.getInternalInstance()?.isRN = false
-
-        val version = NeuroID.getInstance()?.getSDKVersion()
-
-        assertEquals(true, version?.contains("5.android-"))
-        assertEquals(false, version?.contains("rn-"))
-    }
-
-    @Test
-    fun testGetSDKVersion_RN() {
-        NeuroID.getInternalInstance()?.isRN = true
-
-        val version = NeuroID.getInstance()?.getSDKVersion()
-
-        assertEquals(true, version?.contains("5.android-rn"))
-    }
-
     @Test
     fun test_setVariable() {
         NeuroID._isSDKStarted = true
