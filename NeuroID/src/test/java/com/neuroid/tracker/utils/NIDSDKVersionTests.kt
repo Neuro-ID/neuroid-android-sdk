@@ -10,7 +10,8 @@ class NIDSDKVersionTests {
     fun testSDKVersion_isRNtrue_isAdvancedDevicefalse() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        val version = NIDVersion.getSDKVersion(true, false, buildConfigWrapper)
+        every {buildConfigWrapper.getFlavor()} returns "reactNativeLib"
+        val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-rn-yyyyyyy")
     }
 
@@ -18,7 +19,8 @@ class NIDSDKVersionTests {
     fun testSDKVersion_isRNfalse_isAdvancedDevicefalse() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        val version = NIDVersion.getSDKVersion(false, false, buildConfigWrapper)
+        every {buildConfigWrapper.getFlavor()} returns "androidLib"
+        val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-yyyyyyy")
     }
 
@@ -26,7 +28,8 @@ class NIDSDKVersionTests {
     fun testSDKVersion_isRNfalse_isAdvancedDevicetrue() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        val version = NIDVersion.getSDKVersion(false, true, buildConfigWrapper)
+        every {buildConfigWrapper.getFlavor()} returns "androidAdvancedDeviceLib"
+        val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-adv-yyyyyyy")
     }
 
@@ -34,7 +37,8 @@ class NIDSDKVersionTests {
     fun testSDKVersion_isRNtrue_isAdvancedDevicetrue() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
         every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        val version = NIDVersion.getSDKVersion(true, true, buildConfigWrapper)
+        every {buildConfigWrapper.getFlavor()} returns "reactNativeAdvancedDeviceLib"
+        val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-rn-adv-yyyyyyy")
     }
 }
