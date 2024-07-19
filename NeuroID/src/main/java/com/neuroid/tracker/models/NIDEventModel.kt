@@ -199,7 +199,6 @@ data class NIDEventModel(
         NIDLog.d(Constants.debugEventTag.displayName, "") {
             var contextString: String? = ""
             when (this.type) {
-                SET_LINKED_SITE -> contextString = "siteID${this.siteId}"
                 SET_USER_ID -> contextString = "uid=${this.uid}"
                 CREATE_SESSION -> contextString = "cid=${this.cid}, sh=${this.sh}, sw=${this.sw}"
                 APPLICATION_SUBMIT -> contextString = ""
