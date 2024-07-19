@@ -21,6 +21,7 @@ import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.SELECT_CHANGE
+import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.events.TEXT_CHANGE

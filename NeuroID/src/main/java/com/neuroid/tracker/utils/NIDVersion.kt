@@ -1,23 +1,30 @@
 package com.neuroid.tracker.utils
 
 import com.neuroid.tracker.BuildConfig
-import com.neuroid.tracker.NeuroID
 
 object NIDVersion {
-    fun getSDKVersion(): String {
+    fun getSDKVersion(isRN: Boolean, isAdvancedDevice: Boolean,
+                      nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper()
+    ): String {
         val rnText =
-            NeuroID.getInternalInstance()?.isRN?.let {
-                if (it) {
-                    "rn-"
-                } else {
-                    ""
-                }
+            if (isRN) {
+                "-rn"
+            } else {
+                ""
             }
 
-        return "5.android-" + "$rnText" + BuildConfig.VERSION_NAME
+        val advText =
+            if (isAdvancedDevice) {
+                "-adv"
+            } else {
+                ""
+            }
+
+        return "5.android$rnText$advText-${nidBuildConfigWrapper.getBuildVersion()}"
     }
 
-    fun getInternalCurrentVersion(): String {
-        return getSDKVersion() + " " + BuildConfig.GIT_HASH
+    fun getInternalCurrentVersion(isRN: Boolean, isAdvancedDevice: Boolean,
+                                  nidBuildConfigWrapper: NIDBuildConfigWrapper = NIDBuildConfigWrapper()): String {
+        return getSDKVersion(isRN, isAdvancedDevice) + " " + nidBuildConfigWrapper.getGitHash()
     }
 }
