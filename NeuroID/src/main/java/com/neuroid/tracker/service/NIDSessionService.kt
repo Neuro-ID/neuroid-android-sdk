@@ -352,6 +352,10 @@ internal class NIDSessionService(
             type = MOBILE_METADATA_ANDROID,
             attrs = listOf(mapOf("isRN" to neuroID.isRN)),
         )
+
+        // capture application metadata on every capture mobile metadata to ensure we see it
+        //  otherwise it could be dropped on the first packet
+        neuroID.captureApplicationMetaData()
     }
 
     internal fun captureSessionOrMetaDataEvent(
