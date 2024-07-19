@@ -543,7 +543,11 @@ class NeuroID
                     // reset advanced device flag to false, no method in class to invoke or
                     // wrong parameters
                     isAdvancedDevice = false
-                    captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke", level = "error")
+                    captureEvent(
+                        type = LOG,
+                        m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
+                        level = "error",
+                    )
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
@@ -787,7 +791,7 @@ class NeuroID
             getApplicationContext()?.let {
                 val appInfo = getAppMetaData(it)
                 captureEvent(
-                    queuedEvent = true,
+                    queuedEvent = !isSDKStarted,
                     type = APPLICATION_METADATA,
                     attrs =
                         listOf(
