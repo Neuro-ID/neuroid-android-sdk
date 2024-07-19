@@ -25,6 +25,7 @@ class NIDCallActivityListener(
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private val isReceiverRegistered = false
+    private var callStateActive = false
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onReceive(
@@ -60,6 +61,7 @@ class NIDCallActivityListener(
     fun saveCallInProgressEvent(state: Int) {
         when (state) {
             CallInProgress.INACTIVE.state -> {
+                callStateActive = false
                 NIDLog.d(msg = "Call inactive")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
@@ -68,10 +70,30 @@ class NIDCallActivityListener(
             }
 
             CallInProgress.ACTIVE.state -> {
+                callStateActive = true
                 NIDLog.d(msg = "Call in progress")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.ACTIVE.event,
+                )
+            }
+
+            CallInProgress.RINGING.state -> {
+                NIDLog.d(msg = "Call Ringing")
+                neuroID.captureEvent(
+                    type = CALL_IN_PROGRESS,
+                    cp = "$callStateActive",
+                    attrs =
+                        listOf(
+                            mapOf(
+                                "progress" to
+                                    if (callStateActive) {
+                                        "waiting"
+                                    } else {
+                                        "ringing"
+                                    },
+                            ),
+                        ),
                 )
             }
 
@@ -97,6 +119,10 @@ class NIDCallActivityListener(
                             saveCallInProgressEvent(CallInProgress.INACTIVE.state)
                         }
 
+                        CallInProgress.RINGING.state -> {
+                            saveCallInProgressEvent(CallInProgress.RINGING.state)
+                        }
+
                         CallInProgress.ACTIVE.state -> {
                             saveCallInProgressEvent(CallInProgress.ACTIVE.state)
                         }
@@ -114,6 +140,10 @@ class NIDCallActivityListener(
                         when (state) {
                             TelephonyManager.CALL_STATE_IDLE -> {
                                 saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+                            }
+
+                            TelephonyManager.CALL_STATE_RINGING -> {
+                                saveCallInProgressEvent(CallInProgress.RINGING.state)
                             }
 
                             // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.

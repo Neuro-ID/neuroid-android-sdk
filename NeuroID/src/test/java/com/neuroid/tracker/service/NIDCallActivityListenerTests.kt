@@ -34,8 +34,21 @@ class NIDCallActivityListenerTests {
     }
 
     @Test
+    fun test_callActivityListener_call_ringing_sdk_greater_than_31() {
+        callActivityListenerHarness(
+            CallInProgress.RINGING.state,
+            "false",
+            false,
+        )
+    }
+
+    @Test
     fun test_callActivityListener_call_in_progress_sdk_lesser_than_31() {
-        callActivityListenerHarness(CallInProgress.ACTIVE.state, CallInProgress.ACTIVE.event, false)
+        callActivityListenerHarness(
+            CallInProgress.ACTIVE.state,
+            CallInProgress.ACTIVE.event,
+            false,
+        )
     }
 
     @Test
@@ -43,6 +56,15 @@ class NIDCallActivityListenerTests {
         callActivityListenerHarness(
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
+            false,
+        )
+    }
+
+    @Test
+    fun test_callActivityListener_call_ringing_sdk_lesser_than_31() {
+        callActivityListenerHarness(
+            CallInProgress.RINGING.state,
+            "false",
             false,
         )
     }
@@ -99,6 +121,10 @@ class NIDCallActivityListenerTests {
         when (callState) {
             CallInProgress.INACTIVE.state -> {
                 listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+            }
+
+            CallInProgress.RINGING.state -> {
+                listener.saveCallInProgressEvent(CallInProgress.RINGING.state)
             }
 
             CallInProgress.ACTIVE.state -> {
