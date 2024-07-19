@@ -797,6 +797,16 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
+    fun testIncrementPacketNumber() {
+        NeuroID.getInternalInstance()?.let {
+            val before = it.packetNumber
+            it.incrementPacketNumber()
+            val after = it.packetNumber
+            assert(after - before == 1)
+        }
+    }
+
+    @Test
     fun testCaptureEvent_failure_fullBuffer() {
         NeuroID._isSDKStarted = true
         setMockedNIDJobServiceManager(false)
