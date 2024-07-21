@@ -13,7 +13,6 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSingletonIDs
-import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -44,42 +43,36 @@ internal class NIDSessionService(
         }
     }
 
+    // Init listeners, begin config retrieval call, start session events
     internal fun setupSession(
+        // Leaving siteID for now for when we re-visit sampling update from config (ENG-8324)
         siteID: String?,
         customFunctionality: () -> Unit,
         completion: () -> Unit,
     ) {
-        configService.retrieveOrRefreshCache {
-            samplingService.updateIsSampledStatus(siteID)
-            logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
+        configService.retrieveOrRefreshCache()
 
-            // listeners
-            neuroID.getApplicationContext()?.let {
-                if (configService.configCache.callInProgress) {
-                    neuroID.nidCallActivityListener.setCallActivityListener(it)
-                }
-                if (configService.configCache.geoLocation) {
-                    neuroID.locationService?.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                }
-            }
+        samplingService.updateIsSampledStatus(siteID)
+        logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
 
-            customFunctionality()
+        neuroID.setupListeners()
 
-            NeuroID._isSDKStarted = true
+        customFunctionality()
 
-            CoroutineScope(neuroID.dispatcher).launch {
-                neuroID.startIntegrationHealthCheck()
-                createSession()
-                neuroID.saveIntegrationHealthEvents()
-            }
+        NeuroID._isSDKStarted = true
 
-            NIDSingletonIDs.retrieveOrCreateLocalSalt()
-
-            neuroID.dataStore.saveAndClearAllQueuedEvents()
-            neuroID.checkThenCaptureAdvancedDevice()
-
-            completion()
+        CoroutineScope(neuroID.dispatcher).launch {
+            neuroID.startIntegrationHealthCheck()
+            createSession()
+            neuroID.saveIntegrationHealthEvents()
         }
+
+        NIDSingletonIDs.retrieveOrCreateLocalSalt()
+
+        neuroID.dataStore.saveAndClearAllQueuedEvents()
+        neuroID.checkThenCaptureAdvancedDevice()
+
+        completion()
     }
 
     // internal start() with siteID
@@ -306,10 +299,10 @@ internal class NIDSessionService(
             // 2. CREATE_SESSION and MOBILE_METADATA events captured
             // 3. Capture ADV (based on global config and lib installed)
 
+            neuroID.addLinkedSiteID(siteID)
+
             // If SDK is already started, update sampleStatus and continue
             if (NeuroID.isSDKStarted) {
-                samplingService.updateIsSampledStatus(siteID)
-
                 // capture CREATE_SESSION and METADATA events for new flow
                 neuroID.captureEvent(
                     type = LOG,
@@ -321,7 +314,6 @@ internal class NIDSessionService(
 
                 neuroID.checkThenCaptureAdvancedDevice()
 
-                neuroID.addLinkedSiteID(siteID)
                 completion(
                     SessionStartResult(
                         true,
@@ -338,12 +330,10 @@ internal class NIDSessionService(
                         siteID,
                         userID,
                     ) {
-                        neuroID.addLinkedSiteID(siteID)
                         completion(it)
                     }
                 } else {
                     start(siteID) {
-                        neuroID.addLinkedSiteID(siteID)
                         completion(
                             SessionStartResult(
                                 it,
@@ -361,6 +351,10 @@ internal class NIDSessionService(
             type = MOBILE_METADATA_ANDROID,
             attrs = listOf(mapOf("isRN" to neuroID.isRN)),
         )
+
+        // capture application metadata on every capture mobile metadata to ensure we see it
+        //  otherwise it could be dropped on the first packet
+        neuroID.captureApplicationMetaData()
     }
 
     internal fun captureSessionOrMetaDataEvent(
@@ -394,7 +388,7 @@ internal class NIDSessionService(
                 dnt = false,
                 url = "",
                 ns = "nid",
-                jsv = NIDVersion.getSDKVersion(),
+                jsv = NeuroID.getInstance()?.getSDKVersion(),
                 sw = sharedPreferenceDefaults.getDisplayWidth().toFloat(),
                 sh = sharedPreferenceDefaults.getDisplayHeight().toFloat(),
                 metadata = neuroID.metaData,

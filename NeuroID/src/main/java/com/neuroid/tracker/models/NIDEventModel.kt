@@ -2,9 +2,11 @@ package com.neuroid.tracker.models
 
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
+import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CONTEXT_MENU
 import com.neuroid.tracker.events.COPY
@@ -20,6 +22,7 @@ import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.SELECT_CHANGE
+import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.events.TEXT_CHANGE
@@ -233,6 +236,8 @@ data class NIDEventModel(
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
+                CALL_IN_PROGRESS -> contextString = "cp=${this.cp}, metadata=${this.attrs}"
+                APPLICATION_METADATA -> contextString = "attrs=${this.attrs}"
                 else -> {}
             }
 

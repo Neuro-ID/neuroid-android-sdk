@@ -11,7 +11,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
-import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -115,6 +114,7 @@ class NIDEventSender(
             } else {
                 NeuroID.rndmId
             }
+        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber?:0
 
         val jsonBody =
             mapOf(
@@ -129,10 +129,11 @@ class NIDEventSender(
                 "responseId" to generateUniqueHexID(),
                 "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",
-                "sdkVersion" to NIDVersion.getSDKVersion(),
+                "sdkVersion" to NeuroID.getInstance()?.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
+                "packetNumber" to packetNumber,
             )
 
         // using this JSON library (already included) does not escape /

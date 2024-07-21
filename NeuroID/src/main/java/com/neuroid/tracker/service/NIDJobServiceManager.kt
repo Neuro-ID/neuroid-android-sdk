@@ -219,6 +219,7 @@ internal class NIDJobServiceManager(
                             code: Int,
                             response: Any,
                         ) {
+                            neuroID.incrementPacketNumber()
                             logger.d(msg = " network success, sendEventsNow() success userActive: $userActive")
                         }
 

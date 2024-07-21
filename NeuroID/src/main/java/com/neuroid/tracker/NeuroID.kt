@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.IntentFilter
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -12,6 +13,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -52,6 +54,7 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
+import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +66,7 @@ class NeuroID
     private constructor(
         internal var application: Application?,
         internal var clientKey: String,
-        internal val isAdvancedDevice: Boolean,
+        internal var isAdvancedDevice: Boolean,
         serverEnvironment: String = PRODUCTION,
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -73,6 +76,7 @@ class NeuroID
         internal var clientID = ""
         internal var userID = ""
         internal var linkedSiteID: String? = null
+        internal var packetNumber: Int = 0
         internal var tabID: String
 
         internal var registeredUserID = ""
@@ -160,7 +164,15 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            configService = NIDConfigService(dispatcher, logger, this, httpService, validationService)
+            configService =
+                NIDConfigService(
+                    dispatcher,
+                    logger,
+                    this,
+                    httpService,
+                    validationService,
+                    configRetrievalCallback = { configSetupCompletion() },
+                )
             samplingService = NIDSamplingService(logger, randomGenerator, configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
@@ -175,6 +187,9 @@ class NeuroID
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
 
             application?.let {
+
+                captureApplicationMetaData()
+
                 sessionService =
                     NIDSessionService(
                         logger,
@@ -204,6 +219,8 @@ class NeuroID
                         configService,
                     )
 
+                captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
+
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
                 // get connectivity info on startup
@@ -228,6 +245,10 @@ class NeuroID
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
             }
+        }
+
+        fun incrementPacketNumber() {
+            packetNumber += 1
         }
 
         /**
@@ -352,7 +373,7 @@ class NeuroID
         }
 
         @TestOnly
-        internal fun resetSingletonInstance()  {
+        internal fun resetSingletonInstance() {
             singleton =
                 NeuroID(
                     application,
@@ -429,6 +450,35 @@ class NeuroID
             }
         }
 
+        internal fun setupListeners() {
+            getApplicationContext()?.let {
+                if (configService.configCache.callInProgress) {
+                    nidCallActivityListener.setCallActivityListener(it)
+                } else {
+                    nidCallActivityListener.unregisterCallActivityListener(it)
+                }
+
+                if (configService.configCache.geoLocation) {
+                    locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                } else {
+                    locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
+
+                // This will restart the collection job (config has a interval option) and
+                //  restart the gyroCadence job (config has a interval option)
+                sessionService.resumeCollection()
+            }
+
+            return
+        }
+
+        internal fun configSetupCompletion() {
+            // once the config comes back we update listeners that are dependent on a config option.
+            captureEvent(type = LOG, level = "info", m = "Remote Config Retrieval Attempt Completed")
+            logger.i(msg = "Remote Config Retrieval Attempt Completed")
+            setupListeners()
+        }
+
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             captureEvent(
                 type = LOG,
@@ -469,6 +519,7 @@ class NeuroID
          * We must handle all exceptions that this method may
          * throw because of the undependable nature of reflection. We cannot afford to throw any
          * exception to the host app causing a crash because of this .
+         * Set isAdvancedFlag to false if method fails to invoke captureAdvancedDevice().
          */
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
             val packageName = "com.neuroid.tracker.extensions"
@@ -489,11 +540,25 @@ class NeuroID
                     logger.d(msg = "Method $methodName invoked successfully")
                 } else {
                     logger.d(msg = "No $methodName method found")
+                    // reset advanced device flag to false, no method in class to invoke or
+                    // wrong parameters
+                    isAdvancedDevice = false
+                    captureEvent(
+                        type = LOG,
+                        m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
+                        level = "error",
+                    )
                 }
             } catch (e: ClassNotFoundException) {
                 logger.e(msg = "Class $packageName$extensionName not found")
+                // reset advanced device flag to false, no class to invoke from
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no class to invoke from", level = "INFO")
             } catch (e: Exception) {
                 logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
+                // reset advanced device flag to false, don't know what happened
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, error: ${e.message}", level = "error")
             }
         }
 
@@ -719,7 +784,24 @@ class NeuroID
             linkedSiteID = siteID
 
             // capture linkedSiteEvent for MIHR - not relevant for collection
-            captureEvent(type = SET_LINKED_SITE, v = siteID)
+            captureEvent(type = SET_LINKED_SITE, v = linkedSiteID)
+        }
+
+        internal fun captureApplicationMetaData() {
+            getApplicationContext()?.let {
+                val appInfo = getAppMetaData(it)
+                captureEvent(
+                    queuedEvent = !isSDKStarted,
+                    type = APPLICATION_METADATA,
+                    attrs =
+                        listOf(
+                            appInfo?.toMap()
+                                ?: mapOf(
+                                    "versionName" to "N/A",
+                                ),
+                        ),
+                )
+            }
         }
 
     /*

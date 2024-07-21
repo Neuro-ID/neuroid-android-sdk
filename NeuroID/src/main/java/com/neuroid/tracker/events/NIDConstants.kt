@@ -68,6 +68,7 @@ const val OUT_OF_MEMORY = "OUT_OF_MEMORY"
 const val ATTEMPTED_LOGIN = "ATTEMPTED_LOGIN"
 const val SET_LINKED_SITE = "SET_LINKED_SITE"
 const val CONFIG_CACHED = "CONFIG_CACHED"
+const val APPLICATION_METADATA = "APPLICATION_METADATA"
 
 // NID origin codes
 const val ORIGIN_NID_SET = "nid"
@@ -79,6 +80,7 @@ const val ORIGIN_CODE_CUSTOMER = "201"
 // Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
 enum class CallInProgress(val event: String, val state: Int) {
     ACTIVE("true", 2),
+    RINGING("", 1),
     INACTIVE("false", 0),
     UNAUTHORIZED("unauthorized", 99),
 }

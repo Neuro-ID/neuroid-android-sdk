@@ -10,14 +10,13 @@ import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 interface ConfigService {
     val configCache: NIDRemoteConfig
 
-    fun retrieveOrRefreshCache(completion: () -> Unit)
+    fun retrieveOrRefreshCache()
 }
 
 internal class NIDConfigService(
@@ -27,6 +26,7 @@ internal class NIDConfigService(
     private val httpService: HttpService,
     private val validationService: NIDValidationService,
     private val gson: Gson = GsonBuilder().create(),
+    private val configRetrievalCallback: () -> Unit = {},
 ) : ConfigService {
     companion object {
         const val DEFAULT_SAMPLE_RATE: Int = 100
@@ -37,22 +37,19 @@ internal class NIDConfigService(
 
     override var configCache: NIDRemoteConfig = NIDRemoteConfig()
 
-    internal fun retrieveConfig(completion: () -> Unit): Unit =
-        runBlocking {
-            if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
-                cacheSetWithRemote = false
-                completion()
-                return@runBlocking
-            }
-
-            val deferred =
-                CoroutineScope(dispatcher).async {
-                    retrieveConfigCoroutine {
-                        completion()
-                    }
-                }
-            deferred.await()
+    internal fun retrieveConfig() {
+        if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
+            cacheSetWithRemote = false
+            configRetrievalCallback()
+            return
         }
+
+        CoroutineScope(dispatcher).launch {
+            retrieveConfigCoroutine {
+                configRetrievalCallback()
+            }
+        }
+    }
 
     /***
      * This function is broke out from `retrieveConfig` in order to test because our coroutine
@@ -114,13 +111,9 @@ internal class NIDConfigService(
         return !cacheSetWithRemote
     }
 
-    override fun retrieveOrRefreshCache(completion: () -> Unit) {
+    override fun retrieveOrRefreshCache() {
         if (expiredCache()) {
-            retrieveConfig {
-                completion()
-            }
-        } else {
-            completion()
+            retrieveConfig()
         }
     }
 
