@@ -75,23 +75,8 @@ class NIDEventSender(
 
             data = getRequestPayloadJSON(events)
 
-            NIDLog.d(
-                "Payload:",
-                msg =
-                    """
-                    Payload Summary
-                    ClientID: ${NeuroID.getInternalInstance()?.clientID}
-                    UserID: ${NeuroID.getInternalInstance()?.userID}
-                    RegisteredUserID: ${NeuroID.getInternalInstance()?.registeredUserID}
-                    LinkedSiteID: ${NeuroID.getInternalInstance()?.linkedSiteID}
-                    TabID: ${NeuroID.getInternalInstance()?.tabID}
-                    Packet Number: ${NeuroID.getInternalInstance()?.packetNumber}
-                    SDK Version: ${NeuroID.getInternalInstance()?.getSDKVersion()}
-                    Screen Name: ${NeuroID.screenName}
-                    Event Count: ${events.size}
-                    Byte Count: ${data.length}
-                    """.trimIndent(),
-            )
+            NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
+
             NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
@@ -151,6 +136,23 @@ class NIDEventSender(
                 "linkedSiteId" to linkedSiteID,
                 "packetNumber" to packetNumber,
             )
+
+        NIDLog.d(
+            "Payload:",
+            msg =
+                """
+                Payload Summary
+                ClientID: ${jsonBody["clientId"]}
+                UserID: ${jsonBody["userId"]}
+                RegisteredUserID: ${jsonBody["registeredUserId"]}
+                LinkedSiteID: ${jsonBody["linkedSiteId"]}
+                TabID: ${jsonBody["tabId"]}
+                Packet Number: ${jsonBody["packetNumber"]}
+                SDK Version: ${jsonBody["sdkVersion"]}
+                Screen Name: ${NeuroID.screenName}
+                Event Count: ${events.size}
+                """.trimIndent(),
+        )
 
         // using this JSON library (already included) does not escape /
         NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
