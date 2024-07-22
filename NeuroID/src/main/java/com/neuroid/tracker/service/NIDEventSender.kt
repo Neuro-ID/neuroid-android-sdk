@@ -75,7 +75,8 @@ class NIDEventSender(
 
             data = getRequestPayloadJSON(events)
 
-            NIDLog.d("NeuroID", "payload: ${events.size} events; ${data.length} bytes")
+            NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
+
             NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
@@ -114,7 +115,7 @@ class NIDEventSender(
             } else {
                 NeuroID.rndmId
             }
-        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber?:0
+        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber ?: 0
 
         val jsonBody =
             mapOf(
@@ -135,6 +136,23 @@ class NIDEventSender(
                 "linkedSiteId" to linkedSiteID,
                 "packetNumber" to packetNumber,
             )
+
+        NIDLog.d(
+            "Payload:",
+            msg =
+                """
+                Payload Summary
+                ClientID: ${jsonBody["clientId"]}
+                UserID: ${jsonBody["userId"]}
+                RegisteredUserID: ${jsonBody["registeredUserId"]}
+                LinkedSiteID: ${jsonBody["linkedSiteId"]}
+                TabID: ${jsonBody["tabId"]}
+                Packet Number: ${jsonBody["packetNumber"]}
+                SDK Version: ${jsonBody["sdkVersion"]}
+                Screen Name: ${NeuroID.screenName}
+                Event Count: ${events.size}
+                """.trimIndent(),
+        )
 
         // using this JSON library (already included) does not escape /
         NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
