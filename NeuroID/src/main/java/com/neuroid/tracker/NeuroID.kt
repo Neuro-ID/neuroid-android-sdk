@@ -184,6 +184,17 @@ class NeuroID
                 )
 
             application?.let {
+                nidJobServiceManager =
+                    NIDJobServiceManager(
+                        this,
+                        dataStore,
+                        getSendingService(
+                            httpService,
+                            it,
+                        ),
+                        logger,
+                        configService,
+                    )
 
                 sessionService =
                     NIDSessionService(
@@ -200,18 +211,6 @@ class NeuroID
                 metaData =
                     NIDMetaData(
                         it.applicationContext,
-                    )
-
-                nidJobServiceManager =
-                    NIDJobServiceManager(
-                        this,
-                        dataStore,
-                        getSendingService(
-                            httpService,
-                            it,
-                        ),
-                        logger,
-                        configService,
                     )
 
                 captureApplicationMetaData()
