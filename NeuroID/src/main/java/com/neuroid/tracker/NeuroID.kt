@@ -183,12 +183,7 @@ class NeuroID
                     validationService,
                 )
 
-            registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
-            nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
-
             application?.let {
-
-                captureApplicationMetaData()
 
                 sessionService =
                     NIDSessionService(
@@ -219,6 +214,8 @@ class NeuroID
                         configService,
                     )
 
+                captureApplicationMetaData()
+
                 captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
 
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
@@ -245,6 +242,9 @@ class NeuroID
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
             }
+
+            registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
+            nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
         }
 
         fun incrementPacketNumber() {
@@ -409,7 +409,7 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager.setTestEventSender(
+                nidJobServiceManager?.setTestEventSender(
                     getSendingService(
                         NIDHttpService(
                             collectionEndpoint = endpoint,
@@ -432,7 +432,7 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager.setTestEventSender(
+                nidJobServiceManager?.setTestEventSender(
                     getSendingService(
                         httpService =
                             NIDHttpService(
@@ -794,12 +794,13 @@ class NeuroID
                     queuedEvent = !isSDKStarted,
                     type = APPLICATION_METADATA,
                     attrs =
-                        listOf(
-                            appInfo?.toMap()
-                                ?: mapOf(
-                                    "versionName" to "N/A",
+                        appInfo?.toList()
+                            ?: listOf(
+                                mapOf(
+                                    "n" to "versionName",
+                                    "v" to "",
                                 ),
-                        ),
+                            ),
                 )
             }
         }
@@ -871,7 +872,7 @@ class NeuroID
             cp: String? = null,
             l: Long? = null,
         ) {
-            if (!queuedEvent && (!isSDKStarted || nidJobServiceManager.isStopped())) {
+            if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
                 return
             }
 
@@ -962,10 +963,10 @@ class NeuroID
 
             when (type) {
                 BLUR -> {
-                    nidJobServiceManager.sendEvents()
+                    nidJobServiceManager?.sendEvents()
                 }
                 CLOSE_SESSION -> {
-                    nidJobServiceManager.sendEvents(true)
+                    nidJobServiceManager?.sendEvents(true)
                 }
             }
         }

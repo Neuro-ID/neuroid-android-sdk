@@ -96,7 +96,7 @@ internal class NIDSessionService(
             {
                 // custom functionality
                 neuroID.application?.let {
-                    neuroID.nidJobServiceManager.startJob(
+                    neuroID.nidJobServiceManager?.startJob(
                         it,
                         neuroID.clientKey,
                     )
@@ -161,8 +161,8 @@ internal class NIDSessionService(
         ) {
             neuroID.pauseCollectionJob =
                 CoroutineScope(neuroID.dispatcher).launch {
-                    neuroID.nidJobServiceManager.sendEvents(flushEvents)
-                    neuroID.nidJobServiceManager.stopJob()
+                    neuroID.nidJobServiceManager?.sendEvents(flushEvents)
+                    neuroID.nidJobServiceManager?.stopJob()
                     neuroID.saveIntegrationHealthEvents()
                 }
         }
@@ -197,10 +197,10 @@ internal class NIDSessionService(
     internal fun resumeCollectionCompletion() {
         NeuroID._isSDKStarted = true
         neuroID.application?.let {
-            if (!neuroID.nidJobServiceManager.isSetup) {
-                neuroID.nidJobServiceManager.startJob(it, neuroID.clientKey)
+            if (neuroID.nidJobServiceManager?.isSetup == false) {
+                neuroID.nidJobServiceManager?.startJob(it, neuroID.clientKey)
             } else {
-                neuroID.nidJobServiceManager.restart()
+                neuroID.nidJobServiceManager?.restart()
             }
         }
     }
@@ -402,7 +402,7 @@ internal class NIDSessionService(
             if (samplingService.isSessionFlowSampled()) {
                 val deferred =
                     CoroutineScope(neuroID.dispatcher).async {
-                        neuroID.nidJobServiceManager.sendEvents(true)
+                        neuroID.nidJobServiceManager?.sendEvents(true)
                         neuroID.saveIntegrationHealthEvents()
                     }
 
