@@ -6,12 +6,24 @@ data class ApplicationMetaData(
     val packageName: String,
     val applicationName: String,
 ) {
-    fun toMap(): Map<String, Any>  {
-        return mapOf(
-            "versionName" to versionName,
-            "versionNumber" to versionNumber.toString(),
-            "packageName" to packageName,
-            "applicationName" to applicationName,
+    fun toList(): List<Map<String, Any>> {
+        return listOf(
+            mapOf(
+                "n" to "versionName",
+                "v" to versionName,
+            ),
+            mapOf(
+                "n" to "versionNumber",
+                "v" to versionNumber,
+            ),
+            mapOf(
+                "n" to "packageName",
+                "v" to packageName,
+            ),
+            mapOf(
+                "n" to "applicationName",
+                "v" to applicationName,
+            ),
         )
     }
 }
