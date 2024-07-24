@@ -18,7 +18,8 @@ import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.callbacks.NIDLongPressContextMenuCallbacks
 import com.neuroid.tracker.callbacks.NIDTextContextMenuCallbacks
 import com.neuroid.tracker.extensions.getIdOrTag
-import com.neuroid.tracker.extensions.getParents
+import com.neuroid.tracker.extensions.getParentActivity
+import com.neuroid.tracker.extensions.getParentFragment
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTextWatcher
@@ -342,6 +343,7 @@ class SingleTargetListenerRegister(
             createAtrrList(
                 view,
                 guid,
+                idName,
                 activityOrFragment,
                 parent,
             )
@@ -401,6 +403,7 @@ class SingleTargetListenerRegister(
     fun createAtrrList(
         view: View,
         guid: String,
+        idName: String,
         activityOrFragment: String = "",
         parent: String = "",
     ): MutableList<Map<String, Any>> {
@@ -410,22 +413,39 @@ class SingleTargetListenerRegister(
                 "v" to guid,
             )
 
-        val classJson =
+        val parentActivity = view.getParentActivity()
+        val parentFragment = view.getParentFragment()
+
+        val screenHierarchy =
             mapOf<String, Any>(
                 "n" to "screenHierarchy",
-                "v" to "${view.getParents(logger)}${NeuroID.screenName}",
+                "v" to "/$parentActivity/${parentFragment ?: ""}$idName",
             )
 
-        val parentData =
+        val topScreenHierarchy =
             mapOf<String, Any>(
-                "parentClass" to parent,
-                "component" to activityOrFragment,
+                "n" to "top-screenHierarchy",
+                "v" to "/$parent/$idName",
+            )
+
+        val parentClassData =
+            mapOf<String, Any>(
+                "n" to "parentClass",
+                "v" to parent,
+            )
+
+        val parentComponentData =
+            mapOf<String, Any>(
+                "n" to "component",
+                "v" to activityOrFragment,
             )
 
         return mutableListOf(
             idJson,
-            classJson,
-            parentData,
+            screenHierarchy,
+            topScreenHierarchy,
+            parentClassData,
+            parentComponentData,
         )
     }
 }
