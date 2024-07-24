@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.location.LocationManager
+import android.view.View
+import android.view.ViewGroup
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
@@ -423,6 +425,17 @@ internal fun getMockedJob(
     every { mockedJob.invokeOnCompletion(any()) } returns mockk<DisposableHandle>()
 
     return mockedJob
+}
+
+internal fun getMockedView(child: View): View {
+    val view = mockk<ViewGroup>()
+    val mockedContext = mockk<Context>()
+    every { view.childCount } returns 1
+    every { view.getChildAt(0) } returns child
+    every { view.contentDescription } returns "view group"
+    every { view.context } returns mockedContext
+
+    return view
 }
 
 internal fun verifyCaptureEvent(
