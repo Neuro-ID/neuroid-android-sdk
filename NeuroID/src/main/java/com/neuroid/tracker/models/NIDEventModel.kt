@@ -215,7 +215,7 @@ data class NIDEventModel(
                 "CLICK" -> contextString = ""
                 REGISTER_TARGET ->
                     contextString =
-                        "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata}"
+                        "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata} attrs=[${this.attrs}]"
                 "DEREGISTER_TARGET" -> contextString = ""
                 TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg}"
                 TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg}"
