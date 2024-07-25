@@ -146,10 +146,11 @@ internal class NIDIdentifierService(
             neuroID.captureEvent(
                 type = LOG,
                 level = "warn",
-                m = "Multiple Registered User Id Attempts ${validationService.scrubIdentifier(registeredUserID)}",
+                m = "Multiple Registered User Id Attempt - existing:${neuroID.registeredUserID} new:${validationService.scrubIdentifier(
+                    registeredUserID,
+                )}",
             )
             logger.e(msg = "Multiple Registered UserID Attempt: Only 1 Registered UserID can be set per session")
-            return false
         }
 
         neuroID.captureEvent(
