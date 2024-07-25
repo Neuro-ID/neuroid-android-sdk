@@ -17,7 +17,7 @@
 #   This will create a PR with the updated version in version.properties file.
 # ******************************************************************
 
-name: Manual Trigger to Release Android SDK
+name: Pre-Release SDK PR
 
 on:
   workflow_dispatch:
@@ -94,6 +94,18 @@ jobs:
           sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${{ env.PATCH_VERSION }}/" version.properties
           echo "BRANCH_NAME=releases/${package_version}_version_update" >> $GITHUB_ENV
 
+      - name: Get previous release tag
+        id: get_previous_tag
+        run: echo "::set-output name=tag::$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))"
+
+      - name: Get current commit hash
+        id: get_commit_hash
+        run: echo "::set-output name=hash::$(git rev-parse HEAD)"
+
+      - name: Create comparison URL
+        id: comparison_url
+        run: echo "::set-output name=url::https://github.com/neuroid-android-sdk/compare/${{ steps.get_previous_tag.outputs.tag }}...${{ steps.get_commit_hash.outputs.hash }}"
+
       - name: Commit version update
         run: |
           package_version=${{ env.PACKAGE_VERSION }}
@@ -114,7 +126,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = 'Update To Version: ${{ env.PACKAGE_VERSION }}';
-            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}';
+            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}. Please review detailed release changes: ${{ steps.comparison_url.outputs.url }}';
             const headBranch = '${{ env.BRANCH_NAME }}';
             const baseBranch = 'master';
             
