@@ -4,7 +4,7 @@
 # in https://jitpack.io/#neuro-id/neuroid-android-sdk
 # ******************************************************************
 
-name: Auto Release Android SDK
+name: Release SDK Version
 on:
   push:
     branches:
