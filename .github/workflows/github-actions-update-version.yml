@@ -46,6 +46,7 @@ jobs:
       - name: Main branch checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine update type
@@ -95,16 +96,13 @@ jobs:
           echo "BRANCH_NAME=releases/${package_version}_version_update" >> $GITHUB_ENV
 
       - name: Get previous release tag
-        id: get_previous_tag
-        run: echo "::set-output name=tag::$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))"
+        run: echo TAG="$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> $GITHUB_ENV
 
       - name: Get current commit hash
-        id: get_commit_hash
-        run: echo "::set-output name=hash::$(git rev-parse HEAD)"
+        run: echo HASH="$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Create comparison URL
-        id: comparison_url
-        run: echo "::set-output name=url::https://github.com/neuroid-android-sdk/compare/${{ steps.get_previous_tag.outputs.tag }}...${{ steps.get_commit_hash.outputs.hash }}"
+        run: echo URL="https://github.com/Neuro-ID/neuroid-android-sdk/compare/${{ env.TAG }}...${{ env.HASH }}" >> $GITHUB_ENV
 
       - name: Commit version update
         run: |
@@ -126,7 +124,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const title = 'Update To Version: ${{ env.PACKAGE_VERSION }}';
-            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}. Please review detailed release changes: ${{ steps.comparison_url.outputs.url }}';
+            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}. 
+            Please review detailed release changes: ${{ env.URL }}';
             const headBranch = '${{ env.BRANCH_NAME }}';
             const baseBranch = 'master';
             
