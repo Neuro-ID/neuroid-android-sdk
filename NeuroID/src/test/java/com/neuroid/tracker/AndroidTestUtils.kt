@@ -168,6 +168,7 @@ internal fun getMockedNeuroID(
             isConnected = any(),
             cp = any(),
             l = any(),
+            synthetic = any(),
         )
     } just runs
 
@@ -499,6 +500,7 @@ internal fun verifyCaptureEvent(
     isConnected: Boolean? = null,
     cp: String? = null,
     l: Long? = null,
+    synthetic: Boolean? = null,
 ) {
     verify(exactly = count) {
         mockedNeuroID.captureEvent(
@@ -561,6 +563,7 @@ internal fun verifyCaptureEvent(
             isConnected = isConnected ?: any(),
             cp = cp ?: any(),
             l = l ?: any(),
+            synthetic = synthetic ?: any(),
         )
     }
 }
