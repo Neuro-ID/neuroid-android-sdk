@@ -13,6 +13,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
@@ -116,6 +117,13 @@ class NeuroID
 
         internal var lowMemory: Boolean = false
         internal var isConnected = false
+
+        // Jetpack Compose Tracking Class/vars
+        override val compose =
+            JetpackComposeImpl(
+                this,
+                logger,
+            )
 
         init {
             when (serverEnvironment) {
@@ -361,6 +369,11 @@ class NeuroID
             fun getInstance(): NeuroIDPublic? = singleton
 
             internal fun getInternalInstance() = singleton
+
+            val compose: JetpackComposeImpl?
+                get() {
+                    return singleton?.compose
+                }
         }
 
         internal fun setLoggerInstance(newLogger: NIDLogWrapper) {

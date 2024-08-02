@@ -2,9 +2,15 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import androidx.annotation.VisibleForTesting
+import com.neuroid.tracker.compose.JetpackCompose
 import com.neuroid.tracker.models.SessionStartResult
 
 interface NeuroIDPublic {
+    /**
+     * A variable to access the Jetpack Compose specific tracking functions
+     */
+    val compose: JetpackCompose
+
     /**
      * Deprecated, do not use!
      */
