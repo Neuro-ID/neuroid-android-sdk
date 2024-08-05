@@ -3,6 +3,8 @@ package com.neuroid.tracker.compose
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.TOUCH_END
 import com.neuroid.tracker.events.TOUCH_START
+import com.neuroid.tracker.events.WINDOW_LOAD
+import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -22,11 +24,10 @@ class JetpackComposeTests {
         logger = getMockedLogger()
         neuroID = getMockedNeuroID()
 
-        composeTracking =
-            JetpackComposeImpl(
-                neuroID,
-                logger,
-            )
+        composeTracking = JetpackComposeImpl(
+            neuroID,
+            logger,
+        )
     }
 
     @After
@@ -71,7 +72,16 @@ class JetpackComposeTests {
 
     @Test
     fun test_trackPage() {
-        // TODO: Not yet implemented - Placeholder
-        assert(true)
+        val pageName = "myPage"
+        composeTracking.captureWindowEvent(pageName, WINDOW_LOAD)
+        verifyCaptureEvent(
+            neuroID, WINDOW_LOAD, 1, ec = pageName
+        )
+
+        composeTracking.captureWindowEvent(pageName, WINDOW_UNLOAD)
+        verifyCaptureEvent(
+            neuroID, WINDOW_UNLOAD, 1, ec = pageName
+        )
+
     }
 }
