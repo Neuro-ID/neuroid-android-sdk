@@ -48,6 +48,7 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -106,6 +107,7 @@ class NeuroID
         internal val httpService: NIDHttpService
         internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
+        internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
 
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
@@ -252,6 +254,7 @@ class NeuroID
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+            nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
         }
 
         fun incrementPacketNumber() {

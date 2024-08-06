@@ -32,11 +32,11 @@ version = versionName
 
 android {
 
-    compileSdkVersion = 31
+    compileSdkVersion = 33
 
     defaultConfig {
         minSdk 21
-        targetSdk 31
+        targetSdk 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -88,6 +88,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.2.0'
+    }
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -113,6 +119,11 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+
+    // compose stuff
+    implementation "androidx.compose.ui:ui:1.2.0"
+    implementation "androidx.navigation:navigation-compose:2.5.3"
+    implementation 'androidx.navigation:navigation-runtime-ktx:2.5.3'
 
     reactNativeImplementation("com.facebook.react:react-native:0.71.0-rc.0")
 
