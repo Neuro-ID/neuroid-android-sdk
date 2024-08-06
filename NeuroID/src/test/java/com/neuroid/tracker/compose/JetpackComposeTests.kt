@@ -73,12 +73,12 @@ class JetpackComposeTests {
     @Test
     fun test_trackPage() {
         val pageName = "myPage"
-        composeTracking.captureWindowEvent(pageName, WINDOW_LOAD)
+        composeTracking.captureComposeWindowEvent(pageName, WINDOW_LOAD)
         verifyCaptureEvent(
             neuroID, WINDOW_LOAD, 1, ec = pageName
         )
 
-        composeTracking.captureWindowEvent(pageName, WINDOW_UNLOAD)
+        composeTracking.captureComposeWindowEvent(pageName, WINDOW_UNLOAD)
         verifyCaptureEvent(
             neuroID, WINDOW_UNLOAD, 1, ec = pageName
         )

@@ -42,8 +42,6 @@ class JetpackComposeImpl(
         elementName: String,
         pageName: String,
     ) {
-
-
         neuroID.captureEvent(
             type = TOUCH_START,
             ec = pageName,
@@ -70,15 +68,14 @@ class JetpackComposeImpl(
     @Composable
     override fun trackPage(pageName: String) {
         DisposableEffect(Unit) {
-            captureWindowEvent(pageName = pageName, WINDOW_LOAD)
+            captureComposeWindowEvent(pageName = pageName, WINDOW_LOAD)
             onDispose {
-                captureWindowEvent(pageName = pageName, WINDOW_UNLOAD)
+                captureComposeWindowEvent(pageName = pageName, WINDOW_UNLOAD)
             }
         }
-
     }
 
-    internal fun captureWindowEvent(pageName: String, type: String) {
+    internal fun captureComposeWindowEvent(pageName: String, type: String) {
         neuroID.captureEvent(
             type = type, ec = pageName, attrs = listOf(
                 sdkMap
