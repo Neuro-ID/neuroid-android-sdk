@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
 
-    compileSdkVersion = 34
+    compileSdkVersion = 33
 
     packagingOptions {
         pickFirst 'lib/armeabi-v7a/libfbjni.so'
@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId "com.sample.neuroid.us"
         minSdk 28
-        targetSdk 34
+        targetSdk 33
         multiDexEnabled true
         versionCode 1
         versionName "1.0"
