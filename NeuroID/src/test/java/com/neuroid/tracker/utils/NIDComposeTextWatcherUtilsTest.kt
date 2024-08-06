@@ -24,6 +24,26 @@ class NIDComposeTextWatcherUtilsTest {
         assert(textChange3.changedText == "aaabc")
         assert(textChange3.count == 5)
         assert(textChange3.start == 0)
+
+        val textChange4 = textWatcher.getTextChange("aaa", "aa")
+        assert(textChange4.changedText == "")
+        assert(textChange4.count == 0)
+        assert(textChange4.start == 2)
+
+        val textChange5 = textWatcher.getTextChange("aa", "a")
+        assert(textChange5.changedText == "")
+        assert(textChange5.count == 0)
+        assert(textChange5.start == 1)
+
+        val textChange6 = textWatcher.getTextChange("a", "")
+        assert(textChange6.changedText == "")
+        assert(textChange6.count == 0)
+        assert(textChange6.start == 0)
+
+        val textChange7 = textWatcher.getTextChange("aa", "")
+        assert(textChange7.changedText == "")
+        assert(textChange7.count == 0)
+        assert(textChange7.start == 0)
     }
 
     @Test
