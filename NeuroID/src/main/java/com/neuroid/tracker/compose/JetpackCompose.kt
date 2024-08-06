@@ -99,7 +99,7 @@ class JetpackComposeImpl(
 
         // handle the text changes
         LaunchedEffect(elementState) {
-            if (elementState != previousText) {
+            if (!neuroID.isStopped() && elementState != previousText) {
                 val changeText = neuroID.nidComposeTextWatcher.getTextChange(previousText, elementState)
                 val clipboardContent = clipboardManager.getText()?.text ?: ""
                 // check for paste, send paste event if so
