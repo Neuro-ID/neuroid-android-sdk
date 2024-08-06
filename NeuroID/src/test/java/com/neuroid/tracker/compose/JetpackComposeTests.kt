@@ -1,9 +1,12 @@
 package com.neuroid.tracker.compose
 
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.TOUCH_END
+import com.neuroid.tracker.events.TOUCH_START
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Before
@@ -39,8 +42,31 @@ class JetpackComposeTests {
 
     @Test
     fun test_trackButtonTap() {
-        // TODO: Not yet implemented - Placeholder
-        assert(true)
+        val elementName = "myBtn"
+        val pageName = "myPage"
+
+        composeTracking.trackButtonTap(
+            elementName,
+            pageName,
+        )
+
+        verifyCaptureEvent(
+            neuroID,
+            TOUCH_START,
+            1,
+            ec = pageName,
+            tgs = elementName,
+            synthetic = true,
+        )
+
+        verifyCaptureEvent(
+            neuroID,
+            TOUCH_END,
+            1,
+            ec = pageName,
+            tgs = elementName,
+            synthetic = true,
+        )
     }
 
     @Test
