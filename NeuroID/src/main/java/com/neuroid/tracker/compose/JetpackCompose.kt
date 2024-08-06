@@ -119,6 +119,7 @@ class JetpackComposeImpl(
                                 mapOf(
                                     "clipboardText" to "S~C~~${clipboardContent.length}",
                                 ),
+                                sdkMap
                             ),
                     )
                     lastPastedHashCode = clipboardContent.hashCode()
@@ -134,6 +135,9 @@ class JetpackComposeImpl(
                     tgs = "$pageName:$elementName",
                     v = "S~C~~${elementState.length}",
                     hv = elementState.getSHA256withSalt().take(8),
+                    attrs = listOf(
+                       sdkMap
+                    )
                 )
                 previousText = elementState
             }
