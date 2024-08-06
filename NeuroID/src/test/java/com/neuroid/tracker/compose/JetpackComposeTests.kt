@@ -17,7 +17,7 @@ import org.junit.Test
 class JetpackComposeTests {
     private lateinit var logger: NIDLogWrapper
     private lateinit var neuroID: NeuroID
-    private lateinit var composeTracking: JetpackCompose
+    private lateinit var composeTracking: JetpackComposeImpl
 
     @Before
     fun setup() {

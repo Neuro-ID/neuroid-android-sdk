@@ -23,8 +23,6 @@ interface JetpackCompose {
 
     @Composable
     fun trackPage(pageName: String)
-
-    fun captureWindowEvent(pageName: String, type: String)
 }
 
 class JetpackComposeImpl(
@@ -80,7 +78,7 @@ class JetpackComposeImpl(
 
     }
 
-    override fun captureWindowEvent(pageName: String, type: String) {
+    internal fun captureWindowEvent(pageName: String, type: String) {
         neuroID.captureEvent(
             type = type, ec = pageName, attrs = listOf(
                 sdkMap
