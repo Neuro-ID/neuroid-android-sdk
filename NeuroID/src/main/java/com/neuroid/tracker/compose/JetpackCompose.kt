@@ -46,7 +46,7 @@ class JetpackComposeImpl(
         elementName: String,
         pageName: String,
     ) {
-        if (elementName.isEmpty() && pageName.isEmpty()) {
+        if (elementName.isEmpty() || pageName.isEmpty()) {
             Log.d("NeuroID Debug Event","Skipping button tracking since either name: ${elementName} or ${pageName} is empty")
             return
         }
