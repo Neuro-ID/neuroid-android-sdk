@@ -1,5 +1,6 @@
 package com.neuroid.tracker.compose
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +46,11 @@ class JetpackComposeImpl(
         elementName: String,
         pageName: String,
     ) {
+        if (elementName.isEmpty() && pageName.isEmpty()) {
+            Log.d("NeuroID Debug Event","Skipping button tracking since either name: ${elementName} or ${pageName} is empty")
+            return
+        }
+
         neuroID.captureEvent(
             type = TOUCH_START,
             ec = pageName,
