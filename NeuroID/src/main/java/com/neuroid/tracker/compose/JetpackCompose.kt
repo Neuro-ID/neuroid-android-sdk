@@ -117,7 +117,8 @@ class JetpackComposeImpl(
                                 "attr" to getAttrJson(elementState),
                                 "et" to "text",
                             ),
-                        tgs = "$pageName:$elementName",
+                        tgs = elementName,
+                        ec = pageName,
                         v = "S~C~~${clipboardContent.length}",
                         hv = clipboardContent.getSHA256withSalt().take(8),
                         attrs =
@@ -138,7 +139,8 @@ class JetpackComposeImpl(
                             "etn" to INPUT,
                             "et" to "text",
                         ),
-                    tgs = "$pageName:$elementName",
+                    tgs = elementName,
+                    ec = pageName,
                     v = "S~C~~${elementState.length}",
                     hv = elementState.getSHA256withSalt().take(8),
                     attrs = listOf(
