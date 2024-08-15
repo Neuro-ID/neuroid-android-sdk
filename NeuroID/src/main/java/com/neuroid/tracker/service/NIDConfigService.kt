@@ -83,14 +83,14 @@ internal class NIDConfigService(
                         m =
                             """
                              Failed to retrieve NID Config for key ${neuroID.clientKey}. Default values will be used
-                            """,
+                            """.replace("\n", "").trim(),
                         level = "ERROR",
                     )
                     logger.e(
                         msg =
                             """
                              Failed to retrieve NID Config for key ${neuroID.clientKey}. Default values will be used
-                            """,
+                            """.replace("\n", "").trim(),
                     )
 
                     val newConfig = NIDRemoteConfig()
