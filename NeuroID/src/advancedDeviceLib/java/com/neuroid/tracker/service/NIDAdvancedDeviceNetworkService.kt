@@ -94,7 +94,7 @@ class NIDAdvancedDeviceNetworkService(
                         msg =
                             """
                             Failed to get API key from NeuroID: ${response.message()} - Code: ${response.code()}. Retrying: ${retryCount < RETRY_COUNT}
-                            """.trimIndent(),
+                            """.replace("\n", "").trim(),
                     )
                     finalResponse =
                         ADVKeyFunctionResponse(

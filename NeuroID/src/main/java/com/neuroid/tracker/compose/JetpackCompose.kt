@@ -72,6 +72,21 @@ class JetpackComposeImpl(
         }
 
         neuroID.captureEvent(
+            type = REGISTER_TARGET,
+            ec = pageName,
+            eid = elementName,
+            tgs = elementName,
+            en = elementName,
+            rts = "targetInteractionEvent",
+            attrs =
+                listOf(
+                    sdkMap,
+                ),
+            etn = INPUT,
+            et = "Button",
+        )
+
+        neuroID.captureEvent(
             type = TOUCH_START,
             ec = pageName,
             tgs = elementName,
@@ -232,6 +247,25 @@ class JetpackComposeImpl(
         pageName: String,
     ) {
         if (!neuroID.isStopped() && newState != oldState) {
+            // This will create an excess number of register target events however DS will 
+            // handle it on their side
+            neuroID.captureEvent(
+                type = REGISTER_TARGET,
+                ec = pageName,
+                eid = elementName,
+                tgs = elementName,
+                en = elementName,
+                v = "S~C~~${newState.length}",
+                hv = newState.getSHA256withSalt().take(8),
+                rts = "targetInteractionEvent",
+                attrs =
+                    listOf(
+                        sdkMap,
+                    ),
+                etn = INPUT,
+                et = "Edittext",
+            )
+
             val clipboard = neuroID.getClipboardManagerInstance()
             val clipData = clipboard?.primaryClip
 
