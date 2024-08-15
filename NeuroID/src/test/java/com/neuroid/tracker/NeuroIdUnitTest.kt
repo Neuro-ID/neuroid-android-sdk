@@ -27,7 +27,10 @@ class NeuroIdUnitTest {
 
         every { uuid.toString() } returns "test"
         val temp = generateUniqueHexID()
-        assertEquals(temp, "nid-test")
+        assertEquals(temp, "test")
+
+        val temp2 = generateUniqueHexID(true)
+        assertEquals(temp2, "nid-test")
 
         unmockkAll()
     }

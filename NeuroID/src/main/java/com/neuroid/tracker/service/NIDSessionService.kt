@@ -132,7 +132,7 @@ internal class NIDSessionService(
             stopSession()
         }
 
-        var finalSessionID = sessionID ?: generateUniqueHexID()
+        var finalSessionID = sessionID ?: generateUniqueHexID(true)
         if (!identifierService.setUserID(finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
