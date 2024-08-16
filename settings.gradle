@@ -2,11 +2,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
-        mavenCentral {
-            content {
-                excludeGroup("com.facebook.react")
-            }
-        }
+        mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
         maven { url 'https://maven.fpregistry.io/releases' }
         maven { url 'https://jitpack.io' }
