@@ -7,9 +7,12 @@ import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -148,4 +151,36 @@ class NIDDataStoreManagerUnitTests {
             val events = dataStore.getAllEvents()
             Assert.assertEquals(0, events.count())
         }
+
+    @Test
+    fun isFullBuffer() {
+        val dataStore = mockDataStore()
+        assert(!dataStore.isFullBuffer())
+    }
+
+    @Test
+    fun isFullBuffer_isFull() {
+        val dataStore = mockDataStore()
+        for (i in 0..5000) {
+            dataStore.saveEvent(NIDEventModel(INPUT))
+        }
+        assert(dataStore.isFullBuffer())
+    }
+
+    @Test
+    fun isFullBuffer_crashMitigation() {
+        val serviceConfig = mockk<ConfigService>()
+        every { serviceConfig.configCache } returns NIDRemoteConfig()
+        val logger = mockk<NIDLogWrapper>()
+        every {logger.d(any(), any())} just runs
+        val dataStore = NIDDataStoreManagerImp(logger, serviceConfig)
+        val raceConditionedEventList = mockk<MutableList<NIDEventModel>>()
+        every {raceConditionedEventList.size} returns 0
+        every {raceConditionedEventList.isEmpty()} returns false
+        every {raceConditionedEventList.last()} throws NoSuchElementException("list is empty fool!")
+        every {raceConditionedEventList.add(any())} returns true
+        dataStore.eventsList = raceConditionedEventList
+        assert(!dataStore.isFullBuffer())
+        verify{logger.d(any(), "possible emptying before calling eventsList.last() after empty check occurred list is empty fool!")}
+    }
 }

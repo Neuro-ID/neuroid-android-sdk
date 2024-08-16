@@ -29,7 +29,7 @@ fun getAppMetaData(context: Context): ApplicationMetaData? {
             versionName = packageInfo.versionName,
             versionNumber = versionCode,
             packageName = packageInfo.packageName,
-            applicationName = packageInfo.applicationInfo.name,
+            applicationName = packageInfo.applicationInfo.name?:"",
         )
     } catch (e: PackageManager.NameNotFoundException) {
         e.printStackTrace()
