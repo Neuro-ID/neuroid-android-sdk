@@ -47,7 +47,7 @@ internal class NIDDataStoreManagerImp(
             )
     }
 
-    private var eventsList = mutableListOf<NIDEventModel>()
+    internal var eventsList = mutableListOf<NIDEventModel>()
     internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
 
     /**
@@ -153,8 +153,25 @@ internal class NIDDataStoreManagerImp(
         return previousEventsList
     }
 
+
+    /**
+     * Synchronize to ensure that eventList is not updated when we check for last item being
+     * BUFFER_FULL and to get proper event list size since the queue flush job is running in the
+     * background.
+     */
+    @Synchronized
     override fun isFullBuffer(): Boolean {
-        val lastEventType = if (eventsList.isEmpty()) "" else eventsList.last().type
+        var lastEventType = ""
+
+        try {
+            if (eventsList.isEmpty().not()) {
+                lastEventType = eventsList.last().type
+            }
+        } catch (e: Exception) {
+            logger.d(
+                msg = "possible emptying before calling eventsList.last() after empty check occurred ${e.message}"
+            )
+        }
 
         if (lastEventType == FULL_BUFFER) {
             return true
