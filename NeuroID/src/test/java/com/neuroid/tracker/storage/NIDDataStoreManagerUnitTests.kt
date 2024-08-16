@@ -177,7 +177,7 @@ class NIDDataStoreManagerUnitTests {
         val raceConditionedEventList = mockk<MutableList<NIDEventModel>>()
         every {raceConditionedEventList.size} returns 0
         every {raceConditionedEventList.isEmpty()} returns false
-        every {raceConditionedEventList.last()} throws NoSuchElementException("list is empty!")
+        every {raceConditionedEventList.last()} throws NoSuchElementException("list is empty fool!")
         every {raceConditionedEventList.add(any())} returns true
         dataStore.eventsList = raceConditionedEventList
         assert(!dataStore.isFullBuffer())
