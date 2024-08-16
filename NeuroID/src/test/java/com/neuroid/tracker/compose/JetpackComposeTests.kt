@@ -1,6 +1,7 @@
 package com.neuroid.tracker.compose
 
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.TOUCH_END
 import com.neuroid.tracker.events.TOUCH_START
 import com.neuroid.tracker.events.WINDOW_LOAD
@@ -24,10 +25,11 @@ class JetpackComposeTests {
         logger = getMockedLogger()
         neuroID = getMockedNeuroID()
 
-        composeTracking = JetpackComposeImpl(
-            neuroID,
-            logger,
-        )
+        composeTracking =
+            JetpackComposeImpl(
+                neuroID,
+                logger,
+            )
     }
 
     @After
@@ -71,17 +73,40 @@ class JetpackComposeTests {
     }
 
     @Test
+    fun test_trackButtonTap_fail() {
+        val elementName = ""
+        val pageName = "myPage"
+
+        composeTracking.trackButtonTap(
+            elementName,
+            pageName,
+        )
+
+        verifyCaptureEvent(
+            neuroID,
+            LOG,
+            1,
+            level = "WARN",
+        )
+    }
+
+    @Test
     fun test_trackPage() {
         val pageName = "myPage"
         composeTracking.captureComposeWindowEvent(pageName, WINDOW_LOAD)
         verifyCaptureEvent(
-            neuroID, WINDOW_LOAD, 1, ec = pageName
+            neuroID,
+            WINDOW_LOAD,
+            1,
+            ec = pageName,
         )
 
         composeTracking.captureComposeWindowEvent(pageName, WINDOW_UNLOAD)
         verifyCaptureEvent(
-            neuroID, WINDOW_UNLOAD, 1, ec = pageName
+            neuroID,
+            WINDOW_UNLOAD,
+            1,
+            ec = pageName,
         )
-
     }
 }

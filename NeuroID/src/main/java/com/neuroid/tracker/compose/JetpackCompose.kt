@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalClipboardManager
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.INPUT
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.TOUCH_END
@@ -59,35 +60,13 @@ class JetpackComposeImpl(
             "jetpackCompose" to true,
         ),
 ) : JetpackCompose {
-    /**
-     * Track a compose button onClick
-     */
-    override fun trackButtonTap(
+    internal fun captureComposeTouchEvent(
+        type: String,
         elementName: String,
         pageName: String,
     ) {
-        if (elementName.isEmpty() || pageName.isEmpty()) {
-            Log.d("NeuroID Debug Event", "Skipping button tracking since either name: $elementName or $pageName is empty")
-            return
-        }
-
         neuroID.captureEvent(
-            type = REGISTER_TARGET,
-            ec = pageName,
-            eid = elementName,
-            tgs = elementName,
-            en = elementName,
-            rts = "targetInteractionEvent",
-            attrs =
-                listOf(
-                    sdkMap,
-                ),
-            etn = INPUT,
-            et = "Button",
-        )
-
-        neuroID.captureEvent(
-            type = TOUCH_START,
+            type = type,
             ec = pageName,
             tgs = elementName,
             tg = sdkMap,
@@ -97,31 +76,6 @@ class JetpackComposeImpl(
                 ),
             synthetic = true,
         )
-
-        neuroID.captureEvent(
-            type = TOUCH_END,
-            ec = pageName,
-            tgs = elementName,
-            tg = sdkMap,
-            attrs =
-                listOf(
-                    sdkMap,
-                ),
-            synthetic = true,
-        )
-    }
-
-    /**
-     * Track a compose page load/unload
-     */
-    @Composable
-    override fun trackPage(pageName: String) {
-        DisposableEffect(Unit) {
-            captureComposeWindowEvent(pageName = pageName, WINDOW_LOAD)
-            onDispose {
-                captureComposeWindowEvent(pageName = pageName, WINDOW_UNLOAD)
-            }
-        }
     }
 
     internal fun captureComposeWindowEvent(
@@ -136,6 +90,138 @@ class JetpackComposeImpl(
                     sdkMap,
                 ),
         )
+    }
+
+    internal fun captureComposeInputEvent(
+        elementState: String,
+        elementName: String,
+        pageName: String,
+    ) {
+        neuroID.captureEvent(
+            type = INPUT,
+            tg =
+                hashMapOf(
+                    "attr" to getAttrJson(elementState),
+                    "etn" to INPUT,
+                    "et" to "text",
+                ),
+            tgs = elementName,
+            ec = pageName,
+            v = "S~C~~${elementState.length}",
+            hv = elementState.getSHA256withSalt().take(8),
+            attrs =
+                listOf(
+                    sdkMap,
+                ),
+        )
+    }
+
+    internal fun captureComposePasteEvent(
+        elementState: String,
+        elementName: String,
+        pageName: String,
+        clipboardContent: String,
+    ) {
+        neuroID.captureEvent(
+            type = PASTE,
+            tg =
+                hashMapOf(
+                    "attr" to getAttrJson(elementState),
+                    "et" to "text",
+                ),
+            tgs = elementName,
+            ec = pageName,
+            v = "S~C~~${clipboardContent.length}",
+            hv = clipboardContent.getSHA256withSalt().take(8),
+            attrs =
+                listOf(
+                    mapOf(
+                        "clipboardText" to "S~C~~${clipboardContent.length}",
+                    ),
+                    sdkMap,
+                ),
+        )
+    }
+
+    internal fun captureComposeRegisterTargetEvent(
+        elementState: String? = null,
+        elementName: String,
+        pageName: String,
+        targetType: String = "Edittext",
+        rts: String = "true",
+    ) {
+        neuroID.captureEvent(
+            type = REGISTER_TARGET,
+            ec = pageName,
+            eid = elementName,
+            tgs = elementName,
+            en = elementName,
+            v =
+                if (elementState != null) {
+                    "S~C~~${elementState.length}"
+                } else {
+                    null
+                },
+            hv = elementState?.getSHA256withSalt()?.take(8),
+            rts = rts,
+            attrs =
+                listOf(
+                    sdkMap,
+                ),
+            etn = INPUT,
+            et = targetType,
+        )
+    }
+
+    /**
+     * Track a compose button onClick
+     */
+    override fun trackButtonTap(
+        elementName: String,
+        pageName: String,
+    ) {
+        if (elementName.isEmpty() || pageName.isEmpty()) {
+            Log.d("NeuroID Compose", "Skipping Compose button tracking since either name: $elementName or $pageName is empty")
+            neuroID.captureEvent(
+                type = LOG,
+                m = "Skipping Compose button tracking since either name: $elementName or $pageName is empty",
+                level = "WARN",
+            )
+            return
+        }
+
+        captureComposeRegisterTargetEvent(
+            null,
+            elementName,
+            pageName,
+            targetType = "Button",
+            rts = "targetInteractionEvent",
+        )
+
+        captureComposeTouchEvent(
+            TOUCH_START,
+            elementName,
+            pageName,
+        )
+
+        captureComposeTouchEvent(
+            TOUCH_END,
+            elementName,
+            pageName,
+        )
+    }
+
+    /**
+     * Track a compose page load/unload
+     */
+    @Composable
+    override fun trackPage(pageName: String) {
+        DisposableEffect(Unit) {
+            captureComposeWindowEvent(pageName = pageName, WINDOW_LOAD)
+            onDispose {
+                captureComposeWindowEvent(pageName = pageName, WINDOW_UNLOAD)
+            }
+        }
     }
 
     /**
@@ -169,21 +255,10 @@ class JetpackComposeImpl(
 
         // Runs only on init launch so we can capture the target registration
         LaunchedEffect(Unit) {
-            neuroID.captureEvent(
-                type = REGISTER_TARGET,
-                ec = pageName,
-                eid = elementName,
-                tgs = elementName,
-                en = elementName,
-                v = "S~C~~${elementState.length}",
-                hv = elementState.getSHA256withSalt().take(8),
-                rts = "true",
-                attrs =
-                    listOf(
-                        sdkMap,
-                    ),
-                etn = INPUT,
-                et = "Edittext",
+            captureComposeRegisterTargetEvent(
+                elementState,
+                elementName,
+                pageName,
             )
         }
 
@@ -194,43 +269,19 @@ class JetpackComposeImpl(
                 val clipboardContent = clipboardManager.getText()?.text ?: ""
                 // check for paste, send paste event if so
                 if (neuroID.nidComposeTextWatcher.isPaste(changeText, clipboardContent, lastPastedHashCode)) {
-                    neuroID.captureEvent(
-                        type = PASTE,
-                        tg =
-                            hashMapOf(
-                                "attr" to getAttrJson(elementState),
-                                "et" to "text",
-                            ),
-                        tgs = elementName,
-                        ec = pageName,
-                        v = "S~C~~${clipboardContent.length}",
-                        hv = clipboardContent.getSHA256withSalt().take(8),
-                        attrs =
-                            listOf(
-                                mapOf(
-                                    "clipboardText" to "S~C~~${clipboardContent.length}",
-                                ),
-                                sdkMap,
-                            ),
+                    captureComposePasteEvent(
+                        elementState,
+                        elementName,
+                        pageName,
+                        clipboardContent,
                     )
                     lastPastedHashCode = clipboardContent.hashCode()
                 }
-                neuroID.captureEvent(
-                    type = INPUT,
-                    tg =
-                        hashMapOf(
-                            "attr" to getAttrJson(elementState),
-                            "etn" to INPUT,
-                            "et" to "text",
-                        ),
-                    tgs = elementName,
-                    ec = pageName,
-                    v = "S~C~~${elementState.length}",
-                    hv = elementState.getSHA256withSalt().take(8),
-                    attrs =
-                        listOf(
-                            sdkMap,
-                        ),
+
+                captureComposeInputEvent(
+                    elementState,
+                    elementName,
+                    pageName,
                 )
                 previousText = elementState
             }
@@ -247,23 +298,14 @@ class JetpackComposeImpl(
         pageName: String,
     ) {
         if (!neuroID.isStopped() && newState != oldState) {
-            // This will create an excess number of register target events however DS will 
+            // This will create an excess number of register target events however DS will
             // handle it on their side
-            neuroID.captureEvent(
-                type = REGISTER_TARGET,
-                ec = pageName,
-                eid = elementName,
-                tgs = elementName,
-                en = elementName,
-                v = "S~C~~${newState.length}",
-                hv = newState.getSHA256withSalt().take(8),
+
+            captureComposeRegisterTargetEvent(
+                newState,
+                elementName,
+                pageName,
                 rts = "targetInteractionEvent",
-                attrs =
-                    listOf(
-                        sdkMap,
-                    ),
-                etn = INPUT,
-                et = "Edittext",
             )
 
             val clipboard = neuroID.getClipboardManagerInstance()
@@ -284,42 +326,18 @@ class JetpackComposeImpl(
             val clipboardContent = pastedText
             // check for paste, send paste event if so
             if (neuroID.nidComposeTextWatcher.isPaste(changeText, clipboardContent, oldState.hashCode())) {
-                neuroID.captureEvent(
-                    type = PASTE,
-                    tg =
-                        hashMapOf(
-                            "attr" to getAttrJson(newState),
-                            "et" to "text",
-                        ),
-                    tgs = elementName,
-                    ec = pageName,
-                    v = "S~C~~${clipboardContent.length}",
-                    hv = clipboardContent.getSHA256withSalt().take(8),
-                    attrs =
-                        listOf(
-                            mapOf(
-                                "clipboardText" to "S~C~~${clipboardContent.length}",
-                            ),
-                            sdkMap,
-                        ),
+                captureComposePasteEvent(
+                    newState,
+                    elementName,
+                    pageName,
+                    clipboardContent,
                 )
             }
-            neuroID.captureEvent(
-                type = INPUT,
-                tg =
-                    hashMapOf(
-                        "attr" to getAttrJson(newState),
-                        "etn" to INPUT,
-                        "et" to "text",
-                    ),
-                tgs = elementName,
-                ec = pageName,
-                v = "S~C~~${newState.length}",
-                hv = newState.getSHA256withSalt().take(8),
-                attrs =
-                    listOf(
-                        sdkMap,
-                    ),
+
+            captureComposeInputEvent(
+                newState,
+                elementName,
+                pageName,
             )
         }
     }
