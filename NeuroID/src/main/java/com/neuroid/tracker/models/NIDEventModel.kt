@@ -22,7 +22,6 @@ import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.SELECT_CHANGE
-import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.events.TEXT_CHANGE
@@ -102,6 +101,7 @@ data class NIDEventModel(
     val isConnected: Boolean? = null,
     val cp: String? = null,
     val l: Long? = null,
+    val synthetic: Boolean? = null,
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
         return toJSON().toString()
@@ -187,6 +187,7 @@ data class NIDEventModel(
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
             l?.let { jsonObject.put("l", it) }
+            synthetic?.let { jsonObject.put("synthetic", it) }
         }
 
         return jsonObject
@@ -217,9 +218,9 @@ data class NIDEventModel(
                     contextString =
                         "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata} attrs=[${this.attrs}]"
                 "DEREGISTER_TARGET" -> contextString = ""
-                TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg}"
-                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg}"
-                TOUCH_MOVE -> contextString = "xy=${this.touches} tg=${this.tg}"
+                TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
+                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
+                TOUCH_MOVE -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
                 CLOSE_SESSION -> contextString = ""
                 SET_VARIABLE -> contextString = this.v ?: ""
                 CUT -> contextString = ""
@@ -227,8 +228,8 @@ data class NIDEventModel(
                 PASTE -> contextString = ""
                 WINDOW_RESIZE -> contextString = "h=${this.h}, w=${this.w}"
                 SELECT_CHANGE -> contextString = "tg=${this.tg}"
-                WINDOW_LOAD -> contextString = "meta=${this.metadata}"
-                WINDOW_UNLOAD -> contextString = "meta=${this.metadata}"
+                WINDOW_LOAD -> contextString = "meta=${this.metadata}, attrs=${this.attrs}, ec=${this.ec}"
+                WINDOW_UNLOAD -> contextString = "meta=${this.metadata}, attrs=${this.attrs}, ec=${this.ec}"
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"

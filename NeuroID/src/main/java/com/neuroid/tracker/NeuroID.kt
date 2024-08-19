@@ -13,6 +13,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
@@ -47,6 +48,7 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTimerActive
@@ -105,6 +107,7 @@ class NeuroID
         internal val httpService: NIDHttpService
         internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
+        internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
 
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
@@ -116,6 +119,13 @@ class NeuroID
 
         internal var lowMemory: Boolean = false
         internal var isConnected = false
+
+        // Jetpack Compose Tracking Class/vars
+        override val compose =
+            JetpackComposeImpl(
+                this,
+                logger,
+            )
 
         init {
             when (serverEnvironment) {
@@ -244,6 +254,7 @@ class NeuroID
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+            nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
         }
 
         fun incrementPacketNumber() {
@@ -361,6 +372,11 @@ class NeuroID
             fun getInstance(): NeuroIDPublic? = singleton
 
             internal fun getInternalInstance() = singleton
+
+            val compose: JetpackComposeImpl?
+                get() {
+                    return singleton?.compose
+                }
         }
 
         internal fun setLoggerInstance(newLogger: NIDLogWrapper) {
@@ -870,6 +886,7 @@ class NeuroID
             isConnected: Boolean? = null,
             cp: String? = null,
             l: Long? = null,
+            synthetic: Boolean? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
                 return
@@ -949,6 +966,7 @@ class NeuroID
                     isConnected,
                     cp,
                     l,
+                    synthetic,
                 )
 
             if (queuedEvent) {

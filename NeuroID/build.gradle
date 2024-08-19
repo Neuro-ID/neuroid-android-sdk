@@ -31,12 +31,11 @@ group = nameSpace
 version = versionName
 
 android {
-
-    compileSdkVersion = 31
+    compileSdkVersion = 33
 
     defaultConfig {
         minSdk 21
-        targetSdk 31
+        targetSdk 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -85,12 +84,27 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.2.0'
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -106,13 +120,15 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.lifecycle:lifecycle-process:2.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+
+    // compose stuff
+    implementation "androidx.compose.ui:ui:1.2.0"
 
     reactNativeImplementation("com.facebook.react:react-android:0.71.0-rc.1")
 

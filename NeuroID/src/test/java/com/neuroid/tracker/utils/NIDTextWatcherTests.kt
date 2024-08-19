@@ -5,11 +5,12 @@ import android.content.ClipboardManager
 import android.text.Editable
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDClassUnitTests
+import com.neuroid.tracker.events.INPUT
+import com.neuroid.tracker.events.PASTE
+import com.neuroid.tracker.getMockedNeuroID
+import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import org.junit.Test
 
 class NIDTextWatcherTests : NeuroIDClassUnitTests() {
@@ -28,7 +29,11 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(), "test", "myclass", "")
         textWatcher.onTextChanged("existing text", 0, 1, 0)
 
-        verifyCaptureEvent(nidMock, 0)
+        verifyCaptureEvent(
+            nidMock,
+            PASTE,
+            0,
+        )
     }
 
     @Test
@@ -52,7 +57,11 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
 
         textWatcher.onTextChanged("existing copied text", 10, 1, 11)
 
-        verifyCaptureEvent(nidMock)
+        verifyCaptureEvent(
+            nidMock,
+            PASTE,
+            1,
+        )
     }
 
     @Test
@@ -67,7 +76,11 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         every { seq.length } returns 12
         textWatcher.afterTextChanged(seq)
 
-        verifyCaptureEvent(nidMock)
+        verifyCaptureEvent(
+            nidMock,
+            INPUT,
+            1,
+        )
     }
 
     @Test
@@ -92,7 +105,11 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.onTextChanged("existing copied text", 0, 11, 11)
         textWatcher.onTextChanged("existing copied text", 0, 11, 11)
 
-        verifyCaptureEvent(nidMock)
+        verifyCaptureEvent(
+            nidMock,
+            PASTE,
+            1,
+        )
     }
 
     @Test
@@ -108,136 +125,10 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
         textWatcher.afterTextChanged(seq)
         textWatcher.afterTextChanged(seq)
 
-        verifyCaptureEvent(nidMock)
-    }
-
-    private fun verifyCaptureEvent(
-        nidMock: NeuroID,
-        count: Int = 1,
-    )  {
-        verify(exactly = count) {
-            nidMock.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-            )
-        }
-    }
-
-    private fun getMockedNeuroID(): NeuroID {
-        val nidMock = mockk<NeuroID>()
-        every {
-            nidMock.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-            )
-        } just runs
-
-        return nidMock
+        verifyCaptureEvent(
+            nidMock,
+            INPUT,
+            1,
+        )
     }
 }
