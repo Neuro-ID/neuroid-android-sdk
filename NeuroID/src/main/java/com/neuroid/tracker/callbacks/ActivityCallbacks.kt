@@ -77,6 +77,7 @@ class ActivityCallbacks(
             val fragManager = (activity as? AppCompatActivity)?.supportFragmentManager
 
             logger.d(msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES")
+            logger.d(tag = "listenerDebug", "Activity ($currentActivityName) Fragment Lifecycle Registration")
             fragManager?.registerFragmentLifecycleCallbacks(
                 FragmentCallbacks(
                     wasChanged,

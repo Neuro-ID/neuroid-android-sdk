@@ -113,7 +113,7 @@ class RegistrationIdentificationHelper(
                 parent = parent,
             )
         }
-        logger.d(msg="listenerDebug: registerSingleTargetListeners $registerListeners")
+        logger.d(tag = "listenerDebug", msg = "registerSingleTargetListeners $registerListeners")
         if (registerListeners) {
             singleTargetListenerRegister.registerListeners(view)
         }
@@ -127,7 +127,7 @@ class RegistrationIdentificationHelper(
         activityOrFragment: String = "",
         parent: String = "",
     ) {
-        logger.d("listenerDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
+        logger.d(tag = "listenerDebug", "identifyAllViews - viewParent: ${viewParent.getIdOrTag()}")
 
         viewParent.forEach {
             var shouldRegister = false
@@ -217,7 +217,7 @@ class SingleTargetListenerRegister(
     val additionalListeners: AdditionalListeners,
 ) {
     fun registerListeners(view: View) {
-        logger.d(msg="listenerDebug registerListeners() ${view.getIdOrTag()}")
+        logger.d(tag = "listenerDebug", msg = "registerListeners() ${view.getIdOrTag()}")
         val idName = view.getIdOrTag()
         val simpleClassName = view.javaClass.simpleName
 
@@ -230,19 +230,19 @@ class SingleTargetListenerRegister(
             // add Text Change watcher
             val textWatcher = NIDTextWatcher(neuroID, logger, idName, simpleClassName)
             // first we have to clear the text watcher that is currently in the EditText
-            logger.d(msg="listenerDebug registerListeners() remove textwatcher in ${view.getIdOrTag()}")
+            logger.d(tag = "listenerDebug", msg = "registerListeners() remove textwatcher in ${view.getIdOrTag()}")
             for (watcher in textWatchers) {
                 view.removeTextChangedListener(watcher)
             }
             // we add the new one in there
-            logger.d(msg="listenerDebug registerListeners() adding new textwatcher in ${view.getIdOrTag()}")
+            logger.d(tag = "listenerDebug", msg = "registerListeners() adding new textwatcher in ${view.getIdOrTag()}")
             view.addTextChangedListener(textWatcher)
             // we add the new one to the list of existing text watchers so we can remove it later when
             // it is re-registered
             textWatchers.add(textWatcher)
 
             // add original action menu watcher
-            logger.d(msg="listenerDebug registerListeners() adding new menuCallback in ${view.getIdOrTag()}")
+            logger.d(tag = "listenerDebug", msg = "registerListeners() adding new menuCallback in ${view.getIdOrTag()}")
             val actionCallback = view.customSelectionActionModeCallback
             if (actionCallback !is NIDTextContextMenuCallbacks) {
                 view.customSelectionActionModeCallback =
@@ -255,7 +255,7 @@ class SingleTargetListenerRegister(
 
             // if later api version, add additional action menu watcher
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                logger.d(msg="listenerDebug registerListeners() adding extra menuListener in ${view.getIdOrTag()}")
+                logger.d(tag = "listenerDebug", msg = "registerListeners() adding extra menuListener in ${view.getIdOrTag()}")
                 additionalListeners.addExtraActionMenuListener(view)
             }
         }
@@ -263,7 +263,7 @@ class SingleTargetListenerRegister(
         // additional subclasses to be captured
         when (view) {
             is AutoCompleteTextView -> {
-                logger.d(msg="listenerDebug registerListeners() adding autocomplete in ${view.getIdOrTag()}")
+                logger.d(tag = "listenerDebug", msg = "registerListeners() adding autocomplete in ${view.getIdOrTag()}")
                 val lastClickListener = view.onItemClickListener
                 view.onItemClickListener = null
                 view.onItemClickListener =
@@ -283,7 +283,7 @@ class SingleTargetListenerRegister(
             }
 
             is Spinner -> {
-                logger.d(msg="listenerDebug registerListeners() adding spinner in ${view.getIdOrTag()}")
+                logger.d(tag = "listenerDebug", msg = "registerListeners() adding spinner in ${view.getIdOrTag()}")
                 val lastClickListener = view.onItemClickListener
                 view.onItemClickListener = null
                 view.onItemClickListener =
@@ -303,7 +303,7 @@ class SingleTargetListenerRegister(
             }
 
             is AbsSpinner -> {
-                logger.d(msg="listenerDebug registerListeners() adding abs spinner in ${view.getIdOrTag()}")
+                logger.d(tag = "listenerDebug", msg = "registerListeners() adding abs spinner in ${view.getIdOrTag()}")
                 val lastClickListener = view.onItemClickListener
                 view.onItemClickListener = null
                 view.onItemClickListener =

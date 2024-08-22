@@ -52,7 +52,7 @@ class FragmentCallbacks(
             )
 
             val concatName = f.toString().split(" ")
-            logger.d(msg="listenerDebug onFragmentAttached() $concatName")
+            logger.d(tag = "listenerDebug", msg = "onFragmentAttached() $concatName")
             val fragName =
                 if (concatName.isNotEmpty()) {
                     concatName[0]
@@ -60,14 +60,14 @@ class FragmentCallbacks(
                     ""
                 }
 
-            println("listenerDebug onFragmentAttached() ")
+            logger.d(tag = "listenerDebug", msg = " onFragmentAttached() $fragName ")
             if (listFragment.contains(fragName)) {
-                logger.d(msg="listenerDebug onFragmentAttached() found frag name: $fragName")
+                logger.d(tag = "listenerDebug", msg = "onFragmentAttached() contains/found frag name: $fragName")
                 val index = listFragment.indexOf(fragName)
-                logger.d(msg="listenerDebug onFragmentAttached() found frag name $fragName at index: $index")
+                logger.d(tag = "listenerDebug", msg = "onFragmentAttached() contains/found frag name $fragName at index: $index")
                 if (index != listFragment.size - 1) {
-                // if (index < 0) {
-                    logger.d(msg="listenerDebug onFragmentAttached removing $fragName from list")
+                    // if (index < 0) {
+                    logger.d(tag = "listenerDebug", msg = "onFragmentAttached removing $fragName from list - registerListeners=FALSE")
                     listFragment.removeLast()
                     // listFragment.removeAt(index)
                     // then re-register.
@@ -82,7 +82,7 @@ class FragmentCallbacks(
                     )
                 }
             } else {
-                logger.d(msg="listenerDebug onFragmentAttached adding $fragName to list")
+                logger.d(tag = "listenerDebug", msg = "onFragmentAttached adding $fragName to list - registerListeners=TRUE")
                 listFragment.add(fragName)
                 registrationHelper.registerTargetFromScreen(
                     f.requireActivity(),
@@ -166,6 +166,7 @@ class FragmentCallbacks(
         f: Fragment,
     ) {
         logger.d(msg = "onFragmentStopped ${f::class.java.simpleName}")
+        logger.d(tag = "listenerDebug", msg = "onFragmentStopped() ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDestroyed(
@@ -173,6 +174,7 @@ class FragmentCallbacks(
         f: Fragment,
     ) {
         logger.d(msg = "onFragmentDestroyed ${f::class.java.simpleName}")
+        logger.d(tag = "listenerDebug", msg = "onFragmentDestroyed() ${f::class.java.simpleName}")
     }
 
     override fun onFragmentDetached(
@@ -181,6 +183,8 @@ class FragmentCallbacks(
     ) {
         val className = f::class.java.simpleName
         logger.d(msg = "Fragment - Detached $className")
+        logger.d(tag = "listenerDebug", msg = "onFragmentDetached() ${f::class.java.simpleName}")
+
         if (blackListFragments.any { it == className }.not()) {
             logger.d(
                 msg = "Fragment - Detached - WINDOW UNLOAD $className",
