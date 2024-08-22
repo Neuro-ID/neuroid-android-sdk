@@ -52,6 +52,7 @@ class FragmentCallbacks(
             )
 
             val concatName = f.toString().split(" ")
+            logger.d(msg="listenerDebug onFragmentAttached() $concatName")
             val fragName =
                 if (concatName.isNotEmpty()) {
                     concatName[0]
@@ -59,19 +60,29 @@ class FragmentCallbacks(
                     ""
                 }
 
+            println("listenerDebug onFragmentAttached() ")
             if (listFragment.contains(fragName)) {
+                logger.d(msg="listenerDebug onFragmentAttached() found frag name: $fragName")
                 val index = listFragment.indexOf(fragName)
+                logger.d(msg="listenerDebug onFragmentAttached() found frag name $fragName at index: $index")
                 if (index != listFragment.size - 1) {
+                // if (index < 0) {
+                    logger.d(msg="listenerDebug onFragmentAttached removing $fragName from list")
                     listFragment.removeLast()
+                    // listFragment.removeAt(index)
+                    // then re-register.
                     registrationHelper.registerTargetFromScreen(
                         f.requireActivity(),
                         registerTarget = true,
+                        // we should always register everything since we removed it!
                         registerListeners = false,
+                        // registerListeners = true,
                         activityOrFragment = "fragment",
                         parent = className,
                     )
                 }
             } else {
+                logger.d(msg="listenerDebug onFragmentAttached adding $fragName to list")
                 listFragment.add(fragName)
                 registrationHelper.registerTargetFromScreen(
                     f.requireActivity(),
