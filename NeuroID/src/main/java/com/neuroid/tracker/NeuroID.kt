@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -312,15 +313,25 @@ class NeuroID
             val serverEnvironment: String = PRODUCTION,
         ) {
             fun build() {
-                val neuroID =
-                    NeuroID(
-                        application,
-                        clientKey,
-                        isAdvancedDevice,
-                        serverEnvironment,
-                    )
-                neuroID.setupCallbacks()
-                setNeuroIDInstance(neuroID)
+                if (!isBuilt) {
+                    val neuroID =
+                        NeuroID(
+                            application,
+                            clientKey,
+                            isAdvancedDevice,
+                            serverEnvironment,
+                        )
+                    neuroID.setupCallbacks()
+                    setNeuroIDInstance(neuroID)
+                    isBuilt = true
+                } else {
+                    Log.d("NeuroID", "NeuroID already Initialized")
+                    getInternalInstance()?. captureEvent(
+                        queuedEvent = true,
+                        type = LOG,
+                        m = "NeuroID already Initialized",
+                        level = "ERROR")
+                }
             }
         }
 
@@ -336,6 +347,8 @@ class NeuroID
             // Internal accessible property to allow internal get/set
             @Suppress("ktlint:standard:backing-property-naming")
             internal var _isSDKStarted: Boolean = false
+
+            internal var isBuilt = false
 
             // public exposed variable for customers to see but NOT write to
             val isSDKStarted: Boolean

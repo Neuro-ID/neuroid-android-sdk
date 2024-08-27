@@ -25,6 +25,7 @@ class NIDTextWatcher(
         p2: Int,
         p3: Int,
     ) {
+        logger.d(tag = "listenerDebug", msg = "beforeTextChanged() ${p0?.length}")
         // No operation
     }
 
@@ -34,6 +35,7 @@ class NIDTextWatcher(
         before: Int,
         count: Int,
     ) {
+        logger.d(tag = "listenerDebug", msg = "onTextChanged() ${sequence?.length}")
         // Check if the change is due to a paste operation
         val clipboard = NeuroID.getInternalInstance()?.getClipboardManagerInstance()
         val clipData = clipboard?.primaryClip
@@ -80,6 +82,7 @@ class NIDTextWatcher(
     }
 
     override fun afterTextChanged(sequence: Editable?) {
+        logger.d(tag = "listenerDebug", msg = "afterTextChanged() ${sequence?.length}")
         val currentHashValue = sequence?.toString()?.getSHA256withSalt()?.take(8)
 
         if (lastHashValue != currentHashValue) {
