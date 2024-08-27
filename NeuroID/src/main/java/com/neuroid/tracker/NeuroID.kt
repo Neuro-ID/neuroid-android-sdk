@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -365,6 +366,13 @@ class NeuroID
                 if (singleton == null) {
                     singleton = neuroID
                     singleton?.setupCallbacks()
+                } else {
+                    Log.e("NeuroID", "NeuroID SDK should only be built once.")
+                    singleton?.captureEvent(
+                        type = LOG,
+                        m = "NeuroID SDK should only be built once.",
+                        level = "ERROR"
+                    )
                 }
             }
 
