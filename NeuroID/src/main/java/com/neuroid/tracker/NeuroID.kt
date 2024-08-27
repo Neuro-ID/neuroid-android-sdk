@@ -319,7 +319,6 @@ class NeuroID
                         isAdvancedDevice,
                         serverEnvironment,
                     )
-                neuroID.setupCallbacks()
                 setNeuroIDInstance(neuroID)
             }
         }
