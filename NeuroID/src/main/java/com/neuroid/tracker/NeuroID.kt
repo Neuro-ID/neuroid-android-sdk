@@ -319,7 +319,6 @@ class NeuroID
                         isAdvancedDevice,
                         serverEnvironment,
                     )
-                neuroID.setupCallbacks()
                 setNeuroIDInstance(neuroID)
             }
         }
@@ -362,10 +361,22 @@ class NeuroID
             internal var scriptEndpoint = Constants.productionScriptsEndpoint.displayName
             private var singleton: NeuroID? = null
 
+            @TestOnly
+            internal fun setSingletonNull() {
+                singleton = null
+            }
+
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
                     singleton?.setupCallbacks()
+                } else {
+                    singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
+                    singleton?.captureEvent(
+                        type = LOG,
+                        m = "NeuroID SDK should only be built once.",
+                        level = "ERROR"
+                    )
                 }
             }
 

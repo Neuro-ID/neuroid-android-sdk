@@ -127,6 +127,10 @@ class NIDSessionServiceTest {
     // SETUP/TAKEDOWN
     @Before
     fun setUp() {
+        // set NeuroID singleton to null, else the NeuroID already initialized error will occur and
+        // fail test when NeuroID is built.
+        NeuroID.setSingletonNull()
+
         // setup instance and logging
         setNeuroIDInstance()
 
