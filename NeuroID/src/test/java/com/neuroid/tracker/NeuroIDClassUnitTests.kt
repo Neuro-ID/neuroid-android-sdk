@@ -67,6 +67,9 @@ open class NeuroIDClassUnitTests {
 
     // Helper Functions
     private fun setNeuroIDInstance() {
+        // set NeuroID singleton to null, else the NeuroID already initialized error will occur and
+        // fail test when NeuroID is built.
+        NeuroID.setSingletonNull()
         NeuroID.Builder(null, "key_test_fake1234", false, NeuroID.DEVELOPMENT).build()
     }
 
