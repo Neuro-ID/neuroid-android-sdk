@@ -2,14 +2,23 @@ package com.neuroid.tracker
 
 import android.app.Activity
 import android.app.Application
+import android.app.usage.NetworkStats
+import android.app.usage.NetworkStatsManager
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.BatteryManager
 import android.os.Build
+import android.os.HardwarePropertiesManager
+import android.os.RemoteException
+import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -59,8 +68,11 @@ import com.neuroid.tracker.utils.generateUniqueHexID
 import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import java.util.Calendar
 
@@ -998,4 +1010,108 @@ class NeuroID
                 }
             }
         }
+    fun getCpuTemperature(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Get the HardwarePropertiesManager instance
+            val hardwarePropertiesManager =
+                context.getSystemService(Context.HARDWARE_PROPERTIES_SERVICE)
+                        as HardwarePropertiesManager
+
+            // Get the array of CPU temperatures
+            val cpuTemps =
+                hardwarePropertiesManager.getDeviceTemperatures(
+                    HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU,
+                    HardwarePropertiesManager.TEMPERATURE_CURRENT
+                )
+
+            if (cpuTemps.isNotEmpty()) {
+                // Log the first CPU temperature (you could loop if you want temps for each CPU core)
+                val cpuTemp = cpuTemps[0] // temperature for the first CPU
+                Log.d("CpuTemperature", "Current CPU Temperature: $cpuTemp°C")
+            } else {
+                Log.d("CpuTemperature", "Unable to retrieve CPU temperature")
+            }
+        } else {
+            Log.d("CpuTemperature", "HardwarePropertiesManager is not available on this device or Android version")
+        }
     }
+
+    private var networkStatsManager: NetworkStatsManager? = null
+    private var telephonyManager: TelephonyManager? = null
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun dataUsageHelper() {
+        networkStatsManager = getApplicationContext()?.getSystemService(Context.NETWORK_STATS_SERVICE)
+                as NetworkStatsManager?
+        telephonyManager = getApplicationContext()?.getSystemService(Context.TELEPHONY_SERVICE)
+                as TelephonyManager?
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun getMobileDataUsage(startTime: Long, endTime: Long): Long {
+        try {
+            val subscriberId = telephonyManager!!.subscriberId
+            val networkStats = networkStatsManager!!.querySummary(
+                NetworkCapabilities.TRANSPORT_CELLULAR,
+                subscriberId,
+                startTime,
+                endTime
+            )
+            val bucket = NetworkStats.Bucket()
+            var totalData: Long = 0
+
+            while (networkStats.hasNextBucket()) {
+                networkStats.getNextBucket(bucket)
+                totalData += bucket.rxBytes + bucket.txBytes
+            }
+
+            return totalData
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+        return 0
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun getWifiDataUsage(startTime: Long, endTime: Long): Long {
+        try {
+            val networkStats = networkStatsManager!!.querySummary(
+                NetworkCapabilities.TRANSPORT_WIFI,
+                null,
+                startTime,
+                endTime
+            )
+            val bucket = NetworkStats.Bucket()
+            var totalData: Long = 0
+
+            while (networkStats.hasNextBucket()) {
+                networkStats.getNextBucket(bucket)
+                totalData += bucket.rxBytes + bucket.txBytes
+            }
+
+            return totalData
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+        return 0
+    }
+
+    fun getBatteryInfo() {
+        CoroutineScope(Dispatchers.Default).launch {
+            while (true) {
+                val batteryIntent: Intent? =
+                    getApplicationContext()?.registerReceiver(
+                        null,
+                        IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                    )
+                val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+                val batteryPercentage = level * 100 / scale.toFloat()
+                println("kurt_test batteryPercentage $batteryPercentage")
+                delay(5000)
+            }
+        }
+    }
+    }
+
+
