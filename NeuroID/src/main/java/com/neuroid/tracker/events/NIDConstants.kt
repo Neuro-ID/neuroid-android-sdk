@@ -79,8 +79,9 @@ const val ORIGIN_CODE_CUSTOMER = "201"
 
 // Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
 enum class CallInProgress(val event: String, val state: Int) {
-    ACTIVE("true", 2),
-    RINGING("", 1),
-    INACTIVE("false", 0),
+    ACTIVE("active", 2 ),
+    RINGING("ringing", 1),
+    INACTIVE("inactive", 0),
     UNAUTHORIZED("unauthorized", 99),
+    UNKNOWN("unknown", -1),
 }

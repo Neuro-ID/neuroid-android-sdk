@@ -27,13 +27,26 @@ class NIDCallActivityListener(
     private val isReceiverRegistered = false
     private var callStateActive = false
 
+    companion object {
+        // for phones <= API 31
+        private var phoneStateListener: PhoneStateListener? = null
+        // for phones > API 31
+        private var customTelephonyCallback: CustomTelephonyCallback? = null
+        // flag to indicate if the phoneStateListener or telephony callback is registered.
+        private var isRegistered = false
+    }
+
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onReceive(
         context: Context?,
         intent: Intent?,
     ) {
+        NIDLog.d(msg="NIDCallActivityListener.onReceive() ${intent?.type}")
         if (context != null) {
-            registerCustomTelephonyCallback(context)
+            if (isRegistered == false) {
+                registerCustomTelephonyCallback(context)
+                isRegistered = true
+            }
         }
     }
 
@@ -62,24 +75,21 @@ class NIDCallActivityListener(
         when (state) {
             CallInProgress.INACTIVE.state -> {
                 callStateActive = false
-                NIDLog.d(msg = "Call inactive")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.INACTIVE.event,
+                    attrs = listOf(mapOf("progress" to "hangup")),
                 )
             }
-
             CallInProgress.ACTIVE.state -> {
                 callStateActive = true
-                NIDLog.d(msg = "Call in progress")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.ACTIVE.event,
+                    attrs = listOf(mapOf("progress" to "active")),
                 )
             }
-
             CallInProgress.RINGING.state -> {
-                NIDLog.d(msg = "Call Ringing")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = "$callStateActive",
@@ -96,12 +106,19 @@ class NIDCallActivityListener(
                         ),
                 )
             }
-
             CallInProgress.UNAUTHORIZED.state -> {
-                NIDLog.d(msg = "Call status not authorized")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.UNAUTHORIZED.event,
+                    attrs = listOf(mapOf("progress" to "unauthorized")),
+                )
+            }
+            else -> {
+                NIDLog.d(msg = "Call status unknown")
+                neuroID.captureEvent(
+                    type = CALL_IN_PROGRESS,
+                    cp = CallInProgress.UNAUTHORIZED.event,
+                    attrs = listOf(mapOf("progress" to "unknown")),
                 )
             }
         }
@@ -110,10 +127,8 @@ class NIDCallActivityListener(
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (versionChecker.isBuildVersionGreaterThan31()) {
-            NIDLog.d(msg = "SDK > 31")
-            telephony.registerTelephonyCallback(
-                context.mainExecutor,
-                CustomTelephonyCallback { state ->
+            if (customTelephonyCallback == null) {
+                customTelephonyCallback = CustomTelephonyCallback { state ->
                     when (state) {
                         CallInProgress.INACTIVE.state -> {
                             saveCallInProgressEvent(CallInProgress.INACTIVE.state)
@@ -126,13 +141,23 @@ class NIDCallActivityListener(
                         CallInProgress.ACTIVE.state -> {
                             saveCallInProgressEvent(CallInProgress.ACTIVE.state)
                         }
+
+                        else -> {
+                            saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                        }
                     }
-                },
-            )
+                }
+            }
+            customTelephonyCallback?.let {
+                telephony.registerTelephonyCallback(
+                    context.mainExecutor,
+                    it,
+                )
+            }
         } else {
             NIDLog.d(msg = "SDK < 31")
-            telephony.listen(
-                object : PhoneStateListener() {
+            if (phoneStateListener == null) {
+                phoneStateListener = object: PhoneStateListener() {
                     override fun onCallStateChanged(
                         state: Int,
                         phoneNumber: String?,
@@ -150,11 +175,19 @@ class NIDCallActivityListener(
                             TelephonyManager.CALL_STATE_OFFHOOK -> {
                                 saveCallInProgressEvent(CallInProgress.ACTIVE.state)
                             }
+                            else -> {
+                                saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                            }
                         }
                     }
-                },
-                PhoneStateListener.LISTEN_CALL_STATE,
-            )
+                }
+            }
+            phoneStateListener?.let {
+                telephony.listen(
+                    it,
+                    PhoneStateListener.LISTEN_CALL_STATE,
+                )
+            }
         }
     }
 }
