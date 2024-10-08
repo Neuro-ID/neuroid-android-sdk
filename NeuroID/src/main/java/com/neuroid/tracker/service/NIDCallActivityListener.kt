@@ -24,17 +24,12 @@ class NIDCallActivityListener(
 ) : BroadcastReceiver() {
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
-    private val isReceiverRegistered = false
+    private var isReceiverRegistered = false
     private var callStateActive = false
-
-    companion object {
-        // for phones <= API 31
-        private var phoneStateListener: PhoneStateListener? = null
-        // for phones > API 31
-        private var customTelephonyCallback: CustomTelephonyCallback? = null
-        // flag to indicate if the phoneStateListener or telephony callback is registered.
-        private var isRegistered = false
-    }
+    // for phones < API 31
+    private var phoneStateListener: PhoneStateListener? = null
+    // for phones >= API 31
+    private var customTelephonyCallback: CustomTelephonyCallback? = null
 
     @RequiresApi(Build.VERSION_CODES.S)
     @Synchronized
@@ -43,9 +38,9 @@ class NIDCallActivityListener(
         intent: Intent?,
     ) {
         if (context != null) {
-            if (isRegistered == false) {
+            if (!isReceiverRegistered) {
                 registerCustomTelephonyCallback(context)
-                isRegistered = true
+                isReceiverRegistered = true
             }
         }
     }
@@ -65,10 +60,14 @@ class NIDCallActivityListener(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun unregisterCallActivityListener(context: Context?) {
         if (isReceiverRegistered) {
             context?.unregisterReceiver(this)
         }
+        isReceiverRegistered = false
+        phoneStateListener = null
+        customTelephonyCallback = null
     }
 
     fun saveCallInProgressEvent(state: Int) {
@@ -121,17 +120,18 @@ class NIDCallActivityListener(
                 NIDLog.d(msg = "Call status unknown")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.UNAUTHORIZED.event,
+                    cp = CallInProgress.UNKNOWN.event,
                     attrs = listOf(mapOf("progress" to "unknown")),
                 )
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        if (versionChecker.isBuildVersionGreaterThan31()) {
-            NIDLog.d(msg = "SDK > 31")
+        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
+            NIDLog.d(msg = "SDK >= 31")
             if (customTelephonyCallback == null) {
                 customTelephonyCallback = CustomTelephonyCallback { state ->
                     when (state) {

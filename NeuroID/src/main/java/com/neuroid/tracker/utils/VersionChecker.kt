@@ -7,10 +7,10 @@ import com.neuroid.tracker.models.ApplicationMetaData
 
 class VersionChecker() {
     /**
-     * Returns Boolean to indicate if device build version is > 31
+     * Returns Boolean to indicate if device build version is >= 31
      */
-    fun isBuildVersionGreaterThan31(): Boolean {
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.S
+    fun isBuildVersionGreaterThanOrEqualTo31(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 }
 

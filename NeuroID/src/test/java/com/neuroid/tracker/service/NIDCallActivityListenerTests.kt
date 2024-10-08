@@ -99,7 +99,7 @@ class NIDCallActivityListenerTests {
         val intent = mockk<Intent>()
         val callback = mockk<CallBack>()
         val version = mockk<VersionChecker>()
-        every { version.isBuildVersionGreaterThan31() } returns sdkGreaterThan31
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns sdkGreaterThan31
         val listener = NIDCallActivityListener(mockedNID, version)
 
         if (sdkGreaterThan31) {
