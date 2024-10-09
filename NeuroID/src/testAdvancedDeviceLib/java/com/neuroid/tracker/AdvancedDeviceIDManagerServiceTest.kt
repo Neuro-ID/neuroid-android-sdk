@@ -12,6 +12,7 @@ import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.fingerprintjs.android.fpjs_pro.FingerprintJSProResponse
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.extensions.getADVSignal
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
@@ -163,6 +164,7 @@ class AdvancedDeviceIDManagerServiceTest {
         )
 
         verifyCaptureEvent(mockedNID, LOG, 1)
+        verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST_FAILED, 1)
         verify(exactly = 1) {
             mockedLogger.e(msg = "Failed to get API key from NeuroID: $errorMessage")
         }

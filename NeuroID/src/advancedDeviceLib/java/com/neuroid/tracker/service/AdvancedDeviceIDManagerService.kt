@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -101,6 +102,12 @@ internal class AdvancedDeviceIDManager(
                 type = LOG,
                 ts = System.currentTimeMillis(),
                 level = "error",
+                m = nidKeyResponse.message,
+            )
+
+            neuroID.captureEvent(
+                type = ADVANCED_DEVICE_REQUEST_FAILED,
+                ts = System.currentTimeMillis(),
                 m = nidKeyResponse.message,
             )
             return null
