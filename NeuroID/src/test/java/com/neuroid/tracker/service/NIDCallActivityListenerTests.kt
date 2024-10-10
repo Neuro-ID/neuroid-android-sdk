@@ -14,6 +14,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
+import io.mockk.unmockkStatic
 import org.junit.Test
 import java.util.Calendar
 import java.util.concurrent.Executor
@@ -21,7 +22,11 @@ import java.util.concurrent.Executor
 class NIDCallActivityListenerTests {
     @Test
     fun test_callActivityListener_call_in_progress_sdk_greater_than_31() {
-        callActivityListenerHarness(CallInProgress.ACTIVE.state, CallInProgress.ACTIVE.event, true)
+        callActivityListenerHarness(
+            CallInProgress.ACTIVE.state,
+            CallInProgress.ACTIVE.event,
+            true,
+            attrs = listOf(mapOf("progress" to "active")))
     }
 
     @Test
@@ -30,6 +35,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
             true,
+            attrs = listOf(mapOf("progress" to "hangup"))
         )
     }
 
@@ -38,7 +44,8 @@ class NIDCallActivityListenerTests {
         callActivityListenerHarness(
             CallInProgress.RINGING.state,
             "false",
-            false,
+            true,
+            attrs = listOf(mapOf("progress" to "ringing"))
         )
     }
 
@@ -48,6 +55,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.ACTIVE.state,
             CallInProgress.ACTIVE.event,
             false,
+            attrs = listOf(mapOf("progress" to "active"))
         )
     }
 
@@ -57,6 +65,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
             false,
+            attrs = listOf(mapOf("progress" to "hangup"))
         )
     }
 
@@ -66,6 +75,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.RINGING.state,
             "false",
             false,
+            attrs = listOf(mapOf("progress" to "ringing"))
         )
     }
 
@@ -73,6 +83,8 @@ class NIDCallActivityListenerTests {
         callState: Int,
         isActive: String,
         sdkGreaterThan31: Boolean,
+        attrs: List<Map<String, String>>
+
     ) {
         val mockedNID = getMockedNeuroID()
         val calendar = mockk<Calendar>()
@@ -87,7 +99,7 @@ class NIDCallActivityListenerTests {
         val intent = mockk<Intent>()
         val callback = mockk<CallBack>()
         val version = mockk<VersionChecker>()
-        every { version.isBuildVersionGreaterThan31() } returns sdkGreaterThan31
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns sdkGreaterThan31
         val listener = NIDCallActivityListener(mockedNID, version)
 
         if (sdkGreaterThan31) {
@@ -108,9 +120,11 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = isActive,
+            attrs = attrs
         )
 
         unmockkAll()
+        unmockkStatic(Calendar::class)
     }
 
     // Mocking Callback
