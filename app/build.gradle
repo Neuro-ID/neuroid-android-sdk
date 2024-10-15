@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'androidx.navigation.safeargs.kotlin'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.dagger.hilt.android'
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -13,8 +14,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-
-    compileSdkVersion = 33
+    namespace = "com.sample.neuroid.us"
+    compileSdkVersion = 34
 
     packagingOptions {
         pickFirst 'lib/armeabi-v7a/libfbjni.so'
@@ -33,7 +34,7 @@ android {
     defaultConfig {
         applicationId "com.sample.neuroid.us"
         minSdk 28
-        targetSdk 33
+        targetSdk 34
         multiDexEnabled true
         versionCode 1
         versionName "1.0"
@@ -109,7 +110,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.6.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -132,8 +133,8 @@ dependencies {
     implementation project(':NeuroID')
     debugImplementation 'com.github.erosb:everit-json-schema:1.14.1'
 
-    implementation("com.google.dagger:hilt-android:2.42")
-    kapt("com.google.dagger:hilt-android-compiler:2.42")
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-android-compiler:2.48")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 
@@ -145,7 +146,7 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.5"
     implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.5"
 
-    testImplementation 'junit:junit:4.+'
+    testImplementation 'junit:junit:4.13.2'
 
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:5.0.0-alpha.5'
 }
