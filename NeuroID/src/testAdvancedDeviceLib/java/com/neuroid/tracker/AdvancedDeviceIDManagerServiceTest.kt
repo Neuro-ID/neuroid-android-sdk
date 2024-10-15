@@ -38,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.Calendar
+import kotlin.time.Duration
 
 class AdvancedDeviceIDManagerServiceTest {
     /*
