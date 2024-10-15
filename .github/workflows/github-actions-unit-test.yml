@@ -55,6 +55,9 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Download dependencies
+        run: ./gradlew build --no-daemon
+
       # Execute unit test neuroid lib
       - name: Unit Test NeuroId (android lib)
         run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
@@ -76,6 +79,7 @@ jobs:
           cores: 4
           ram-size: 4096M
           heap-size: 2048M
+          timeout-minutes: 30
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          disable-animations: true
           script: ./gradlew :app:connectedandroidLibDebugAndroidTest
