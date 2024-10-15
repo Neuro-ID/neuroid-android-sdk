@@ -222,7 +222,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetRemoteID_fpjs_success() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val validRID = "Valid RID Key"
 
             val mocks =

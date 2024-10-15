@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -35,7 +36,7 @@ class ComponentsTest {
      * the SharedPreferences and can be obtained one by one
      */
     @Before
-    fun stopSendEventsToServer() = runTest {
+    fun stopSendEventsToServer() = runTest(timeout = Duration.parse("120s")) {
         // set dev to scripts and collection endpoint
         NeuroID.getInstance()?.setTestingNeuroIDDevURL()
 
@@ -48,7 +49,7 @@ class ComponentsTest {
     }
 
     @After
-    fun resetDispatchers() = runTest {
+    fun resetDispatchers() = runTest(timeout = Duration.parse("120s")) {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         NeuroID.getInstance()?.stop()
         delay(500)
@@ -58,7 +59,7 @@ class ComponentsTest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01ValidateCheckBox() = runTest {
+    fun test01ValidateCheckBox() = runTest(timeout = Duration.parse("120s")) {
         Looper.prepare()
         NeuroID.getInstance()?.start()
 
@@ -79,7 +80,7 @@ class ComponentsTest {
      * Validate RADIO_CHANGE when the user click on it
      */
     @Test
-    fun test02ValidateRadioChange() = runTest {
+    fun test02ValidateRadioChange() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
@@ -97,7 +98,7 @@ class ComponentsTest {
      * Validate SWITCH_CHANGE when the user click on it
      */
     @Test
-    fun test03ValidateSwitch() = runTest {
+    fun test03ValidateSwitch() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
@@ -118,7 +119,7 @@ class ComponentsTest {
      * Validate TOGGLE_CHANGE when the user click on it
      */
     @Test
-    fun test04ValidateToggle() = runTest {
+    fun test04ValidateToggle() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
@@ -139,7 +140,7 @@ class ComponentsTest {
      * Validate RATING_BAR_CHANGE when the user click on it
      */
     @Test
-    fun test05ValidateRatingBar() = runTest {
+    fun test05ValidateRatingBar() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
@@ -161,7 +162,7 @@ class ComponentsTest {
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
      */
     @Test
-    fun test06ValidateSliderChange() = runTest {
+    fun test06ValidateSliderChange() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))

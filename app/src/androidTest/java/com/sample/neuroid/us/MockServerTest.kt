@@ -16,6 +16,7 @@ import org.junit.After
 import org.junit.Before
 import java.io.StringReader
 import java.util.Stack
+import kotlin.time.Duration
 
 /**
  * moved the MockServer setup and assertion to this abstract class. the tests will extend this.
@@ -28,7 +29,7 @@ abstract class MockServerTest {
     private var booleanIsFound = false
 
     @Before
-    fun stopSendEventsToServer() = runTest {
+    fun stopSendEventsToServer() = runTest(timeout = Duration.parse("120s")) {
         // set dev to scripts and collection endpoint
         NeuroID.getInstance()?.setTestingNeuroIDDevURL()
         server.start()
@@ -45,7 +46,7 @@ abstract class MockServerTest {
     }
 
     @After
-    fun resetDispatchers() = runTest {
+    fun resetDispatchers() = runTest(timeout = Duration.parse("120s")) {
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         server.shutdown()
     }

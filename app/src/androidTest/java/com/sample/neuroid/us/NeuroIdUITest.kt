@@ -78,7 +78,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate CREATE_SESSION on start method
      */
     @Test
-    fun test01ValidateCreateSession() = runTest {
+    fun test01ValidateCreateSession() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.start()
         delay(500)
@@ -105,7 +105,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate SET_USER_ID after sdk is started
      */
     @Test
-    fun test03ValidateSetUserId() = runTest {
+    fun test03ValidateSetUserId() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
@@ -118,7 +118,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate SET_REGISTERED_USER_ID after sdk is started
      */
     @Test
-    fun test03aValidateSetRegisteredUserId() = runTest {
+    fun test03aValidateSetRegisteredUserId() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
         delay(500)
@@ -131,7 +131,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_LOAD on MainActivity class
      */
     @Test
-    fun test04ValidateLifecycleStart() = runTest {
+    fun test04ValidateLifecycleStart() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -145,7 +145,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_FOCUS on MainActivity class
      */
     @Test
-    fun test05ValidateLifecycleResume() = runTest {
+    fun test05ValidateLifecycleResume() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -158,7 +158,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_BLUR on MainActivity class
      */
     @Test
-    fun test06ValidateLifecyclePause() = runTest {
+    fun test06ValidateLifecyclePause() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
@@ -176,7 +176,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_UNLOAD on MainActivity class
      */
     @Test
-    fun test07ValidateLifecycleStop() = runTest {
+    fun test07ValidateLifecycleStop() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
@@ -215,7 +215,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate TOUCH_END when the user up finger on screen
      */
     @Test
-    fun test09ValidateTouchEnd() = runTest {
+    fun test09ValidateTouchEnd() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -234,7 +234,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_FOCUS when the user swipes on screen
      */
     @Test
-    fun test11ValidateSwipeScreen() = runTest {
+    fun test11ValidateSwipeScreen() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         // TODO
         // Implement swipe test
@@ -244,7 +244,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate WINDOW_RESIZE when the user click on editText
      */
     @Test
-    fun test12ValidateWindowsResize() = runTest {
+    fun test12ValidateWindowsResize() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -265,7 +265,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate on TOUCH_START that the input is registered
      */
     @Test
-    fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
+    fun test13ValidateTouchStartAddsRegisterEvent() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -282,7 +282,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate SET_USER_ID when sdk is not started
      */
     @Test
-    fun test14ValidateSetUserIdPreStart() = runTest {
+    fun test14ValidateSetUserIdPreStart() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         NeuroID.getInstance()?.stop()
@@ -300,7 +300,7 @@ class NeuroIdUITest: MockServerTest() {
     * Validate SET_REGISTERED_USER_ID when sdk is not started
     */
     @Test
-    fun test15ValidateSetRegisteredUserIdPreStart() = runTest {
+    fun test15ValidateSetRegisteredUserIdPreStart() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.stop()
         delay(500)

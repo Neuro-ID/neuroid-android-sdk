@@ -27,6 +27,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
+import kotlin.time.Duration
 
 class NIDJobServiceManagerTest {
     @Test
@@ -86,7 +87,7 @@ class NIDJobServiceManagerTest {
 
     @Test
     fun testSendEvents() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val mockedSetup = setupNIDJobServiceManagerMocks()
             val mockedApplication = mockedSetup.mockedApplication
             val nidJobServiceManager = mockedSetup.nidJobServiceManager

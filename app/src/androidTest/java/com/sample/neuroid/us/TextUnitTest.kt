@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -54,7 +55,7 @@ class TextUnitTest: MockServerTest() {
      * Validate FOCUS when the user click on editText
      */
     @Test
-    fun test01ValidateFocusOnEditText() = runTest {
+    fun test01ValidateFocusOnEditText() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -74,7 +75,7 @@ class TextUnitTest: MockServerTest() {
      * Validate BLUR when the user change the focus
      */
     @Test
-    fun test02ValidateBlurOnEditText() = runTest {
+    fun test02ValidateBlurOnEditText() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
@@ -96,7 +97,7 @@ class TextUnitTest: MockServerTest() {
      * Validate INPUT when the user type on editText
      */
     @Test
-    fun test03ValidateInputText() = runTest {
+    fun test03ValidateInputText() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated

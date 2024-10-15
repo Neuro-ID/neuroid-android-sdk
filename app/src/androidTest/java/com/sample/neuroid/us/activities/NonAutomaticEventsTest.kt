@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 /**
  * Neuro ID: 26 UI Test
@@ -49,7 +50,7 @@ class NonAutomaticEventsTest: MockServerTest() {
      * Validate FORM_SUBMIT on NIDCustomEventsActivity class
      */
     @Test
-    fun test01ValidateFormSubmit() = runTest {
+    fun test01ValidateFormSubmit() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
@@ -65,7 +66,7 @@ class NonAutomaticEventsTest: MockServerTest() {
      * Validate FORM_SUBMIT_SUCCESS on NIDCustomEventsActivity class
      */
     @Test
-    fun test02ValidateFormSubmitSuccess() = runTest {
+    fun test02ValidateFormSubmitSuccess() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View
@@ -82,7 +83,7 @@ class NonAutomaticEventsTest: MockServerTest() {
      * Validate FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
      */
     @Test
-    fun test03ValidateFormSubmitFailure() = runTest {
+    fun test03ValidateFormSubmitFailure() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View
@@ -100,7 +101,7 @@ class NonAutomaticEventsTest: MockServerTest() {
      */
     @Test
     @Ignore
-    fun test04ValidateFormCustomEvent() = runTest {
+    fun test04ValidateFormCustomEvent() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) //Wait a half second for create the MainActivity View

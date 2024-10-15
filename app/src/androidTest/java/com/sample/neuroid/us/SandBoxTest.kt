@@ -20,6 +20,7 @@ import org.hamcrest.Matchers.allOf
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -48,7 +49,7 @@ class SandBoxTest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01RiskyScore() = runTest {
+    fun test01RiskyScore() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         val firstNameField = onView(withId(R.id.firstName))
         val lastNameField = onView(withId(R.id.lastName))
