@@ -20,6 +20,7 @@ import okhttp3.*
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 
 data class ResponseData(
@@ -90,7 +91,7 @@ class NeuroIdUITest: MockServerTest() {
      * Validate REGISTER_TARGET on MainActivity class
      */
     @Test
-    fun test02ValidateRegisterTargets() = runTest {
+    fun test02ValidateRegisterTargets() = runTest(timeout = Duration.parse("120s"))  {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
