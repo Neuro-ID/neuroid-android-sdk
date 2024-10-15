@@ -55,6 +55,9 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Download dependencies
+        run: ./gradlew build --no-daemon
+
       # Execute unit test neuroid lib
       - name: Unit Test NeuroId (android lib)
         run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
