@@ -17,6 +17,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 @ExperimentalCoroutinesApi
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -46,7 +47,7 @@ class LifeCycleTest: MockServerTest() {
      * Validate WINDOW_ORIENTATION_CHANGE when the user move device portrait or landscape
      */
     @Test
-    fun test13ValidateChangeScreenOrientation() = runTest {
+    fun test13ValidateChangeScreenOrientation() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

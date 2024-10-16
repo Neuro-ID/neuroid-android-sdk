@@ -38,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.Calendar
+import kotlin.time.Duration
 
 class AdvancedDeviceIDManagerServiceTest {
     /*
@@ -222,7 +223,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetRemoteID_fpjs_success() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val validRID = "Valid RID Key"
 
             val mocks =

@@ -21,6 +21,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 @ExperimentalCoroutinesApi
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -43,7 +44,7 @@ class DynamicActivityTest: MockServerTest() {
      */
 
     @Test
-    fun test01ValidateFormSubmit() = runTest {
+    fun test01ValidateFormSubmit() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))

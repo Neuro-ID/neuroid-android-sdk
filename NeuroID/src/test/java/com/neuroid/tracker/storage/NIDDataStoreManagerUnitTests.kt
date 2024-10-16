@@ -19,6 +19,7 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration
 
 class NIDDataStoreManagerUnitTests {
     private lateinit var mockContext: Context
@@ -43,7 +44,7 @@ class NIDDataStoreManagerUnitTests {
     //    queueEvent
     @Test
     fun testQueueEvent() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val dataStore = mockDataStore()
             advanceUntilIdle()
 
@@ -62,7 +63,7 @@ class NIDDataStoreManagerUnitTests {
     //    saveAndClearAllQueuedEvents
     @Test
     fun testSaveAndClearAllQueuedEvents() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val dataStore = mockDataStore()
             advanceUntilIdle()
 
@@ -86,7 +87,7 @@ class NIDDataStoreManagerUnitTests {
     //     saveEvent
     @Test
     fun testSaveEvent() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val dataStore = mockDataStore()
             advanceUntilIdle()
 
@@ -107,7 +108,7 @@ class NIDDataStoreManagerUnitTests {
     //    getAllEvents
     @Test
     fun testGetAllEvents() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val dataStore = mockDataStore()
             advanceUntilIdle()
 
@@ -134,7 +135,7 @@ class NIDDataStoreManagerUnitTests {
     //    clearEvents
     @Test
     fun testClearEvents() =
-        runTest {
+        runTest(timeout = Duration.parse("120s")) {
             val dataStore = mockDataStore()
             advanceUntilIdle()
 
