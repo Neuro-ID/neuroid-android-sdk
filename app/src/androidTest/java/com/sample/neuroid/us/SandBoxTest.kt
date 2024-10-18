@@ -20,6 +20,7 @@ import org.hamcrest.Matchers.allOf
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -27,6 +28,13 @@ import org.junit.runners.MethodSorters
 @LargeTest
 @ExperimentalCoroutinesApi
 class SandBoxTest {
+
+    @Before
+    fun init() {
+        // set dev to scripts and collection endpoint
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+    }
+
 
     @get:Rule
     var activityRule: ActivityScenarioRule<SandBoxActivity> =
@@ -41,9 +49,8 @@ class SandBoxTest {
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01RiskyScore() = runTest {
+    fun test01RiskyScore() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(12000)
         val firstNameField = onView(withId(R.id.firstName))
         val lastNameField = onView(withId(R.id.lastName))
         val emailField = onView(withId(R.id.email))
@@ -54,32 +61,20 @@ class SandBoxTest {
         val buttonContinue = onView(withId(R.id.buttonContinue))
         firstNameField.perform(click())
         firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
-        delay(1000)
         lastNameField.perform(click())
         lastNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
-        delay(1000)
         firstNameField.perform(clearText())
-        delay(1000)
         lastNameField.perform(clearText())
-        delay(1000)
         firstNameField.perform(click())
         firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
-        delay(1000)
         lastNameField.perform(click())
         lastNameField.perform(replaceText("Bautista"), closeSoftKeyboard())
-        delay(1000)
         emailField.perform(replaceText("asdad@gmail.com"), closeSoftKeyboard())
-        delay(1000)
         cityField.perform(typeText("Mexico City"), closeSoftKeyboard())
-        delay(1000)
         homeZipCodeField.perform(typeText("55340"), closeSoftKeyboard())
-        delay(1000)
         phoneNumberField.perform(typeText("56565656"), closeSoftKeyboard())
-        delay(1000)
         employerlblField.perform(typeText("54523"), closeSoftKeyboard())
-        delay(15000)
         buttonContinue.perform(click())
-        delay(15000)
     }
 
 

@@ -4,11 +4,10 @@ import android.content.Context
 import android.content.res.AssetManager
 import java.io.*
 
-
 internal fun createJSONFile(
     context: Context,
     fileName: String,
-    jsonString: String?
+    jsonString: String?,
 ): Boolean {
     return try {
         // check/create internal folder
@@ -36,11 +35,10 @@ internal fun createJSONFile(
     }
 }
 
-
 fun copyDirorfileFromAssetManager(
     context: Context,
     arg_assetDir: String,
-    arg_destinationDir: String
+    arg_destinationDir: String,
 ): String? {
     val sd_path = context.getFilesDir().absolutePath
     val dest_dir_path: String = sd_path + addLeadingSlash(arg_destinationDir)
@@ -64,7 +62,7 @@ fun copyDirorfileFromAssetManager(
             copyDirorfileFromAssetManager(
                 context,
                 abs_asset_file_path,
-                addTrailingSlash(arg_destinationDir) + files[i]
+                addTrailingSlash(arg_destinationDir) + files[i],
             )
         }
     }
@@ -74,22 +72,26 @@ fun copyDirorfileFromAssetManager(
 internal fun copyAssetFile(
     context: Context,
     assetFilePath: String,
-    destinationFilePath: String
+    destinationFilePath: String,
 ) {
-    val inS: InputStream = context.getAssets().open(assetFilePath).buffered(1024);
-    val out: OutputStream = FileOutputStream(destinationFilePath);
+    val inS: InputStream = context.getAssets().open(assetFilePath).buffered(1024)
+    val out: OutputStream = FileOutputStream(destinationFilePath)
     copyInputStreamToFile(inputStream = inS, outputStream = out)
 }
 
-fun copyInputStreamToFile(inputStream: InputStream, outputStream: OutputStream) {
+fun copyInputStreamToFile(
+    inputStream: InputStream,
+    outputStream: OutputStream,
+) {
     val buffer = ByteArray(8192)
     inputStream.use { input ->
         outputStream.use { fileOut ->
 
             while (true) {
                 val length = input.read(buffer)
-                if (length <= 0)
+                if (length <= 0) {
                     break
+                }
                 fileOut.write(buffer, 0, length)
             }
             fileOut.flush()
@@ -103,25 +105,25 @@ internal fun addTrailingSlash(path: String): String {
     if (path.toCharArray()[path.count() - 1] != '/') {
         return path + "/"
     }
-    return path;
+    return path
 }
 
 internal fun addLeadingSlash(path: String): String {
     if (path.toCharArray()[0] != '/') {
-        return "/" + path;
+        return "/" + path
     }
-    return path;
+    return path
 }
 
 internal fun createDir(dir: File) {
     if (dir.exists()) {
         if (!dir.isDirectory()) {
-            throw IOException("Can't create directory, a file is in the way");
+            throw IOException("Can't create directory, a file is in the way")
         }
     } else {
-        dir.mkdirs();
+        dir.mkdirs()
         if (!dir.isDirectory()) {
-            throw IOException("Unable to create directory");
+            throw IOException("Unable to create directory")
         }
     }
 }

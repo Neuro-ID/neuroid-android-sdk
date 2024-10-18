@@ -1,7 +1,30 @@
 package com.neuroid.tracker.service
 
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.events.OUT_OF_MEMORY
+import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
+import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDResponseCallBack
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+
+interface NIDSendingService {
+    fun sendEvents(
+        key: String,
+        events: List<NIDEventModel>,
+        responseCallback: NIDResponseCallBack<Any>,
+    )
+
+// Request Prep Functions
+    fun getRequestPayloadJSON(events: List<NIDEventModel>): String
+}
 
 /**
  * quiet retry on slow networks will occur auto-magically by OKHttp and is explained here:
@@ -10,45 +33,139 @@ import okhttp3.RequestBody.Companion.toRequestBody
  * https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/retry-on-connection-failure/
  * we retry requests that connect and come back with bad response codes.
  */
-class NIDEventSender(private var apiService: NIDApiService) {
+class NIDEventSender(
+    private var httpService: HttpService,
+    private val context: Context,
+) : NIDSendingService, RetrySender() {
+    // a static payload to send if OOM occurs
+    private var oomPayload = ""
 
-    fun sendTrackerData(events: String, key: String, nidResponseCallback: NIDResponseCallBack) {
-        val requestBody = events.toRequestBody("application/JSON".toMediaTypeOrNull())
-        val call = apiService.sendEvents(requestBody, key)
-        try {
-            var retryCount = 0
-            while (retryCount < RETRY_COUNT) {
-                // retain the existing call and always execute on clones of it so we can retry when
-                // there is a failure!
-                val retryCall = call.clone()
-                val response = retryCall.execute()
-                // only allow 200 codes to succeed, everything else is failure, 204 is a failure
-                // which is weird!
-                if (response.code() == HTTP_SUCCESS) {
-                    nidResponseCallback.onSuccess(response.code())
-                    response.body()?.close()
-                    break
-                } else {
-                    // response code is not 200, retry these up to RETRY_COUNT times
-                    retryCount ++
-                    nidResponseCallback.onFailure(response.code(), response.message(),
-                        retryCount < RETRY_COUNT)
-                    response.body()?.close()
-                }
-            }
-        } catch (e: Exception) {
-            var errorMessage = "no error message available"
-            e.message?.let {
-                errorMessage = it
-            }
-            nidResponseCallback.onFailure(-1, errorMessage, false)
+    init {
+        initializeStaticPayload()
+    }
+
+    /**
+     * Create a payload that can be used in the event of an OOM error without additional allocations.
+     */
+    private fun initializeStaticPayload() {
+        if (oomPayload.isEmpty()) {
+            oomPayload =
+                getRequestPayloadJSON(
+                    listOf(
+                        NIDEventModel(
+                            type = OUT_OF_MEMORY,
+                            ts = System.currentTimeMillis(),
+                        ),
+                    ),
+                )
         }
     }
 
-    companion object {
-        // if you change the retry count, please update the test!
-        const val RETRY_COUNT = 3
-        const val HTTP_SUCCESS = 200
+    override fun sendEvents(
+        key: String,
+        events: List<NIDEventModel>,
+        responseCallback: NIDResponseCallBack<Any>,
+    ) {
+        var data = ""
+        try {
+            if (events.isEmpty()) {
+                // nothing to send
+                return
+            }
+
+            data = getRequestPayloadJSON(events)
+
+            NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
+
+            NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
+        } catch (exception: OutOfMemoryError) {
+            // make a best effort attempt to continue and send an out of memory event
+            data = oomPayload
+        }
+
+        val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
+
+        httpService.sendEvents(
+            requestBody,
+            key,
+            responseCallback,
+        )
     }
 
+    override fun getRequestPayloadJSON(events: List<NIDEventModel>): String {
+        val sharedDefaults = NIDSharedPrefsDefaults(context)
+
+        val userID: String? =
+            if (NeuroID.getInstance()?.getUserID() != null) {
+                NeuroID.getInstance()?.getUserID()
+            } else {
+                null
+            }
+        val registeredUserID: String? =
+            if (NeuroID.getInstance()?.getRegisteredUserID() != null) {
+                NeuroID.getInstance()?.getRegisteredUserID()
+            } else {
+                null
+            }
+
+        val linkedSiteID: String? = NeuroID.getInternalInstance()?.linkedSiteID
+        val tabID =
+            if (NeuroID.getInternalInstance()?.tabID != null) {
+                NeuroID.getInternalInstance()?.tabID
+            } else {
+                NeuroID.rndmId
+            }
+        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber ?: 0
+
+        val jsonBody =
+            mapOf(
+                "siteId" to NeuroID.siteID,
+                "userId" to userID,
+                "clientId" to sharedDefaults.getClientID(),
+                "identityId" to userID,
+                "registeredUserId" to registeredUserID,
+                "pageTag" to NeuroID.screenActivityName,
+                "pageId" to NeuroID.rndmId,
+                "tabId" to tabID,
+                "responseId" to generateUniqueHexID(),
+                "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
+                "jsVersion" to "5.0.0",
+                "sdkVersion" to NeuroID.getInstance()?.getSDKVersion(),
+                "environment" to NeuroID.environment,
+                "jsonEvents" to events,
+                "linkedSiteId" to linkedSiteID,
+                "packetNumber" to packetNumber,
+            )
+
+        NIDLog.d(
+            "Payload:",
+            msg =
+                """
+                Payload Summary
+                ClientID: ${jsonBody["clientId"]}
+                UserID: ${jsonBody["userId"]}
+                RegisteredUserID: ${jsonBody["registeredUserId"]}
+                LinkedSiteID: ${jsonBody["linkedSiteId"]}
+                TabID: ${jsonBody["tabId"]}
+                Packet Number: ${jsonBody["packetNumber"]}
+                SDK Version: ${jsonBody["sdkVersion"]}
+                Screen Name: ${NeuroID.screenName}
+                Event Count: ${events.size}
+                """.trimIndent(),
+        )
+
+        // using this JSON library (already included) does not escape /
+        NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
+        val gson: Gson = GsonBuilder().create()
+        return gson.toJson(jsonBody)
+    }
 }
+
+fun getSendingService(
+    httpService: HttpService,
+    context: Context,
+): NIDSendingService =
+    NIDEventSender(
+        httpService,
+        context,
+    )

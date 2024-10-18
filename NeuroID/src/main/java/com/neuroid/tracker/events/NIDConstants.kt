@@ -57,12 +57,32 @@ const val TOGGLE_BUTTON_CHANGE = "TOGGLE_BUTTON_CHANGE"
 const val RATING_BAR_CHANGE = "RATING_BAR_CHANGE"
 const val CONTEXT_MENU = "CONTEXT_MENU"
 const val ADVANCED_DEVICE_REQUEST = "ADVANCED_DEVICE_REQUEST"
-const val ANDROID_URI ="android://"
+const val ANDROID_URI = "android://"
 const val SET_VARIABLE = "SET_VARIABLE"
+const val CALL_IN_PROGRESS = "CALL_IN_PROGRESS"
+const val NETWORK_STATE = "NETWORK_STATE"
+const val CADENCE_READING_ACCEL = "CADENCE_READING_ACCEL"
+const val LOW_MEMORY = "LOW_MEMORY"
+const val FULL_BUFFER = "FULL_BUFFER"
+const val OUT_OF_MEMORY = "OUT_OF_MEMORY"
+const val ATTEMPTED_LOGIN = "ATTEMPTED_LOGIN"
+const val SET_LINKED_SITE = "SET_LINKED_SITE"
+const val CONFIG_CACHED = "CONFIG_CACHED"
+const val APPLICATION_METADATA = "APPLICATION_METADATA"
+const val ADVANCED_DEVICE_REQUEST_FAILED = "ADVANCED_DEVICE_REQUEST_FAILED"
 
 // NID origin codes
-const val NID_ORIGIN_NID_SET = "nid"
-const val NID_ORIGIN_CUSTOMER_SET = "customer"
-const val NID_ORIGIN_CODE_FAIL = "400"
-const val NID_ORIGIN_CODE_NID = "200"
-const val NID_ORIGIN_CODE_CUSTOMER = "201"
+const val ORIGIN_NID_SET = "nid"
+const val ORIGIN_CUSTOMER_SET = "customer"
+const val ORIGIN_CODE_FAIL = "400"
+const val ORIGIN_CODE_NID = "200"
+const val ORIGIN_CODE_CUSTOMER = "201"
+
+// Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
+enum class CallInProgress(val event: String, val state: Int) {
+    ACTIVE("active", 2 ),
+    RINGING("ringing", 1),
+    INACTIVE("inactive", 0),
+    UNAUTHORIZED("unauthorized", 99),
+    UNKNOWN("unknown", -1),
+}

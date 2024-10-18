@@ -1,5 +1,6 @@
 package com.sample.neuroid.us
 
+import android.Manifest
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -7,17 +8,37 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.rule.GrantPermissionRule
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.*
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.mockito.Mockito.*
+import kotlin.time.Duration
+
+
+data class ResponseData(
+    val siteId: String,
+    val userId: String,
+    val clientId: String,
+    val identityId: String,
+    val registeredUserId: String,
+    val pageTag: String,
+    val pageId: String,
+    val tabId: String,
+    val responseId: String,
+    val url: String,
+    val jsVersion: String,
+    val sdkVersion: String,
+    val environment: String,
+    val jsonEvents: List<NIDEventModel>
+)
 
 /**
  * Neuro ID: 26 UI Test
@@ -26,202 +47,194 @@ import org.mockito.Mockito.*
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @ExperimentalCoroutinesApi
-class NeuroIdUITest {
+class NeuroIdUITest: MockServerTest() {
+
+    // take care of the phone and location permissions dialogs.
+    @get:Rule
+    val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.READ_PHONE_STATE)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =
         ActivityScenarioRule(MainActivity::class.java)
 
-    @Before
-    fun stopSendEventsToServer() = runTest {
+    /*
+    Helper Test Functions
+     */
+
+    fun forceSendEvents(){
+        // stop to force send all events in queue
         NeuroID.getInstance()?.stop()
-        NIDJobServiceManager.isSendEventsNowEnabled = false
+        delay(500)
     }
 
-    @After
-    fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
-    }
+    /*
+    Actual Tests
+     */
 
     /**
      * Validate CREATE_SESSION on start method
      */
     @Test
-    fun test01ValidateCreateSession() = runTest {
+    fun test01ValidateCreateSession() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.start()
         delay(500)
 
-        val eventType = "\"type\":\"CREATE_SESSION\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("CREATE_SESSION")
     }
 
     /**
      * Validate REGISTER_TARGET on MainActivity class
      */
     @Test
-    fun test02ValidateRegisterTargets() = runTest {
+    fun test02ValidateRegisterTargets() = runTest(timeout = Duration.parse("120s"))  {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
         delay(1000) //Wait a half second for create the MainActivity View
 
-        val eventType = "\"type\":\"REGISTER_TARGET\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType, -1)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("REGISTER_TARGET")
     }
 
     /**
      * Validate SET_USER_ID after sdk is started
      */
     @Test
-    fun test03ValidateSetUserId() = runTest {
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
-        delay(500)
+    fun test03ValidateSetUserId() = runTest(timeout = Duration.parse("120s")) {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setUserID("UUID1234")
         delay(500)
-        val eventType = "\"type\":\"SET_USER_ID\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+
+        forceSendEvents()
+        assertRequestBodyContains("SET_USER_ID")
     }
 
     /**
      * Validate SET_REGISTERED_USER_ID after sdk is started
      */
     @Test
-    fun test03aValidateSetRegisteredUserId() = runTest {
-        NeuroID.getInstance()?.start()
-        getDataStoreInstance().clearEvents()
-        delay(500)
+    fun test03aValidateSetRegisteredUserId() = runTest(timeout = Duration.parse("120s")) {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.setRegisteredUserID("UUID1234")
         delay(500)
-        val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+
+        forceSendEvents()
+        assertRequestBodyContains("SET_REGISTERED_USER_ID")
     }
 
     /**
      * Validate WINDOW_LOAD on MainActivity class
      */
     @Test
-    fun test04ValidateLifecycleStart() = runTest {
+    fun test04ValidateLifecycleStart() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(2000) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        val eventType = "\"type\":\"WINDOW_LOAD\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+        delay(500)
+
+        forceSendEvents()
+        assertRequestBodyContains("WINDOW_LOAD")
     }
 
     /**
      * Validate WINDOW_FOCUS on MainActivity class
      */
     @Test
-    fun test05ValidateLifecycleResume() = runTest {
+    fun test05ValidateLifecycleResume() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) //Wait a half second for create the MainActivity View
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        val eventType = "\"type\":\"WINDOW_FOCUS\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+
+        forceSendEvents()
+        assertRequestBodyContains("WINDOW_FOCUS")
     }
 
     /**
      * Validate WINDOW_BLUR on MainActivity class
      */
     @Test
-    fun test06ValidateLifecyclePause() = runTest {
+    fun test06ValidateLifecyclePause() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
 
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
         Espresso.pressBack()
         delay(500)
-        //TODO Check This event behavior
-        NIDSchema().validateSchema(getDataStoreInstance().getAllEvents())
+
+        forceSendEvents()
+        assertRequestBodyContains("WINDOW_BLUR")
     }
 
     /**
      * Validate WINDOW_UNLOAD on MainActivity class
      */
     @Test
-    fun test07ValidateLifecycleStop() = runTest {
+    fun test07ValidateLifecycleStop() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500)
         Espresso.pressBack()
-        delay(500)
+        delay(1000)
 
-        //TODO Check This event behavior
-        NIDSchema().validateSchema(getDataStoreInstance().getAllEvents())
+        forceSendEvents()
+        assertRequestBodyContains("WINDOW_UNLOAD")
     }
 
     /**
      * Validate TOUCH_START when the user click on screen
      */
     @Test
-    fun test08ValidateTouchStart() = runTest {
+    fun test08ValidateTouchStart() {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        delay(200) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
-        getDataStoreInstance().clearEvents()
+        delay(200)
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
+        delay(1000)
 
-        val eventType = "\"type\":\"TOUCH_START\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("TOUCH_START")
     }
 
     /**
      * Validate TOUCH_END when the user up finger on screen
      */
     @Test
-    fun test09ValidateTouchEnd() = runTest {
+    fun test09ValidateTouchEnd() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
-        getDataStoreInstance().clearEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(500)
 
-        val eventType = "\"type\":\"TOUCH_END\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("TOUCH_END")
     }
 
     /**
      * Validate WINDOW_FOCUS when the user swipes on screen
      */
     @Test
-    fun test11ValidateSwipeScreen() = runTest {
+    fun test11ValidateSwipeScreen() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
         // TODO
         // Implement swipe test
@@ -231,20 +244,19 @@ class NeuroIdUITest {
      * Validate WINDOW_RESIZE when the user click on editText
      */
     @Test
-    fun test12ValidateWindowsResize() = runTest {
+    fun test12ValidateWindowsResize() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
         delay(500)
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
-        val eventType = "\"type\":\"WINDOW_RESIZE\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType, -1)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("WINDOW_RESIZE")
     }
 
 
@@ -253,54 +265,52 @@ class NeuroIdUITest {
      * Validate on TOUCH_START that the input is registered
      */
     @Test
-    fun test13ValidateTouchStartAddsRegisterEvent() = runTest {
+    fun test13ValidateTouchStartAddsRegisterEvent() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         onView(withId(R.id.button_show_activity_fragments))
             .perform(click())
-        delay(500)
         onView(withId(R.id.editText_normal_field))
             .perform(click())
-        delay(1000)
 
-        val eventType = "\"type\":\"REGISTER_TARGET\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType, -1)
-        NIDSchema().validateSchema(events)
+        forceSendEvents()
+        assertRequestBodyContains("REGISTER_TARGET")
     }
 
     /**
      * Validate SET_USER_ID when sdk is not started
      */
     @Test
-    fun test14ValidateSetUserId() = runTest {
-        getDataStoreInstance().clearEvents()
+    fun test14ValidateSetUserIdPreStart() = runTest(timeout = Duration.parse("120s")) {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setUserID("UUID123")
         delay(500)
         NeuroID.getInstance()?.start()
         delay(500)
-        val eventType = "\"type\":\"SET_USER_ID\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+
+        forceSendEvents()
+        assertRequestBodyContains("SET_USER_ID")
     }
 
     /**
     * Validate SET_REGISTERED_USER_ID when sdk is not started
     */
     @Test
-    fun test15ValidateSetRegisteredUserId() = runTest {
-        getDataStoreInstance().clearEvents()
+    fun test15ValidateSetRegisteredUserIdPreStart() = runTest(timeout = Duration.parse("120s")) {
+        NIDLog.d("----> UITest", "-------------------------------------------------")
+        NeuroID.getInstance()?.stop()
         delay(500)
         NeuroID.getInstance()?.setRegisteredUserID("UUID1231212")
         delay(500)
         NeuroID.getInstance()?.start()
         delay(500)
-        val eventType = "\"type\":\"SET_REGISTERED_USER_ID\""
-        val events = getDataStoreInstance().getAllEvents()
-        NIDSchema().validateEvents(events, eventType)
-        NIDSchema().validateSchema(events)
+
+        forceSendEvents()
+        assertRequestBodyContains("SET_REGISTERED_USER_ID")
     }
 }
 

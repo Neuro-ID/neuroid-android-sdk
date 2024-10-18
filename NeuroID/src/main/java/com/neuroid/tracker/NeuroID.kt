@@ -4,754 +4,998 @@ import android.app.Activity
 import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.IntentFilter
+import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.view.View
-import com.neuroid.tracker.callbacks.NIDActivityCallbacks
+import androidx.annotation.VisibleForTesting
+import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
-import com.neuroid.tracker.events.identifyView
+import com.neuroid.tracker.compose.JetpackComposeImpl
+import com.neuroid.tracker.events.APPLICATION_METADATA
+import com.neuroid.tracker.events.ATTEMPTED_LOGIN
+import com.neuroid.tracker.events.BLUR
+import com.neuroid.tracker.events.CLOSE_SESSION
+import com.neuroid.tracker.events.FORM_SUBMIT
+import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
+import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.FULL_BUFFER
+import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SET_LINKED_SITE
+import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
-import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.models.SessionIDOriginResult
+import com.neuroid.tracker.models.NIDSensorModel
+import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.ConfigService
+import com.neuroid.tracker.service.LocationService
+import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDConfigService
+import com.neuroid.tracker.service.NIDHttpService
+import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDServiceTracker
+import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.service.NIDSamplingService
+import com.neuroid.tracker.service.NIDSessionService
+import com.neuroid.tracker.service.NIDValidationService
+import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.storage.getDataStoreInstance
-import com.neuroid.tracker.storage.initDataStoreCtx
+import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
-import com.neuroid.tracker.utils.NIDSingletonIDs
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
-import com.neuroid.tracker.utils.generateUniqueHexId
+import com.neuroid.tracker.utils.RandomGenerator
+import com.neuroid.tracker.utils.VersionChecker
+import com.neuroid.tracker.utils.generateUniqueHexID
+import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
+import org.jetbrains.annotations.TestOnly
+import java.util.Calendar
 
-class NeuroID private constructor(
-    internal var application: Application?, internal var clientKey: String
-) {
-    @Volatile
-    private var pauseCollectionJob: Job? = null
+class NeuroID
+    private constructor(
+        internal var application: Application?,
+        internal var clientKey: String,
+        internal var isAdvancedDevice: Boolean,
+        serverEnvironment: String = PRODUCTION,
+    ) : NeuroIDPublic {
+        @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
-    private var firstTime = true
-    internal var sessionID = ""
-    internal var clientID = ""
-    internal var userID = ""
-    internal var registeredUserID = ""
-    internal var timestamp: Long = 0L
+        private var firstTime = true
+        internal var sessionID = ""
+        internal var clientID = ""
+        internal var userID = ""
+        internal var linkedSiteID: String? = null
+        internal var packetNumber: Int = 0
+        internal var tabID: String
 
-    internal var forceStart: Boolean = false
+        internal var registeredUserID = ""
+        internal var timestamp: Long = 0L
+        internal val excludedTestIDList = arrayListOf<String>()
 
-    private var metaData: NIDMetaData? = null
+        internal var forceStart: Boolean = false
 
-    internal var verifyIntegrationHealth: Boolean = false
-    internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
-        mutableListOf<NIDEventModel>()
+        internal var metaData: NIDMetaData? = null
 
-    internal var isRN = false
+        internal var verifyIntegrationHealth: Boolean = false
+        internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
+            mutableListOf<NIDEventModel>()
 
-    internal var NIDLog: NIDLogWrapper = NIDLogWrapper()
-    internal var dataStore: NIDDataStoreManager = getDataStoreInstance()
-    internal var nidActivityCallbacks: NIDActivityCallbacks = NIDActivityCallbacks()
-    internal var nidJobServiceManager: NIDJobServiceManager = NIDJobServiceManager
-    internal var clipboardManager: ClipboardManager? = null
+        internal var isRN = false
 
-    init {
-        application?.let {
-            metaData = NIDMetaData(it.applicationContext)
-        }
+        // Dependency Injections
+        internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
+        internal var randomGenerator = RandomGenerator()
+        internal var logger: NIDLogWrapper = NIDLogWrapper()
+        internal var configService: ConfigService
+        internal var dataStore: NIDDataStoreManager
+        internal var registrationIdentificationHelper: RegistrationIdentificationHelper
+        internal var nidActivityCallbacks: ActivityCallbacks
+        internal var samplingService: NIDSamplingService
+        internal val httpService: NIDHttpService
+        internal var validationService: NIDValidationService = NIDValidationService(logger)
+        internal var identifierService: NIDIdentifierService
+        internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
 
-        if (!validateClientKey(clientKey)) {
-            NIDLog.e(msg = "Invalid Client Key")
-            clientKey = ""
-        } else {
-            if (clientKey.contains("_live_")) {
-                NIDServiceTracker.environment = "LIVE"
+        internal lateinit var sessionService: NIDSessionService
+        internal lateinit var nidJobServiceManager: NIDJobServiceManager
+        internal lateinit var nidCallActivityListener: NIDCallActivityListener
+        internal lateinit var locationService: LocationService
+
+        internal var clipboardManager: ClipboardManager? = null
+        internal var networkConnectionType = "unknown"
+
+        internal var lowMemory: Boolean = false
+        internal var isConnected = false
+
+        // Jetpack Compose Tracking Class/vars
+        override val compose =
+            JetpackComposeImpl(
+                this,
+                logger,
+            )
+
+        init {
+            when (serverEnvironment) {
+                PRODSCRIPT_DEVCOLLECTION -> {
+                    endpoint = Constants.devEndpoint.displayName
+                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                }
+                DEVELOPMENT -> {
+                    endpoint = Constants.devEndpoint.displayName
+                    scriptEndpoint = Constants.devScriptsEndpoint.displayName
+                }
+                else -> {
+                    endpoint = Constants.productionEndpoint.displayName
+                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                }
+            }
+
+            // TO-DO - If invalid key passed we should be exiting
+            if (!validationService.validateClientKey(clientKey)) {
+                captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
+                logger.e(msg = "Invalid Client Key")
+                clientKey = ""
+                tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
             } else {
-                NIDServiceTracker.environment = "TEST"
+                environment =
+                    if (clientKey.contains("_live_")) {
+                        "LIVE"
+                    } else {
+                        "TEST"
+                    }
+
+                tabID = "$rndmId-${generateUniqueHexID()}"
             }
-        }
-    }
 
-    @Synchronized
-    private fun setupCallbacks() {
-        if (firstTime) {
-            firstTime = false
-            application?.let {
-
-                initDataStoreCtx(it.applicationContext)
-                it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
-                NIDTimerActive.initTimer()
-            }
-        }
-    }
-
-    data class Builder(
-        var application: Application? = null, var clientKey: String = ""
-    ) {
-        fun build() = NeuroID(application, clientKey)
-    }
-
-    companion object {
-        var showLogs: Boolean = true
-        var isSDKStarted = false
-
-        private var singleton: NeuroID? = null
-
-        @JvmStatic
-        @Deprecated(
-            "setNeuroIdInstance has been renamed to setNeuroIDInstance",
-            ReplaceWith("NeuroID.setNeuroIDInstance()")
-        )
-        fun setNeuroIdInstance(neuroID: NeuroID) {
-            this.setNeuroIDInstance(neuroID)
-        }
-
-        @JvmStatic
-        fun setNeuroIDInstance(neuroID: NeuroID) {
-            if (singleton == null) {
-                singleton = neuroID
-                singleton?.setupCallbacks()
-            }
-        }
-
-        fun getInstance(): NeuroID? = singleton
-    }
-
-    internal fun setLoggerInstance(logger: NIDLogWrapper) {
-        NIDLog = logger
-    }
-
-    internal fun setDataStoreInstance(store: NIDDataStoreManager) {
-        dataStore = store
-    }
-
-    internal fun setClipboardManagerInstance(cm: ClipboardManager) {
-        clipboardManager = cm
-    }
-
-    internal fun getClipboardManagerInstance(): ClipboardManager? {
-        if (clipboardManager == null) {
-            return getApplicationContext()
-                ?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        }
-        return clipboardManager
-    }
-
-    internal fun setNIDActivityCallbackInstance(callback: NIDActivityCallbacks) {
-        nidActivityCallbacks = callback
-    }
-
-    internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
-        nidJobServiceManager = serviceManager
-    }
-
-    internal fun validateClientKey(clientKey: String): Boolean {
-        var valid = false
-        val regex = "key_(live|test)_[A-Za-z0-9]+"
-
-        if (clientKey.matches(regex.toRegex())) {
-            valid = true
-        }
-
-        return valid
-    }
-
-    internal fun validateUserId(userId: String): Boolean {
-        val regex = "^[a-zA-Z0-9-_.]{3,100}$"
-
-        if (!userId.matches(regex.toRegex())) {
-            NIDLog.e(msg = "Invalid UserID")
-            return false
-        }
-
-        return true
-    }
-
-    fun setRegisteredUserID(registeredUserId: String): Boolean {
-        val validID = setGenericUserID(
-            SET_REGISTERED_USER_ID,
-            registeredUserId,
-        )
-
-        if (!validID) {
-            return false
-        }
-
-        this.registeredUserID = registeredUserId
-        return true;
-    }
-
-    fun setUserID(userID: String): Boolean {
-        return setUserID(userID, true)
-    }
-
-    private fun setUserID(userId: String, userGenerated: Boolean): Boolean {
-        val validID = setGenericUserID(
-            SET_USER_ID,
-            userId,
-            userGenerated
-        )
-
-        if (!validID) {
-            return false
-        }
-
-        this.userID = userId
-        return true;
-    }
-
-    internal fun setGenericUserID(
-        type: String,
-        genericUserId: String,
-        userGenerated: Boolean = true
-    ): Boolean {
-        try {
-            val validID = validateUserId(genericUserId)
-            val originRes =
-                getOriginResult(
-                    genericUserId,
-                    validID = validID,
-                    userGenerated = userGenerated
+            // We have to have two different retrofit instances because it requires a
+            // `base_url` to work off of and our Collection and Config endpoints are
+            // different
+            httpService =
+                NIDHttpService(
+                    collectionEndpoint = endpoint,
+                    configEndpoint = scriptEndpoint,
+                    logger = logger,
+                    // We can't use the config value because it hasn't been called.
+                    // Might have to recreate once config is retrieved
+                    collectionTimeout = 10,
+                    configTimeout = 10,
                 )
-            sendOriginEvent(originRes)
 
-            if (!validID) {
-                return false
+            configService =
+                NIDConfigService(
+                    dispatcher,
+                    logger,
+                    this,
+                    httpService,
+                    validationService,
+                    configRetrievalCallback = { configSetupCompletion() },
+                )
+            samplingService = NIDSamplingService(logger, randomGenerator, configService)
+            dataStore = NIDDataStoreManagerImp(logger, configService)
+
+            identifierService =
+                NIDIdentifierService(
+                    logger,
+                    neuroID = this,
+                    validationService,
+                )
+
+            application?.let {
+                nidJobServiceManager =
+                    NIDJobServiceManager(
+                        this,
+                        dataStore,
+                        getSendingService(
+                            httpService,
+                            it,
+                        ),
+                        logger,
+                        configService,
+                    )
+
+                sessionService =
+                    NIDSessionService(
+                        logger,
+                        this,
+                        configService,
+                        samplingService,
+                        NIDSharedPrefsDefaults(it),
+                        identifierService,
+                        validationService,
+                    )
+
+                locationService = LocationService()
+                metaData =
+                    NIDMetaData(
+                        it.applicationContext,
+                    )
+
+                captureApplicationMetaData()
+
+                captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
+
+                nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
+
+                // get connectivity info on startup
+                // register network listener here. >=API24 will not receive if registered
+                // in the manifest so we do it here for full compatibility
+                val connectivityManager =
+                    it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+                val info = connectivityManager.activeNetworkInfo
+                val isConnectingOrConnected = info?.isConnectedOrConnecting()
+                if (isConnectingOrConnected != null) {
+                    isConnected = isConnectingOrConnected
+                }
+                networkConnectionType = this.getNetworkType(it)
+
+                application?.registerReceiver(
+                    NIDNetworkListener(
+                        connectivityManager,
+                        this,
+                        Dispatchers.IO,
+                    ),
+                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
+                )
             }
 
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            application?.let {
-                when (type) {
-                    SET_USER_ID -> NIDSharedPrefsDefaults(it).setUserId(genericUserId)
-                    SET_REGISTERED_USER_ID -> NIDSharedPrefsDefaults(it).setRegisteredUserId(
-                        genericUserId
+            registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
+            nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+            nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
+        }
+
+        fun incrementPacketNumber() {
+            packetNumber += 1
+        }
+
+        /**
+         * Function to retrieve the current network type (wifi, cell, eth, unknown)
+         */
+        internal fun getNetworkType(context: Context): String {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val activeNetwork = connectivityManager.activeNetwork
+                activeNetwork?.let {
+                    val networkCapabilities = connectivityManager.getNetworkCapabilities(it)
+                    networkCapabilities?.let { capabilities ->
+                        return when {
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cell"
+                            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "eth"
+                            else -> "unknown"
+                        }
+                    }
+                }
+            } else {
+                // For devices below API level 23
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.let {
+                    return when (it.type) {
+                        ConnectivityManager.TYPE_WIFI -> "wifi"
+                        ConnectivityManager.TYPE_MOBILE -> "cell"
+                        ConnectivityManager.TYPE_ETHERNET -> "eth"
+                        else -> "unknown"
+                    }
+                }
+            }
+            return "noNetwork"
+        }
+
+        @Synchronized
+        private fun setupCallbacks() {
+            if (firstTime) {
+                firstTime = false
+                application?.let {
+                    it.registerActivityLifecycleCallbacks(nidActivityCallbacks)
+                    NIDTimerActive.initTimer()
+                }
+            }
+        }
+
+        data class Builder(
+            val application: Application? = null,
+            val clientKey: String = "",
+            val isAdvancedDevice: Boolean = false,
+            val serverEnvironment: String = PRODUCTION,
+        ) {
+            fun build() {
+                val neuroID =
+                    NeuroID(
+                        application,
+                        clientKey,
+                        isAdvancedDevice,
+                        serverEnvironment,
+                    )
+                setNeuroIDInstance(neuroID)
+            }
+        }
+
+        companion object {
+            const val PRODUCTION = "production"
+            const val DEVELOPMENT = "development"
+            const val PRODSCRIPT_DEVCOLLECTION = "prodscriptdevcollection"
+
+            // public exposed variable to determine if logs should show see
+            //  `enableLogging`
+            var showLogs: Boolean = true
+
+            // Internal accessible property to allow internal get/set
+            @Suppress("ktlint:standard:backing-property-naming")
+            internal var _isSDKStarted: Boolean = false
+
+            // public exposed variable for customers to see but NOT write to
+            val isSDKStarted: Boolean
+                get() = _isSDKStarted
+
+            @get:Synchronized @set:Synchronized
+            internal var screenName = ""
+
+            @get:Synchronized @set:Synchronized
+            internal var screenActivityName = ""
+
+            @get:Synchronized @set:Synchronized
+            internal var screenFragName = ""
+
+            internal var environment = ""
+            internal var siteID = ""
+            internal var rndmId = "mobile"
+            internal var firstScreenName = ""
+            internal var isConnected = false
+
+            internal var registeredViews: MutableSet<String> = mutableSetOf()
+
+            internal var endpoint = Constants.productionEndpoint.displayName
+            internal var scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+            private var singleton: NeuroID? = null
+
+            @TestOnly
+            internal fun setSingletonNull() {
+                singleton = null
+            }
+
+            internal fun setNeuroIDInstance(neuroID: NeuroID) {
+                if (singleton == null) {
+                    singleton = neuroID
+                    singleton?.setupCallbacks()
+                } else {
+                    singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
+                    singleton?.captureEvent(
+                        type = LOG,
+                        m = "NeuroID SDK should only be built once.",
+                        level = "ERROR"
                     )
                 }
             }
-            val genericUserIdEvent = NIDEventModel(
-                type = type,
-                uid = genericUserId,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-            if (isSDKStarted) {
-                dataStore.saveEvent(
-                    genericUserIdEvent
+
+            fun getInstance(): NeuroIDPublic? = singleton
+
+            internal fun getInternalInstance() = singleton
+
+            val compose: JetpackComposeImpl?
+                get() {
+                    return singleton?.compose
+                }
+        }
+
+        internal fun setLoggerInstance(newLogger: NIDLogWrapper) {
+            logger = newLogger
+        }
+
+        internal fun setDataStoreInstance(store: NIDDataStoreManager) {
+            dataStore = store
+        }
+
+        @TestOnly
+        internal fun resetSingletonInstance() {
+            singleton =
+                NeuroID(
+                    application,
+                    clientKey,
+                    isAdvancedDevice,
+                    PRODUCTION,
                 )
-            } else {
-                dataStore.queueEvent(genericUserIdEvent)
+        }
+
+        internal fun setClipboardManagerInstance(cm: ClipboardManager) {
+            clipboardManager = cm
+        }
+
+        internal fun getClipboardManagerInstance(): ClipboardManager? {
+            if (clipboardManager == null) {
+                return getApplicationContext()?.getSystemService(Context.CLIPBOARD_SERVICE) as
+                    ClipboardManager
+            }
+            return clipboardManager
+        }
+
+        internal fun setNIDActivityCallbackInstance(callback: ActivityCallbacks) {
+            nidActivityCallbacks = callback
+        }
+
+        internal fun setNIDJobServiceManager(serviceManager: NIDJobServiceManager) {
+            nidJobServiceManager = serviceManager
+        }
+
+        @VisibleForTesting
+        override fun setTestURL(newEndpoint: String) {
+            endpoint = newEndpoint
+            scriptEndpoint = Constants.devScriptsEndpoint.displayName
+
+            application?.let {
+                nidJobServiceManager?.setTestEventSender(
+                    getSendingService(
+                        NIDHttpService(
+                            collectionEndpoint = endpoint,
+                            configEndpoint = scriptEndpoint,
+                            logger = logger,
+                            // We can't use the config value because it hasn't been called.
+                            // Might have to recreate once config is retrieved
+                            collectionTimeout = 10,
+                            configTimeout = 10,
+                        ),
+                        it,
+                    ),
+                )
+            }
+        }
+
+        @VisibleForTesting
+        override fun setTestingNeuroIDDevURL() {
+            endpoint = Constants.devEndpoint.displayName
+            scriptEndpoint = Constants.devScriptsEndpoint.displayName
+
+            application?.let {
+                nidJobServiceManager?.setTestEventSender(
+                    getSendingService(
+                        httpService =
+                            NIDHttpService(
+                                collectionEndpoint = endpoint,
+                                configEndpoint = scriptEndpoint,
+                                logger = logger,
+                                // We can't use the config value because it hasn't been called.
+                                // Might have to recreate once config is retrieved
+                                collectionTimeout = 10,
+                                configTimeout = 10,
+                            ),
+                        it,
+                    ),
+                )
+            }
+        }
+
+        internal fun setupListeners() {
+            getApplicationContext()?.let {
+                if (configService.configCache.callInProgress) {
+                    nidCallActivityListener.setCallActivityListener(it)
+                } else {
+                    nidCallActivityListener.unregisterCallActivityListener(it)
+                }
+
+                if (configService.configCache.geoLocation) {
+                    locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                } else {
+                    locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                }
+
+                // This will restart the collection job (config has a interval option) and
+                //  restart the gyroCadence job (config has a interval option)
+                sessionService.resumeCollection()
+            }
+
+            return
+        }
+
+        internal fun configSetupCompletion() {
+            // once the config comes back we update listeners that are dependent on a config option.
+            captureEvent(type = LOG, level = "info", m = "Remote Config Retrieval Attempt Completed")
+            logger.i(msg = "Remote Config Retrieval Attempt Completed")
+            setupListeners()
+        }
+
+        override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
+            captureEvent(
+                type = LOG,
+                level = "info",
+                m = "attemptedLogin attempt with attemptedRegisteredUserId:'${if (attemptedRegisteredUserId != null) {
+                    validationService.scrubIdentifier(attemptedRegisteredUserId)
+                } else {
+                    "null"
+                }}'",
+            )
+
+            val captured =
+                identifierService.setGenericUserID(
+                    ATTEMPTED_LOGIN,
+                    attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
+                    attemptedRegisteredUserId != null,
+                )
+
+            if (!captured) {
+                captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
             }
 
             return true
-        } catch (exception: Exception) {
-            NIDLog.e(msg = "failure processing user id! $type, $genericUserId $exception")
-            return false;
-        }
-    }
-
-    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-    fun getUserId() = userID
-    fun getUserID() = userID
-
-    fun getRegisteredUserID() = registeredUserID
-
-    fun setScreenName(screen: String): Boolean {
-
-        if (!isSDKStarted) {
-            NIDLog.e(msg = "NeuroID SDK is not started")
-            return false
         }
 
-        NIDServiceTracker.screenName = screen.replace("\\s".toRegex(), "%20")
-        createMobileMetadata()
-
-        return true
-    }
-
-    fun getScreenName(): String = NIDServiceTracker.screenName
-
-    fun excludeViewByTestID(id: String) {
-        application?.let {
-            dataStore.addViewIdExclude(id)
-        }
-    }
-
-    @Deprecated("setEnvironment is deprecated and no longer required")
-    fun setEnvironment(environment: String) {
-        NIDLog.i(
-            msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED"
-        )
-    }
-
-    @Deprecated("setEnvironmentProduction is deprecated and no longer required")
-    fun setEnvironmentProduction(prod: Boolean) {
-        NIDLog.i(
-            msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED"
-        )
-    }
-
-    fun getEnvironment(): String = NIDServiceTracker.environment
-
-    @Deprecated("getSiteId is deprecated and no longer required")
-    fun setSiteId(siteId: String) {
-        NIDLog.i(
-            msg = "**** NOTE: setSiteId METHOD IS DEPRECATED"
-        )
-        NIDServiceTracker.siteId = siteId
-    }
-
-    @Deprecated("getSiteId is deprecated")
-    internal fun getSiteId(): String {
-        NIDLog.i(
-            msg = "**** NOTE: getSiteId METHOD IS DEPRECATED"
-        )
-        return ""
-    }
-
-    @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
-    fun getSessionId(): String {
-        return sessionID
-    }
-
-    fun getSessionID(): String = sessionID
-
-    @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
-    fun getClientId(): String {
-        return clientID
-    }
-
-    fun getClientID(): String = clientID
-
-    internal fun getForceStart(): Boolean? {
-        return forceStart
-    }
-
-    fun registerPageTargets(activity: Activity) {
-        this.forceStart = true
-        nidActivityCallbacks.forceStart(activity)
-    }
-
-    internal fun getTabId(): String = NIDServiceTracker.rndmId
-
-    internal fun getFirstTS(): Long = timestamp
-
-    internal fun getJsonPayLoad(context: Context): String {
-        return dataStore.getJsonPayload(context)
-    }
-
-    internal fun resetJsonPayLoad() {
-        dataStore.resetJsonPayload()
-    }
-
-    internal fun captureEvent(eventName: String, tgs: String) {
-        application?.applicationContext?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = eventName,
-                    tgs = tgs,
-                    ts = System.currentTimeMillis(),
-                    gyro = gyroData,
-                    accel = accelData
-                )
-            )
-        }
-    }
-
-    @Deprecated("formSubmit is deprecated and no longer required")
-    fun formSubmit() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmit METHOD IS DEPRECATED"
-        )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData,
-
-                )
-        )
-
-        saveIntegrationHealthEvents()
-    }
-
-    @Deprecated("formSubmitSuccess is deprecated and no longer required")
-    fun formSubmitSuccess() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED"
-        )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT_SUCCESS,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-        )
-
-        saveIntegrationHealthEvents()
-    }
-
-    @Deprecated("formSubmitFailure is deprecated and no longer required")
-    fun formSubmitFailure() {
-        NIDLog.i(
-            msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED"
-        )
-
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = FORM_SUBMIT_FAILURE,
-                ts = System.currentTimeMillis(),
-                gyro = gyroData,
-                accel = accelData
-            )
-        )
-
-        saveIntegrationHealthEvents()
-    }
-
-    open fun start(): Boolean {
-        if (clientKey == "") {
-            NIDLog.e(
-                msg = "Missing Client Key - please call configure prior to calling start"
-            )
-            return false
+        /**
+         * Execute the captureAdvancedDevice() method without knowing if the class that holds
+         * it exists. Required because we moved the ADV setup to the start()/startSession()
+         * methods.
+         *
+         * This method will look for the AdvancedDeviceExtension file, create a class from it, find
+         * the method captureAdvancedDevice() within the extension class and call it with the
+         * shouldCapture boolean if the advanced lib is used. If this is called in the non advanced lib,
+         * the method will look for the AdvancedDeviceExtension file, not find it and fail the
+         * Class.forName() call which will throw a ClassNotFoundException because it doesn't exist.
+         * We catch this exception and log it to logcat.
+         *
+         * We must handle all exceptions that this method may
+         * throw because of the undependable nature of reflection. We cannot afford to throw any
+         * exception to the host app causing a crash because of this .
+         * Set isAdvancedFlag to false if method fails to invoke captureAdvancedDevice().
+         */
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
+            val packageName = "com.neuroid.tracker.extensions"
+            val methodName = "captureAdvancedDevice"
+            val extensionName = ".AdvancedDeviceExtensionKt"
+            try {
+                val extensionFunctions = Class.forName(packageName + extensionName)
+                val method =
+                    extensionFunctions.getDeclaredMethod(
+                        methodName,
+                        NeuroID::class.java,
+                        Boolean::class.java,
+                    )
+                if (method != null) {
+                    method.isAccessible = true
+                    // Invoke the method
+                    method.invoke(null, this, shouldCapture)
+                    logger.d(msg = "Method $methodName invoked successfully")
+                } else {
+                    logger.d(msg = "No $methodName method found")
+                    // reset advanced device flag to false, no method in class to invoke or
+                    // wrong parameters
+                    isAdvancedDevice = false
+                    captureEvent(
+                        type = LOG,
+                        m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
+                        level = "error",
+                    )
+                }
+            } catch (e: ClassNotFoundException) {
+                logger.e(msg = "Class $packageName$extensionName not found")
+                // reset advanced device flag to false, no class to invoke from
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no class to invoke from", level = "INFO")
+            } catch (e: Exception) {
+                logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
+                // reset advanced device flag to false, don't know what happened
+                isAdvancedDevice = false
+                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, error: ${e.message}", level = "error")
+            }
         }
 
-        isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
-        NIDSingletonIDs.retrieveOrCreateLocalSalt()
+        override fun setScreenName(screen: String): Boolean {
+            if (!isSDKStarted) {
+                logger.e(msg = "NeuroID SDK is not started")
+                return false
+            }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            startIntegrationHealthCheck()
-            createSession()
+            screenName = screen.replace("\\s".toRegex(), "%20")
+            sessionService.createMobileMetadata()
+
+            return true
+        }
+
+        override fun getScreenName(): String = screenName
+
+        @Synchronized
+        override fun excludeViewByTestID(id: String) {
+            if (excludedTestIDList.none { it == id }) {
+                excludedTestIDList.add(id)
+            }
+        }
+
+        @Deprecated("setEnvironment is deprecated and no longer required")
+        override fun setEnvironment(environment: String) {
+            logger.i(msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED")
+        }
+
+        @Deprecated("setEnvironmentProduction is deprecated and no longer required")
+        override fun setEnvironmentProduction(prod: Boolean) {
+            logger.i(msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED")
+        }
+
+        override fun getEnvironment(): String = environment
+
+        @Deprecated("setSiteId is deprecated and no longer required")
+        override fun setSiteId(siteId: String) {
+            logger.i(msg = "**** NOTE: setSiteId METHOD IS DEPRECATED")
+
+            siteID = siteId
+        }
+
+        @Deprecated("getSiteId is deprecated")
+        internal fun getSiteId(): String {
+            logger.i(msg = "**** NOTE: getSiteId METHOD IS DEPRECATED")
+            return ""
+        }
+
+        @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
+        override fun getSessionId(): String {
+            return getSessionID()
+        }
+
+        override fun getSessionID(): String = sessionID
+
+        @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
+        override fun getClientId(): String {
+            return getClientID()
+        }
+
+        override fun getClientID(): String = clientID
+
+        internal fun shouldForceStart(): Boolean {
+            return forceStart
+        }
+
+        override fun registerPageTargets(activity: Activity) {
+            this.forceStart = true
+            nidActivityCallbacks.forceStart(activity)
+        }
+
+        internal fun getTabId(): String = tabID
+
+        internal fun getFirstTS(): Long = timestamp
+
+        @Deprecated("formSubmit is deprecated and no longer required")
+        override fun formSubmit() {
+            logger.i(msg = "**** NOTE: formSubmit METHOD IS DEPRECATED")
+
+            captureEvent(type = FORM_SUBMIT)
             saveIntegrationHealthEvents()
         }
-        application?.let {
-            nidJobServiceManager.startJob(it, clientKey)
-        }
-        dataStore.saveAndClearAllQueuedEvents()
 
-        return true
-    }
+        @Deprecated("formSubmitSuccess is deprecated and no longer required")
+        override fun formSubmitSuccess() {
+            logger.i(msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED")
 
-    fun stop() {
-        pauseCollection()
-    }
-
-    fun closeSession() {
-        if (!isStopped()) {
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
-                )
-            )
-            stop()
-        }
-    }
-
-    internal fun resetClientId() {
-        application?.let {
-            val sharedDefaults = NIDSharedPrefsDefaults(it)
-            clientID = sharedDefaults.resetClientId()
-        }
-    }
-
-    fun isStopped() = !isSDKStarted
-
-    internal fun registerTarget(activity: Activity, view: View, addListener: Boolean) {
-        identifyView(
-            view,
-            activity.getGUID(),
-            NIDLogWrapper(),
-            dataStore,
-            true,
-            addListener
-        )
-    }
-
-    /**
-     * Provide public access to application context for other intenral NID functions
-     */
-    internal fun getApplicationContext(): Context? {
-        return this.application?.applicationContext
-    }
-
-    private suspend fun createSession() {
-        timestamp = System.currentTimeMillis()
-        application?.let {
-            val gyroData = NIDSensorHelper.getGyroscopeInfo()
-            val accelData = NIDSensorHelper.getAccelerometerInfo()
-            val sharedDefaults = NIDSharedPrefsDefaults(it)
-            sessionID = sharedDefaults.getNewSessionID()
-            clientID = sharedDefaults.getClientId()
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = CREATE_SESSION,
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson()
-                )
-            )
-            createMobileMetadata()
-        }
-    }
-
-    private fun createMobileMetadata() {
-        timestamp = System.currentTimeMillis()
-        val gyroData = NIDSensorHelper.getGyroscopeInfo()
-        val accelData = NIDSensorHelper.getAccelerometerInfo()
-        application?.let {
-            val sharedDefaults = NIDSharedPrefsDefaults(it)
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = MOBILE_METADATA_ANDROID,
-                    ts = timestamp,
-                    gyro = gyroData,
-                    accel = accelData,
-                    sw = NIDSharedPrefsDefaults.getDisplayWidth().toFloat(),
-                    sh = NIDSharedPrefsDefaults.getDisplayHeight().toFloat(),
-                    metadata = metaData?.toJson(),
-                    f = clientKey,
-                    sid = sessionID,
-                    lsid = "null",
-                    cid = clientID,
-                    did = sharedDefaults.getDeviceId(),
-                    iid = sharedDefaults.getIntermediateId(),
-                    loc = sharedDefaults.getLocale(),
-                    ua = sharedDefaults.getUserAgent(),
-                    tzo = sharedDefaults.getTimeZone(),
-                    lng = sharedDefaults.getLanguage(),
-                    ce = true,
-                    je = true,
-                    ol = true,
-                    p = sharedDefaults.getPlatform(),
-                    jsl = listOf(),
-                    dnt = false,
-                    url = "",
-                    ns = "nid",
-                    jsv = NIDVersion.getSDKVersion(),
-                    attrs = JSONArray().put(JSONObject().put("isRN", isRN))
-                )
-            )
-        }
-    }
-
-    fun setIsRN() {
-        this.isRN = true
-    }
-
-    fun enableLogging(enable: Boolean) {
-        showLogs = enable
-    }
-
-    fun getSDKVersion() = NIDVersion.getSDKVersion()
-
-    // new Session Commands
-    fun clearSessionVariables() {
-        userID = ""
-        registeredUserID = ""
-        this.getApplicationContext()?.let {
-            NIDSharedPrefsDefaults(it).setUserId("")
-            NIDSharedPrefsDefaults(it).setRegisteredUserId("")
-        }
-    }
-
-    fun startSession(sessionID: String? = null): SessionStartResult {
-        if (clientKey == "") {
-            NIDLog.e(
-                msg = "Missing Client Key - please call configure prior to calling start"
-            )
-            return SessionStartResult(false, "")
+            captureEvent(type = FORM_SUBMIT_SUCCESS)
+            saveIntegrationHealthEvents()
         }
 
-        if (userID != "" || isSDKStarted) {
-            stopSession()
+        @Deprecated("formSubmitFailure is deprecated and no longer required")
+        override fun formSubmitFailure() {
+            logger.i(msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED")
+
+            captureEvent(type = FORM_SUBMIT_FAILURE)
+            saveIntegrationHealthEvents()
         }
 
-        var finalSessionID = sessionID ?: generateUniqueHexId();
+        override fun start(completion: (Boolean) -> Unit) =
+            sessionService.start(siteID = null) {
+                completion(it)
+            }
 
-        if (!setUserID(
-                finalSessionID,
-                sessionID != null
-            )
+        override fun stop(): Boolean {
+            return sessionService.stop()
+        }
+
+        internal fun resetClientId() {
+            application?.let {
+                val sharedDefaults = NIDSharedPrefsDefaults(it)
+                clientID = sharedDefaults.resetClientID()
+            }
+        }
+
+        override fun isStopped() = !isSDKStarted
+
+        internal fun registerTarget(
+            activity: Activity,
+            view: View,
+            addListener: Boolean,
         ) {
-            return SessionStartResult(false, "")
+            registrationIdentificationHelper.identifySingleView(
+                view,
+                activity.getGUID(),
+                true,
+                addListener,
+            )
         }
 
-        isSDKStarted = true
-        NIDServiceTracker.rndmId = "mobile"
-        NIDSingletonIDs.retrieveOrCreateLocalSalt()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            startIntegrationHealthCheck()
-            createSession()
-            saveIntegrationHealthEvents()
+        /** Provide public access to application context for other internal NID functions */
+        internal fun getApplicationContext(): Context? {
+            return this.application?.applicationContext
         }
 
-        resumeCollection()
-
-        dataStore.saveAndClearAllQueuedEvents()
-
-        // we need to set finalSessionID with the set random user id
-        // if a sessionID was not passed in
-        finalSessionID = getUserID()
-
-        return SessionStartResult(true, finalSessionID)
-    }
-
-    private fun sendOriginEvent(originResult: SessionIDOriginResult) {
-        // sending these as individual items.
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionIdCode",
-                    v = originResult.originCode
-                )
-            )
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionIdSource",
-                    v = originResult.origin
-                )
-            )
-
-        getDataStoreInstance()
-            .saveEvent(
-                NIDEventModel(
-                    type = SET_VARIABLE,
-                    ts = System.currentTimeMillis(),
-                    key = "sessionId",
-                    v = originResult.sessionID
-                )
-            )
-    }
-
-    internal fun getOriginResult(
-        sessionID: String,
-        validID: Boolean,
-        userGenerated: Boolean
-    ): SessionIDOriginResult {
-        var origin = if (userGenerated) {
-            NID_ORIGIN_CUSTOMER_SET
-        } else {
-            NID_ORIGIN_NID_SET
+        override fun setIsRN() {
+            this.isRN = true
         }
 
-        var originCode = if (validID) {
-            if (
-                userGenerated
+        override fun enableLogging(enable: Boolean) {
+            showLogs = enable
+        }
+
+        override fun getSDKVersion() = NIDVersion.getSDKVersion()
+
+        // Identifier Commands
+        @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
+        override fun getUserId() = identifierService.getUserID()
+
+        override fun getUserID() = identifierService.getUserID()
+
+        override fun setUserID(userID: String): Boolean {
+            return identifierService.setUserID(userID, true)
+        }
+
+        override fun getRegisteredUserID() = identifierService.getRegisteredUserID()
+
+        override fun setRegisteredUserID(registeredUserID: String): Boolean {
+            return identifierService.setRegisteredUserID(registeredUserID)
+        }
+
+        // new Session Commands
+        override fun startSession(
+            sessionID: String?,
+            completion: (SessionStartResult) -> Unit,
+        ) = sessionService.startSession(null, sessionID) {
+            completion(it)
+        }
+
+        @Synchronized
+        override fun pauseCollection() {
+            sessionService.pauseCollection(true)
+        }
+
+        @Synchronized
+        override fun resumeCollection() {
+            sessionService.resumeCollection()
+        }
+
+        override fun stopSession(): Boolean {
+            return sessionService.stopSession()
+        }
+
+        /**
+         * ported from the iOS implementation
+         */
+        override fun startAppFlow(
+            siteID: String,
+            userID: String?,
+            completion: (SessionStartResult) -> Unit,
+        ) {
+            sessionService.startAppFlow(
+                siteID,
+                userID,
             ) {
-                NID_ORIGIN_CODE_CUSTOMER
-            } else {
-                NID_ORIGIN_CODE_NID
-            }
-        } else {
-            NID_ORIGIN_CODE_FAIL
-        }
-        return SessionIDOriginResult(origin, originCode, sessionID)
-    }
-
-    @Synchronized
-    fun pauseCollection() {
-        isSDKStarted = false
-        if (pauseCollectionJob == null ||
-            pauseCollectionJob?.isCancelled == true ||
-            pauseCollectionJob?.isCompleted == true) {
-            pauseCollectionJob = CoroutineScope(Dispatchers.IO).launch {
-                nidJobServiceManager.sendEventsNow(NIDLogWrapper(), true)
-                nidJobServiceManager.stopJob()
-                saveIntegrationHealthEvents()
+                completion(it)
             }
         }
-    }
 
-    @Synchronized
-    fun resumeCollection() {
-        if (pauseCollectionJob?.isCompleted == true ||
-            pauseCollectionJob?.isCancelled == true ||
-            pauseCollectionJob == null) {
-            resumeCollectionCompletion()
-        } else {
-            pauseCollectionJob?.invokeOnCompletion {
-                resumeCollectionCompletion()
-            }
-        }
-    }
-
-    private fun resumeCollectionCompletion() {
-        isSDKStarted = true
-        application?.let {
-            if (!nidJobServiceManager.isSetup) {
-                nidJobServiceManager.startJob(it, clientKey)
-            } else {
-                nidJobServiceManager.restart()
-            }
-        }
-    }
-
-    fun stopSession(): Boolean {
-        dataStore.saveEvent(
-            NIDEventModel(
-                type = CLOSE_SESSION, ct = "SDK_EVENT", ts = System.currentTimeMillis()
+        override fun setVariable(
+            key: String,
+            value: String,
+        ) {
+            captureEvent(
+                type = SET_VARIABLE,
+                key = key,
+                v = value,
             )
-        )
+        }
 
-        pauseCollection()
-        clearSessionVariables()
+        internal fun addLinkedSiteID(siteID: String) {
+            if (!validationService.validateSiteID(siteID)) {
+                captureEvent(
+                    type = LOG,
+                    level = "ERROR",
+                    m = "Invalid Linked SiteID $siteID, failed to set",
+                )
 
-        return true
+                return
+            }
+
+            linkedSiteID = siteID
+
+            // capture linkedSiteEvent for MIHR - not relevant for collection
+            captureEvent(type = SET_LINKED_SITE, v = linkedSiteID)
+        }
+
+        internal fun captureApplicationMetaData() {
+            getApplicationContext()?.let {
+                val appInfo = getAppMetaData(it)
+                captureEvent(
+                    queuedEvent = !isSDKStarted,
+                    type = APPLICATION_METADATA,
+                    attrs =
+                        appInfo?.toList()
+                            ?: listOf(
+                                mapOf(
+                                    "n" to "versionName",
+                                    "v" to "",
+                                ),
+                            ),
+                )
+            }
+        }
+
+    /*
+       Every Event Saved should run through this function
+       This function will verify that events should be saved to the datastore prior to making an event object
+       Additionally it will send all events in the queue if the type is a special type (see end of function)
+     */
+        internal fun captureEvent(
+            queuedEvent: Boolean = false,
+            type: String,
+            // had to change to Calendar for tests. Cannot mock System methods.
+            ts: Long = Calendar.getInstance().timeInMillis,
+            attrs: List<Map<String, Any>>? = null,
+            tg: Map<String, Any>? = null,
+            tgs: String? = null,
+            touches: List<NIDTouchModel>? = null,
+            key: String? = null,
+            gyro: NIDSensorModel? = NIDSensorHelper.getGyroscopeInfo(),
+            accel: NIDSensorModel? = NIDSensorHelper.getAccelerometerInfo(),
+            v: String? = null,
+            hv: String? = null,
+            en: String? = null,
+            etn: String? = null,
+            ec: String? = null,
+            et: String? = null,
+            eid: String? = null,
+            ct: String? = null,
+            sm: Int? = null,
+            pd: Int? = null,
+            x: Float? = null,
+            y: Float? = null,
+            w: Int? = null,
+            h: Int? = null,
+            sw: Float? = null,
+            sh: Float? = null,
+            f: String? = null,
+            lsid: String? = null,
+            sid: String? = null,
+            siteId: String? = null,
+            cid: String? = null,
+            did: String? = null,
+            iid: String? = null,
+            loc: String? = null,
+            ua: String? = null,
+            tzo: Int? = null,
+            lng: String? = null,
+            ce: Boolean? = null,
+            je: Boolean? = null,
+            ol: Boolean? = null,
+            p: String? = null,
+            dnt: Boolean? = null,
+            tch: Boolean? = null,
+            url: String? = null,
+            ns: String? = null,
+            jsl: List<String>? = null,
+            jsv: String? = null,
+            uid: String? = null,
+            o: String? = null,
+            rts: String? = null,
+            metadata: NIDMetaData? = null,
+            rid: String? = null,
+            m: String? = null,
+            level: String? = null,
+            c: Boolean? = null,
+            isWifi: Boolean? = null,
+            isConnected: Boolean? = null,
+            cp: String? = null,
+            l: Long? = null,
+            synthetic: Boolean? = null,
+        ) {
+            if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
+                return
+            }
+
+            if (excludedTestIDList.any { it == tgs || it == tg?.get("tgs") }) {
+                return
+            }
+
+            if (!samplingService.isSessionFlowSampled()) {
+                return
+            }
+
+            val fullBuffer = dataStore.isFullBuffer()
+            if (lowMemory || fullBuffer) {
+                logger.w("NeuroID", "Data store buffer ${FULL_BUFFER}, $type dropped")
+                return
+            }
+
+            val event =
+                NIDEventModel(
+                    type,
+                    ts,
+                    attrs,
+                    tg,
+                    tgs,
+                    touches,
+                    key,
+                    gyro,
+                    accel,
+                    v,
+                    hv,
+                    en,
+                    etn,
+                    ec,
+                    et,
+                    eid,
+                    ct,
+                    sm,
+                    pd,
+                    x,
+                    y,
+                    w,
+                    h,
+                    sw,
+                    sh,
+                    f,
+                    lsid,
+                    sid,
+                    siteId,
+                    cid,
+                    did,
+                    iid,
+                    loc,
+                    ua,
+                    tzo,
+                    lng,
+                    ce,
+                    je,
+                    ol,
+                    p,
+                    dnt,
+                    tch,
+                    url,
+                    ns,
+                    jsl,
+                    jsv,
+                    uid,
+                    o,
+                    rts,
+                    metadata,
+                    rid,
+                    m,
+                    level,
+                    c,
+                    isWifi,
+                    isConnected,
+                    cp,
+                    l,
+                    synthetic,
+                )
+
+            if (queuedEvent) {
+                dataStore.queueEvent(event)
+            } else {
+                dataStore.saveEvent(event)
+            }
+
+            event.log()
+            captureIntegrationHealthEvent(event)
+
+            when (type) {
+                BLUR -> {
+                    nidJobServiceManager?.sendEvents()
+                }
+                CLOSE_SESSION -> {
+                    nidJobServiceManager?.sendEvents(true)
+                }
+            }
+        }
     }
-}

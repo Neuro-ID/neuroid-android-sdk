@@ -5,14 +5,12 @@ import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import androidx.multidex.MultiDexApplication
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.extensions.setVerifyIntegrationHealth
 import com.sample.neuroid.us.domain.config.ConfigHelper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
 class MyApplicationDemo : MultiDexApplication() {
-
     @Inject
     lateinit var configHelper: ConfigHelper
 
@@ -22,25 +20,25 @@ class MyApplicationDemo : MultiDexApplication() {
             ThreadPolicy.Builder()
                 .detectAll()
                 .penaltyLog()
-                .build()
+                .build(),
         )
         StrictMode.setVmPolicy(
             VmPolicy.Builder()
                 .detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects()
                 .penaltyLog()
-                .build()
+                .build(),
         )
-        val neuroID = NeuroID.Builder(
-            this,
-            "key_live_suj4CX90v0un2k1ufGrbItT5"
+
+        NeuroID.Builder(this, "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+            isAdvancedDevice = false, serverEnvironment = NeuroID.PRODSCRIPT_DEVCOLLECTION
         ).build()
-        NeuroID.setNeuroIDInstance(neuroID)
-        NeuroID.getInstance()?.setEnvironmentProduction(true)
-        NeuroID.getInstance()?.setSiteId(configHelper.formId)
-        NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
-        NeuroID.getInstance()?.setUserID(configHelper.userId)
-        NeuroID.getInstance()?.setRegisteredUserID("ahsdkghasdjkghdklasglasd")
-        NeuroID.getInstance()?.start()
+        // NeuroID.getInstance()?.start()
+        // NeuroID.getInstance()?.setEnvironmentProduction(true)
+        // NeuroID.getInstance()?.setSiteId(configHelper.formId)
+        NeuroID.getInstance()?.startAppFlow("form_parks912", null)
+        // NeuroID.getInstance()?.startAppFlow("form_skein469", "testSession")
+        // NeuroID.getInstance()?.startSession("hasdklghs")
+        // NeuroID.getInstance()?.setUserID("fgdsgasdgsdg")
     }
 }

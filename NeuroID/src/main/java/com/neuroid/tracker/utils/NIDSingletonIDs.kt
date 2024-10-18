@@ -13,12 +13,12 @@ object NIDSingletonIDs {
      * Look at shared defaults, and
      */
     fun retrieveOrCreateLocalSalt(): String {
-        var context = NeuroID.getInstance()?.getApplicationContext()
+        var context = NeuroID.getInternalInstance()?.getApplicationContext()
         val sharedDefaults = context?.let { NIDSharedPrefsDefaults(it) }
-        var existingSalt = sharedDefaults?.getDeviceSalt();
+        var existingSalt = sharedDefaults?.getDeviceSalt()
 
         if (existingSalt != null) {
-            if(existingSalt.isNotBlank()){
+            if (existingSalt.isNotBlank()) {
                 saltId = existingSalt
                 return existingSalt
             }
@@ -26,8 +26,5 @@ object NIDSingletonIDs {
         saltId = UUID.randomUUID().toString()
         sharedDefaults?.putDeviceSalt(saltId)
         return saltId
-
     }
-
-
 }

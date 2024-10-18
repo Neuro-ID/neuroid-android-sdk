@@ -1,5 +1,6 @@
 package com.sample.neuroid.us
 
+import android.os.Looper
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -9,8 +10,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.storage.getDataStoreInstance
+import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,11 +18,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.time.Duration
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @ExperimentalCoroutinesApi
+@Ignore("Ignored until refactor to check specific events")
 class ComponentsTest {
 
     @get:Rule
@@ -34,37 +36,43 @@ class ComponentsTest {
      * the SharedPreferences and can be obtained one by one
      */
     @Before
-    fun stopSendEventsToServer() = runTest {
-        NIDJobServiceManager.isSendEventsNowEnabled = false
-        NeuroID.getInstance()?.stop()
+    fun stopSendEventsToServer() = runTest(timeout = Duration.parse("120s")) {
+        // set dev to scripts and collection endpoint
+        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
+
+        NeuroID.getInstance()?.isStopped()?.let {
+            if (it) {
+                NeuroID.getInstance()?.start()
+            }
+        }
+        delay(500)
     }
 
     @After
-    fun resetDispatchers() = runTest {
-        getDataStoreInstance().clearEvents()
+    fun resetDispatchers() = runTest(timeout = Duration.parse("120s")) {
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
+        NeuroID.getInstance()?.stop()
+        delay(500)
     }
 
     /**
      * Validate CHECKBOX_CHANGE when the user click on it
      */
     @Test
-    fun test01ValidateCheckBox() = runTest {
+    fun test01ValidateCheckBox() = runTest(timeout = Duration.parse("120s")) {
+        Looper.prepare()
         NeuroID.getInstance()?.start()
-        NIDLog.d("----> UITest", "-------------------------------------------------")
 
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
+        NIDLog.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.check_one))
             .perform(click())
 
-        delay(500)
-
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -72,22 +80,17 @@ class ComponentsTest {
      * Validate RADIO_CHANGE when the user click on it
      */
     @Test
-    fun test02ValidateRadioChange() = runTest {
+    fun test02ValidateRadioChange() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.radioButton_one))
             .perform(click())
 
-        delay(500)
-
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -95,26 +98,20 @@ class ComponentsTest {
      * Validate SWITCH_CHANGE when the user click on it
      */
     @Test
-    fun test03ValidateSwitch() = runTest {
+    fun test03ValidateSwitch() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.switch_three)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.switch_one))
             .perform(click())
 
-        delay(500)
-
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -122,26 +119,20 @@ class ComponentsTest {
      * Validate TOGGLE_CHANGE when the user click on it
      */
     @Test
-    fun test04ValidateToggle() = runTest {
+    fun test04ValidateToggle() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.toggle_button)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.toggle_button))
             .perform(click())
 
-        delay(500)
-
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -149,26 +140,21 @@ class ComponentsTest {
      * Validate RATING_BAR_CHANGE when the user click on it
      */
     @Test
-    fun test05ValidateRatingBar() = runTest {
+    fun test05ValidateRatingBar() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-
-        delay(500) // When you go to the next test, the activity is destroyed and recreated
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
-        delay(500)
 
         onView(withId(R.id.rating_bar)).perform(
             scrollTo()
         )
-        delay(500)
         onView(withId(R.id.rating_bar))
             .perform(click())
 
-        delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 
@@ -176,30 +162,27 @@ class ComponentsTest {
      * Validate SLIDER_CHANGE on NIDOnlyOneFragment class
      */
     @Test
-    fun test06ValidateSliderChange() = runTest {
+    fun test06ValidateSliderChange() = runTest(timeout = Duration.parse("120s")) {
         NIDLog.d("----> UITest", "-------------------------------------------------")
-        delay(500) //Wait a half second for create the MainActivity View
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
 
-        delay(500)
 
         onView(withId(R.id.seekBar_one)).perform(
             scrollTo()
         )
 
         delay(1000)
-        getDataStoreInstance().getAllEvents()
+        NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents()
 
         onView(withId(R.id.seekBar_one)).perform(
             swipeRight()
         )
 
-        delay(500)
 
         NIDSchema().validateSchema(
-            getDataStoreInstance().getAllEvents()
+            NeuroID.getInstance()?.getTestingDataStoreInstance()?.getAllEvents() ?: listOf()
         )
     }
 

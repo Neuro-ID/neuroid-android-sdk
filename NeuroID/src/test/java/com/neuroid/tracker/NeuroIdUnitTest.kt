@@ -1,14 +1,13 @@
 package com.neuroid.tracker
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.Resources
 import android.view.View
 import android.view.ViewGroup
-import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.extensions.getParentsOfView
-import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.generateUniqueHexID
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -25,14 +24,13 @@ class NeuroIdUnitTest {
         val uuid = mockk<UUID>()
         mockkStatic(UUID::class)
         every { UUID.randomUUID() } returns uuid
-        val sharedPrefs = mockk<SharedPreferences>()
-        val context = mockk<Context>()
-        every { context.getSharedPreferences(any(), any()) } returns sharedPrefs
-        val prefs = NIDSharedPrefsDefaults(context)
 
         every { uuid.toString() } returns "test"
-        val temp = prefs.generateUniqueHexId()
+        val temp = generateUniqueHexID()
         assertEquals(temp, "test")
+
+        val temp2 = generateUniqueHexID(true)
+        assertEquals(temp2, "nid-test")
 
         unmockkAll()
     }

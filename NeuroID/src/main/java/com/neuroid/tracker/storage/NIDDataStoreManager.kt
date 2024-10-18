@@ -1,290 +1,188 @@
 package com.neuroid.tracker.storage
 
-import android.content.Context
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
+import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.callbacks.NIDSensorHelper
-import com.neuroid.tracker.events.*
-import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
+import com.neuroid.tracker.events.ANDROID_URI
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FULL_BUFFER
+import com.neuroid.tracker.events.USER_INACTIVE
+import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.models.NIDEventModel
-import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDServiceTracker
-import com.neuroid.tracker.utils.Constants
-import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTimerActive
-import com.neuroid.tracker.utils.NIDVersion
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.LinkedList
 import java.util.Queue
 
 interface NIDDataStoreManager {
-    fun saveEvent(event: NIDEventModel): Job
-    suspend fun getAllEvents(): Set<String>
-    fun addViewIdExclude(id: String)
-    suspend fun clearEvents()
-    fun resetJsonPayload()
-    fun getJsonPayload(context: Context): String
-    fun queueEvent(event: NIDEventModel)
+    fun saveEvent(event: NIDEventModel)
+
+    fun getAllEvents(): List<NIDEventModel>
+
+    fun clearEvents()
+
+    fun queueEvent(tempEvent: NIDEventModel)
+
     fun saveAndClearAllQueuedEvents()
+
+    fun isFullBuffer(): Boolean
 }
 
-fun initDataStoreCtx(context: Context) {
-    NIDDataStoreManagerImp.init(context)
+@VisibleForTesting // Should we make the private?
+fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
+    return NeuroID.getInternalInstance()?.dataStore
 }
 
-fun getDataStoreInstance(): NIDDataStoreManager {
-    return NIDDataStoreManagerImp
-}
-
-internal object NIDDataStoreManagerImp : NIDDataStoreManager {
-    private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
-    private const val NID_STRING_EVENTS = "NID_STRING_EVENTS"
-    private const val NID_STRING_JSON_PAYLOAD = "NID_STRING_JSON_PAYLOAD"
-    private var sharedPref: SharedPreferences? = null
-    private val listNonActiveEvents = listOf(
-        USER_INACTIVE, WINDOW_BLUR //Block screen
-    )
-    internal val listIdsExcluded = arrayListOf<String>()
-    internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
-
-    private var ioDispatcher = CoroutineScope(Dispatchers.IO)
-
-    fun init(context: Context, newDispatcher: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
-        ioDispatcher = newDispatcher
-        ioDispatcher.launch {
-            sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, MODE_PRIVATE)
-        }
+internal class NIDDataStoreManagerImp(
+    val logger: NIDLogWrapper,
+    var configService: ConfigService,
+) : NIDDataStoreManager {
+    companion object {
+        private val listNonActiveEvents =
+            listOf(
+                USER_INACTIVE,
+                WINDOW_BLUR, // Block screen
+            )
     }
 
-    // Queue events that are set before sdk is started
+    internal var eventsList = mutableListOf<NIDEventModel>()
+    internal var queuedEvents: Queue<NIDEventModel> = LinkedList()
+
+    /**
+     * This function is to store events prior to the SDK being started. Events are stored in a
+     * separate queue from the main eventsList when the SDK is running
+     *
+     * NOTE: The safety checks to storing events (full buffer, low memory, and sampling status) should
+     *       happen PRIOR to calling this function. See `NeuroID.captureEvent`
+     */
     @Synchronized
-    override fun queueEvent(event: NIDEventModel) {
+    override fun queueEvent(tempEvent: NIDEventModel) {
+        val event =
+            tempEvent.copy(
+                ts = System.currentTimeMillis(),
+                gyro = NIDSensorHelper.getGyroscopeInfo(),
+                accel = NIDSensorHelper.getAccelerometerInfo(),
+            )
+
         queuedEvents.add(event)
     }
 
     @Synchronized
     override fun saveAndClearAllQueuedEvents() {
-        if (queuedEvents.isNotEmpty()) {
-            queuedEvents.forEach { event -> getDataStoreInstance().saveEvent(event) }
-            queuedEvents.clear()
-        }
+        eventsList.addAll(queuedEvents)
+        queuedEvents.clear()
     }
 
+    /**
+     * This function is to store events while the SDK is running
+     *
+     * NOTE: The safety checks to storing events (full buffer, low memory, and sampling status) should
+     *       happen PRIOR to calling this function. See `NeuroID.captureEvent`
+     */
     @Synchronized
-    override fun saveEvent(event: NIDEventModel): Job {
-        val job = ioDispatcher.launch {
-            if (listIdsExcluded.none { it == event.tgs || it == event.tg?.get("tgs") }) {
-                val strEvent = event.getOwnJson()
-                saveJsonPayload(strEvent, "\"${event.type}\"")
+    override fun saveEvent(event: NIDEventModel) {
+        if (!listNonActiveEvents.contains(event.type)) {
+            NIDTimerActive.restartTimerActive()
+        }
 
-                if (NIDJobServiceManager.userActive.not()) {
-                    NIDJobServiceManager.userActive = true
-                    NIDJobServiceManager.restart()
-                }
+        // capture the event
+        eventsList.add(event)
+    }
 
-                if (!listNonActiveEvents.any { strEvent.contains(it) }) {
-                    NIDTimerActive.restartTimerActive()
-                }
+    /*
+        Event store is cleared out. Where necessary, events are updated to fill in missing values.
+     */
+    override fun getAllEvents(): List<NIDEventModel> {
+        val previousEventsList = swapEvents()
 
-                val lastEvents = getStringSet(NID_STRING_EVENTS)
-                val newEvents = LinkedHashSet<String>()
-                newEvents.addAll(lastEvents)
-                newEvents.add(strEvent)
-                putStringSet(NID_STRING_EVENTS, newEvents)
+        previousEventsList.forEachIndexed { index, item ->
+            var updateEvent = false
 
-                var contextString: String? = ""
-                when (event.type) {
-                    SET_USER_ID -> contextString = "uid=${event.uid}"
-                    CREATE_SESSION -> contextString =
-                        "cid=${event.cid}, sh=${event.sh}, sw=${event.sw}"
-                    APPLICATION_SUBMIT -> contextString = ""
-                    TEXT_CHANGE -> contextString = "v=${event.v}, tg=${event.tg}"
-                    "SET_CHECKPOINT" -> contextString = ""
-                    "STATE_CHANGE" -> contextString = event.url ?: ""
-                    KEY_UP -> contextString = "tg=${event.tg}"
-                    KEY_DOWN -> contextString = "tg=${event.tg}"
-                    INPUT -> contextString = "v=${event.v}, tg=${event.tg}"
-                    FOCUS -> contextString = ""
-                    BLUR -> contextString = ""
-                    MOBILE_METADATA_ANDROID -> contextString = "meta=${event.metadata}"
-                    "CLICK" -> contextString = ""
-                    REGISTER_TARGET -> contextString =
-                        "et=${event.et}, rts=${event.rts}, ec=${event.ec} v=${event.v} tg=${event.tg} meta=${event.metadata}"
-                    "DEREGISTER_TARGET" -> contextString = ""
-                    TOUCH_START -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_END -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    TOUCH_MOVE -> contextString = "xy=${event.touches} tg=${event.tg}"
-                    CLOSE_SESSION -> contextString = ""
-                    SET_VARIABLE -> contextString = event.v ?: ""
-                    CUT -> contextString = ""
-                    COPY -> contextString = ""
-                    PASTE -> contextString = ""
-                    WINDOW_RESIZE -> contextString = "h=${event.h}, w=${event.w}"
-                    SELECT_CHANGE -> contextString = "tg=${event.tg}"
-                    WINDOW_LOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_UNLOAD -> contextString = "meta=${event.metadata}"
-                    WINDOW_BLUR -> contextString = "meta=${event.metadata}"
-                    WINDOW_FOCUS -> contextString = "meta=${event.metadata}"
-                    CONTEXT_MENU -> contextString = "meta=${event.metadata}"
-                    ADVANCED_DEVICE_REQUEST -> contextString = "rid=${event.rid}, c=${event.c}"
-                    LOG -> contextString = "m=${event.m}, ts=${event.ts}, level=${event.level}"
-                    else -> {}
-                }
-
-                NIDLog.d(
-                    Constants.debugEventTag.displayName,
-                    "EVENT: ${event.type} - ${event.tgs} - ${contextString}"
-                )
-
-                NeuroID.getInstance()?.captureIntegrationHealthEvent(event = event)
-            }
-
-            when (event.type) {
-                BLUR -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper())
-                }
-                CLOSE_SESSION -> {
-                    NIDJobServiceManager.sendEventsNow(NIDLogWrapper(),true)
+            // if the accelerometer values are null, use the current values
+            var accel = item.accel
+            accel?.let {
+                if (it.x == null && it.y == null && it.z == null) {
+                    updateEvent = true
+                    accel = NIDSensorHelper.getAccelerometerInfo()
                 }
             }
-        }
 
-        return job
-    }
-
-    override suspend fun getAllEvents(): Set<String> {
-        val lastEvents = getStringSet(NID_STRING_EVENTS, emptySet())
-        clearEvents()
-
-        return lastEvents.map {
-            it.replace(
-                "\"gyro\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"gyro\":{\"x\":${NIDSensorHelper.valuesGyro.axisX},\"y\":${NIDSensorHelper.valuesGyro.axisY},\"z\":${NIDSensorHelper.valuesGyro.axisZ}}"
-            ).replace(
-                "\"accel\":{\"x\":null,\"y\":null,\"z\":null}",
-                "\"accel\":{\"x\":${NIDSensorHelper.valuesAccel.axisX},\"y\":${NIDSensorHelper.valuesAccel.axisY},\"z\":${NIDSensorHelper.valuesAccel.axisZ}}"
-            )
-        }.toSet()
-    }
-
-    override fun addViewIdExclude(id: String) {
-        if (listIdsExcluded.none { it == id }) {
-            listIdsExcluded.add(id)
-        }
-    }
-
-    override suspend fun clearEvents() {
-        putStringSet(NID_STRING_EVENTS, emptySet())
-    }
-
-    override fun resetJsonPayload() {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(NID_STRING_JSON_PAYLOAD, emptySet())
-                apply()
-            }
-        }
-    }
-
-    override fun getJsonPayload(context: Context): String {
-        return createPayload(context)
-    }
-
-    private suspend fun putStringSet(key: String, stringSet: Set<String>) {
-        sharedPref?.let {
-            with(it.edit()) {
-                putStringSet(key, stringSet)
-                apply()
-            }
-        }
-    }
-
-    private suspend fun getStringSet(key: String, default: Set<String> = emptySet()): Set<String> {
-        return sharedPref?.getStringSet(key, default) ?: default
-    }
-
-    private fun saveJsonPayload(event: String, eventType: String) {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
-        var shouldAdd = true
-        jsonSet.forEach {
-            if (it.contains(eventType)) {
-                shouldAdd = false
-            }
-        }
-
-        if (shouldAdd) {
-            val newEvents = LinkedHashSet<String>()
-            newEvents.addAll(jsonSet)
-            newEvents.add(event)
-
-            sharedPref?.let {
-                with(it.edit()) {
-                    putStringSet(NID_STRING_JSON_PAYLOAD, newEvents)
-                    apply()
+            // if the gyro values are null, use the current values
+            var gyro = item.gyro
+            gyro?.let {
+                if (it.x == null && it.y == null && it.z == null) {
+                    updateEvent = true
+                    gyro = NIDSensorHelper.getGyroscopeInfo()
                 }
             }
-        }
-    }
 
-    private fun createPayload(context: Context): String {
-        val jsonSet = sharedPref?.getStringSet(NID_STRING_JSON_PAYLOAD, emptySet()) ?: emptySet()
+            // update the url for create session events if not set
+            var url = item.url
+            if (item.type == CREATE_SESSION && url == "") {
+                updateEvent = true
+                url = "$ANDROID_URI${NeuroID.firstScreenName}"
+            }
 
-        val listEvents = jsonSet.sortedBy {
-            val event = JSONObject(it)
-            event.getLong("ts")
-        }
-
-        if (listEvents.isEmpty()) {
-            return ""
-        } else {
-            val listJson = listEvents.map {
-                if (it.contains("\"CREATE_SESSION\"")) {
-                    JSONObject(
-                        it.replace(
-                            "\"url\":\"\"",
-                            "\"url\":\"$ANDROID_URI${NIDServiceTracker.firstScreenName}\""
-                        )
+            if (updateEvent) {
+                // update the event
+                previousEventsList[index] =
+                    item.copy(
+                        accel = accel,
+                        gyro = gyro,
+                        url = url,
                     )
-                } else {
-                    JSONObject(it)
-                }
             }
-
-            val jsonListEvents = JSONArray(listJson)
-
-            return getContentJson(context, jsonListEvents).replace("\\/", "/")
         }
+
+        return previousEventsList
     }
 
-    private fun getContentJson(
-        context: Context, events: JSONArray
-    ): String {
-        val sharedDefaults = NIDSharedPrefsDefaults(context)
+    override fun clearEvents() {
+        swapEvents()
+    }
 
-        val jsonBody = JSONObject().apply {
-            put("siteId", NIDServiceTracker.siteId)
-            put("userId", sharedDefaults.getUserId())
-            put("clientId", sharedDefaults.getClientId())
-            put("identityId", sharedDefaults.getUserId())
-            put("registeredUserId", sharedDefaults.getRegisteredUserId())
-            put("pageTag", NIDServiceTracker.screenActivityName)
-            put("pageId", NIDServiceTracker.rndmId)
-            put("tabId", NIDServiceTracker.rndmId)
-            put("responseId", sharedDefaults.generateUniqueHexId())
-            put("url", "$ANDROID_URI${NIDServiceTracker.screenActivityName}")
-            put("jsVersion", "5.0.0")
-            put("sdkVersion", NIDVersion.getSDKVersion())
-            put("environment", NIDServiceTracker.environment)
-            put("jsonEvents", events)
+    /**
+     * Synchronize the fetching of the current event list and its replacement with a new event list.
+     */
+    @Synchronized
+    private fun swapEvents(): MutableList<NIDEventModel> {
+        val previousEventsList = eventsList
+        eventsList = mutableListOf<NIDEventModel>()
+        return previousEventsList
+    }
+
+
+    /**
+     * Synchronize to ensure that eventList is not updated when we check for last item being
+     * BUFFER_FULL and to get proper event list size since the queue flush job is running in the
+     * background.
+     */
+    @Synchronized
+    override fun isFullBuffer(): Boolean {
+        var lastEventType = ""
+
+        try {
+            if (eventsList.isEmpty().not()) {
+                lastEventType = eventsList.last().type
+            }
+        } catch (e: Exception) {
+            logger.d(
+                msg = "possible emptying before calling eventsList.last() after empty check occurred ${e.message}"
+            )
         }
 
-        return jsonBody.toString()
+        if (lastEventType == FULL_BUFFER) {
+            return true
+        } else if ((eventsList.size + queuedEvents.size) > configService.configCache.eventQueueFlushSize) {
+            // add a full buffer event and drop the new event
+            saveEvent(
+                NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),
+            )
+            return true
+        }
+
+        return false
     }
 }

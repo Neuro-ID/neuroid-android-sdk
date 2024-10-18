@@ -31,13 +31,14 @@ group = nameSpace
 version = versionName
 
 android {
-
-    compileSdkVersion = 31
+    namespace = "com.neuroid.tracker"
+    compileSdkVersion = 34
 
     defaultConfig {
         minSdk 21
-        targetSdk 31
+        targetSdk 34
         multiDexEnabled true
+        android.buildFeatures.buildConfig true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
@@ -85,12 +86,27 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.14'
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -105,14 +121,18 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1"
 
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.lifecycle:lifecycle-process:2.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    reactNativeImplementation("com.facebook.react:react-native:0.71.0-rc.0")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+
+    // compose stuff
+    implementation "androidx.compose.ui:ui:1.7.3"
+
+    reactNativeImplementation("com.facebook.react:react-android:0.71.0-rc.1")
 
     advancedDeviceLibImplementation("com.fingerprint.android:pro:2.4.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
@@ -122,11 +142,6 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
 }
 
 afterEvaluate {
@@ -141,7 +156,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             androidLibDebug(MavenPublication) {
@@ -151,7 +165,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant$debugVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
             reactNativeLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
@@ -161,7 +174,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             reactNativeLibDebug(MavenPublication) {
@@ -171,7 +183,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant$debugVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
 
             // Creates a Maven publication called "release".
@@ -183,7 +194,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "android-$advancedDeviceVariant-sdk"
                 version = versionName
-                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             androidAdvancedDeviceLibDebug(MavenPublication) {
@@ -193,7 +203,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "android-$advancedDeviceVariant-sdk$debugVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
             reactNativeAdvancedDeviceLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
@@ -203,7 +212,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk"
                 version = versionName
-                artifact androidSourcesJar
             }
             // Creates a Maven publication called “debug”.
             reactNativeAdvancedDeviceLibDebug(MavenPublication) {
@@ -213,7 +221,6 @@ afterEvaluate {
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk$debugVariant"
                 version = versionName
-                artifact androidSourcesJar
             }
         }
     }
