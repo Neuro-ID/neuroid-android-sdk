@@ -12,4 +12,6 @@ enum class Constants(val displayName: String) {
     productionScriptsEndpoint("https://scripts.neuro-id.com/"),
     devEndpoint("https://receiver.neuro-dev.com/"),
     devScriptsEndpoint("https://scripts.neuro-dev.com/"),
+    testScriptEndpoint("http://127.0.0.1:8000/")
+
 }
