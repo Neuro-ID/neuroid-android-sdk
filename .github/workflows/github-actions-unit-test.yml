@@ -70,7 +70,7 @@ jobs:
       - name: Unit Test NeuroId (ReactNative)
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
 
-        # Execute unit tests
+      # Execute integration tests
       - name: Integration Test
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
@@ -79,13 +79,12 @@ jobs:
           cores: 4
           ram-size: 4096M
           heap-size: 2048M
-          timeout-minutes: 30
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :app:connectedandroidLibDebugAndroidTest
 
-      # Execute unit tests
-      - name: Integration Test Sample app
+      # Execute integration layout tests with compose
+      - name: Integration Test Sample app (compose)
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 29
@@ -93,7 +92,6 @@ jobs:
           cores: 4
           ram-size: 4096M
           heap-size: 2048M
-          timeout-minutes: 30
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
