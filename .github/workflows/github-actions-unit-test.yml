@@ -70,7 +70,7 @@ jobs:
       - name: Start Emulator
         run: |
             sudo apt-get update
-            sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+            sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients ubuntu-vm-builder bridge-utils
             avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64"
             $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-audio &
 
