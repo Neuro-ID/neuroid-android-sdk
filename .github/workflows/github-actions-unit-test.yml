@@ -67,28 +67,44 @@ jobs:
       - name: Unit Test NeuroId (ReactNative)
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
 
-      # Execute integration sample tests
+      - name: Start Emulator
+        run: |
+            sudo apt-get update
+            sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+            avdmanager create avd -n test -k "system-images;android-30;google_apis;x86_64"
+            $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-audio &
+
+      - name: Wait for Emulator
+        run: |
+            adb wait-for-device
+            adb shell getprop init.svc.bootanim | grep -m 1 stopped
+            adb shell input keyevent 82
+
       - name: Integration Test Sample app (compose)
-        uses: ReactiveCircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          profile: Nexus 6P
-          cores: 4
-          ram-size: 4096M
-          heap-size: 2048M
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
+        run: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
+
+#      # Execute integration sample tests
+#      - name: Integration Test Sample app (compose)
+#        uses: ReactiveCircus/android-emulator-runner@v2
+#        with:
+#          api-level: 29
+#          profile: Nexus 6P
+#          cores: 4
+#          ram-size: 4096M
+#          heap-size: 2048M
+#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: true
+#          script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
 
       # Execute integration tests
-      - name: Integration Test
-        uses: ReactiveCircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          profile: Nexus 6P
-          cores: 4
-          ram-size: 4096M
-          heap-size: 2048M
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew :app:connectedandroidLibDebugAndroidTest
+#      - name: Integration Test
+#        uses: ReactiveCircus/android-emulator-runner@v2
+#        with:
+#          api-level: 29
+#          profile: Nexus 6P
+#          cores: 4
+#          ram-size: 4096M
+#          heap-size: 2048M
+#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: true
+#          script: ./gradlew :app:connectedandroidLibDebugAndroidTest
