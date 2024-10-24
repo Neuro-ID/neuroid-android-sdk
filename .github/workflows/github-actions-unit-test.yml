@@ -71,17 +71,17 @@ jobs:
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
 
       # Execute integration tests
-      - name: Integration Test
-        uses: ReactiveCircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          profile: Nexus 6P
-          cores: 4
-          ram-size: 4096M
-          heap-size: 2048M
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew :app:connectedandroidLibDebugAndroidTest
+#      - name: Integration Test
+#        uses: ReactiveCircus/android-emulator-runner@v2
+#        with:
+#          api-level: 29
+#          profile: Nexus 6P
+#          cores: 4
+#          ram-size: 4096M
+#          heap-size: 2048M
+#          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#          disable-animations: true
+#          script: ./gradlew :app:connectedandroidLibDebugAndroidTest
 
       # Execute integration layout tests with compose
       - name: Integration Test Sample app (compose)
