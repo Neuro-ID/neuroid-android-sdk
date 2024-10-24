@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <include
+        android:id="@+id/header"
+        layout="@layout/header" />
+
+    <include
+        android:id="@+id/footer"
+        layout="@layout/footer" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:contentDescription="interest chip group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:singleSelection="false"
+        app:selectionRequired="false"
+        app:layout_constraintStart_toStartOf="@+id/loan_options"
+        app:layout_constraintTop_toBottomOf="@+id/loan_options">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/insChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="Insurance" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/ptsChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="Points" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/jmbChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="Jumbo" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/loan_options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="30dp"
+        android:text="Choose Loan Options"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/header" />
+
+    <TextView
+        android:id="@+id/loan_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Loan Amount"
+        app:layout_constraintStart_toStartOf="@+id/chipGroup"
+        app:layout_constraintTop_toBottomOf="@+id/chipGroup" />
+
+    <SeekBar
+        android:id="@+id/loan_amount_scrubber"
+        android:contentDescription="loan amount indicator"
+        android:layout_width="335dp"
+        android:layout_height="21dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="@+id/loan_amount"
+        app:layout_constraintTop_toBottomOf="@+id/loan_amount" />
+
+    <TextView
+        android:id="@+id/loan_length_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Loan Length"
+        app:layout_constraintStart_toStartOf="@+id/loan_amount_scrubber"
+        app:layout_constraintTop_toBottomOf="@+id/loan_amount_scrubber" />
+
+    <Button
+        android:id="@+id/loan_length_increment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/nid_green_dark"
+        android:text="+"
+        app:layout_constraintStart_toStartOf="@+id/loan_length_label"
+        app:layout_constraintTop_toBottomOf="@+id/loan_length_label" />
+
+    <TextView
+        android:id="@+id/loan_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="0"
+        app:layout_constraintBottom_toBottomOf="@+id/loan_length_decrement"
+        app:layout_constraintEnd_toStartOf="@+id/loan_length_decrement"
+        app:layout_constraintStart_toEndOf="@+id/loan_length_increment"
+        app:layout_constraintTop_toTopOf="@+id/loan_length_decrement" />
+
+    <Button
+        android:id="@+id/loan_length_decrement"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:backgroundTint="@color/nid_green_dark"
+        android:text="-"
+        app:layout_constraintStart_toEndOf="@+id/loan_length"
+        app:layout_constraintTop_toTopOf="@+id/loan_length_increment" />
+
+
+    <Spinner
+        android:layout_centerInParent="true"
+        android:id="@+id/interest_rate_spinner"
+        android:layout_width="316dp"
+        android:layout_height="27dp"
+        app:layout_constraintStart_toStartOf="@+id/interest_rate_label"
+        app:layout_constraintTop_toBottomOf="@+id/interest_rate_label"
+        android:backgroundTint="@color/black" />
+
+    <TextView
+        android:id="@+id/interest_rate_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Interest Rate"
+        app:layout_constraintStart_toStartOf="@+id/loan_length_increment"
+        app:layout_constraintTop_toBottomOf="@+id/loan_length_increment" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

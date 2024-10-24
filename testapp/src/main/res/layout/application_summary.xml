@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/header"
+        layout="@layout/header" />
+
+    <TextView
+        android:id="@+id/personal_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:textColor="@color/nid_green_light"
+        android:text="@string/personal_information"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/header" />
+
+    <TextView
+        android:id="@+id/personal_info_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/personal_info_label"
+        app:layout_constraintTop_toBottomOf="@+id/personal_info_label" />
+
+    <TextView
+        android:id="@+id/personal_info_dob"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/personal_info_name"
+        app:layout_constraintTop_toBottomOf="@+id/personal_info_name" />
+
+    <TextView
+        android:id="@+id/contact_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/contact_information"
+        android:textSize="20sp"
+        android:textColor="@color/nid_green_light"
+        app:layout_constraintStart_toStartOf="@+id/personal_info_dob"
+        app:layout_constraintTop_toBottomOf="@+id/personal_info_dob" />
+
+    <TextView
+        android:id="@+id/contact_info_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/contact_info_label"
+        app:layout_constraintTop_toBottomOf="@+id/contact_info_label" />
+
+    <TextView
+        android:id="@+id/contact_info_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/contact_info_email"
+        app:layout_constraintTop_toBottomOf="@+id/contact_info_email" />
+
+    <TextView
+        android:id="@+id/address_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/address_information"
+        android:textSize="20sp"
+        android:textColor="@color/nid_green_light"
+        app:layout_constraintStart_toStartOf="@+id/contact_info_phone"
+        app:layout_constraintTop_toBottomOf="@+id/contact_info_phone" />
+
+    <TextView
+        android:id="@+id/address_info_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/address_info_label"
+        app:layout_constraintTop_toBottomOf="@+id/address_info_label" />
+
+    <TextView
+        android:id="@+id/address_info_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/address_info_address"
+        app:layout_constraintTop_toBottomOf="@+id/address_info_address" />
+
+    <TextView
+        android:id="@+id/address_info_zip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/address_info_city"
+        app:layout_constraintTop_toBottomOf="@+id/address_info_city" />
+
+    <TextView
+        android:id="@+id/employer_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/employer_information"
+        android:textSize="20sp"
+        android:textColor="@color/nid_green_light"
+        app:layout_constraintStart_toStartOf="@+id/address_info_zip"
+        app:layout_constraintTop_toBottomOf="@+id/address_info_zip" />
+
+    <TextView
+        android:id="@+id/employer_info_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/employer_info_label"
+        app:layout_constraintTop_toBottomOf="@+id/employer_info_label" />
+
+    <TextView
+        android:id="@+id/employer_info_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/employer_info_name"
+        app:layout_constraintTop_toBottomOf="@+id/employer_info_name" />
+
+    <TextView
+        android:id="@+id/employer_info_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/employer_info_address"
+        app:layout_constraintTop_toBottomOf="@+id/employer_info_address" />
+
+    <Button
+        android:id="@+id/home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:backgroundTint="@color/nid_green_light"
+        android:textColor="@color/white"
+        android:text="@string/back_to_home_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -33,6 +33,16 @@
 
 -keep class kotlinx.coroutines.** { *; }
 -keep class com.neuroid.tracker.** { *; }
+-keep class okhttp3.** { *; }
+
+-dontwarn com.oracle.svm.core.annotate.AutomaticFeature
+-dontwarn com.oracle.svm.core.annotate.Delete
+-dontwarn com.oracle.svm.core.annotate.Substitute
+-dontwarn com.oracle.svm.core.annotate.TargetClass
+-dontwarn com.oracle.svm.core.configure.ResourcesRegistry
+-dontwarn org.graalvm.nativeimage.ImageSingletons
+-dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature
 
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);

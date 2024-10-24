@@ -11,3 +11,4 @@ dependencyResolutionManagement {
 rootProject.name = "NeuroIdAndroidSdk"
 include ':app'
 include ':NeuroID'
+include ':testapp'

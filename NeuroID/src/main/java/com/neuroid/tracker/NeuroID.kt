@@ -137,6 +137,10 @@ class NeuroID
                     endpoint = Constants.devEndpoint.displayName
                     scriptEndpoint = Constants.devScriptsEndpoint.displayName
                 }
+                TEST -> {
+                    endpoint = Constants.testScriptEndpoint.displayName
+                    scriptEndpoint = Constants.testScriptEndpoint.displayName
+                }
                 else -> {
                     endpoint = Constants.productionEndpoint.displayName
                     scriptEndpoint = Constants.productionScriptsEndpoint.displayName
@@ -326,6 +330,7 @@ class NeuroID
         companion object {
             const val PRODUCTION = "production"
             const val DEVELOPMENT = "development"
+            const val TEST = "test"
             const val PRODSCRIPT_DEVCOLLECTION = "prodscriptdevcollection"
 
             // public exposed variable to determine if logs should show see

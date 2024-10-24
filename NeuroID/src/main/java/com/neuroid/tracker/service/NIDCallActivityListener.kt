@@ -28,7 +28,7 @@ class NIDCallActivityListener(
     private var callStateActive = false
     // for phones < API 31
     private var phoneStateListener: PhoneStateListener? = null
-    // for phones >= API 31
+    // for phones >= API 31 (S)
     private var customTelephonyCallback: CustomTelephonyCallback? = null
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -60,14 +60,15 @@ class NIDCallActivityListener(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
     fun unregisterCallActivityListener(context: Context?) {
         if (isReceiverRegistered) {
             context?.unregisterReceiver(this)
         }
         isReceiverRegistered = false
         phoneStateListener = null
-        customTelephonyCallback = null
+        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
+            customTelephonyCallback = null
+        }
     }
 
     fun saveCallInProgressEvent(state: Int) {

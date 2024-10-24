@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="nid_green_light">#FF4E9385</color>
+    <color name="nid_green_dark">#FF67DD72</color>
+    <color name="nid_red_light">#FFEA3829</color>
+    <color name="nid_red_dark">#FFFF4C3D</color>
+    <color name="nid_blue">#FF0000FF</color>
+    <color name="nid_gray">#35808080</color>
+</resources>
