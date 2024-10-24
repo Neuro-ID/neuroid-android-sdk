@@ -164,19 +164,16 @@ class LoginSignupTestRunner {
             // splash page
             Espresso.onView(ViewMatchers.withId(R.id.login))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // login page
             composeTestRule.onNodeWithTag("email").performTextInput(
                 "${ApplicationMain.registeredUserName}${ApplicationMain.registeredSessionId}"
             )
             composeTestRule.onNodeWithTag("login_button").performClick()
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // instruction page
             Espresso.onView(ViewMatchers.withId(R.id.start_application_button))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             //simulator
             setClipboardText("firstName")
@@ -196,7 +193,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // loan application
             Espresso.onView(ViewMatchers.withId(R.id.insChip))
@@ -207,7 +203,6 @@ class LoginSignupTestRunner {
                 .perform(SetSeekBarProgress(50))
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // contact information
             Espresso.onView(ViewMatchers.withId(R.id.email))
@@ -220,7 +215,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // address information
             Espresso.onView(ViewMatchers.withId(R.id.address))
@@ -233,7 +227,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // employer information
             Espresso.onView(ViewMatchers.withId(R.id.employer_name))
@@ -256,17 +249,14 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // application summary
             Espresso.onView(ViewMatchers.withId(R.id.home))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // instruction page
             Espresso.onView(ViewMatchers.withId(R.id.send_money_button))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // send money page
             setClipboardText("illegal activities")
@@ -292,7 +282,7 @@ class LoginSignupTestRunner {
         job.join()
 
         // verify event count
-        eventRecorder?.verifyEventList(436)
+        eventRecorder?.verifyEventList(434)
     }
 
     @Test
@@ -312,7 +302,6 @@ class LoginSignupTestRunner {
             // splash page
             Espresso.onView(ViewMatchers.withId(R.id.signup))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // signup page
             // personal information
@@ -324,7 +313,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.continue_button))
                 .perform(ViewActions.click())
-           //Thread.sleep((Math.random() * 2000).toLong())
 
             // personal information two
             Espresso.onView(ViewMatchers.withId(R.id.name))
@@ -333,7 +321,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.signup_button))
                 .perform(ViewActions.click())
-           //Thread.sleep((Math.random() * 2000).toLong())
 
             // personal information three
             Espresso.onView(ViewMatchers.withId(R.id.name))
@@ -342,12 +329,10 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.signup_button))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // instruction page
             Espresso.onView(ViewMatchers.withId(R.id.start_application_button))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // personal information
             Espresso.onView(ViewMatchers.withId(R.id.firstname))
@@ -360,7 +345,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // loan application
             Espresso.onView(ViewMatchers.withId(R.id.insChip))
@@ -371,7 +355,6 @@ class LoginSignupTestRunner {
                 .perform(SetSeekBarProgress(50))
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // contact information
             Espresso.onView(ViewMatchers.withId(R.id.email))
@@ -397,7 +380,6 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // employer information
             Espresso.onView(ViewMatchers.withId(R.id.employer_name))
@@ -420,17 +402,14 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.closeSoftKeyboard())
             Espresso.onView(ViewMatchers.withId(R.id.next))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // application summary
             Espresso.onView(ViewMatchers.withId(R.id.home))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // instruction page
             Espresso.onView(ViewMatchers.withId(R.id.send_money_button))
                 .perform(ViewActions.click())
-            //Thread.sleep((Math.random() * 2000).toLong())
 
             // send money page
             Espresso.onView(ViewMatchers.withId(R.id.description))
@@ -454,6 +433,6 @@ class LoginSignupTestRunner {
         job.join()
 
         // verify event count
-        eventRecorder?.verifyEventList(492)
+        eventRecorder?.verifyEventList(480)
     }
 }
