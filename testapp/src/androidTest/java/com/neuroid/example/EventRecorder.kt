@@ -19,19 +19,17 @@ class EventRecorder {
      * JSON expected result and compare with the events received from
      * the app.
      */
-    fun verifyEventList(expectedEventCount: Int) {
+    fun verifyEventList(expectedEventCount: Int, eventCountVariance: Int) {
         var eventCount = 0
-        println("printEventList --------start----------")
         eventBuffer.forEach { eventModel ->
             eventModel.jsonEvents.forEach { jsonEventModel ->
                 eventCount ++
             }
         }
-        println("printEventList--------end count: expected: $expectedEventCount, actual: $eventCount ----------")
         // some emulators will returns different events counts, we can approximate this check to
         // account for the variance here and get a ballpark result here
-        assertTrue("expectedEventCount: ${expectedEventCount} ~ eventCount: ${eventCount} +-20 ",
-            (eventCount >= expectedEventCount - 20 || eventCount <= expectedEventCount + 20)
+        assertTrue("expectedEventCount: ${expectedEventCount} ~ eventCount: ${eventCount} +-$eventCountVariance ",
+            (eventCount >= expectedEventCount - eventCountVariance && eventCount <= expectedEventCount + eventCountVariance)
         )
         eventBuffer.clear()
     }

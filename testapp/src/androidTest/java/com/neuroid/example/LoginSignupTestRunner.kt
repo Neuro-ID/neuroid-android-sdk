@@ -49,12 +49,11 @@ class LoginSignupTestRunner {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-//    // set starting activity here, in this case this is the Splash activity
-//    @get:Rule
-//    var activityRule: ActivityScenarioRule<Splash> =
-//        ActivityScenarioRule(Splash::class.java)
-
     companion object {
+        val eventCountVariance = 20
+        var endSleep = 10000L
+        var signupEventCount = 480
+        var loginEventCount = 424
 
         @BeforeClass
         @JvmStatic
@@ -277,12 +276,12 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.click())
 
             // allow time for the SDK to dump the event queue before terminating (1 minute)
-            Thread.sleep(10000)
+            Thread.sleep(endSleep)
         }
         job.join()
 
         // verify event count
-        eventRecorder?.verifyEventList(424)
+        eventRecorder?.verifyEventList(loginEventCount, eventCountVariance)
     }
 
     @Test
@@ -428,11 +427,11 @@ class LoginSignupTestRunner {
                 .perform(ViewActions.click())
 
             // allow time for the SDK to dump the event queue before terminating (1 minute)
-            Thread.sleep(10000)
+            Thread.sleep(endSleep)
         }
         job.join()
 
         // verify event count
-        eventRecorder?.verifyEventList(480)
+        eventRecorder?.verifyEventList(signupEventCount, eventCountVariance)
     }
 }
