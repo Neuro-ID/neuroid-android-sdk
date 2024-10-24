@@ -282,7 +282,7 @@ class LoginSignupTestRunner {
         job.join()
 
         // verify event count
-        eventRecorder?.verifyEventList(434)
+        eventRecorder?.verifyEventList(438)
     }
 
     @Test
