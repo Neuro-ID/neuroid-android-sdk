@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/header"
+        layout="@layout/header" />
+
+    <SeekBar
+        android:id="@+id/send_amount_scrubber"
+        android:layout_width="300dp"
+        android:layout_height="21dp"
+        app:layout_constraintStart_toStartOf="@+id/send_amount_label"
+        app:layout_constraintTop_toBottomOf="@+id/send_amount_label" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/receiver"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="receiver"
+        android:contentDescription="receiver email"
+        app:layout_constraintStart_toStartOf="@+id/receiver_label"
+        app:layout_constraintTop_toBottomOf="@+id/receiver_label" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/description"
+        android:layout_width="300dp"
+        android:contentDescription="recevier description"
+        android:layout_height="wrap_content"
+        android:hint="description"
+        app:layout_constraintStart_toStartOf="@+id/description_label"
+        app:layout_constraintTop_toBottomOf="@+id/description_label" />
+
+    <TextView
+        android:id="@+id/send_amount_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Send Amount"
+        app:layout_constraintStart_toStartOf="@+id/description"
+        app:layout_constraintTop_toBottomOf="@+id/description" />
+
+    <TextView
+        android:id="@+id/receiver_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="20dp"
+        android:text="Receiver"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/header" />
+
+    <TextView
+        android:id="@+id/description_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Description"
+        app:layout_constraintStart_toStartOf="@+id/receiver"
+        app:layout_constraintTop_toBottomOf="@+id/receiver" />
+
+    <Button
+        android:id="@+id/submit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:backgroundTint="@color/nid_green_light"
+        android:text="Submit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

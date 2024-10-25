@@ -1,0 +1,31 @@
+<resources>
+    <string name="address_hint">Address</string>
+    <string name="zip_hint">Zip</string>
+    <string name="city_hint">City</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="contact_information">Contact Information</string>
+    <string name="address_information">Address Information</string>
+    <string name="employer_information">Employer Information</string>
+    <string name="back_to_home_button">Back to Home</string>
+    <string name="email_hint">Email</string>
+    <string name="phone_hint">Phone</string>
+    <string name="employer_name_hint">Employer Name</string>
+    <string name="employer_address_hint">Employer Address</string>
+    <string name="employer_phone_hint">Employer Phone</string>
+    <string name="continue_button">Continue</string>
+    <string name="instructions_one">Welcome! You\'re one step away from checking your loan options.</string>
+    <string name="instructions_two">Checking your loan options does not affect your credit score.</string>
+    <string name="new_application">New Application</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="date_of_birth">Date Of Birth</string>
+    <string name="app_name">neuroid-android-legacy-sandbox</string>
+    <string name="application_summary">Application Summary</string>
+    <string name="get_started">Get Started</string>
+    <string name="app_version">5.android-layout.123</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="eula">Read our <u>Terms Of Usage</u> here.</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+</resources>

@@ -42,7 +42,7 @@ jobs:
         run: bash ./gradlew :NeuroID:assemble
 
   test:
-    name: SDK Test
+    name: SDK Unit Test
     runs-on: ubuntu-latest
 
     steps:
@@ -67,8 +67,20 @@ jobs:
       - name: Unit Test NeuroId (ReactNative)
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
 
-        # Execute unit tests
-      - name: Unit Test
+  android_sdk_integration_test_layout_app:
+    runs-on: [macos-12]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      # Execute integration sample tests
+      - name: Integration Test Sample app (compose)
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 29
@@ -76,7 +88,31 @@ jobs:
           cores: 4
           ram-size: 4096M
           heap-size: 2048M
-          timeout-minutes: 30
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
+
+  android_sdk_integration_test_sample_app:
+    runs-on: [ macos-12 ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      # Execute integration sample tests
+      - name: Integration Test Sample app (compose)
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          profile: Nexus 6P
+          cores: 4
+          ram-size: 4096M
+          heap-size: 2048M
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :app:connectedandroidLibDebugAndroidTest
