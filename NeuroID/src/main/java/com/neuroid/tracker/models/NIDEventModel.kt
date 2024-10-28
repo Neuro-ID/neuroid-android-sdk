@@ -20,7 +20,9 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.events.PASTE
+import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
 import com.neuroid.tracker.events.REGISTER_TARGET
+import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SELECT_CHANGE
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -201,6 +203,8 @@ data class NIDEventModel(
         NIDLog.d(Constants.debugEventTag.displayName, "") {
             var contextString: String? = ""
             when (this.type) {
+                PAUSE_EVENT_CAPTURE -> contextString = ""
+                RESUME_EVENT_CAPTURE -> contextString = ""
                 SET_USER_ID -> contextString = "uid=${this.uid}"
                 CREATE_SESSION -> contextString = "cid=${this.cid}, sh=${this.sh}, sw=${this.sw}"
                 APPLICATION_SUBMIT -> contextString = ""

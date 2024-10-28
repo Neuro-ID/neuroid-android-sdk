@@ -5,6 +5,8 @@ import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
+import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.getMockSampleService
 import com.neuroid.tracker.getMockedCallActivityListener
@@ -478,7 +480,7 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedJobServiceManager.sendEvents(true)
-
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
         }
 
@@ -514,6 +516,10 @@ class NIDSessionServiceTest {
 
         sessionService.pauseCollection(true)
 
+        verify(exactly = 1) {
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
+        }
+
         verify(exactly = 0) {
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
@@ -547,6 +553,10 @@ class NIDSessionServiceTest {
             )
 
         sessionService.resumeCollection()
+
+        verify(exactly = 1) {
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
+        }
 
         verify(exactly = 0) {
             mockedJobServiceManager.startJob(any(), any())
@@ -594,6 +604,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -641,6 +652,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false

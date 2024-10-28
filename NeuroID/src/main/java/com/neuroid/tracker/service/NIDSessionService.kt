@@ -7,6 +7,8 @@ import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
+import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.SessionStartResult
@@ -154,6 +156,7 @@ internal class NIDSessionService(
 
     @Synchronized
     internal fun pauseCollection(flushEvents: Boolean) {
+        neuroID.captureEvent(queuedEvent = true, type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
         NeuroID._isSDKStarted = false
         if (neuroID.pauseCollectionJob == null ||
             neuroID.pauseCollectionJob?.isCancelled == true ||
@@ -174,6 +177,7 @@ internal class NIDSessionService(
 
     @Synchronized
     fun resumeCollection() {
+        neuroID.captureEvent(type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
         if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
             return
