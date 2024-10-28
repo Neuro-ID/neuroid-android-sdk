@@ -156,7 +156,7 @@ internal class NIDSessionService(
 
     @Synchronized
     internal fun pauseCollection(flushEvents: Boolean) {
-        neuroID.captureEvent(queuedEvent = true, type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
+        neuroID.captureEvent(type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
         NeuroID._isSDKStarted = false
         if (neuroID.pauseCollectionJob == null ||
             neuroID.pauseCollectionJob?.isCancelled == true ||
@@ -177,7 +177,7 @@ internal class NIDSessionService(
 
     @Synchronized
     fun resumeCollection() {
-        neuroID.captureEvent(type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
+        neuroID.captureEvent(queuedEvent = true, type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
         if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
             return
