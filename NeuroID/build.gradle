@@ -134,7 +134,7 @@ dependencies {
 
     reactNativeImplementation("com.facebook.react:react-android:0.71.0-rc.1")
 
-    advancedDeviceLibImplementation("com.fingerprint.android:pro:2.3.2") {
+    advancedDeviceLibImplementation("com.fingerprint.android:pro:2.5.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
