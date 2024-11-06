@@ -4,4 +4,4 @@ before_install:
   - sdk use java 17.0.13-zulu
 install:
   # only build and publish NeuroID module
-  - ./gradlew :NeuroID:publishToMavenLocal
+  - ./gradlew -Pgroup=$GROUP -Pversion=$VERSION :NeuroID:publishToMavenLocal
