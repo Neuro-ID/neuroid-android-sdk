@@ -9,8 +9,6 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
 import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
 import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
-import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
-import com.neuroid.tracker.extensions.startIntegrationHealthCheck
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -64,9 +62,9 @@ internal class NIDSessionService(
         NeuroID._isSDKStarted = true
 
         CoroutineScope(neuroID.dispatcher).launch {
-            neuroID.startIntegrationHealthCheck()
+            neuroID.integrationHealthService?.startIntegrationHealthCheck()
             createSession()
-            neuroID.saveIntegrationHealthEvents()
+            neuroID.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -166,7 +164,7 @@ internal class NIDSessionService(
                 CoroutineScope(neuroID.dispatcher).launch {
                     neuroID.nidJobServiceManager?.sendEvents(flushEvents)
                     neuroID.nidJobServiceManager?.stopJob()
-                    neuroID.saveIntegrationHealthEvents()
+                    neuroID.integrationHealthService?.saveIntegrationHealthEvents()
                 }
         }
 
@@ -407,7 +405,7 @@ internal class NIDSessionService(
                 val deferred =
                     CoroutineScope(neuroID.dispatcher).async {
                         neuroID.nidJobServiceManager?.sendEvents(true)
-                        neuroID.saveIntegrationHealthEvents()
+                        neuroID.integrationHealthService?.saveIntegrationHealthEvents()
                     }
 
                 deferred.await()
