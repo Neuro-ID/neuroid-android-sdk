@@ -26,8 +26,7 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_VARIABLE
-import com.neuroid.tracker.extensions.captureIntegrationHealthEvent
-import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
+import com.neuroid.tracker.extensions.IntegrationHealthService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
@@ -90,8 +89,6 @@ class NeuroID
         internal var metaData: NIDMetaData? = null
 
         internal var verifyIntegrationHealth: Boolean = false
-        internal var debugIntegrationHealthEvents: MutableList<NIDEventModel> =
-            mutableListOf<NIDEventModel>()
 
         internal var isRN = false
 
@@ -113,6 +110,8 @@ class NeuroID
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
         internal lateinit var locationService: LocationService
+
+        internal var integrationHealthService: IntegrationHealthService? = null
 
         internal var clipboardManager: ClipboardManager? = null
         internal var networkConnectionType = "unknown"
@@ -259,6 +258,11 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
+
+            integrationHealthService = IntegrationHealthService(
+                logger,
+                this
+            )
         }
 
         fun incrementPacketNumber() {
@@ -666,12 +670,20 @@ class NeuroID
 
         internal fun getFirstTS(): Long = timestamp
 
+        override fun setVerifyIntegrationHealth(verify: Boolean) {
+            this.integrationHealthService?.setVerifyIntegrationHealth(verify)
+        }
+
+        override fun printIntegrationHealthInstruction() {
+            this.integrationHealthService?.printIntegrationHealthInstruction()
+        }
+
         @Deprecated("formSubmit is deprecated and no longer required")
         override fun formSubmit() {
             logger.i(msg = "**** NOTE: formSubmit METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT)
-            saveIntegrationHealthEvents()
+            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         @Deprecated("formSubmitSuccess is deprecated and no longer required")
@@ -679,7 +691,7 @@ class NeuroID
             logger.i(msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT_SUCCESS)
-            saveIntegrationHealthEvents()
+            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         @Deprecated("formSubmitFailure is deprecated and no longer required")
@@ -687,7 +699,7 @@ class NeuroID
             logger.i(msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT_FAILURE)
-            saveIntegrationHealthEvents()
+            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         override fun start(completion: (Boolean) -> Unit) =
@@ -992,7 +1004,7 @@ class NeuroID
             }
 
             event.log()
-            captureIntegrationHealthEvent(event)
+            this.integrationHealthService?.captureIntegrationHealthEvent(event)
 
             when (type) {
                 BLUR -> {

@@ -68,7 +68,7 @@ jobs:
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
 
   android_sdk_integration_test_layout_app:
-    runs-on: [macos-12]
+    runs-on: [macos-13]
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -93,7 +93,7 @@ jobs:
           script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
 
   android_sdk_integration_test_sample_app:
-    runs-on: [ macos-12 ]
+    runs-on: [ macos-13 ]
     steps:
       - name: checkout
         uses: actions/checkout@v4

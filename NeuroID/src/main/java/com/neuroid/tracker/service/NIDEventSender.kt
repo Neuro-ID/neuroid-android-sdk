@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.OUT_OF_MEMORY
-import com.neuroid.tracker.extensions.saveIntegrationHealthEvents
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -77,7 +76,7 @@ class NIDEventSender(
 
             NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
 
-            NeuroID.getInternalInstance()?.saveIntegrationHealthEvents()
+            NeuroID.getInternalInstance()?.integrationHealthService?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload
