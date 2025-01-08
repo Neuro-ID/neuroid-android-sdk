@@ -754,8 +754,8 @@ class NeuroID
 
         override fun getUserID() = identifierService.getUserID()
 
-        override fun setUserID(userID: String): Boolean {
-            return identifierService.setUserID(userID, true)
+        override fun identify(sessionID: String): Boolean {
+            return identifierService.setSessionID(sessionID, true)
         }
 
         override fun getRegisteredUserID() = identifierService.getRegisteredUserID()
@@ -791,12 +791,12 @@ class NeuroID
          */
         override fun startAppFlow(
             siteID: String,
-            userID: String?,
+            sessionID: String?,
             completion: (SessionStartResult) -> Unit,
         ) {
             sessionService.startAppFlow(
                 siteID,
-                userID,
+                sessionID,
             ) {
                 completion(it)
             }

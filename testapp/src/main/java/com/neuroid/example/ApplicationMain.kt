@@ -34,7 +34,7 @@ class ApplicationMain : Application() {
     }
 
     fun setUserID(userId: String) {
-        NeuroID.getInstance()?.setUserID(userId)
+        NeuroID.getInstance()?.identify(userId)
     }
 
     fun stopTracking() {
