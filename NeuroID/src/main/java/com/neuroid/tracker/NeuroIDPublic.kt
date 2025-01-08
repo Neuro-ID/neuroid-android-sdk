@@ -48,7 +48,7 @@ interface NeuroIDPublic {
     /**
      * Set a user id.
      */
-    fun setUserID(userID: String): Boolean
+    fun identify(userID: String): Boolean
 
     /**
      * Deprecated, do not use!

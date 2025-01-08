@@ -133,7 +133,7 @@ internal class NIDSessionService(
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID(true)
-        if (!identifierService.setUserID(finalSessionID, sessionID != null)) {
+        if (!identifierService.setSessionID(finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }
@@ -266,14 +266,14 @@ internal class NIDSessionService(
 
     fun startAppFlow(
         siteID: String,
-        userID: String? = null,
+        sessionID: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     ) {
         neuroID.captureEvent(
             type = LOG,
             level = "info",
-            m = "startAppFlow attempt - siteID:$siteID - userID:${if (userID != null) {
-                validationService.scrubIdentifier(userID)
+            m = "startAppFlow attempt - siteID:$siteID - userID:${if (sessionID != null) {
+                validationService.scrubIdentifier(sessionID)
             } else {
                 "null"
             }}",
@@ -327,10 +327,10 @@ internal class NIDSessionService(
                 //  (which will get the config using passed siteID)
 
                 // if userID passed then startSession should be used
-                if (!userID.isNullOrEmpty()) {
+                if (!sessionID.isNullOrEmpty()) {
                     startSession(
                         siteID,
-                        userID,
+                        sessionID,
                     ) {
                         completion(it)
                     }
