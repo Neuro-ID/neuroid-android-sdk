@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Defined build flavors
-flavors=("androidLib" "reactNativeLib" "reactNativeAdvancedDeviceLib")
+flavors=("androidLib" "reactNativeLib")
 
 # Iterate over the flavors
 for flavor in "${flavors[@]}"
