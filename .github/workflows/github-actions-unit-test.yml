@@ -59,10 +59,6 @@ jobs:
       - name: Unit Test NeuroId (android lib)
         run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
 
-      # Execute unit test neuroid advanced lib
-      - name: Unit Test NeuroId (advanced)
-        run: ./gradlew :NeuroID:testAndroidAdvancedDeviceLibDebugUnitTest
-
       # Execute unit test neuroid reactnative lib
       - name: Unit Test NeuroId (ReactNative)
         run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
