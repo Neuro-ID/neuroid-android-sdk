@@ -27,10 +27,12 @@ import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.IntegrationHealthService
+import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
@@ -540,61 +542,15 @@ class NeuroID
         }
 
         /**
-         * Execute the captureAdvancedDevice() method without knowing if the class that holds
-         * it exists. Required because we moved the ADV setup to the start()/startSession()
-         * methods.
+         * Execute the captureAdvancedDevice() method, removed the reflection code since this is
+         * no longer needed. Just call the captureAdvancedDevice() extension method directly
+         * since we moved the FPJS library permanently into the SDK.
          *
-         * This method will look for the AdvancedDeviceExtension file, create a class from it, find
-         * the method captureAdvancedDevice() within the extension class and call it with the
-         * shouldCapture boolean if the advanced lib is used. If this is called in the non advanced lib,
-         * the method will look for the AdvancedDeviceExtension file, not find it and fail the
-         * Class.forName() call which will throw a ClassNotFoundException because it doesn't exist.
-         * We catch this exception and log it to logcat.
-         *
-         * We must handle all exceptions that this method may
-         * throw because of the undependable nature of reflection. We cannot afford to throw any
-         * exception to the host app causing a crash because of this .
-         * Set isAdvancedFlag to false if method fails to invoke captureAdvancedDevice().
+         * Keeping this wrapper around just in case we have to do something similar in the
+         * future.
          */
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
-            val packageName = "com.neuroid.tracker.extensions"
-            val methodName = "captureAdvancedDevice"
-            val extensionName = ".AdvancedDeviceExtensionKt"
-            try {
-                val extensionFunctions = Class.forName(packageName + extensionName)
-                val method =
-                    extensionFunctions.getDeclaredMethod(
-                        methodName,
-                        NeuroID::class.java,
-                        Boolean::class.java,
-                    )
-                if (method != null) {
-                    method.isAccessible = true
-                    // Invoke the method
-                    method.invoke(null, this, shouldCapture)
-                    logger.d(msg = "Method $methodName invoked successfully")
-                } else {
-                    logger.d(msg = "No $methodName method found")
-                    // reset advanced device flag to false, no method in class to invoke or
-                    // wrong parameters
-                    isAdvancedDevice = false
-                    captureEvent(
-                        type = LOG,
-                        m = "isAdvancedDevice reset to $isAdvancedDevice, no method in class to invoke",
-                        level = "error",
-                    )
-                }
-            } catch (e: ClassNotFoundException) {
-                logger.e(msg = "Class $packageName$extensionName not found")
-                // reset advanced device flag to false, no class to invoke from
-                isAdvancedDevice = false
-                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, no class to invoke from", level = "INFO")
-            } catch (e: Exception) {
-                logger.e(msg = "Failed to perform $methodName: with error: ${e.message}")
-                // reset advanced device flag to false, don't know what happened
-                isAdvancedDevice = false
-                captureEvent(type = LOG, m = "isAdvancedDevice reset to $isAdvancedDevice, error: ${e.message}", level = "error")
-            }
+            captureAdvancedDevice(shouldCapture)
         }
 
         override fun setScreenName(screen: String): Boolean {

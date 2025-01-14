@@ -71,9 +71,6 @@ android {
         lib {
             dimension "adv"
         }
-        advancedDeviceLib {
-            dimension "adv"
-        }
     }
 
     libraryVariants.all { variant ->
@@ -134,7 +131,7 @@ dependencies {
 
     reactNativeImplementation("com.facebook.react:react-android:0.71.0-rc.1")
 
-    advancedDeviceLibImplementation("com.fingerprint.android:pro:2.5.0") {
+    implementation("com.fingerprint.android:pro:2.5.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
@@ -182,44 +179,6 @@ afterEvaluate {
 
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant$debugVariant"
-                version = versionName
-            }
-
-            // Creates a Maven publication called "release".
-            androidAdvancedDeviceLibRelease(MavenPublication) {
-                // Applies the component for the release build variant.
-                from components.androidAdvancedDeviceLibRelease
-
-                // You can then customize attributes of the publication as shown below.
-                groupId = nameSpace
-                artifactId = "android-$advancedDeviceVariant-sdk"
-                version = versionName
-            }
-            // Creates a Maven publication called “debug”.
-            androidAdvancedDeviceLibDebug(MavenPublication) {
-                // Applies the component for the debug build variant.
-                from components.androidAdvancedDeviceLibDebug
-
-                groupId = nameSpace
-                artifactId = "android-$advancedDeviceVariant-sdk$debugVariant"
-                version = versionName
-            }
-            reactNativeAdvancedDeviceLibRelease(MavenPublication) {
-                // Applies the component for the release build variant.
-                from components.reactNativeAdvancedDeviceLibRelease
-
-                // You can then customize attributes of the publication as shown below.
-                groupId = nameSpace
-                artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk"
-                version = versionName
-            }
-            // Creates a Maven publication called “debug”.
-            reactNativeAdvancedDeviceLibDebug(MavenPublication) {
-                // Applies the component for the debug build variant.
-                from components.reactNativeAdvancedDeviceLibDebug
-
-                groupId = nameSpace
-                artifactId = "$reactNativeVariant-android-$advancedDeviceVariant-sdk$debugVariant"
                 version = versionName
             }
         }
