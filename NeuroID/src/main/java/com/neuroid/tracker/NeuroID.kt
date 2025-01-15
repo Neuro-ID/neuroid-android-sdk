@@ -618,12 +618,14 @@ class NeuroID
 
         internal fun getFirstTS(): Long = timestamp
 
+        @Deprecated("setVerifyIntegrationHealth is deprecated")
         override fun setVerifyIntegrationHealth(verify: Boolean) {
-            // do nothing, removed from debug, kept for backward compatibility
+            logger.i(msg="**** NOTE: THIS METHOD IS DEPRECATED AND IS NO LONGER FUNCTIONAL")
         }
 
+        @Deprecated("printIntegrationHealthInstruction is deprecated")
         override fun printIntegrationHealthInstruction() {
-            // do nothing, removed from debug, kept for backward compatibility
+            logger.i(msg="**** NOTE: THIS METHOD IS DEPRECATED AND IS NO LONGER FUNCTIONAL")
         }
 
         @Deprecated("formSubmit is deprecated and no longer required")
