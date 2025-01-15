@@ -62,9 +62,7 @@ internal class NIDSessionService(
         NeuroID._isSDKStarted = true
 
         CoroutineScope(neuroID.dispatcher).launch {
-            neuroID.integrationHealthService?.startIntegrationHealthCheck()
             createSession()
-            neuroID.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
@@ -164,7 +162,6 @@ internal class NIDSessionService(
                 CoroutineScope(neuroID.dispatcher).launch {
                     neuroID.nidJobServiceManager?.sendEvents(flushEvents)
                     neuroID.nidJobServiceManager?.stopJob()
-                    neuroID.integrationHealthService?.saveIntegrationHealthEvents()
                 }
         }
 
@@ -405,7 +402,6 @@ internal class NIDSessionService(
                 val deferred =
                     CoroutineScope(neuroID.dispatcher).async {
                         neuroID.nidJobServiceManager?.sendEvents(true)
-                        neuroID.integrationHealthService?.saveIntegrationHealthEvents()
                     }
 
                 deferred.await()

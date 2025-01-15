@@ -26,7 +26,6 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_VARIABLE
-import com.neuroid.tracker.extensions.IntegrationHealthService
 import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
@@ -112,8 +111,6 @@ class NeuroID
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
         internal lateinit var locationService: LocationService
-
-        internal var integrationHealthService: IntegrationHealthService? = null
 
         internal var clipboardManager: ClipboardManager? = null
         internal var networkConnectionType = "unknown"
@@ -260,11 +257,6 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
-
-            integrationHealthService = IntegrationHealthService(
-                logger,
-                this
-            )
         }
 
         fun incrementPacketNumber() {
@@ -627,11 +619,11 @@ class NeuroID
         internal fun getFirstTS(): Long = timestamp
 
         override fun setVerifyIntegrationHealth(verify: Boolean) {
-            this.integrationHealthService?.setVerifyIntegrationHealth(verify)
+            // do nothing, removed from debug, kept for backward compatibility
         }
 
         override fun printIntegrationHealthInstruction() {
-            this.integrationHealthService?.printIntegrationHealthInstruction()
+            // do nothing, removed from debug, kept for backward compatibility
         }
 
         @Deprecated("formSubmit is deprecated and no longer required")
@@ -639,7 +631,6 @@ class NeuroID
             logger.i(msg = "**** NOTE: formSubmit METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT)
-            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         @Deprecated("formSubmitSuccess is deprecated and no longer required")
@@ -647,7 +638,6 @@ class NeuroID
             logger.i(msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT_SUCCESS)
-            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         @Deprecated("formSubmitFailure is deprecated and no longer required")
@@ -655,7 +645,6 @@ class NeuroID
             logger.i(msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED")
 
             captureEvent(type = FORM_SUBMIT_FAILURE)
-            this.integrationHealthService?.saveIntegrationHealthEvents()
         }
 
         override fun start(completion: (Boolean) -> Unit) =
@@ -960,7 +949,6 @@ class NeuroID
             }
 
             event.log()
-            this.integrationHealthService?.captureIntegrationHealthEvent(event)
 
             when (type) {
                 BLUR -> {

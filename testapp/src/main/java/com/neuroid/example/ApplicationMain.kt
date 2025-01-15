@@ -2,7 +2,6 @@ package com.neuroid.example
 
 import android.app.Application
 import com.neuroid.tracker.NeuroID
-import com.neuroid.tracker.extensions.setVerifyIntegrationHealth
 
 class ApplicationMain : Application() {
     companion object {

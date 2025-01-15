@@ -10,6 +10,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
@@ -28,7 +29,21 @@ import kotlin.time.Duration
 @LargeTest
 @ExperimentalCoroutinesApi
 class SandBoxTest {
-
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setupClass() {
+            val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
+            listOf(
+                "settings put global window_animation_scale 0",
+                "settings put global transition_animation_scale 0",
+                "settings put global animator_duration_scale 0"
+            ).forEach { command ->
+                uiAutomation.executeShellCommand(command).close()
+            }
+        }
+    }
+    
     @Before
     fun init() {
         // set dev to scripts and collection endpoint
