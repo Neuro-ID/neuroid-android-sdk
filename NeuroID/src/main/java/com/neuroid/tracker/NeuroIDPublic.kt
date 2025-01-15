@@ -14,11 +14,13 @@ interface NeuroIDPublic {
     /**
      * Enable/Disable a Debug Integration Health Report to be generated. (Note: Debug Build Only)
      */
+    @Deprecated("setVerifyIntegrationHealth is deprecated")
     fun setVerifyIntegrationHealth(verify:Boolean)
 
     /**
      * Print Instructions to locate and run Debug Integration Health Report. (Note: Debug Build Only)
      */
+    @Deprecated("printIntegrationHealthInstruction is deprecated")
     fun printIntegrationHealthInstruction()
 
     /**
