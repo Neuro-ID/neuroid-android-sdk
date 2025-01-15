@@ -10,8 +10,6 @@ import android.location.LocationManager
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
-import com.neuroid.tracker.extensions.IntegrationHealthService
-import com.neuroid.tracker.models.IntegrationHealthProtocol
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.models.NIDSensorModel
@@ -52,7 +50,6 @@ internal fun getMockedNeuroID(
     mockLocationService: LocationService = getMockedLocationService(),
     mockCallActivityListener: NIDCallActivityListener = getMockedCallActivityListener(),
     mockSessionService: NIDSessionService = getMockedSessionService(),
-    mockIntegrationHealthService: IntegrationHealthService = getMockedIntegrationHealthService()
 ): NeuroID {
     val nidMock = mockk<NeuroID>()
 
@@ -86,8 +83,6 @@ internal fun getMockedNeuroID(
 
     every { nidMock.forceStart } returns forceStart
     every { nidMock.shouldForceStart() } returns forceStart
-
-    every {nidMock.integrationHealthService} returns mockIntegrationHealthService
 
     every { nidMock.metaData?.getLastKnownLocation(any(), any(), any()) } returns Unit
 
@@ -341,16 +336,6 @@ internal fun getMockedSessionService(): NIDSessionService {
     every { mockedSessionService.createMobileMetadata() } just runs
 
     return mockedSessionService
-}
-
-internal fun getMockedIntegrationHealthService():IntegrationHealthService {
-    val mockedIntegrationHealthService = mockk<IntegrationHealthService>()
-
-    every {mockedIntegrationHealthService.saveIntegrationHealthEvents()} just runs
-    every {mockedIntegrationHealthService.setVerifyIntegrationHealth(any())} just runs
-    every {mockedIntegrationHealthService.startIntegrationHealthCheck()} just runs
-
-    return mockedIntegrationHealthService
 }
 
 internal fun getMockedHTTPService(

@@ -75,8 +75,6 @@ class NIDEventSender(
             data = getRequestPayloadJSON(events)
 
             NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
-
-            NeuroID.getInternalInstance()?.integrationHealthService?.saveIntegrationHealthEvents()
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload

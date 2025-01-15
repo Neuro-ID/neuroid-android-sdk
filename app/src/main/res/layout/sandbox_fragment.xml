@@ -322,8 +322,8 @@
 
                     <Button
                         android:id="@+id/buttonContinue"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_width="200dp"
+                        android:layout_height="20dp"
                         android:layout_marginTop="20dp"
                         android:backgroundTint="#3579F7"
                         android:text="@string/nid_app_demo_continue"
