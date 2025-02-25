@@ -106,8 +106,6 @@ class NIDEventSender(
             }
 
         val linkedSiteID: String? = NeuroID.getInternalInstance()?.linkedSiteID
-        val firstInstallTime: Long? = NeuroID.getInternalInstance()?.firstInstallTime
-        val lastUpdateTime: Long? = NeuroID.getInternalInstance()?.lastUpdateTime
         val tabID =
             if (NeuroID.getInternalInstance()?.tabID != null) {
                 NeuroID.getInternalInstance()?.tabID
@@ -133,9 +131,7 @@ class NIDEventSender(
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
-                "packetNumber" to packetNumber,
-                "firstInstallTime" to firstInstallTime,
-                "lastUpdateTime" to lastUpdateTime
+                "packetNumber" to packetNumber
             )
 
         NIDLog.d(
@@ -152,8 +148,6 @@ class NIDEventSender(
                 SDK Version: ${jsonBody["sdkVersion"]}
                 Screen Name: ${NeuroID.screenName}
                 Event Count: ${events.size}
-                First Install Time: ${jsonBody["firstInstallTime"]}
-                Last Update Time: ${jsonBody["lastUpdateTime"]}
                 """.trimIndent(),
         )
 
