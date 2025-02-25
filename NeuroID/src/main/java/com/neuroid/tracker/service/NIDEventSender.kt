@@ -131,7 +131,7 @@ class NIDEventSender(
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
-                "packetNumber" to packetNumber,
+                "packetNumber" to packetNumber
             )
 
         NIDLog.d(

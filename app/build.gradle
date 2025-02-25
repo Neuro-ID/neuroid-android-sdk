@@ -91,9 +91,6 @@ android {
         lib {
             dimension "adv"
         }
-        advancedDeviceLib {
-            dimension "adv"
-        }
     }
 
     buildFeatures {

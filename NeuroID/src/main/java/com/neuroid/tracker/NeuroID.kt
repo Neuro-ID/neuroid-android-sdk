@@ -31,7 +31,6 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
-import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
@@ -941,7 +940,7 @@ class NeuroID
                     isConnected,
                     cp,
                     l,
-                    synthetic,
+                    synthetic
                 )
 
             if (queuedEvent) {
