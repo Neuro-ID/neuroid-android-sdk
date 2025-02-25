@@ -30,7 +30,6 @@ class NIDMetaData(context: Context) {
     private val isSimulator: Boolean
     private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
     private val lastInstallTime = context.packageManager?.getPackageInfo(context.packageName, 0)?.firstInstallTime ?: -1
-    private val lastUpdateTime = context.packageManager?.getPackageInfo(context.packageName, 0)?.lastUpdateTime ?: -1
 
     init {
         displayResolution = getScreenResolution(context)
@@ -121,7 +120,6 @@ class NIDMetaData(context: Context) {
         jsonObject.put("isSimulator", isSimulator)
         jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         jsonObject.put("lastInstallTime", lastInstallTime)
-        jsonObject.put("lastUpdateTime", lastUpdateTime)
         return jsonObject
     }
 
