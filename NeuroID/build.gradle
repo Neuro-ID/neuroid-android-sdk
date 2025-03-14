@@ -142,6 +142,15 @@ dependencies {
 }
 
 afterEvaluate {
+    // remove the sources jar from the release version of the library
+    tasks.matching { t ->
+        t.name == 'androidLibReleaseSourcesJar'
+                || t.name == 'generateAndroidLibReleaseSources'
+                || t.name == 'reactNativeLibReleaseSourcesJar'
+                || t.name == 'generateReactNativeLibReleaseSourcesJar'
+    }.configureEach { t ->
+        t.enabled = false
+    }
     publishing {
         publications {
             // Creates a Maven publication called "release".
