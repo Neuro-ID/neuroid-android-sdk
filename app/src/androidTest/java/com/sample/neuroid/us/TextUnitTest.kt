@@ -11,6 +11,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -56,7 +57,8 @@ class TextUnitTest: MockServerTest() {
      */
     @Test
     fun test01ValidateFocusOnEditText() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
@@ -76,7 +78,8 @@ class TextUnitTest: MockServerTest() {
      */
     @Test
     fun test02ValidateBlurOnEditText() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         Espresso.onView(ViewMatchers.withId(R.id.button_show_activity_fragments))
@@ -98,7 +101,8 @@ class TextUnitTest: MockServerTest() {
      */
     @Test
     fun test03ValidateInputText() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         delay(500) // When you go to the next test, the activity is destroyed and recreated
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()

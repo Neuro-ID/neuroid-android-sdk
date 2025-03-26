@@ -205,10 +205,10 @@ internal fun getMockedApplication(): Application {
 
 internal fun getMockedLogger(): NIDLogWrapper {
     val logger = mockk<NIDLogWrapper>()
-    every { logger.d(any(), any()) } just runs
-    every { logger.i(any(), any()) } just runs
-    every { logger.w(any(), any()) } just runs
-    every { logger.e(any(), any()) } just runs
+    every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+    every { logger.i(any(), any(), any(), any<() -> String>()) } just runs
+    every { logger.w(any(), any(), any(), any<() -> String>()) } just runs
+    every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
     return logger
 }
 

@@ -10,6 +10,7 @@ import androidx.test.filters.LargeTest
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.MockServerTest
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.delay
@@ -45,7 +46,8 @@ class DynamicActivityTest: MockServerTest() {
 
     @Test
     fun test01ValidateFormSubmit() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("debug","----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         Espresso.onView(ViewMatchers.withId(R.id.btnAdd))
             .perform(click())

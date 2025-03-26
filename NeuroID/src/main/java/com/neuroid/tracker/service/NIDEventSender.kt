@@ -9,7 +9,7 @@ import com.neuroid.tracker.events.OUT_OF_MEMORY
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -35,6 +35,7 @@ interface NIDSendingService {
 class NIDEventSender(
     private var httpService: HttpService,
     private val context: Context,
+    private val logger: NIDLogWrapper = NIDLogWrapper()
 ) : NIDSendingService, RetrySender() {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
@@ -74,7 +75,7 @@ class NIDEventSender(
 
             data = getRequestPayloadJSON(events)
 
-            NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
+            logger.d("Payload", msg = "payload size: ${data.length} bytes")
         } catch (exception: OutOfMemoryError) {
             // make a best effort attempt to continue and send an out of memory event
             data = oomPayload
@@ -134,7 +135,7 @@ class NIDEventSender(
                 "packetNumber" to packetNumber
             )
 
-        NIDLog.d(
+        logger.d(
             "Payload:",
             msg =
                 """
@@ -152,7 +153,7 @@ class NIDEventSender(
         )
 
         // using this JSON library (already included) does not escape /
-        NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
+        logger.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
         val gson: Gson = GsonBuilder().create()
         return gson.toJson(jsonBody)
     }

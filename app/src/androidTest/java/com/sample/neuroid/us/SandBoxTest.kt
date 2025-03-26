@@ -13,6 +13,7 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -29,6 +30,7 @@ import kotlin.time.Duration
 @LargeTest
 @ExperimentalCoroutinesApi
 class SandBoxTest {
+    val logger = NIDLogWrapper()
     companion object {
         @BeforeClass
         @JvmStatic
@@ -65,7 +67,7 @@ class SandBoxTest {
      */
     @Test
     fun test01RiskyScore() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        logger.d("----> UITest", "-------------------------------------------------")
         val firstNameField = onView(withId(R.id.firstName))
         val lastNameField = onView(withId(R.id.lastName))
         val emailField = onView(withId(R.id.email))

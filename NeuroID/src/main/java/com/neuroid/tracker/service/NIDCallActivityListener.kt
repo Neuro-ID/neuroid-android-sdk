@@ -21,7 +21,9 @@ import com.neuroid.tracker.utils.VersionChecker
 class NIDCallActivityListener(
     private val neuroID: NeuroID,
     private val versionChecker: VersionChecker,
+    private val logger: NIDLog = NIDLog()
 ) : BroadcastReceiver() {
+
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
@@ -51,11 +53,11 @@ class NIDCallActivityListener(
                 Manifest.permission.READ_PHONE_STATE,
             ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
         ) {
-            NIDLog.d(msg = "Initializing call activity listener")
+            logger.d(msg = "Initializing call activity listener")
             intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
             context.registerReceiver(this, intentFilter)
         } else {
-            NIDLog.d(msg = "Permission to listen to call status not found")
+            logger.d(msg = "Permission to listen to call status not found")
             saveCallInProgressEvent(CallInProgress.UNAUTHORIZED.state)
         }
     }
@@ -75,7 +77,7 @@ class NIDCallActivityListener(
         when (state) {
             CallInProgress.INACTIVE.state -> {
                 callStateActive = false
-                NIDLog.d(msg = "Call inactive")
+                logger.d(msg = "Call inactive")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.INACTIVE.event,
@@ -84,7 +86,7 @@ class NIDCallActivityListener(
             }
             CallInProgress.ACTIVE.state -> {
                 callStateActive = true
-                NIDLog.d(msg = "Call in progress")
+                logger.d(msg = "Call in progress")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.ACTIVE.event,
@@ -92,7 +94,7 @@ class NIDCallActivityListener(
                 )
             }
             CallInProgress.RINGING.state -> {
-                NIDLog.d(msg = "Call Ringing")
+                logger.d(msg = "Call Ringing")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = "$callStateActive",
@@ -110,7 +112,7 @@ class NIDCallActivityListener(
                 )
             }
             CallInProgress.UNAUTHORIZED.state -> {
-                NIDLog.d(msg = "Call status not authorized")
+                logger.d(msg = "Call status not authorized")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.UNAUTHORIZED.event,
@@ -118,7 +120,7 @@ class NIDCallActivityListener(
                 )
             }
             else -> {
-                NIDLog.d(msg = "Call status unknown")
+                logger.d(msg = "Call status unknown")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.UNKNOWN.event,
@@ -132,7 +134,7 @@ class NIDCallActivityListener(
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
-            NIDLog.d(msg = "SDK >= 31")
+            logger.d(msg = "SDK >= 31")
             if (customTelephonyCallback == null) {
                 customTelephonyCallback = CustomTelephonyCallback { state ->
                     when (state) {
@@ -161,7 +163,7 @@ class NIDCallActivityListener(
                 )
             }
         } else {
-            NIDLog.d(msg = "SDK < 31")
+            logger.d(msg = "SDK < 31")
             if (phoneStateListener == null) {
                 phoneStateListener = object: PhoneStateListener() {
                     override fun onCallStateChanged(

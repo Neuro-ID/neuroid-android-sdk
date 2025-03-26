@@ -122,7 +122,7 @@ class NeuroIdUnitTest {
         every { viewGroup.id } returns 11
         every { view.parent } returns viewGroup
         val log = mockk<NIDLogWrapper>()
-        justRun { log.e(any(), any()) }
+        justRun { log.e(any(), any(), any(), any<() -> String>()) }
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked
@@ -145,7 +145,7 @@ class NeuroIdUnitTest {
         every { viewGroup.id } returns 10
         every { view.parent } returns viewGroup
         val log = mockk<NIDLogWrapper>()
-        justRun { log.e(any(), any()) }
+        justRun { log.e(any(), any(), any(), any<() -> String>()) }
         val viewReal = View(context)
         val label = viewReal.getParentsOfView(0, view, log)
         // need to use matcher, class.simpleName() returns random numbers in the when mocked

@@ -36,8 +36,8 @@ class NIDIdentityAllViewsTest {
         every { editText.getCustomSelectionActionModeCallback() } returns null
         every { editText.setCustomSelectionActionModeCallback(any()) } just runs
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
@@ -46,7 +46,7 @@ class NIDIdentityAllViewsTest {
         verify {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: EditText, eid: edit text 1, v:S~C~~23",
+                "etn: INPUT, et: EditText, eid: edit text 1, v:S~C~~23", cb = any()
             )
         }
     }
@@ -61,8 +61,8 @@ class NIDIdentityAllViewsTest {
         every { toggleButton.parent } returns null
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
@@ -71,7 +71,7 @@ class NIDIdentityAllViewsTest {
         verify {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: ToggleButton, eid: toggle button 1, v:S~C~~0",
+                "etn: INPUT, et: ToggleButton, eid: toggle button 1, v:S~C~~0", cb = any()
             )
         }
     }
@@ -86,8 +86,8 @@ class NIDIdentityAllViewsTest {
         every { switchCompat.parent } returns null
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>())} just runs
+        every { logger.e(any(), any(), any(), any<() -> String>())} just runs
 
         val nidMock = getMockedNeuroID()
 
@@ -96,7 +96,7 @@ class NIDIdentityAllViewsTest {
         verify {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: SwitchCompat, eid: switch compat, v:S~C~~0",
+                "etn: INPUT, et: SwitchCompat, eid: switch compat, v:S~C~~0", cb = any()
             )
         }
     }
@@ -111,8 +111,8 @@ class NIDIdentityAllViewsTest {
         every { imageButton.parent } returns null
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
@@ -121,7 +121,7 @@ class NIDIdentityAllViewsTest {
         verify {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: ImageButton, eid: image button, v:S~C~~0",
+                "etn: INPUT, et: ImageButton, eid: image button, v:S~C~~0", cb = any()
             )
         }
     }
@@ -136,14 +136,14 @@ class NIDIdentityAllViewsTest {
         every { seekBar.parent } returns null
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
         val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
         registrationIdentificationHelper.identifySingleView(view, "someguid")
-        verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0") }
+        verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0", cb = any()) }
     }
 
     @Test
@@ -156,8 +156,8 @@ class NIDIdentityAllViewsTest {
         every { ratingBar.parent } returns null
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
@@ -166,7 +166,7 @@ class NIDIdentityAllViewsTest {
         verify {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: RatingBar, eid: rating bar, v:S~C~~0",
+                "etn: INPUT, et: RatingBar, eid: rating bar, v:S~C~~0", cb = any()
             )
         }
     }
@@ -204,18 +204,18 @@ class NIDIdentityAllViewsTest {
         every { radioButton.parent } returns radioButtonViewParent
 
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
 
         val nidMock = getMockedNeuroID()
 
         val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
         registrationIdentificationHelper.identifySingleView(view, "someguid")
-        verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12") }
+        verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12", cb = any()) }
         verify(exactly = 2) {
             logger.d(
                 "NID test output",
-                "etn: INPUT, et: RadioButton, eid: RadioButton, v:true",
+                "etn: INPUT, et: RadioButton, eid: RadioButton, v:true", cb = any()
             )
         }
     }

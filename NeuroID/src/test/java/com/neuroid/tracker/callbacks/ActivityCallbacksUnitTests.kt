@@ -50,7 +50,7 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onActivityCreated",
+                msg = "onActivityCreated", cb = any()
             )
         }
     }
@@ -85,19 +85,19 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Created",
+                msg = "Activity - Created", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "onActivityStarted existActivity.not()",
+                msg = "onActivityStarted existActivity.not()", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES",
+                msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - POST Created - Window Load",
+                msg = "Activity - POST Created - Window Load", cb = any()
             )
         }
 
@@ -146,23 +146,23 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Created",
+                msg = "Activity - Created", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "onActivityStarted existActivity.not()",
+                msg = "onActivityStarted existActivity.not()", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES",
+                msg = "Activity - POST Created - REGISTER FRAGMENT LIFECYCLES", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - POST Created - Orientation change",
+                msg = "Activity - POST Created - Orientation change", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - POST Created - Window Load",
+                msg = "Activity - POST Created - Window Load", cb = any()
             )
         }
 
@@ -192,7 +192,7 @@ internal class ActivityCallbacksUnitTests {
         val expectedActivityName = mocks.mockedActivity::class.java.name
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Paused",
+                msg = "Activity - Paused", cb = any()
             )
         }
 
@@ -222,7 +222,7 @@ internal class ActivityCallbacksUnitTests {
         if (!BuildConfig.FLAVOR.contains("react")) {
             verify(exactly = 1) {
                 mocks.mockedLogger.d(
-                    msg = "Activity - Resumed",
+                    msg = "Activity - Resumed", cb = any()
                 )
 
                 mocks.mockedRegistration.registerTargetFromScreen(
@@ -260,7 +260,7 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Stopped",
+                msg = "Activity - Stopped", cb = any()
             )
         }
     }
@@ -274,7 +274,7 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Save Instance",
+                msg = "Activity - Save Instance", cb = any()
             )
         }
     }
@@ -289,11 +289,11 @@ internal class ActivityCallbacksUnitTests {
         val expectedActivityName = mocks.mockedActivity::class.java.name
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Activity - Destroyed",
+                msg = "Activity - Destroyed", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Activity - Destroyed - Window Unload",
+                msg = "Activity - Destroyed - Window Unload", cb = any()
             )
         }
 

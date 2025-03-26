@@ -3,7 +3,7 @@ package com.neuroid.tracker.utils
 import android.util.Log
 import com.neuroid.tracker.NeuroID
 
-object NIDLog {
+class NIDLog {
     val nidTag = "NeuroID"
     val infoTag = "NeuroID Info"
     val debugTag = "NeuroID Debug"
@@ -12,61 +12,56 @@ object NIDLog {
 
     fun d(
         tag: String? = null,
-        msg: String,
-        cb: () -> String = { msg },
+        msg: String
     ) {
         if (NeuroID.showLogs && NeuroID.isSDKStarted) {
-            cb().chunked(900).forEach {
-                Log.d(appendTag(tag, debugTag), it)
-            }
+            Log.d(appendTag(tag, debugTag), msg)
         }
     }
 
     fun i(
         tag: String? = null,
-        msg: String,
-        cb: () -> String = { msg },
+        msg: String
     ) {
         if (NeuroID.showLogs) {
-            cb().chunked(900).forEach {
-                Log.d(appendTag(tag, infoTag), it)
-            }
+            Log.d(appendTag(tag, infoTag), msg)
         }
     }
 
     fun v(
         tag: String? = null,
-        msg: String,
-        cb: () -> String = { msg },
+        msg: String
     ) {
         if (NeuroID.showLogs) {
-            cb().chunked(900).forEach {
-                Log.d(appendTag(tag, nidTag), it)
-            }
+            Log.d(appendTag(tag, nidTag), msg)
         }
     }
 
     fun w(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
         if (NeuroID.showLogs) {
-            cb().chunked(900).forEach {
-                Log.d(appendTag(tag, warnTag), it)
-            }
+            Log.d(appendTag(tag, warnTag), msg)
         }
     }
 
     fun e(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
         if (NeuroID.showLogs) {
-            cb().chunked(900).forEach {
-                Log.d(appendTag(tag, errorTag), it)
-            }
+            Log.d(appendTag(tag, errorTag), msg)
+        }
+    }
+
+    fun printLine(
+        tag: String?,
+        logLevel: String,
+        msg: String,
+    ) {
+        if (NeuroID.showLogs) {
+            println("${appendTag(tag, logLevel)}, $msg" )
         }
     }
 
@@ -82,8 +77,10 @@ object NIDLog {
         }
     }
 
-    const val CHECK_BOX_CHANGE_TAG = "CheckBoxChange"
-    const val CHECK_BOX_ID = "CheckBoxID:"
-    const val RADIO_BUTTON_CHANGE_TAG = "RadioButtonChange"
-    const val RADIO_BUTTON_ID = "RadioButtonID:"
+    companion object {
+        const val CHECK_BOX_CHANGE_TAG = "CheckBoxChange"
+        const val CHECK_BOX_ID = "CheckBoxID:"
+        const val RADIO_BUTTON_CHANGE_TAG = "RadioButtonChange"
+        const val RADIO_BUTTON_ID = "RadioButtonID:"
+    }
 }

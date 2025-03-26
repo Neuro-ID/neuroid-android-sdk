@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.activities.sandbox.SandBoxActivity
 import com.sample.neuroid.us.databinding.NidActivityMainBinding
@@ -95,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val logger = NIDLogWrapper()
         when(requestCode) {
             REQUEST_CODE -> {
                 if (isLocationPermissionGiven()) {
@@ -109,9 +111,9 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 if (isCallActivityPermissionGiven()) {
-                    NIDLog.d(msg = "call activity permission granted")
+                    logger.d("debug",msg = "call activity permission granted")
                 } else {
-                    NIDLog.d(msg = "call activity permission denied")
+                    logger.d("debug",msg = "call activity permission denied")
                 }
             }
         }

@@ -12,6 +12,7 @@ import androidx.test.filters.LargeTest
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.activities.MainActivity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -62,8 +63,8 @@ class ComponentsTest {
     fun test01ValidateCheckBox() = runTest(timeout = Duration.parse("120s")) {
         Looper.prepare()
         NeuroID.getInstance()?.start()
-
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -81,7 +82,8 @@ class ComponentsTest {
      */
     @Test
     fun test02ValidateRadioChange() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -99,7 +101,8 @@ class ComponentsTest {
      */
     @Test
     fun test03ValidateSwitch() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -120,7 +123,8 @@ class ComponentsTest {
      */
     @Test
     fun test04ValidateToggle() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -141,7 +145,8 @@ class ComponentsTest {
      */
     @Test
     fun test05ValidateRatingBar() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())
@@ -163,7 +168,8 @@ class ComponentsTest {
      */
     @Test
     fun test06ValidateSliderChange() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("----> UITest", "-------------------------------------------------")
 
         onView(withId(R.id.button_show_activity_one_fragment))
             .perform(click())

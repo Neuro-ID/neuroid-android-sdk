@@ -132,6 +132,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
             mockedLogger.d(
                 tag = "NeuroID ADV",
                 msg = "Failed to get API key from NeuroID: $errorMessage - Code: ${400}. Retrying: ${true}",
+                cb = any()
             )
         }
 
@@ -139,6 +140,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
             mockedLogger.d(
                 tag = "NeuroID ADV",
                 msg = "Failed to get API key from NeuroID: $errorMessage - Code: ${400}. Retrying: ${false}",
+                cb = any()
             )
         }
     }
@@ -202,8 +204,8 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
 
     private fun getMockedLogger(): NIDLogWrapper {
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
         return logger
     }
 

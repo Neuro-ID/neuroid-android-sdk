@@ -81,7 +81,7 @@ open class NeuroIDClassUnitTests {
     ) {
         val log = mockk<NIDLogWrapper>()
 
-        every { log.e(any(), any()) } answers {
+        every { log.e(any(), any(), any(), any<() -> String>()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.ERROR, errorMessage, actualMessage)
 
@@ -89,7 +89,7 @@ open class NeuroIDClassUnitTests {
             actualMessage
         }
 
-        every { log.i(any(), any()) } answers {
+        every { log.i(any(), any(), any(), any<() -> String>()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.INFO, infoMessage, actualMessage)
 
@@ -97,7 +97,7 @@ open class NeuroIDClassUnitTests {
             actualMessage
         }
 
-        every { log.d(any(), any()) } answers {
+        every { log.d(any(), any(), any(), any<() -> String>()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.DEBUG, debugMessage, actualMessage)
 
@@ -105,7 +105,7 @@ open class NeuroIDClassUnitTests {
             actualMessage
         }
 
-        every { log.w(any(), any()) } answers {
+        every { log.w(any(), any(), any(), any<() -> String>()) } answers {
             val actualMessage = args[1]
             assertLogMessage(TestLogLevel.WARNING, warningMessage, actualMessage)
 

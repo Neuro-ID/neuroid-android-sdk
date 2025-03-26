@@ -6,11 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.R
 import com.sample.neuroid.us.databinding.NidActivityJsonPayloadBinding
 
 class NIDPayloadJsonActivity : AppCompatActivity() {
     private lateinit var binding: NidActivityJsonPayloadBinding
+    val logger = NIDLogWrapper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +27,7 @@ class NIDPayloadJsonActivity : AppCompatActivity() {
 
         binding.apply {
             buttonShowPayloadJson.setOnClickListener {
-                NIDLog.d(msg = "Payload json: null")
+                logger.d("debug",msg = "Payload json: null")
             }
 
             buttonResetPayloadJson.setOnClickListener {

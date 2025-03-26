@@ -28,3 +28,41 @@
     public static int e(...);
     public static int w(...);
 }
+
+#-keepattributes Signature
+-keepattributes *Annotation*
+
+-keep class com.google.gson.** { *; }
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Expose <fields>;
+}
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Since <fields>;
+}
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Until <fields>;
+}
+
+# have to keep these
+-keepattributes LineNumberTable,SourceFile
+-renamesourcefileattribute SourceFile
+-keep class com.neuroid.tracker.models.** { *; }
+-keep class com.neuroid.tracker.events.** { *; }
+-keep class com.neuroid.tracker.NeuroIDPublic { *; }
+-keep class com.neuroid.tracker.NeuroID { *; }
+-keep class com.neuroid.tracker.compose.** { *; }
+-keep class com.neuroid.tracker.utils.** { *; }
+-keep class com.neuroid.tracker.NeuroID$Companion { *; }
+-keep class com.neuroid.tracker.NeuroID$Builder { *; }
+
+-keepclassmembers class com.neuroid.tracker.NeuroID$Companion {
+    public static com.neuroid.tracker.NeuroID getInstance();
+    public static com.neuroid.tracker.NeuroID builder();
+}

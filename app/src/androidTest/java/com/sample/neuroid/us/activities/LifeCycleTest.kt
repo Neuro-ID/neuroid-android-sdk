@@ -8,6 +8,7 @@ import androidx.test.uiautomator.UiDevice
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.sample.neuroid.us.MockServerTest
 import com.sample.neuroid.us.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,7 +49,8 @@ class LifeCycleTest: MockServerTest() {
      */
     @Test
     fun test13ValidateChangeScreenOrientation() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
+        val logger = NIDLogWrapper()
+        logger.d("debug","----> UITest", "-------------------------------------------------")
         NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 

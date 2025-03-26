@@ -137,7 +137,7 @@ class AdvancedDeviceIDManagerServiceTest {
         verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST, 1)
         verify(exactly = 1) {
             mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
-            mockedLogger.d(msg = "Retrieving Request ID for Advanced Device Signals from cache: $keyValue")
+            mockedLogger.d(msg = "Retrieving Request ID for Advanced Device Signals from cache: $keyValue", cb = any())
         }
     }
 
@@ -167,7 +167,7 @@ class AdvancedDeviceIDManagerServiceTest {
         verifyCaptureEvent(mockedNID, LOG, 1)
         verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST_FAILED, 1)
         verify(exactly = 1) {
-            mockedLogger.e(msg = "Failed to get API key from NeuroID: $errorMessage")
+            mockedLogger.e(msg = "Failed to get API key from NeuroID: $errorMessage", cb = any())
         }
     }
 
@@ -205,10 +205,10 @@ class AdvancedDeviceIDManagerServiceTest {
 
         job?.invokeOnCompletion {
             verify(exactly = 1) {
-                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 1")
-                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 2")
-                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 3")
-                mockedLogger.e(msg = "Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure")
+                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 1", cb = any())
+                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 2", cb = any())
+                mockedLogger.d(msg = "Error retrieving Advanced Device Signal Request ID:$errorMessage: 3", cb = any())
+                mockedLogger.e(msg = "Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure", cb = any())
                 mockedNeuroID.captureEvent(
                     type = "LOG",
                     ts = 0,
@@ -250,9 +250,9 @@ class AdvancedDeviceIDManagerServiceTest {
 
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
-                    mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
+                    mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID", cb=any())
                     mockedNID.captureEvent(type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, ct = any())
-                    mockedLogger.d(msg = "Caching Request ID: $validRID")
+                    mockedLogger.d(msg = "Caching Request ID: $validRID", cb = any())
                     mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
                 }
             }
@@ -334,8 +334,8 @@ class AdvancedDeviceIDManagerServiceTest {
 
     private fun getMockedLogger(): NIDLogWrapper {
         val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any()) } just runs
-        every { logger.e(any(), any()) } just runs
+        every { logger.d(any(), any(), any(), any<() -> String>()) } just runs
+        every { logger.e(any(), any(), any(), any<() -> String>()) } just runs
         return logger
     }
 

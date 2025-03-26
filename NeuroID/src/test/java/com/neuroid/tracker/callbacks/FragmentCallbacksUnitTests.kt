@@ -49,7 +49,7 @@ internal class FragmentCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentAttached $expectedActivityName",
+                msg = "onFragmentAttached $expectedActivityName", cb = any()
             )
 
             mocks.mockedRegistration.registerTargetFromScreen(
@@ -116,7 +116,7 @@ internal class FragmentCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentAttached $expectedActivityName",
+                msg = "onFragmentAttached $expectedActivityName", cb = any()
             )
         }
 
@@ -161,7 +161,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentViewCreated $expectedActivityName",
+                msg = "onFragmentViewCreated $expectedActivityName", cb = any()
             )
         }
     }
@@ -181,7 +181,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentViewCreated $expectedActivityName",
+                msg = "onFragmentViewCreated $expectedActivityName", cb = any()
             )
         }
     }
@@ -199,11 +199,11 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName",
+                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName",
+                msg = "Fragment - Resumed - REGISTER TARGET $expectedActivityName", cb = any()
             )
 
             mocks.mockedNeuroID.shouldForceStart()
@@ -230,7 +230,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName",
+                msg = "Fragment - Resumed ${1} ${false} ${"tag"} $expectedActivityName", cb = any()
             )
 
             mocks.mockedNeuroID.shouldForceStart()
@@ -264,7 +264,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentPaused $expectedActivityName",
+                msg = "onFragmentPaused $expectedActivityName", cb = any()
             )
         }
     }
@@ -282,7 +282,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentStopped $expectedActivityName",
+                msg = "onFragmentStopped $expectedActivityName", cb = any()
             )
         }
     }
@@ -300,7 +300,7 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "onFragmentDestroyed $expectedActivityName",
+                msg = "onFragmentDestroyed $expectedActivityName" , cb = any()
             )
         }
     }
@@ -318,11 +318,11 @@ internal class FragmentCallbacksUnitTests {
         val expectedActivityName = mocks.mockedFragment::class.java.simpleName
         verify(exactly = 1) {
             mocks.mockedLogger.d(
-                msg = "Fragment - Detached $expectedActivityName",
+                msg = "Fragment - Detached $expectedActivityName", cb = any()
             )
 
             mocks.mockedLogger.d(
-                msg = "Fragment - Detached - WINDOW UNLOAD $expectedActivityName",
+                msg = "Fragment - Detached - WINDOW UNLOAD $expectedActivityName", cb = any()
             )
         }
 
