@@ -20,11 +20,42 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--assumenosideeffects class android.util.Log {
-    public static boolean isLoggable(java.lang.String, int);
-    public static int v(...);
-    public static int d(...);
-    public static int i(...);
-    public static int e(...);
-    public static int w(...);
+# Uncomment to remove logging from release builds.
+#-assumenosideeffects class android.util.Log {
+#    public static boolean isLoggable(java.lang.String, int);
+#    public static int v(...);
+#    public static int d(...);
+#    public static int i(...);
+#    public static int e(...);
+#    public static int w(...);
+#}
+
+-keepattributes Signature
+-keepattributes *Annotation*
+
+-keep class com.google.gson.** { *; }
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
 }
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Expose <fields>;
+}
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Since <fields>;
+}
+
+-keepclassmembers class * {
+    @com.google.gson.annotations.Until <fields>;
+}
+
+# have to keep these classes
+-keep class com.neuroid.tracker.models.** { *; }
+-keep class com.neuroid.tracker.events.** { *; }
+-keep interface com.neuroid.tracker.NeuroIDPublic { *; }
+-keep class com.neuroid.tracker.NeuroID { *; }
+-keep interface com.neuroid.tracker.compose.JetpackCompose { *; }
+-keep class com.neuroid.tracker.NeuroID$Companion { *; }
+-keep class com.neuroid.tracker.NeuroID$Builder { *; }
