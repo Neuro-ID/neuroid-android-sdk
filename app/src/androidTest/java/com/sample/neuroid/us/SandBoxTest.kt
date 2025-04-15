@@ -74,21 +74,59 @@ class SandBoxTest {
         val phoneNumberField = onView(withId(R.id.phoneNumber))
         val employerlblField = onView(withId(R.id.employerlbl))
         val buttonContinue = onView(withId(R.id.buttonContinue))
+
+        firstNameField.perform(scrollTo())
         firstNameField.perform(click())
-        firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
+        firstNameField.perform(replaceText("Alejandro"))
+        firstNameField.perform(closeSoftKeyboard())
+
+        lastNameField.perform(scrollTo())
         lastNameField.perform(click())
-        lastNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
+        lastNameField.perform(replaceText("Alejandro"))
+        lastNameField.perform(closeSoftKeyboard())
+
+        firstNameField.perform(scrollTo())
         firstNameField.perform(clearText())
+
+        lastNameField.perform(scrollTo())
         lastNameField.perform(clearText())
+
+        firstNameField.perform(scrollTo())
         firstNameField.perform(click())
-        firstNameField.perform(replaceText("Alejandro"), closeSoftKeyboard())
+        firstNameField.perform(replaceText("Alejandro"))
+        firstNameField.perform(closeSoftKeyboard())
+
+        lastNameField.perform(scrollTo())
         lastNameField.perform(click())
-        lastNameField.perform(replaceText("Bautista"), closeSoftKeyboard())
-        emailField.perform(replaceText("asdad@gmail.com"), closeSoftKeyboard())
-        cityField.perform(typeText("Mexico City"), closeSoftKeyboard())
-        homeZipCodeField.perform(typeText("55340"), closeSoftKeyboard())
-        phoneNumberField.perform(typeText("56565656"), closeSoftKeyboard())
-        employerlblField.perform(typeText("54523"), closeSoftKeyboard())
+        lastNameField.perform(replaceText("Bautista"))
+        lastNameField.perform(closeSoftKeyboard())
+
+        emailField.perform(scrollTo())
+        emailField.perform(click())
+        emailField.perform(typeText("asdad@gmail.com"))
+        emailField.perform(closeSoftKeyboard())
+
+        cityField.perform(scrollTo())
+        cityField.perform(click())
+        cityField.perform(replaceText("Mexico City"))
+        cityField.perform(closeSoftKeyboard())
+
+        homeZipCodeField.perform(scrollTo())
+        homeZipCodeField.perform(click())
+        homeZipCodeField.perform(replaceText("55340"))
+        homeZipCodeField.perform(closeSoftKeyboard())
+
+        phoneNumberField.perform(scrollTo())
+        phoneNumberField.perform(click())
+        phoneNumberField.perform(replaceText("56565656"))
+        phoneNumberField.perform(closeSoftKeyboard())
+
+        employerlblField.perform(scrollTo())
+        employerlblField.perform(click())
+        employerlblField.perform(replaceText("gasdgsdahgasdgasd"))
+        employerlblField.perform(closeSoftKeyboard())
+
+        buttonContinue.perform(scrollTo())
         buttonContinue.perform(click())
     }
 
