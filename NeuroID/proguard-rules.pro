@@ -61,5 +61,8 @@
 -keep class com.neuroid.tracker.NeuroID$Builder { *; }
 -keep class com.neuroid.tracker.extensions.** { *; }
 
+# required for API 34+.
+-keep class com.neuroid.tracker.NeuroIDPublic$DefaultImpls { *; }
+
 
 
