@@ -56,6 +56,7 @@
 -keep class com.neuroid.tracker.events.** { *; }
 -keep interface com.neuroid.tracker.NeuroIDPublic { *; }
 -keep class com.neuroid.tracker.NeuroID { *; }
+-keep class com.neuroid.tracker.utils.NIDMetaData { *; }
 -keep interface com.neuroid.tracker.compose.JetpackCompose { *; }
 -keep class com.neuroid.tracker.NeuroID$Companion { *; }
 -keep class com.neuroid.tracker.NeuroID$Builder { *; }
