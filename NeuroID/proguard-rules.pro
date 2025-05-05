@@ -30,6 +30,7 @@
 #    public static int w(...);
 #}
 
+-keeppackagenames com.neuroid.**
 -keepattributes Signature
 -keepattributes *Annotation*
 
