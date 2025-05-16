@@ -14,6 +14,7 @@ import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
@@ -952,6 +953,9 @@ class NeuroID
             event.log()
 
             when (type) {
+                ADVANCED_DEVICE_REQUEST -> {
+                    nidJobServiceManager?.sendEvents(true)
+                }
                 BLUR -> {
                     nidJobServiceManager?.sendEvents()
                 }

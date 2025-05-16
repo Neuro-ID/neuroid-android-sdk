@@ -12,7 +12,9 @@ import com.neuroid.tracker.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Start the SDK and start a new session using the userID as the sessionID. Takes in a boolean to
@@ -59,8 +61,10 @@ fun NeuroIDPublic.startSession(
     }
 }
 
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
+@Synchronized
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
     captureEvent(type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
+    val t = System.currentTimeMillis()
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
@@ -77,12 +81,15 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
                         this.clientID,
                         this.linkedSiteID ?: "",
                     )
-                getADVSignal(advancedDeviceIDManagerService, clientKey, this)
+                if (this.samplingService.isSessionFlowSampled()) {
+                    getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
+                }
             }
         }
     } else {
         logger.d(msg = "in captureAdvancedDevice(), advanced device not active.")
     }
+    println("kurt_test captureAdvancedDevice done ${System.currentTimeMillis() - t}" )
 }
 
 internal fun getADVSignal(
@@ -90,17 +97,22 @@ internal fun getADVSignal(
     clientKey: String,
     neuroID: NeuroID,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
-) {
+): Job? {
+    val t = System.currentTimeMillis()
+    var job: Job? = null
+    // do this in the background off main but wait for it to complete
     if (neuroID.samplingService.isSessionFlowSampled()) {
-        CoroutineScope(dispatcher).launch {
+        job = CoroutineScope(dispatcher).launch {
             // check for cachedID first
             if (!advancedDeviceIDManagerService.getCachedID()) {
                 // no cached ID - contact NID & FPJS
                 advancedDeviceIDManagerService.getRemoteID(
                     clientKey,
                     Constants.fpjsProdDomain.displayName,
-                )
+                )?.join()
             }
+            println("kurt_test done getADVSignal() ${System.currentTimeMillis() - t}")
         }
     }
+    return job
 }
