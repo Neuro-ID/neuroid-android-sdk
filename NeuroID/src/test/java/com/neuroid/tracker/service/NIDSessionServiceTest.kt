@@ -28,6 +28,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -258,7 +259,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedDataStore.saveAndClearAllQueuedEvents()
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
         }
     }
 
@@ -993,7 +994,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
         }
 
@@ -1047,7 +1048,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedSampleService.updateIsSampledStatus(testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
 
             mockedJobServiceManager.startJob(any(), any())
@@ -1113,7 +1114,7 @@ class NIDSessionServiceTest {
 
             mockedSampleService.updateIsSampledStatus(testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice()
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
         }
 
         verifyCaptureEvent(

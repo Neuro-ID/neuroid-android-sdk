@@ -59,8 +59,11 @@ import com.neuroid.tracker.utils.generateUniqueHexID
 import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import org.jetbrains.annotations.TestOnly
 import java.util.Calendar
 
@@ -541,8 +544,11 @@ class NeuroID
          * Keeping this wrapper around just in case we have to do something similar in the
          * future.
          */
-        internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice) {
-            captureAdvancedDevice(shouldCapture)
+        internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
+                                                    dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+            CoroutineScope(dispatcher).launch {
+                captureAdvancedDevice(shouldCapture)
+            }
         }
 
         override fun setScreenName(screen: String): Boolean {
