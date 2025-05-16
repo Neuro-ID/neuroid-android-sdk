@@ -81,9 +81,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
                         this.clientID,
                         this.linkedSiteID ?: "",
                     )
-                if (this.samplingService.isSessionFlowSampled()) {
-                    getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
-                }
+                getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
             }
         }
     } else {
