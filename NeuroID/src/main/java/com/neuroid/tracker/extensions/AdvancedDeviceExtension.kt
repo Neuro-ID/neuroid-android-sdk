@@ -12,7 +12,9 @@ import com.neuroid.tracker.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Start the SDK and start a new session using the userID as the sessionID. Takes in a boolean to
@@ -27,7 +29,7 @@ fun NeuroIDPublic.start(
         if (!it) {
             completion(it)
         } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
 
             completion(it)
         }
@@ -52,14 +54,15 @@ fun NeuroIDPublic.startSession(
         if (!it.started) {
             completion(it)
         } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(advancedDeviceSignals)
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
 
             completion(it)
         }
     }
 }
 
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
+@Synchronized
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
     captureEvent(type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -77,7 +80,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) {
                         this.clientID,
                         this.linkedSiteID ?: "",
                     )
-                getADVSignal(advancedDeviceIDManagerService, clientKey, this)
+                getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
             }
         }
     } else {
@@ -90,17 +93,20 @@ internal fun getADVSignal(
     clientKey: String,
     neuroID: NeuroID,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
-) {
+): Job? {
+    var job: Job? = null
+    // do this in the background off main but wait for it to complete
     if (neuroID.samplingService.isSessionFlowSampled()) {
-        CoroutineScope(dispatcher).launch {
+        job = CoroutineScope(dispatcher).launch {
             // check for cachedID first
             if (!advancedDeviceIDManagerService.getCachedID()) {
                 // no cached ID - contact NID & FPJS
                 advancedDeviceIDManagerService.getRemoteID(
                     clientKey,
                     Constants.fpjsProdDomain.displayName,
-                )
+                )?.join()
             }
         }
     }
+    return job
 }
