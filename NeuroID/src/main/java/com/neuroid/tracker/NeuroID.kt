@@ -16,16 +16,22 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
+import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
+import com.neuroid.tracker.events.CREATE_SESSION
+import com.neuroid.tracker.events.FOCUS
 import com.neuroid.tracker.events.FORM_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.FULL_BUFFER
 import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.PAGE_SUBMIT
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SET_LINKED_SITE
+import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
+import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDEventModel
@@ -958,15 +964,46 @@ class NeuroID
 
             event.log()
 
+            // force event buffer flush when these events are encountered.
             when (type) {
+                FORM_SUBMIT -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                PAGE_SUBMIT -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                SET_LINKED_SITE -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                FOCUS -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                SET_REGISTERED_USER_ID -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                ATTEMPTED_LOGIN -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                SET_VARIABLE -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                APPLICATION_METADATA -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                SET_USER_ID -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
+                CREATE_SESSION -> {
+                    nidJobServiceManager.sendEvents(true)
+                }
                 ADVANCED_DEVICE_REQUEST -> {
-                    nidJobServiceManager?.sendEvents(true)
+                    nidJobServiceManager.sendEvents(true)
                 }
                 BLUR -> {
-                    nidJobServiceManager?.sendEvents()
+                    nidJobServiceManager.sendEvents(true)
                 }
                 CLOSE_SESSION -> {
-                    nidJobServiceManager?.sendEvents(true)
+                    nidJobServiceManager.sendEvents(true)
                 }
             }
         }
