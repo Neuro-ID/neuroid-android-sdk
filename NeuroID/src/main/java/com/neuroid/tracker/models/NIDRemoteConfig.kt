@@ -25,5 +25,5 @@ data class NIDRemoteConfig(
     @SerializedName(value = "site_id")
     val siteID: String = "",
     @SerializedName(value = "advanced_cookie_expires")
-    val advancedCookieExpiration: Int = 24 * 60 * 60 ,
+    val advancedCookieExpiration: Int = 12 * 60 * 60
 )
