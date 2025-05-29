@@ -289,7 +289,8 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedNetworkService,
                 "",
                 "",
-                mockedFPJSClient,
+                getMockedConfigService(),
+                mockedFPJSClient
             )
 
         return mapOf(

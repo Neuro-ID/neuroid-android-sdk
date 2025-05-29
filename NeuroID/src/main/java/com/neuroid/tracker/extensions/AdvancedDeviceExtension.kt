@@ -79,6 +79,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
                         ),
                         this.clientID,
                         this.linkedSiteID ?: "",
+                        configService
                     )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
             }

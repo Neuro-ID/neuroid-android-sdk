@@ -24,4 +24,6 @@ data class NIDRemoteConfig(
     val sampleRate: Int = NIDConfigService.DEFAULT_SAMPLE_RATE,
     @SerializedName(value = "site_id")
     val siteID: String = "",
+    @SerializedName(value = "advanced_cookie_expires")
+    val advancedCookieExpiration: Int = 12 * 60 * 60
 )
