@@ -169,7 +169,7 @@ internal class AdvancedDeviceIDManager(
                                 mapOf(
                                     "key" to requestResponse.second,
                                     "exp" to
-                                        (configService.configCache.advancedCookieExpiration * 60 * 60 * 1000) +
+                                        (configService.configCache.advancedCookieExpiration * 1000) +
                                         System.currentTimeMillis(), // 24
                                     // hours from now
                                 ),
