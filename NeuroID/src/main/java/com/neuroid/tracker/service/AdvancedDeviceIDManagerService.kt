@@ -42,6 +42,7 @@ internal class AdvancedDeviceIDManager(
     private val linkedSiteID: String,
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null,
+    private val configService: ConfigService
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -168,7 +169,7 @@ internal class AdvancedDeviceIDManager(
                                 mapOf(
                                     "key" to requestResponse.second,
                                     "exp" to
-                                        (24 * 60 * 60 * 1000) +
+                                        (configService.configCache.advancedCookieExpiration * 60 * 60 * 1000) +
                                         System.currentTimeMillis(), // 24
                                     // hours from now
                                 ),
