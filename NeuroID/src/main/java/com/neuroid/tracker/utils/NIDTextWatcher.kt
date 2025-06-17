@@ -4,6 +4,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.INPUT
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.JsonUtils.Companion.getAttrJson
@@ -34,47 +35,59 @@ class NIDTextWatcher(
         before: Int,
         count: Int,
     ) {
-        // Check if the change is due to a paste operation
-        val clipboard = NeuroID.getInternalInstance()?.getClipboardManagerInstance()
-        val clipData = clipboard?.primaryClip
-        if (clipData != null && clipData.itemCount > 0) {
-            var pastedText = ""
-            try {
-                pastedText = clipData.getItemAt(0).text.toString()
-            } catch (e: Exception) {
-                e.message?.let {
-                    logger.e("Activity", it)
+        // Wrapping in Try/Catch because of ENG-10191 - Clipboard being accessed
+        //  after system is shutting down causing an error
+        try {
+            // Check if the change is due to a paste operation
+            val clipboard = NeuroID.getInternalInstance()?.getClipboardManagerInstance()
+            val clipData = clipboard?.primaryClip
+            if (clipData != null && clipData.itemCount > 0) {
+                var pastedText = ""
+                try {
+                    pastedText = clipData.getItemAt(0).text.toString()
+                } catch (e: Exception) {
+                    e.message?.let {
+                        logger.e("Activity", it)
+                    }
                 }
-            }
-            val pasteCount = pastedText.length
-            if (sequence.toString().contains(pastedText) && (pasteCount == count)) {
-                // The change is likely due to a paste operation
+                val pasteCount = pastedText.length
+                if (sequence.toString().contains(pastedText) && (pasteCount == count)) {
+                    // The change is likely due to a paste operation
 
-                val currentPastedHashValue = sequence?.toString()?.hashCode().toString()
-                // Checks if paste operation is duplicated ENG-6236
-                if (currentPastedHashValue != lastPastedHashValue) {
-                    lastPastedHashValue = sequence?.toString()?.hashCode().toString()
+                    val currentPastedHashValue = sequence?.toString()?.hashCode().toString()
+                    // Checks if paste operation is duplicated ENG-6236
+                    if (currentPastedHashValue != lastPastedHashValue) {
+                        lastPastedHashValue = sequence?.toString()?.hashCode().toString()
 
-                    if (pastedText.isNotEmpty()) {
-                        neuroID.captureEvent(
-                            type = PASTE,
-                            tg =
+                        if (pastedText.isNotEmpty()) {
+                            neuroID.captureEvent(
+                                type = PASTE,
+                                tg =
                                 hashMapOf(
                                     "attr" to getAttrJson(sequence.toString()),
                                     "et" to "text",
                                 ),
-                            tgs = idName,
-                            v = "S~C~~${sequence?.length}",
-                            hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                            attrs =
+                                tgs = idName,
+                                v = "S~C~~${sequence?.length}",
+                                hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
+                                attrs =
                                 listOf(
                                     mapOf(
                                         "clipboardText" to "S~C~~${pastedText.length}",
                                     ),
                                 ),
-                        )
+                            )
+                        }
                     }
                 }
+            }
+        } catch (e: Exception) {
+            e.message?.let {
+                logger.e("Activity", it)
+                neuroID.captureEvent(
+                    type = LOG,
+                    m = "onTextChangeError: $it"
+                )
             }
         }
     }
