@@ -186,8 +186,6 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            captureAdvancedDevice(isAdvancedDevice, fpjsKey)
-
             configService =
                 NIDConfigService(
                     dispatcher,
@@ -219,6 +217,8 @@ class NeuroID
                         logger,
                         configService,
                     )
+
+                captureAdvancedDevice(isAdvancedDevice, fpjsKey)
 
                 sessionService =
                     NIDSessionService(
