@@ -46,7 +46,7 @@ class AdvancedDeviceIDManagerServiceTest {
      */
     @Test
     fun testGetADVSignal_is_sampled_true() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetFPJSKey("")
+        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("")
         val mockedNeuroID = mocks.get("mockedNeuroID") as NeuroID
         val mockedNIDSamplingService = mockk<NIDSamplingService>()
         every { mockedNIDSamplingService.isSessionFlowSampled() } returns true
@@ -58,7 +58,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetADVSignal_is_sampled_false() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetFPJSKey("")
+        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("")
         val mockedNeuroID = mocks.get("mockedNeuroID") as NeuroID
         val mockedNIDSamplingService = mockk<NIDSamplingService>()
         every { mockedNIDSamplingService.isSessionFlowSampled() } returns false
@@ -71,7 +71,7 @@ class AdvancedDeviceIDManagerServiceTest {
     //    getCachedID
     @Test
     fun testGetCachedID_not_stored() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetFPJSKey("")
+        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("")
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
 
@@ -85,7 +85,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetCachedID_default_value() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetFPJSKey()
+        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey()
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
 
@@ -99,7 +99,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetCachedID_expired_id() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetFPJSKey("{\"key\":\"testingExp\", \"exp\":0}")
+        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("{\"key\":\"testingExp\", \"exp\":0}")
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
 
@@ -115,7 +115,7 @@ class AdvancedDeviceIDManagerServiceTest {
     fun testGetCachedID_valid_cache() {
         val keyValue = "ValidKey"
         val mocks =
-            buildAdvancedDeviceIDManagerService_noUserSetFPJSKey(
+            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                 "{\"key\":\"$keyValue\", \"exp\":${System.currentTimeMillis() + (1 * 60 * 60 * 1000)}}",
             ) { e: NIDEventModel ->
                 assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
@@ -145,7 +145,7 @@ class AdvancedDeviceIDManagerServiceTest {
     fun testGetRemoteID_no_nid_response() {
         val errorMessage = "Network Error"
         val mocks =
-            buildAdvancedDeviceIDManagerService_noUserSetFPJSKey(
+            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                 networkServiceResult = Triple("", false, errorMessage),
             ) { e: NIDEventModel ->
                 assert(e.type == LOG) { "Expected event type to be $LOG, found ${e.type}" }
@@ -177,7 +177,7 @@ class AdvancedDeviceIDManagerServiceTest {
             "Reached maximum number of retries (${NIDAdvancedDeviceNetworkService.RETRY_COUNT}) to get Advanced Device Signal Request ID:$errorMessage"
 
         val mocks =
-            buildAdvancedDeviceIDManagerService_noUserSetFPJSKey(
+            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                 networkServiceResult = Triple("", true, ""),
                 fpjsResponse = Pair(null, errorMessage),
             ) { e: NIDEventModel ->
@@ -226,7 +226,7 @@ class AdvancedDeviceIDManagerServiceTest {
             val validRID = "Valid RID Key"
 
             val mocks =
-                buildAdvancedDeviceIDManagerService_noUserSetFPJSKey(
+                buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                     networkServiceResult = Triple("", true, ""),
                     fpjsResponse = Pair(validRID, null),
                 ) { e: NIDEventModel ->
@@ -263,7 +263,7 @@ class AdvancedDeviceIDManagerServiceTest {
             val validRID = "Valid RID Key"
 
             val mocks =
-                buildAdvancedDeviceIDManagerService_userSetFPJSKey(
+                buildAdvancedDeviceIDManagerService_userSetAdvancedKey(
                     networkServiceResult = Triple("", true, ""),
                     fpjsResponse = Pair(validRID, null),
                 ) { e: NIDEventModel ->
@@ -297,11 +297,11 @@ class AdvancedDeviceIDManagerServiceTest {
     /*
         Mocking Functions
      */
-    private fun buildAdvancedDeviceIDManagerService_noUserSetFPJSKey(
+    private fun buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
         sharedPrefGetValue: String = "{\"key\":\"testingExp\", \"exp\":0}",
         networkServiceResult: Triple<String, Boolean, String> = Triple("", false, ""),
         fpjsResponse: Pair<String?, String?> = Pair(null, null),
-        fpjsKey: String? = null,
+        advancedDeviceKey: String? = null,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNeuroID = getMockedNeuroID()
@@ -327,7 +327,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 "",
                 "",
                 getMockedConfigService(),
-                fpjsKey,
+                advancedDeviceKey,
                 mockedFPJSClient
             )
 
@@ -346,11 +346,11 @@ class AdvancedDeviceIDManagerServiceTest {
     /*
         Mocking Functions
      */
-    private fun buildAdvancedDeviceIDManagerService_userSetFPJSKey(
+    private fun buildAdvancedDeviceIDManagerService_userSetAdvancedKey(
         sharedPrefGetValue: String = "{\"key\":\"testingExp\", \"exp\":0}",
         networkServiceResult: Triple<String, Boolean, String> = Triple("", false, ""),
         fpjsResponse: Pair<String?, String?> = Pair(null, null),
-        fpjsKey: String? = "gsagasdgasdgsdg",
+        advancedDeviceKey: String? = "gsagasdgasdgsdg",
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNeuroID = getMockedNeuroID()
@@ -376,7 +376,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 "",
                 "",
                 getMockedConfigService(),
-                fpjsKey,
+                advancedDeviceKey,
                 mockedFPJSClient
             )
 

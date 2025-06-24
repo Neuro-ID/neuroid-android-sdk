@@ -42,7 +42,7 @@ internal class AdvancedDeviceIDManager(
     private val clientID: String,
     private val linkedSiteID: String,
     private val configService: ConfigService,
-    private val fpjsKey: String? = null,
+    private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null
 ) : AdvancedDeviceIDManagerService {
@@ -87,7 +87,7 @@ internal class AdvancedDeviceIDManager(
         return true
     }
 
-    fun getFPJSKey(clientKey: String): ADVKeyFunctionResponse? {
+    fun getAdvancedDeviceKey(clientKey: String): ADVKeyFunctionResponse? {
         val nidKeyResponse =
             advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
 
@@ -122,8 +122,8 @@ internal class AdvancedDeviceIDManager(
         // check if we have a user entered FPJS key,
         // if not, get it from server
         var fpjsRetrievedKey = ""
-        if (fpjsKey.isNullOrEmpty()) {
-            val keyFunctionResponse = getFPJSKey(clientKey)
+        if (advancedDeviceKey.isNullOrEmpty()) {
+            val keyFunctionResponse = getAdvancedDeviceKey(clientKey)
             // if server gotten FPJS key is null or empty exit immediately
             if (keyFunctionResponse == null) {
                 return null
@@ -143,7 +143,7 @@ internal class AdvancedDeviceIDManager(
                 FingerprintJSFactory(applicationContext = context)
                     .createInstance(
                         Configuration(
-                            apiKey = if (!fpjsKey.isNullOrEmpty()) fpjsKey else fpjsRetrievedKey,
+                            apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
                             endpointUrl = remoteUrl,
                         ),
                     )
@@ -179,7 +179,7 @@ internal class AdvancedDeviceIDManager(
                             l = stopTime - startTime,
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
-                            m = if (fpjsKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
+                            m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
                         )
 
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
