@@ -78,8 +78,9 @@ class NeuroID
         internal var application: Application?,
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
-        serverEnvironment: String = PRODUCTION,
-        internal var advancedDeviceKey: String? = null
+        internal var advancedDeviceKey: String? = null,
+        serverEnvironment: String = PRODUCTION
+
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
@@ -335,11 +336,10 @@ class NeuroID
                         application,
                         clientKey,
                         isAdvancedDevice,
-                        serverEnvironment,
-                        advancedDeviceKey
+                        advancedDeviceKey,
+                        serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
-                println("kurt_test calling build()")
             }
         }
 
