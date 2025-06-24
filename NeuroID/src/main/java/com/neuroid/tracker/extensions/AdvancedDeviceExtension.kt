@@ -62,7 +62,7 @@ fun NeuroIDPublic.startSession(
 }
 
 @Synchronized
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?) = runBlocking {
     captureEvent(type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -79,7 +79,8 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean) = runBlocking {
                         ),
                         this.clientID,
                         this.linkedSiteID ?: "",
-                        configService
+                        configService,
+                        advancedDeviceKey
                     )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
             }

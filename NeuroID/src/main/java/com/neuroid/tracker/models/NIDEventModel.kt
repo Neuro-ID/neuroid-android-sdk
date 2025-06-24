@@ -237,7 +237,7 @@ data class NIDEventModel(
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
-                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}"
+                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"

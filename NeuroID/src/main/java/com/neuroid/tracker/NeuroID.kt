@@ -78,7 +78,9 @@ class NeuroID
         internal var application: Application?,
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
-        serverEnvironment: String = PRODUCTION,
+        internal var advancedDeviceKey: String? = null,
+        serverEnvironment: String = PRODUCTION
+
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
@@ -86,6 +88,7 @@ class NeuroID
         internal var sessionID = ""
         internal var clientID = ""
         internal var userID = ""
+
         internal var linkedSiteID: String? = null
         internal var packetNumber: Int = 0
         internal var tabID: String
@@ -217,6 +220,10 @@ class NeuroID
                         configService,
                     )
 
+                if (isAdvancedDevice) {
+                    captureAdvancedDevice(isAdvancedDevice, advancedDeviceKey)
+                }
+
                 sessionService =
                     NIDSessionService(
                         logger,
@@ -320,7 +327,8 @@ class NeuroID
             val application: Application? = null,
             val clientKey: String = "",
             val isAdvancedDevice: Boolean = false,
-            val serverEnvironment: String = PRODUCTION,
+            val advancedDeviceKey: String? = null,
+            val serverEnvironment: String = PRODUCTION
         ) {
             fun build() {
                 val neuroID =
@@ -328,7 +336,8 @@ class NeuroID
                         application,
                         clientKey,
                         isAdvancedDevice,
-                        serverEnvironment,
+                        advancedDeviceKey,
+                        serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -553,7 +562,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture)
+                captureAdvancedDevice(shouldCapture, advancedDeviceKey)
             }
         }
 
