@@ -10,6 +10,7 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import kotlinx.coroutines.CoroutineDispatcher
@@ -41,6 +42,7 @@ internal class AdvancedDeviceIDManager(
     private val clientID: String,
     private val linkedSiteID: String,
     private val configService: ConfigService,
+    private val fpjsKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null
 ) : AdvancedDeviceIDManagerService {
@@ -85,14 +87,9 @@ internal class AdvancedDeviceIDManager(
         return true
     }
 
-    override fun getRemoteID(
-        clientKey: String,
-        remoteUrl: String,
-        dispatcher: CoroutineDispatcher,
-        delay: Long,
-    ): Job? {
-        // Retrieving the API key from NeuroID
-        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
+    fun getFPJSKey(clientKey: String): ADVKeyFunctionResponse? {
+        val nidKeyResponse =
+            advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
 
         // if no key exit early
         if (!nidKeyResponse.success) {
@@ -113,8 +110,32 @@ internal class AdvancedDeviceIDManager(
             )
             return null
         }
+        return nidKeyResponse
+    }
 
-        // Call FPJS with our key
+    override fun getRemoteID(
+        clientKey: String,
+        remoteUrl: String,
+        dispatcher: CoroutineDispatcher,
+        delay: Long,
+    ): Job? {
+        // check if we have a user entered FPJS key,
+        // if not, get it from server
+        var fpjsRetrievedKey = ""
+        if (fpjsKey.isNullOrEmpty()) {
+            val keyFunctionResponse = getFPJSKey(clientKey)
+            // if server gotten FPJS key is null or empty exit immediately
+            if (keyFunctionResponse == null) {
+                return null
+            } else {
+                // set the key for use later if successfully gotten from server.
+                keyFunctionResponse?.let {
+                    fpjsRetrievedKey = keyFunctionResponse.key
+                }
+            }
+        }
+
+        // Call FPJS with our key (user entered or server retrieved)
         val fpjsClient =
             if (fpjsClient != null) {
                 fpjsClient
@@ -122,7 +143,7 @@ internal class AdvancedDeviceIDManager(
                 FingerprintJSFactory(applicationContext = context)
                     .createInstance(
                         Configuration(
-                            apiKey = nidKeyResponse.key,
+                            apiKey = if (!fpjsKey.isNullOrEmpty()) fpjsKey else fpjsRetrievedKey,
                             endpointUrl = remoteUrl,
                         ),
                     )
@@ -135,7 +156,7 @@ internal class AdvancedDeviceIDManager(
                 var jobComplete = false
                 var jobErrorMessage = ""
                 for (retryCount in 1..maxRetryCount) {
-                    // we want to see the latency from FPJS on each reuest
+                    // we want to see the latency from FPJS on each request
                     val startTime = Calendar.getInstance().timeInMillis
 
                     // returns a Bool - success, String - key OR error message
@@ -158,6 +179,7 @@ internal class AdvancedDeviceIDManager(
                             l = stopTime - startTime,
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
+                            m = if (fpjsKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
                         )
 
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")

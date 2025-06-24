@@ -79,6 +79,7 @@ class NeuroID
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
         serverEnvironment: String = PRODUCTION,
+        internal var fpjsKey: String? = null
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
@@ -184,6 +185,8 @@ class NeuroID
                     collectionTimeout = 10,
                     configTimeout = 10,
                 )
+
+            captureAdvancedDevice(isAdvancedDevice, fpjsKey)
 
             configService =
                 NIDConfigService(
@@ -321,6 +324,7 @@ class NeuroID
             val clientKey: String = "",
             val isAdvancedDevice: Boolean = false,
             val serverEnvironment: String = PRODUCTION,
+            val fpjsKey: String? = null
         ) {
             fun build() {
                 val neuroID =
@@ -329,6 +333,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         serverEnvironment,
+                        fpjsKey
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -553,7 +558,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture)
+                captureAdvancedDevice(shouldCapture, fpjsKey)
             }
         }
 
