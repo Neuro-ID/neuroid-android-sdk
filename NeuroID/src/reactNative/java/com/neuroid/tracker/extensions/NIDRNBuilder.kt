@@ -15,6 +15,7 @@ class NIDRNBuilder( val application: Application? = null,
         Log.d("NIDRNBuilder", "set options: $options")
         NeuroID.Builder(application, clientKey,
             options[RNConfigOptions.isAdvancedDevice] as Boolean,
+            options[RNConfigOptions.advancedDeviceKey] as String,
             options[RNConfigOptions.environment] as String).build()
         NeuroID.getInstance()?.setIsRN()
     }
@@ -28,9 +29,16 @@ class NIDRNBuilder( val application: Application? = null,
         // defaults
         var isAdvancedDevice = false
         var environment = NeuroID.PRODUCTION
+        var advancedDeviceKey = ""
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let {rnOptionsMap ->
+            // set the advanced device key from the advancedDeviceKey option, default empty string
+            if (rnOptionsMap.hasKey(RNConfigOptions.advancedDeviceKey.name)) {
+                rnOptionsMap.getString(RNConfigOptions.advancedDeviceKey.name)?.let {
+                    advancedDeviceKey = it
+                }
+            }
             // set the is advanced flag true or false from isAdvancedDevice option, default false
             if (rnOptionsMap.hasKey(RNConfigOptions.isAdvancedDevice.name)) {
                 rnOptionsMap.getBoolean(RNConfigOptions.isAdvancedDevice.name).let {
@@ -52,11 +60,13 @@ class NIDRNBuilder( val application: Application? = null,
         }
         options[RNConfigOptions.environment] = environment
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
+        options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
         return options
     }
 }
 
 enum class RNConfigOptions {
     isAdvancedDevice,
-    environment
+    environment,
+    advancedDeviceKey
 }
