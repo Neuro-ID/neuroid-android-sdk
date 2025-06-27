@@ -18,6 +18,7 @@ class NIDRNBuilderTest {
         println(mapOptions)
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
+        assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
     }
 
     @Test
@@ -26,13 +27,16 @@ class NIDRNBuilderTest {
         val options = mockk<ReadableMap>()
         every {options.hasKey(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.hasKey(RNConfigOptions.environment.name)} returns true
+        every {options.hasKey(RNConfigOptions.advancedDeviceKey.name)} returns true
         every {options.getBoolean(RNConfigOptions.isAdvancedDevice.name)} returns true
+        every {options.getString(RNConfigOptions.advancedDeviceKey.name)} returns "testkey"
         every {options.getString(RNConfigOptions.environment.name)} returns NeuroID.PRODSCRIPT_DEVCOLLECTION
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         println(mapOptions)
         assert((mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODSCRIPT_DEVCOLLECTION)
+        assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "testkey")
     }
 
     @Test
@@ -43,5 +47,6 @@ class NIDRNBuilderTest {
         println(mapOptions)
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
+        assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
     }
 }
