@@ -145,11 +145,14 @@ internal class NIDDataStoreManagerImp(
 
     /**
      * Synchronize the fetching of the current event list and its replacement with a new event list.
+     * We also do the same for the queued events list.
      */
     @Synchronized
     private fun swapEvents(): MutableList<NIDEventModel> {
         val previousEventsList = eventsList
-        eventsList = mutableListOf<NIDEventModel>()
+        previousEventsList.addAll(queuedEvents)
+        eventsList = mutableListOf()
+        queuedEvents = LinkedList()
         return previousEventsList
     }
 

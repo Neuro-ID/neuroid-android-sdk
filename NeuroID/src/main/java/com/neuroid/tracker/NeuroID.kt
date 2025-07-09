@@ -219,6 +219,11 @@ class NeuroID
                         logger,
                         configService,
                     )
+                // start the service manager job now!
+                nidJobServiceManager.startJob(
+                    it,
+                    clientKey,
+                )
 
                 if (isAdvancedDevice) {
                     captureAdvancedDevice(isAdvancedDevice, advancedDeviceKey)
@@ -390,6 +395,9 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
+                    if (neuroID.isAdvancedDevice) {
+                        neuroID.captureAdvancedDevice(true, neuroID.advancedDeviceKey)
+                    }
                     singleton?.setupCallbacks()
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
