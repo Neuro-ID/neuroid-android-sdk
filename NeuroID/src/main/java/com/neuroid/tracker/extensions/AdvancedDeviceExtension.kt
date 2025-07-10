@@ -63,7 +63,7 @@ fun NeuroIDPublic.startSession(
 
 @Synchronized
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?) = runBlocking {
-    captureEvent(type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
+    captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->

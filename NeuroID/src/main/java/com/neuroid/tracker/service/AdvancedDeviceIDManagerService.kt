@@ -75,6 +75,7 @@ internal class AdvancedDeviceIDManager(
                 "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}",
         )
         neuroID.captureEvent(
+            queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
             ts = System.currentTimeMillis(),
@@ -97,15 +98,10 @@ internal class AdvancedDeviceIDManager(
 
             // capture failure in event
             neuroID.captureEvent(
+                queuedEvent = true,
                 type = LOG,
                 ts = System.currentTimeMillis(),
                 level = "error",
-                m = nidKeyResponse.message,
-            )
-
-            neuroID.captureEvent(
-                type = ADVANCED_DEVICE_REQUEST_FAILED,
-                ts = System.currentTimeMillis(),
                 m = nidKeyResponse.message,
             )
             return null
@@ -158,10 +154,8 @@ internal class AdvancedDeviceIDManager(
                 for (retryCount in 1..maxRetryCount) {
                     // we want to see the latency from FPJS on each request
                     val startTime = Calendar.getInstance().timeInMillis
-
                     // returns a Bool - success, String - key OR error message
                     val requestResponse = getVisitorId(fpjsClient)
-
                     // If Success - capture ID and cache, end loop
                     if (requestResponse.first) {
                         logger.d(
@@ -171,6 +165,7 @@ internal class AdvancedDeviceIDManager(
 
                         val stopTime = Calendar.getInstance().timeInMillis
                         neuroID.captureEvent(
+                            queuedEvent = true,
                             type = ADVANCED_DEVICE_REQUEST,
                             rid = requestResponse.second,
                             ts = Calendar.getInstance().timeInMillis,
@@ -181,7 +176,6 @@ internal class AdvancedDeviceIDManager(
                             ct = neuroID.networkConnectionType,
                             m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
                         )
-
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
                         // Cache request Id for 24 hours
                         //  and convert the Map to a JSON String
@@ -217,9 +211,16 @@ internal class AdvancedDeviceIDManager(
                         "Reached maximum number of retries ($maxRetryCount) to get Advanced Device Signal Request ID: $jobErrorMessage"
 
                     neuroID.captureEvent(
+                        queuedEvent = true,
                         type = LOG,
                         ts = Calendar.getInstance().timeInMillis,
                         level = "error",
+                        m = msg,
+                    )
+                    neuroID.captureEvent(
+                        queuedEvent = true,
+                        type = ADVANCED_DEVICE_REQUEST_FAILED,
+                        ts = Calendar.getInstance().timeInMillis,
                         m = msg,
                     )
                     logger.e(msg = msg)
