@@ -1001,9 +1001,6 @@ class NeuroID
                 ATTEMPTED_LOGIN -> {
                     nidJobServiceManager.sendEvents(true)
                 }
-                SET_VARIABLE -> {
-                    nidJobServiceManager.sendEvents(true)
-                }
                 APPLICATION_METADATA -> {
                     nidJobServiceManager.sendEvents(true)
                 }
