@@ -219,7 +219,6 @@ class NeuroID
                         logger,
                         configService,
                     )
-                // start the service manager job now!
                 nidJobServiceManager.startJob(
                     it,
                     clientKey,

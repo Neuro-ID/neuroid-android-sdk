@@ -200,7 +200,7 @@ data class NIDEventModel(
     }
 
     internal fun log() {
-        NIDLog.i(Constants.debugEventTag.displayName, "") {
+        NIDLog.d(Constants.debugEventTag.displayName, "") {
             var contextString: String? = ""
             when (this.type) {
                 PAUSE_EVENT_CAPTURE -> contextString = ""
