@@ -104,13 +104,6 @@ internal class AdvancedDeviceIDManager(
                 level = "error",
                 m = nidKeyResponse.message,
             )
-
-            neuroID.captureEvent(
-                queuedEvent = true,
-                type = ADVANCED_DEVICE_REQUEST_FAILED,
-                ts = System.currentTimeMillis(),
-                m = nidKeyResponse.message,
-            )
             return null
         }
         return nidKeyResponse
@@ -222,6 +215,12 @@ internal class AdvancedDeviceIDManager(
                         type = LOG,
                         ts = Calendar.getInstance().timeInMillis,
                         level = "error",
+                        m = msg,
+                    )
+                    neuroID.captureEvent(
+                        queuedEvent = true,
+                        type = ADVANCED_DEVICE_REQUEST_FAILED,
+                        ts = Calendar.getInstance().timeInMillis,
                         m = msg,
                     )
                     logger.e(msg = msg)
