@@ -225,7 +225,7 @@ class NeuroID
                 )
 
                 if (isAdvancedDevice) {
-                    captureAdvancedDevice(isAdvancedDevice, advancedDeviceKey)
+                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
                 }
 
                 sessionService =
