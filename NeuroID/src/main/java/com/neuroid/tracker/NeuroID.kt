@@ -395,7 +395,7 @@ class NeuroID
                 if (singleton == null) {
                     singleton = neuroID
                     if (neuroID.isAdvancedDevice) {
-                        neuroID.captureAdvancedDevice(true, neuroID.advancedDeviceKey)
+                        neuroID.checkThenCaptureAdvancedDevice(true)
                     }
                     singleton?.setupCallbacks()
                 } else {
