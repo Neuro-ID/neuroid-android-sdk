@@ -5,7 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import com.neuroid.tracker.models.ApplicationMetaData
 
-class VersionChecker() {
+class VersionChecker {
     /**
      * Returns Boolean to indicate if device build version is >= 31
      */
@@ -26,10 +26,10 @@ fun getAppMetaData(context: Context): ApplicationMetaData? {
             }
 
         ApplicationMetaData(
-            versionName = packageInfo.versionName,
+            versionName = packageInfo.versionName?:"",
             versionNumber = versionCode,
             packageName = packageInfo.packageName,
-            applicationName = packageInfo.applicationInfo.name?:"",
+            applicationName = packageInfo.applicationInfo?.name?:"",
         )
     } catch (e: PackageManager.NameNotFoundException) {
         e.printStackTrace()
