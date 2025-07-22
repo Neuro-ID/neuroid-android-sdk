@@ -15,20 +15,18 @@ class NIDSamplingService(
      * given a site id, tell me if we sample events or not. the site ID will be compared
      */
     fun updateIsSampledStatus(siteID: String?) {
-//        ENG-8324 - ignore updating sampling logic
-//
-//        val currentSampleRate = retrieveSampleRate(siteID)
-//        if (currentSampleRate >= MAX_SAMPLE_RATE) {
-//            isSessionFlowSampled = true
-//            return
-//        }
-//        val randomValue = randomGenerator.getRandom(MAX_SAMPLE_RATE)
-//        if (randomValue < currentSampleRate) {
-//            isSessionFlowSampled = true
-//            return
-//        }
-//
-//        isSessionFlowSampled = false
+        val currentSampleRate = retrieveSampleRate(siteID)
+        if (currentSampleRate >= MAX_SAMPLE_RATE) {
+            isSessionFlowSampled = true
+            return
+        }
+        val randomValue = randomGenerator.getRandom(MAX_SAMPLE_RATE)
+        if (randomValue < currentSampleRate) {
+            isSessionFlowSampled = true
+            return
+        }
+
+        isSessionFlowSampled = false
     }
 
     /**
