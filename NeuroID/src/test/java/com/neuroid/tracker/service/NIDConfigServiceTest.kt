@@ -8,8 +8,10 @@ import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.getMockedValidationService
+import com.neuroid.tracker.models.NIDLinkedSiteOption
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
 import io.mockk.mockk
@@ -104,7 +106,8 @@ class NIDConfigServiceTest {
         every { Calendar.getInstance() } returns calendar
 
         val remoteConfig = NIDRemoteConfig(siteID = "TEST_SITE", callInProgress = false)
-
+        val randomGenerator = mockk<RandomGenerator>()
+        every { randomGenerator.getRandom(any()) } returns 50.0
         httpService =
             getMockedHTTPService(
                 true,
@@ -117,6 +120,7 @@ class NIDConfigServiceTest {
                 logger,
                 neuroID,
                 httpService,
+
                 validationService,
             )
 
@@ -135,6 +139,55 @@ class NIDConfigServiceTest {
             CONFIG_CACHED,
             1,
         )
+    }
+
+    @Test
+    fun test_initSiteIDSampleMap() {
+        val calendar = mockk<Calendar>()
+        every { calendar.timeInMillis } returns 5L
+        mockkStatic(Calendar::class)
+        every { Calendar.getInstance() } returns calendar
+
+        val remoteConfig = NIDRemoteConfig(siteID = "TEST_SITE", callInProgress = false)
+        val randomGenerator = mockk<RandomGenerator>()
+        every { randomGenerator.getRandom(any()) } returns 30.0
+
+        httpService =
+            getMockedHTTPService(
+            true,
+            200,
+            remoteConfig,
+        )
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                randomGenerator = randomGenerator,
+                validationService = validationService
+            )
+        val t = NIDRemoteConfig(
+            linkedSiteOptions =
+            hashMapOf(
+                "form_testa123" to NIDLinkedSiteOption(10),
+                "form_testa124" to NIDLinkedSiteOption(50),
+            ),
+            siteID = "form_zappa345",
+            sampleRate = 40,
+        )
+        configService.initSiteIDSampleMap(t)
+        configService.siteIDSampleMap.forEach { (key, value) ->
+            if (key == "form_testa123") {
+                assert(!value)
+            }
+            if (key == "form_testa124") {
+                assert(value)
+            }
+            if (key == "form_zappa345") {
+                assert(value)
+            }
+        }
     }
 
     /***

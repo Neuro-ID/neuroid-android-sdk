@@ -197,7 +197,7 @@ class NeuroID
                     validationService,
                     configRetrievalCallback = { configSetupCompletion() },
                 )
-            samplingService = NIDSamplingService(logger, randomGenerator, configService)
+            samplingService = NIDSamplingService(configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =

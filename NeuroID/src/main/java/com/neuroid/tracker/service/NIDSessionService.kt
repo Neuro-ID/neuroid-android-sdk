@@ -35,6 +35,7 @@ internal class NIDSessionService(
             neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
+            samplingService.updateIsSampledStatus(neuroID.linkedSiteID)
             captureSessionOrMetaDataEvent(
                 type = CREATE_SESSION,
             )
@@ -253,6 +254,7 @@ internal class NIDSessionService(
         neuroID.userID = ""
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
+        configService.clearSiteIDSampleMap()
 
         neuroID.captureEvent(
             type = LOG,
@@ -267,6 +269,7 @@ internal class NIDSessionService(
         completion: (SessionStartResult) -> Unit = {},
     ) {
         neuroID.captureEvent(
+            queuedEvent = true,
             type = LOG,
             level = "info",
             m = "startAppFlow attempt - siteID:$siteID - userID:${if (userID != null) {

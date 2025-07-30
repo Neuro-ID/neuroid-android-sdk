@@ -13,7 +13,7 @@ import org.junit.Test
 class NIDSamplingServiceTest {
     @Test
     fun testParentNoThrottle() {
-        testSampleService("form_zappa345", 10.0, true)
+        testSampleService("form_zappa346", 50.0, true)
     }
 
     @Test
@@ -56,19 +56,17 @@ class NIDSamplingServiceTest {
 
         val randomGenerator = mockk<RandomGenerator>()
         every { randomGenerator.getRandom(any()) } returns randomNumber
-        val configService = mockk<NIDConfigService>()
-        every { configService.configCache } returns
-            NIDRemoteConfig(
-                linkedSiteOptions =
-                    hashMapOf(
-                        "form_testa123" to NIDLinkedSiteOption(10),
-                        "form_testa124" to NIDLinkedSiteOption(50),
-                    ),
-                siteID = "form_zappa345",
-                sampleRate = 40,
-            )
 
-        val sampleService = NIDSamplingService(logger, randomGenerator, configService)
+        val configService = mockk<NIDConfigService>()
+        every { configService.initSiteIDSampleMap(any()) } just runs
+        every { configService.siteIDSampleMap } returns
+            hashMapOf(
+                "form_testa123" to false,
+                "form_testa124" to true,
+                "form_zappa345" to false,
+                "form_zappa346" to true,
+            )
+        val sampleService = NIDSamplingService(configService)
         sampleService.updateIsSampledStatus(siteID)
         assert(sampleService.isSessionFlowSampled() == expectedValue)
     }

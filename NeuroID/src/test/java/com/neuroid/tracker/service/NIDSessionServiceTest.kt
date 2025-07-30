@@ -25,7 +25,9 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -81,6 +83,8 @@ class NIDSessionServiceTest {
         // these are set to false by default
         every { mockedConfigService.configCache.geoLocation } returns true
         every { mockedConfigService.configCache.callInProgress } returns true
+
+        every {mockedNeuroID.configService} returns getMockedConfigService()
 
         val mockedSampleService =
             getMockSampleService(
@@ -853,10 +857,13 @@ class NIDSessionServiceTest {
             getMockedNeuroID(
                 shouldMockApplication = true,
             )
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.clearSiteIDSampleMap() } just runs
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                configService = mockedConfigService
             )
 
         sessionService.clearSessionVariables()
@@ -865,6 +872,7 @@ class NIDSessionServiceTest {
             mockedNeuroID.userID = ""
             mockedNeuroID.registeredUserID = ""
             mockedNeuroID.linkedSiteID = ""
+            mockedConfigService.clearSiteIDSampleMap()
         }
     }
 

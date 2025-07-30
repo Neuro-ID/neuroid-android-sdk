@@ -50,6 +50,7 @@ internal fun getMockedNeuroID(
     mockLocationService: LocationService = getMockedLocationService(),
     mockCallActivityListener: NIDCallActivityListener = getMockedCallActivityListener(),
     mockSessionService: NIDSessionService = getMockedSessionService(),
+    mockConfigService: ConfigService = getMockedConfigService(),
 ): NeuroID {
     val nidMock = mockk<NeuroID>()
 
@@ -97,6 +98,7 @@ internal fun getMockedNeuroID(
     every { nidMock.locationService } returns mockLocationService
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
+    every { nidMock.configService } returns mockConfigService
 
     every { nidMock.setupListeners() } just runs
 
@@ -263,6 +265,8 @@ internal fun getMockedConfigService(): ConfigService {
     every {
         mockedConfigService.retrieveOrRefreshCache()
     } just runs
+    every { mockedConfigService.siteIDSampleMap} returns mutableMapOf("test1" to true, "test2" to false)
+    every { mockedConfigService.clearSiteIDSampleMap() } just runs
 
     return mockedConfigService
 }
@@ -285,7 +289,6 @@ internal fun getMockSampleService(
     every { mockedSampleService.isSessionFlowSampled() } returns shouldSample
     every { mockedSampleService.updateIsSampledStatus(any()) } just runs
 
-    every { mockedSampleService.logger } returns logger
     every { mockedSampleService.configService } returns configService
 
     return mockedSampleService
@@ -334,6 +337,7 @@ internal fun getMockedSessionService(): NIDSessionService {
     every { mockedSessionService.pauseCollection(any()) } just runs
     every { mockedSessionService.resumeCollection() } just runs
     every { mockedSessionService.createMobileMetadata() } just runs
+    every { mockedSessionService.clearSessionVariables()}
 
     return mockedSessionService
 }
