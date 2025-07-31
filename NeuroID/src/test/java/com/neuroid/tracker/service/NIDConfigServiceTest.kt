@@ -150,14 +150,13 @@ class NIDConfigServiceTest {
 
         val remoteConfig = NIDRemoteConfig(siteID = "TEST_SITE", callInProgress = false)
         val randomGenerator = mockk<RandomGenerator>()
-        every { randomGenerator.getRandom(any()) } returns 30.0
 
         httpService =
             getMockedHTTPService(
-            true,
-            200,
-            remoteConfig,
-        )
+                true,
+                200,
+                remoteConfig,
+            )
         configService =
             NIDConfigService(
                 dispatcher,
@@ -167,21 +166,97 @@ class NIDConfigServiceTest {
                 randomGenerator = randomGenerator,
                 validationService = validationService
             )
+
         val t = NIDRemoteConfig(
             linkedSiteOptions =
             hashMapOf(
                 "form_testa123" to NIDLinkedSiteOption(10),
                 "form_testa124" to NIDLinkedSiteOption(50),
+                "form_testa125" to NIDLinkedSiteOption(0),
+                "form_testa126" to NIDLinkedSiteOption(100),
             ),
             siteID = "form_zappa345",
             sampleRate = 40,
         )
+
+
+        // test roll 30
+        every { randomGenerator.getRandom(any()) } returns 30.0
         configService.initSiteIDSampleMap(t)
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
             }
             if (key == "form_testa124") {
+                assert(value)
+            }
+            if (key == "form_testa125") {
+                assert(!value)
+            }
+            if (key == "form_testa126") {
+                assert(value)
+            }
+            if (key == "form_zappa345") {
+                assert(value)
+            }
+        }
+
+        // test roll 50
+        every { randomGenerator.getRandom(any()) } returns 50.0
+        configService.initSiteIDSampleMap(t)
+        configService.siteIDSampleMap.forEach { (key, value) ->
+            if (key == "form_testa123") {
+                assert(!value)
+            }
+            if (key == "form_testa124") {
+                assert(value)
+            }
+            if (key == "form_testa125") {
+                assert(!value)
+            }
+            if (key == "form_testa126") {
+                assert(value)
+            }
+            if (key == "form_zappa345") {
+                assert(!value)
+            }
+        }
+
+        // test roll 100
+        every { randomGenerator.getRandom(any()) } returns 100.0
+        configService.initSiteIDSampleMap(t)
+        configService.siteIDSampleMap.forEach { (key, value) ->
+            if (key == "form_testa123") {
+                assert(!value)
+            }
+            if (key == "form_testa124") {
+                assert(!value)
+            }
+            if (key == "form_testa125") {
+                assert(!value)
+            }
+            if (key == "form_testa126") {
+                assert(value)
+            }
+            if (key == "form_zappa345") {
+                assert(!value)
+            }
+        }
+
+        // test roll 0
+        every { randomGenerator.getRandom(any()) } returns 0.0
+        configService.initSiteIDSampleMap(t)
+        configService.siteIDSampleMap.forEach { (key, value) ->
+            if (key == "form_testa123") {
+                assert(value)
+            }
+            if (key == "form_testa124") {
+                assert(value)
+            }
+            if (key == "form_testa125") {
+                assert(!value)
+            }
+            if (key == "form_testa126") {
                 assert(value)
             }
             if (key == "form_zappa345") {

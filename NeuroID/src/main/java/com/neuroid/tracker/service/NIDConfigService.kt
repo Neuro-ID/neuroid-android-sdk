@@ -3,10 +3,11 @@ package com.neuroid.tracker.service
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.CLEAR_SAMPLE_SITE_ID_MAP
 import com.neuroid.tracker.events.CONFIG_CACHED
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.REMOTE_CONFIG_SITE_ID_MAP_CLEARED
-import com.neuroid.tracker.events.REMOTE_CONFIG_SITE_ID_MAP_UPDATED
+import com.neuroid.tracker.events.UPDATE_SAMPLE_SITE_ID_MAP
+import com.neuroid.tracker.events.UPDATE_IS_SAMPLED_STATUS
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -22,6 +23,8 @@ interface ConfigService {
 
     fun retrieveOrRefreshCache()
     fun clearSiteIDSampleMap()
+    fun isSessionFlowSampled(): Boolean
+    fun updateIsSampledStatus(siteID: String?)
 }
 
 internal class NIDConfigService(
@@ -41,6 +44,7 @@ internal class NIDConfigService(
 
     var cacheSetWithRemote = false
     var cacheCreationTime: Long = 0L
+    private var isSessionFlowSampled = true
 
     override var configCache: NIDRemoteConfig = NIDRemoteConfig()
     override var siteIDSampleMap: MutableMap<String, Boolean> = mutableMapOf()
@@ -115,23 +119,32 @@ internal class NIDConfigService(
         siteIDSampleMap.clear()
         neuroID.captureEvent(
             queuedEvent = true,
-            type = REMOTE_CONFIG_SITE_ID_MAP_CLEARED
+            type = CLEAR_SAMPLE_SITE_ID_MAP
         )
     }
 
     internal fun initSiteIDSampleMap(config: NIDRemoteConfig) {
         for (linkedSiteID in config.linkedSiteOptions.keys) {
             config.linkedSiteOptions[linkedSiteID]?.let {
-                siteIDSampleMap[linkedSiteID] =
-                    randomGenerator.getRandom(MAX_SAMPLE_RATE) < it.sampleRate
+                if (it.sampleRate == 0) {
+                    siteIDSampleMap[linkedSiteID] = false
+                } else {
+                    siteIDSampleMap[linkedSiteID] =
+                        randomGenerator.getRandom(MAX_SAMPLE_RATE) <= it.sampleRate
+                }
             }
         }
-        siteIDSampleMap[config.siteID] =
-            randomGenerator.getRandom(MAX_SAMPLE_RATE) < config.sampleRate
+
+        if (config.sampleRate == 0) {
+            siteIDSampleMap[config.siteID] = false
+        } else {
+            siteIDSampleMap[config.siteID] =
+                randomGenerator.getRandom(MAX_SAMPLE_RATE) <= config.sampleRate
+        }
 
         neuroID.captureEvent(
             queuedEvent = true,
-            type = REMOTE_CONFIG_SITE_ID_MAP_UPDATED
+            type = UPDATE_SAMPLE_SITE_ID_MAP
         )
     }
 
@@ -163,4 +176,20 @@ internal class NIDConfigService(
             )
         }
     }
+
+    /**
+     * given a site id, tell me if we sample events or not. the site ID will be compared
+     */
+    override fun updateIsSampledStatus(siteID: String?) {
+        isSessionFlowSampled = siteIDSampleMap[siteID]?:true
+        this.neuroID.captureEvent(
+            queuedEvent = true,
+            type = UPDATE_IS_SAMPLED_STATUS,
+        )
+    }
+
+    /**
+     * Returns whether the session flow is sampled based on the current configuration.
+     */
+    override fun isSessionFlowSampled(): Boolean = this.isSessionFlowSampled
 }

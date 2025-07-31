@@ -8,7 +8,6 @@ import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
 import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
 import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SET_LINKED_SITE
-import com.neuroid.tracker.getMockSampleService
 import com.neuroid.tracker.getMockedCallActivityListener
 import com.neuroid.tracker.getMockedConfigService
 import com.neuroid.tracker.getMockedDataStore
@@ -30,7 +29,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -48,7 +46,6 @@ class NIDSessionServiceTest {
         val mockedLocationService: LocationService,
         val mockedCallListener: NIDCallActivityListener,
         val mockedConfigService: ConfigService,
-        val mockedSampleService: NIDSamplingService,
         val mockedValidationService: NIDValidationService,
         val mockedIdentifierService: NIDIdentifierService,
     )
@@ -77,7 +74,10 @@ class NIDSessionServiceTest {
                 mockCallActivityListener = mockedCallListener,
             )
 
-        val mockedConfigService = getMockedConfigService()
+        val mockedConfigService =
+            getMockedConfigService(
+                isSessionFlowSampled = true,
+            )
 
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
@@ -85,13 +85,6 @@ class NIDSessionServiceTest {
         every { mockedConfigService.configCache.callInProgress } returns true
 
         every {mockedNeuroID.configService} returns getMockedConfigService()
-
-        val mockedSampleService =
-            getMockSampleService(
-                0L,
-                10.0,
-                configService = mockedConfigService,
-            )
 
         val mockedValidationService = getMockedValidationService()
         val mockedIdentifierService = getMockedIdentifierService()
@@ -103,7 +96,6 @@ class NIDSessionServiceTest {
             mockedLocationService,
             mockedCallListener,
             mockedConfigService,
-            mockedSampleService,
             mockedValidationService,
             mockedIdentifierService,
         )
@@ -111,12 +103,10 @@ class NIDSessionServiceTest {
 
     private fun createSessionServiceInstance(
         mockedNeuroID: NeuroID,
-        configService: ConfigService = getMockedConfigService(),
-        samplingService: NIDSamplingService =
-            getMockSampleService(
-                0L,
-                10.0,
-            ),
+        configService: ConfigService = getMockedConfigService(
+            isSessionFlowSampled = true,
+        ),
+
         identifierService: NIDIdentifierService = getMockedIdentifierService(),
         validationService: NIDValidationService = getMockedValidationService(),
     ): NIDSessionService {
@@ -124,7 +114,6 @@ class NIDSessionServiceTest {
             getMockedLogger(),
             mockedNeuroID,
             configService,
-            samplingService,
             getMockedSharedPreferenceDefaults(),
             identifierService,
             validationService,
@@ -216,13 +205,11 @@ class NIDSessionServiceTest {
         val mockedDataStore = mockedServices.mockedDataStore
 
         val mockedConfigService = mockedServices.mockedConfigService
-        val mockedSampleService = mockedServices.mockedSampleService
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
                 mockedConfigService,
-                mockedSampleService,
             )
 
         var customFuncRan = false
@@ -243,7 +230,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedConfigService.retrieveOrRefreshCache()
 
-            mockedSampleService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(testSiteID)
 
             mockedNeuroID.setupListeners()
         }
@@ -485,7 +472,7 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedJobServiceManager.sendEvents(true)
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any() , ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
         }
 
@@ -522,7 +509,7 @@ class NIDSessionServiceTest {
         sessionService.pauseCollection(true)
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
         }
 
         verify(exactly = 0) {
@@ -560,7 +547,7 @@ class NIDSessionServiceTest {
         sessionService.resumeCollection()
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
         }
 
         verify(exactly = 0) {
@@ -609,7 +596,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -657,7 +644,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(),  ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -970,13 +957,13 @@ class NIDSessionServiceTest {
     @Test
     fun test_startAppFlow_alreadyStarted() {
         val mockedServices = buildMockClasses()
-        val mockedSampleService = mockedServices.mockedSampleService
+        val mockedConfigService = mockedServices.mockedConfigService
         val mockedValidationService = mockedServices.mockedValidationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
         } returns false
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
@@ -987,7 +974,7 @@ class NIDSessionServiceTest {
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                samplingService = mockedSampleService,
+                configService = mockedConfigService,
                 validationService = mockedValidationService,
             )
 
@@ -1021,14 +1008,14 @@ class NIDSessionServiceTest {
     @Test
     fun test_startAppFlow_start_noUID() {
         val mockedServices = buildMockClasses()
-        val mockedSampleService = mockedServices.mockedSampleService
+        val mockedConfigService = mockedServices.mockedConfigService
         val mockedValidationService = mockedServices.mockedValidationService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
         } returns false
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
@@ -1039,7 +1026,7 @@ class NIDSessionServiceTest {
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                samplingService = mockedSampleService,
+                configService = mockedConfigService,
                 validationService = mockedValidationService,
             )
 
@@ -1054,7 +1041,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedSampleService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(testSiteID)
 
             mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
@@ -1080,13 +1067,13 @@ class NIDSessionServiceTest {
 
         val mockedServices = buildMockClasses()
         val mockedValidationService = mockedServices.mockedValidationService
-        val mockedSampleService = mockedServices.mockedSampleService
+        val mockedConfigService = mockedServices.mockedConfigService
         val mockedIdentifierService = mockedServices.mockedIdentifierService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
         } returns false
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
@@ -1099,7 +1086,7 @@ class NIDSessionServiceTest {
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                samplingService = mockedSampleService,
+                configService = mockedConfigService,
                 identifierService = mockedIdentifierService,
                 validationService = mockedValidationService,
             )
@@ -1120,7 +1107,7 @@ class NIDSessionServiceTest {
 
             mockedIdentifierService.setUserID(userID, any())
 
-            mockedSampleService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(testSiteID)
 
             mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
         }
@@ -1137,18 +1124,18 @@ class NIDSessionServiceTest {
     fun test_clearSendOldFlowEvents_sampled() {
         val mockedServices = buildMockClasses()
         val mockedNIDJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedSampleService = mockedServices.mockedSampleService
+        val mockedConfigService = mockedServices.mockedConfigService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
         } returns true
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                samplingService = mockedSampleService,
+                configService = mockedConfigService,
             )
 
         var completionFuncResult: Boolean? = null
@@ -1159,7 +1146,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult == true)
 
         verify(exactly = 1) {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
             mockedNIDJobServiceManager.sendEvents(true)
         }
     }
@@ -1168,19 +1155,19 @@ class NIDSessionServiceTest {
     fun test_clearSendOldFlowEvents_notSampled() {
         val mockedServices = buildMockClasses()
         val mockedNIDJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedSampleService = mockedServices.mockedSampleService
+        val mockedConfigService = mockedServices.mockedConfigService
         val mockedDataStore = mockedServices.mockedDataStore
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         every {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
         } returns false
 
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                samplingService = mockedSampleService,
+                configService = mockedConfigService,
             )
 
         var completionFuncResult: Boolean? = null
@@ -1191,7 +1178,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult == true)
 
         verify(exactly = 1) {
-            mockedSampleService.isSessionFlowSampled()
+            mockedConfigService.isSessionFlowSampled()
             mockedDataStore.clearEvents()
         }
 

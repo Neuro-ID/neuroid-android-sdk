@@ -23,7 +23,6 @@ internal class NIDSessionService(
     val logger: NIDLogWrapper,
     val neuroID: NeuroID,
     private val configService: ConfigService,
-    private val samplingService: NIDSamplingService,
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
     private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
@@ -35,7 +34,7 @@ internal class NIDSessionService(
             neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
-            samplingService.updateIsSampledStatus(neuroID.linkedSiteID)
+            configService.updateIsSampledStatus(neuroID.linkedSiteID)
             captureSessionOrMetaDataEvent(
                 type = CREATE_SESSION,
             )
@@ -53,8 +52,8 @@ internal class NIDSessionService(
     ) {
         configService.retrieveOrRefreshCache()
 
-        samplingService.updateIsSampledStatus(siteID)
-        logger.i(msg = "NID isSessionFlowSampled ${samplingService.isSessionFlowSampled()} for $siteID")
+        configService.updateIsSampledStatus(siteID)
+        logger.i(msg = "NID isSessionFlowSampled ${configService.isSessionFlowSampled()} for $siteID")
 
         neuroID.setupListeners()
 
@@ -401,7 +400,7 @@ internal class NIDSessionService(
 
     fun clearSendOldFlowEvents(completion: () -> Unit = {}) =
         runBlocking {
-            if (samplingService.isSessionFlowSampled()) {
+            if (configService.isSessionFlowSampled()) {
                 val deferred =
                     CoroutineScope(neuroID.dispatcher).async {
                         neuroID.nidJobServiceManager?.sendEvents(true)

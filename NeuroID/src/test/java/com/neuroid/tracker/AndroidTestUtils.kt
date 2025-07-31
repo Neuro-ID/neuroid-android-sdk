@@ -22,7 +22,6 @@ import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -259,7 +258,7 @@ internal fun getMockedActivity(): Activity {
     return mockedActivity
 }
 
-internal fun getMockedConfigService(): ConfigService {
+internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): ConfigService {
     val mockedConfigService = mockk<NIDConfigService>()
     every { mockedConfigService.configCache } returns NIDRemoteConfig()
     every {
@@ -267,31 +266,11 @@ internal fun getMockedConfigService(): ConfigService {
     } just runs
     every { mockedConfigService.siteIDSampleMap} returns mutableMapOf("test1" to true, "test2" to false)
     every { mockedConfigService.clearSiteIDSampleMap() } just runs
+    every { mockedConfigService.updateIsSampledStatus(any())} just runs
+    every { mockedConfigService.isSessionFlowSampled() } returns isSessionFlowSampled
+    every { mockedConfigService.initSiteIDSampleMap(any()) } just runs
 
     return mockedConfigService
-}
-
-internal fun getMockSampleService(
-    clockTimeInMS: Long,
-    randomNumber: Double,
-    shouldSample: Boolean = true,
-    logger: NIDLogWrapper = getMockedLogger(),
-    configService: ConfigService = getMockedConfigService(),
-): NIDSamplingService {
-    mockkStatic(Calendar::class)
-    every { Calendar.getInstance().timeInMillis } returns clockTimeInMS
-    // cannot mock Math (FA-Q GOOGLE!!!!) so we wrap it in a helper class that can be mocked
-    val randomGenerator = mockk<RandomGenerator>()
-    every { randomGenerator.getRandom(any()) } returns randomNumber
-
-    val mockedSampleService = mockk<NIDSamplingService>()
-
-    every { mockedSampleService.isSessionFlowSampled() } returns shouldSample
-    every { mockedSampleService.updateIsSampledStatus(any()) } just runs
-
-    every { mockedSampleService.configService } returns configService
-
-    return mockedSampleService
 }
 
 internal fun getMockedLocationService(): LocationService {
