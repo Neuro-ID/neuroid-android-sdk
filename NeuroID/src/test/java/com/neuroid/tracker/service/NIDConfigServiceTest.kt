@@ -148,26 +148,7 @@ class NIDConfigServiceTest {
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
 
-        val remoteConfig = NIDRemoteConfig(siteID = "TEST_SITE", callInProgress = false)
-        val randomGenerator = mockk<RandomGenerator>()
-
-        httpService =
-            getMockedHTTPService(
-                true,
-                200,
-                remoteConfig,
-            )
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                randomGenerator = randomGenerator,
-                validationService = validationService
-            )
-
-        val t = NIDRemoteConfig(
+        val remoteConfig = NIDRemoteConfig(
             linkedSiteOptions =
             hashMapOf(
                 "form_testa123" to NIDLinkedSiteOption(10),
@@ -176,13 +157,32 @@ class NIDConfigServiceTest {
                 "form_testa126" to NIDLinkedSiteOption(100),
             ),
             siteID = "form_zappa345",
-            sampleRate = 40,
+            sampleRate = 40
         )
+        val randomGenerator = mockk<RandomGenerator>()
 
+        httpService =
+            getMockedHTTPService(
+                true,
+                200,
+                remoteConfig,
+            )
+        val vs = mockk<NIDValidationService>()
+        every { vs.verifyClientKeyExists(any()) } returns true
+
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                randomGenerator = randomGenerator,
+                validationService = vs
+            )
 
         // test roll 30
         every { randomGenerator.getRandom(any()) } returns 30.0
-        configService.initSiteIDSampleMap(t)
+        configService.retrieveConfig()
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -203,7 +203,7 @@ class NIDConfigServiceTest {
 
         // test roll 50
         every { randomGenerator.getRandom(any()) } returns 50.0
-        configService.initSiteIDSampleMap(t)
+        configService.retrieveConfig()
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -224,7 +224,7 @@ class NIDConfigServiceTest {
 
         // test roll 100
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.initSiteIDSampleMap(t)
+        configService.retrieveConfig()
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -245,7 +245,7 @@ class NIDConfigServiceTest {
 
         // test roll 0
         every { randomGenerator.getRandom(any()) } returns 0.0
-        configService.initSiteIDSampleMap(t)
+        configService.retrieveConfig()
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(value)
@@ -266,7 +266,7 @@ class NIDConfigServiceTest {
 
         // unknown form, should be true for all forms
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.initSiteIDSampleMap(t)
+        configService.retrieveConfig()
         configService.updateIsSampledStatus("hgjksdahgkldashlg")
         assert(configService.isSessionFlowSampled())
     }
@@ -282,10 +282,14 @@ class NIDConfigServiceTest {
 
         httpService =
             getMockedHTTPService(
-                true,
-                200,
-                "hasdklghasdklghdklasghasdklghklasdghlkasdghl"
+                false,
+                400,
+                "gdsgdfgdfshdfshdf"
             )
+
+        val mockValidationService = mockk<NIDValidationService>()
+        every { mockValidationService.verifyClientKeyExists(any()) } returns true
+
         configService =
             NIDConfigService(
                 dispatcher,
@@ -293,7 +297,7 @@ class NIDConfigServiceTest {
                 neuroID,
                 httpService,
                 randomGenerator = randomGenerator,
-                validationService = validationService
+                validationService = mockValidationService
             )
         configService.retrieveConfig()
         assert(configService.siteIDSampleMap.isEmpty())
