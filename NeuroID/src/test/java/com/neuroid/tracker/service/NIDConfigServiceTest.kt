@@ -263,6 +263,43 @@ class NIDConfigServiceTest {
                 assert(value)
             }
         }
+
+        // unknown form, should be true for all forms
+        every { randomGenerator.getRandom(any()) } returns 100.0
+        configService.initSiteIDSampleMap(t)
+        configService.updateIsSampledStatus("hgjksdahgkldashlg")
+        assert(configService.isSessionFlowSampled())
+    }
+
+    @Test
+    fun test_malformedHTTPResponse() {
+        val calendar = mockk<Calendar>()
+        every { calendar.timeInMillis } returns 5L
+        mockkStatic(Calendar::class)
+        every { Calendar.getInstance() } returns calendar
+
+        val randomGenerator = mockk<RandomGenerator>()
+
+        httpService =
+            getMockedHTTPService(
+                true,
+                200,
+                "hasdklghasdklghdklasghasdklghklasdghlkasdghl"
+            )
+        configService =
+            NIDConfigService(
+                dispatcher,
+                logger,
+                neuroID,
+                httpService,
+                randomGenerator = randomGenerator,
+                validationService = validationService
+            )
+        configService.retrieveConfig()
+        assert(configService.siteIDSampleMap.isEmpty())
+        configService.updateIsSampledStatus("formTest_1234")
+        assert(configService.isSessionFlowSampled())
+
     }
 
     /***
