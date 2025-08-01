@@ -46,7 +46,6 @@ import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
-import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.service.getSendingService
@@ -113,7 +112,6 @@ class NeuroID
         internal var dataStore: NIDDataStoreManager
         internal var registrationIdentificationHelper: RegistrationIdentificationHelper
         internal var nidActivityCallbacks: ActivityCallbacks
-        internal var samplingService: NIDSamplingService
         internal val httpService: NIDHttpService
         internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
@@ -197,7 +195,6 @@ class NeuroID
                     validationService,
                     configRetrievalCallback = { configSetupCompletion() },
                 )
-            samplingService = NIDSamplingService(logger, randomGenerator, configService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
@@ -233,7 +230,6 @@ class NeuroID
                         logger,
                         this,
                         configService,
-                        samplingService,
                         NIDSharedPrefsDefaults(it),
                         identifierService,
                         validationService,
@@ -899,7 +895,7 @@ class NeuroID
                 return
             }
 
-            if (!samplingService.isSessionFlowSampled()) {
+            if (!configService.isSessionFlowSampled()) {
                 return
             }
 

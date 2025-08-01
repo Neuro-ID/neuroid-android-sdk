@@ -19,8 +19,8 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.ADVNetworkService
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
-import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -47,9 +47,9 @@ class AdvancedDeviceIDManagerServiceTest {
     fun testGetADVSignal_is_sampled_true() {
         val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("")
         val mockedNeuroID = mocks.get("mockedNeuroID") as NeuroID
-        val mockedNIDSamplingService = mockk<NIDSamplingService>()
-        every { mockedNIDSamplingService.isSessionFlowSampled() } returns true
-        every { mockedNeuroID.samplingService } returns mockedNIDSamplingService
+        val mockedNIDConfigService = mockk<ConfigService>()
+        every { mockedNIDConfigService.isSessionFlowSampled() } returns true
+        every { mockedNeuroID.configService } returns mockedNIDConfigService
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         getADVSignal(advancedDeviceIDManagerService, "dummy_key", mockedNeuroID, Dispatchers.Unconfined)
         verify(exactly = 1) { advancedDeviceIDManagerService.getCachedID() }
@@ -59,9 +59,9 @@ class AdvancedDeviceIDManagerServiceTest {
     fun testGetADVSignal_is_sampled_false() {
         val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("")
         val mockedNeuroID = mocks.get("mockedNeuroID") as NeuroID
-        val mockedNIDSamplingService = mockk<NIDSamplingService>()
-        every { mockedNIDSamplingService.isSessionFlowSampled() } returns false
-        every { mockedNeuroID.samplingService } returns mockedNIDSamplingService
+        val mockedNIDConfigService = mockk<ConfigService>()
+        every { mockedNIDConfigService.isSessionFlowSampled() } returns false
+        every { mockedNeuroID.configService } returns mockedNIDConfigService
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         getADVSignal(advancedDeviceIDManagerService, "dummy_key", mockedNeuroID, Dispatchers.Unconfined)
         verify(exactly = 0) { advancedDeviceIDManagerService.getCachedID() }

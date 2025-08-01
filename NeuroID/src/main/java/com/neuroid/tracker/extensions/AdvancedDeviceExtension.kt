@@ -98,7 +98,7 @@ internal fun getADVSignal(
 ): Job? {
     var job: Job? = null
     // do this in the background off main but wait for it to complete
-    if (neuroID.samplingService.isSessionFlowSampled()) {
+    if (neuroID.configService.isSessionFlowSampled()) {
         job = CoroutineScope(dispatcher).launch {
             // check for cachedID first
             if (!advancedDeviceIDManagerService.getCachedID()) {
