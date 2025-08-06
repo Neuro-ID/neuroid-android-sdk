@@ -3,7 +3,6 @@ package com.neuroid.tracker.callbacks
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
 
 class NIDSensorGenListener(val logger: NIDLogWrapper = NIDLogWrapper(),
