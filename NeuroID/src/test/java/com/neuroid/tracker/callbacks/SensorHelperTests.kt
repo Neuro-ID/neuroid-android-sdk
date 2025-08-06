@@ -249,12 +249,11 @@ class SensorHelperTests {
         )
     }
 
-    @Test
-    fun test_sensorListener_accelerometer() {
-        val expectedValueArray = floatArrayOf(11.0f, 22.0f, 33.0f)
+    fun testSensorHelper(expected: FloatArray, actual: FloatArray ) {
+        val expectedValueArray = expected
 
         // prepare the accelerometer event (reflection)
-        val sensorEvent = setupMockSensorEvent(SensorTypes.ACCEL, expectedValueArray)
+        val sensorEvent = setupMockSensorEvent(SensorTypes.ACCEL, actual)
         val nidSensors = setupMockNIDSensors(SensorTypes.ACCEL)
         val sensorPair = setupMockNIDSensorData(SensorTypes.ACCEL)
 
@@ -273,5 +272,32 @@ class SensorHelperTests {
             expectedValueArray[1],
             expectedValueArray[2],
         )
+    }
+
+    @Test
+    fun test_sensorListener_accelerometer() {
+        val expectedValueArray = floatArrayOf(11.0f, 22.0f, 33.0f)
+        testSensorHelper(expectedValueArray, expectedValueArray)
+    }
+
+    @Test
+    fun test_sensorListener_accelerometer_missing_z() {
+        val expectedValueArray = floatArrayOf(11.0f, 22.0f, -1f)
+        val result = floatArrayOf(11.0f, 22.0f)
+        testSensorHelper(expectedValueArray, result)
+    }
+
+    @Test
+    fun test_sensorListener_accelerometer_missing_y_z() {
+        val expectedValueArray = floatArrayOf(11.0f, -1f, -1f)
+        val result = floatArrayOf(11.0f)
+        testSensorHelper(expectedValueArray, result)
+    }
+
+    @Test
+    fun test_sensorListener_accelerometer_missing_x_y_z() {
+        val expectedValueArray = floatArrayOf(-1f, -1f, -1f)
+        val result = floatArrayOf()
+        testSensorHelper(expectedValueArray, result)
     }
 }
