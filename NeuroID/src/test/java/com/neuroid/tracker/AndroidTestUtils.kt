@@ -22,7 +22,6 @@ import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
-import com.neuroid.tracker.service.NIDSamplingService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -50,6 +49,7 @@ internal fun getMockedNeuroID(
     mockLocationService: LocationService = getMockedLocationService(),
     mockCallActivityListener: NIDCallActivityListener = getMockedCallActivityListener(),
     mockSessionService: NIDSessionService = getMockedSessionService(),
+    mockConfigService: ConfigService = getMockedConfigService(),
 ): NeuroID {
     val nidMock = mockk<NeuroID>()
 
@@ -97,6 +97,7 @@ internal fun getMockedNeuroID(
     every { nidMock.locationService } returns mockLocationService
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
+    every { nidMock.configService } returns mockConfigService
 
     every { nidMock.setupListeners() } just runs
 
@@ -257,38 +258,19 @@ internal fun getMockedActivity(): Activity {
     return mockedActivity
 }
 
-internal fun getMockedConfigService(): ConfigService {
+internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): ConfigService {
     val mockedConfigService = mockk<NIDConfigService>()
     every { mockedConfigService.configCache } returns NIDRemoteConfig()
     every {
         mockedConfigService.retrieveOrRefreshCache()
     } just runs
+    every { mockedConfigService.siteIDSampleMap} returns mutableMapOf("test1" to true, "test2" to false)
+    every { mockedConfigService.clearSiteIDSampleMap() } just runs
+    every { mockedConfigService.updateIsSampledStatus(any())} just runs
+    every { mockedConfigService.isSessionFlowSampled() } returns isSessionFlowSampled
+    every { mockedConfigService.initSiteIDSampleMap(any()) } just runs
 
     return mockedConfigService
-}
-
-internal fun getMockSampleService(
-    clockTimeInMS: Long,
-    randomNumber: Double,
-    shouldSample: Boolean = true,
-    logger: NIDLogWrapper = getMockedLogger(),
-    configService: ConfigService = getMockedConfigService(),
-): NIDSamplingService {
-    mockkStatic(Calendar::class)
-    every { Calendar.getInstance().timeInMillis } returns clockTimeInMS
-    // cannot mock Math (FA-Q GOOGLE!!!!) so we wrap it in a helper class that can be mocked
-    val randomGenerator = mockk<RandomGenerator>()
-    every { randomGenerator.getRandom(any()) } returns randomNumber
-
-    val mockedSampleService = mockk<NIDSamplingService>()
-
-    every { mockedSampleService.isSessionFlowSampled() } returns shouldSample
-    every { mockedSampleService.updateIsSampledStatus(any()) } just runs
-
-    every { mockedSampleService.logger } returns logger
-    every { mockedSampleService.configService } returns configService
-
-    return mockedSampleService
 }
 
 internal fun getMockedLocationService(): LocationService {
@@ -334,6 +316,7 @@ internal fun getMockedSessionService(): NIDSessionService {
     every { mockedSessionService.pauseCollection(any()) } just runs
     every { mockedSessionService.resumeCollection() } just runs
     every { mockedSessionService.createMobileMetadata() } just runs
+    every { mockedSessionService.clearSessionVariables()}
 
     return mockedSessionService
 }
