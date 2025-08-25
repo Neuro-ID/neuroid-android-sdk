@@ -60,6 +60,7 @@ class TouchEventManagerTest {
         testDetectView(
             mockChildView,
             type="TOUCH_START",
+            tg = hashMapOf("tgs" to "content_description", "sender" to "EditText", "etn" to "EditText"),
             tgs = "content_description",
             touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
             m = "",
@@ -81,6 +82,7 @@ class TouchEventManagerTest {
         testDetectView(
             mockChildView,
             type="TOUCH_END",
+            tg = hashMapOf("tgs" to "content_description", "sender" to "RadioButton", "etn" to "RadioButton"),
             tgs = "content_description",
             touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
             m = "events_logged=0 events_not_logged=0",
@@ -102,6 +104,7 @@ class TouchEventManagerTest {
         testDetectView(
             mockChildView,
             type="TOUCH_MOVE",
+            tg = hashMapOf("tgs" to "content_description", "sender" to "content_description", "etn" to "content_description"),
             tgs = "content_description",
             touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
             m = "",
@@ -110,8 +113,8 @@ class TouchEventManagerTest {
     }
 
     private fun testDetectView(currentView: View, type: String,
-                               tgs: String?, touches: List<NIDTouchModel>?,
-                               m: String?, v: String?, actionType: Int) {
+                       tg: HashMap<String, Any>?, tgs: String?, touches: List<NIDTouchModel>?,
+                       m: String?, v: String?, actionType: Int) {
         val mockNID = getMockedNeuroID()
         val mockViewGroup = mockk<ViewGroup>()
         val mockChildView = currentView
@@ -160,7 +163,7 @@ class TouchEventManagerTest {
         if (actionType == MotionEvent.ACTION_MOVE) {
             verify(exactly = 0) {
                 mockNID.captureEvent(
-                    any(), type, any(), any(), any(), tgs, touches, any(), any(), any(),
+                    any(), type, any(), any(), tg, tgs, touches, any(), any(), any(),
                     v, any(), any(), any(), any(), any(), any(), any(), any(), any(),
                     any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
                     any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
@@ -171,7 +174,7 @@ class TouchEventManagerTest {
         } else {
             verify(exactly = 1) {
                 mockNID.captureEvent(
-                    any(), type, any(), any(), any(), tgs, touches, any(), any(), any(),
+                    any(), type, any(), any(), tg, tgs, touches, any(), any(), any(),
                     v, any(), any(), any(), any(), any(), any(), any(), any(), any(),
                     any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
                     any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
