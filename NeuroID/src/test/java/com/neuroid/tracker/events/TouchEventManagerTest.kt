@@ -78,7 +78,6 @@ class TouchEventManagerTest {
         every {mockViewParent1.contentDescription} returns "RadioButton"
         every {mockViewParent2.contentDescription} returns "RadioButton"
         every {mockChildView.contentDescription} returns "RadioButton"
-        //every {mockChildView.id} returns 12345
         testDetectView(
             mockChildView,
             type="TOUCH_END",
@@ -100,7 +99,6 @@ class TouchEventManagerTest {
         every {mockViewParent1.contentDescription} returns "content_description"
         every {mockViewParent2.contentDescription} returns "content_description"
         every {mockChildView.contentDescription} returns "content_description"
-        //every {mockChildView.id} returns 12345
         testDetectView(
             mockChildView,
             type="TOUCH_MOVE",
