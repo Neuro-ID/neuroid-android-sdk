@@ -54,14 +54,14 @@ class TouchEventManagerTest {
         val mockChildView = mockk<EditText>()
         val mockEditable = mockk<Editable>()
         every {mockEditable.length} returns 10
-        every {mockChildView.contentDescription} returns "content_description"
+        every {mockChildView.contentDescription} returns "EditText"
         every {mockChildView.text} returns mockEditable
         every {mockChildView.id} returns 12345
         testDetectView(
             mockChildView,
             type="TOUCH_START",
-            tg = hashMapOf("tgs" to "content_description", "sender" to "EditText", "etn" to "EditText"),
-            tgs = "content_description",
+            tg = hashMapOf("tgs" to "EditText", "sender" to "EditText", "etn" to "EditText"),
+            tgs = "EditText",
             touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
             m = "",
             v = "S~C~~10",
@@ -75,15 +75,15 @@ class TouchEventManagerTest {
         val mockViewParent2 = mockk<RadioGroup>()
         every {mockChildView.parent} returns mockViewParent2
         every {mockViewParent2.parent} returns mockViewParent1
-        every {mockViewParent1.contentDescription} returns "content_description"
-        every {mockViewParent2.contentDescription} returns "content_description"
-        every {mockChildView.contentDescription} returns "content_description"
-        every {mockChildView.id} returns 12345
+        every {mockViewParent1.contentDescription} returns "RadioButton"
+        every {mockViewParent2.contentDescription} returns "RadioButton"
+        every {mockChildView.contentDescription} returns "RadioButton"
+        //every {mockChildView.id} returns 12345
         testDetectView(
             mockChildView,
             type="TOUCH_END",
-            tg = hashMapOf("tgs" to "content_description", "sender" to "RadioButton", "etn" to "RadioButton"),
-            tgs = "content_description",
+            tg = hashMapOf("tgs" to "RadioButton", "sender" to "RadioButton", "etn" to "RadioButton"),
+            tgs = "RadioButton",
             touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
             m = "events_logged=0 events_not_logged=0",
             v = "",
@@ -100,7 +100,7 @@ class TouchEventManagerTest {
         every {mockViewParent1.contentDescription} returns "content_description"
         every {mockViewParent2.contentDescription} returns "content_description"
         every {mockChildView.contentDescription} returns "content_description"
-        every {mockChildView.id} returns 12345
+        //every {mockChildView.id} returns 12345
         testDetectView(
             mockChildView,
             type="TOUCH_MOVE",
