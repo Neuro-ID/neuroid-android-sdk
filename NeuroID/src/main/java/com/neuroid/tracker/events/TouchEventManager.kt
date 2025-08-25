@@ -22,7 +22,7 @@ class TouchEventManager(
     internal val logger: NIDLogWrapper,
     private val nidTime: NIDTime = NIDTime()
 ) {
-    private var lastView: View? = null
+    internal var lastView: View? = null
     private var lastViewName = ""
     private var lastTypeOfView = 0
     internal var lastTouchMoveIntervalStart = 0L //milliseconds
