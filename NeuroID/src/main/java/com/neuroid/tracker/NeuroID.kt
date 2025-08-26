@@ -221,6 +221,8 @@ class NeuroID
                     clientKey,
                 )
 
+                configService.retrieveOrRefreshCache()
+
                 if (isAdvancedDevice) {
                     checkThenCaptureAdvancedDevice(isAdvancedDevice)
                 }
