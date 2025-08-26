@@ -223,7 +223,7 @@ data class NIDEventModel(
                         "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata} attrs=[${this.attrs}]"
                 "DEREGISTER_TARGET" -> contextString = ""
                 TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
-                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
+                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic} m=${this.m}"
                 TOUCH_MOVE -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
                 CLOSE_SESSION -> contextString = ""
                 SET_VARIABLE -> contextString = this.v ?: ""

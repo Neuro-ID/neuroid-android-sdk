@@ -12,6 +12,7 @@ import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.detectViewType
 import com.neuroid.tracker.utils.getEtnSenderName
 
@@ -19,10 +20,18 @@ class TouchEventManager(
     private val viewParent: ViewGroup,
     internal val neuroID: NeuroID,
     internal val logger: NIDLogWrapper,
+    private val nidTime: NIDTime = NIDTime()
 ) {
-    private var lastView: View? = null
+    internal var lastView: View? = null
     private var lastViewName = ""
     private var lastTypeOfView = 0
+    internal var lastTouchMoveIntervalStart = 0L //milliseconds
+    internal var missCounter = 0
+    internal var hitCounter = 0
+
+    companion object {
+        const val LAST_TOUCH_MOVE_WAIT_INTERVAL = 50
+    }
 
     fun detectView(
         motionEvent: MotionEvent?,
@@ -76,26 +85,31 @@ class TouchEventManager(
             var eventType = ""
             when (it.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    if (typeOfView > 0) {
-                        lastViewName = nameView
-                        lastTypeOfView = typeOfView
+                    lastViewName = nameView
+                    lastTypeOfView = typeOfView
 
-                        shouldSaveEvent = true
-                        eventType = TOUCH_START
-                    }
+                    shouldSaveEvent = true
+                    eventType = TOUCH_START
+                    // reset interval timer so we always catch first touch move
+                    lastTouchMoveIntervalStart = 0
+                    missCounter = 0
+                    hitCounter = 0
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    shouldSaveEvent = true
-                    eventType = TOUCH_MOVE
+                    if (!shouldRecordMoveEvent()) {
+                        shouldSaveEvent = false
+                        eventType = ""
+                    } else {
+                        shouldSaveEvent = true
+                        eventType = TOUCH_MOVE
+                    }
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (lastTypeOfView > 0) {
-                        lastTypeOfView = 0
-                        lastViewName = ""
+                    lastTypeOfView = 0
+                    lastViewName = ""
 
-                        shouldSaveEvent = true
-                        eventType = TOUCH_END
-                    }
+                    shouldSaveEvent = true
+                    eventType = TOUCH_END
                 }
             }
 
@@ -112,10 +126,23 @@ class TouchEventManager(
                     touches = listOf(NIDTouchModel(0f, it.x, it.y)),
                     v = v,
                     attrs = attrJSON,
+                    m = if (eventType == TOUCH_END) "events_logged=$hitCounter events_not_logged=$missCounter" else ""
                 )
             }
 
             currentView
+        }
+    }
+
+    fun shouldRecordMoveEvent(): Boolean {
+        val timeDiff = (nidTime.getCurrentTimeMillis() - lastTouchMoveIntervalStart)
+        if (timeDiff <= LAST_TOUCH_MOVE_WAIT_INTERVAL) {
+            missCounter ++
+            return false
+        } else {
+            lastTouchMoveIntervalStart = nidTime.getCurrentTimeMillis()
+            hitCounter ++
+            return true
         }
     }
 
