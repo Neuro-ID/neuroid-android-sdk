@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'maven-publish'
+    id 'jacoco'
 }
 def versionPropsFile = rootProject.file("version.properties")
 def versionProps = new Properties()
@@ -22,7 +23,6 @@ def nameSpace = "com.neuroid"
 def androidSDKVariant = "android-sdk"
 def debugVariant = "-debug"
 def reactNativeVariant = "react"
-def advancedDeviceVariant = "advanced-device"
 
 ext {
     versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
@@ -50,6 +50,7 @@ android {
             jniDebuggable true
             buildConfigField "String", "VERSION_NAME", "${defaultConfig.versionName}"
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
+            enableUnitTestCoverage = true    // For unit tests
         }
         release {
             minifyEnabled true
@@ -192,4 +193,34 @@ afterEvaluate {
             }
         }
     }
+}
+
+def exclusions = [
+        "**/R.class",
+        "**/R\$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*"
+]
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testAndroidLibDebugUnitTest']) {
+    reports {
+        xml.required = true
+        html.required = true
+        xml.destination file("${buildDir}/reports/jacocoTestReport/jacoco.xml")
+        html.destination file("${buildDir}/reports/jacocoTestReport/html")
+    }
+
+    classDirectories.setFrom(
+            fileTree(dir: "${buildDir}/tmp/kotlin-classes/androidLibDebug", excludes: exclusions),
+            fileTree(dir: "${buildDir}/tmp/kotlin-classes/androidLibDebugUnitTest", excludes: exclusions)
+    )
+
+    sourceDirectories.setFrom(
+            files("${project.projectDir}/src/main/java", "${project.projectDir}/src/main/kotlin")
+    )
+
+    executionData.setFrom(
+            fileTree(dir: "${buildDir}", include: ["outputs/unit_test_code_coverage/androidLibDebugUnitTest/testAndroidLibDebugUnitTest.exec"])
+    )
 }
