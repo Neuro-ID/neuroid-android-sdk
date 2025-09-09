@@ -231,6 +231,8 @@ class LoginSignupTestRunner {
             Espresso.onView(ViewMatchers.withId(R.id.employer_name))
                 .perform(ViewActions.typeText("test company"))
             Espresso.onView(ViewMatchers.withId(R.id.employer_name))
+                .perform(ViewActions.closeSoftKeyboard())
+            Espresso.onView(ViewMatchers.withId(R.id.employer_name))
                 .perform(ViewActions.clearText())
             Espresso.onView(ViewMatchers.withId(R.id.employer_name))
                 .perform(ViewActions.typeText("Buy N Large"))
