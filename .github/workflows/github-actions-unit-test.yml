@@ -73,12 +73,9 @@ jobs:
           cd build
           cd reports
           ls
-          cd jacoco
-          ls
           cd jacocoTestReport
-          cd tests
           ls
-          cp NeuroID/build/reports/jacoco/jacocoTestReport/jacoco.xml .
+          cp NeuroID/build/reports/jacocoTestReport/jacoco.xml .
 
       # Upload coverage to SonarCloud
       - name: SonarQube Scan
