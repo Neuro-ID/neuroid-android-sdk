@@ -72,6 +72,8 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v5
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_PROJECT_KEY: 'NeuroID-neuroid-android'
+            SONAR_ORGANIZATION: 'neuroid'
 
   android_sdk_integration_test_layout_app:
     runs-on: [macos-13]
