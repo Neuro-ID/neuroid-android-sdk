@@ -67,6 +67,9 @@ jobs:
       - name: Jacoco Coverage
         run: | 
           ./gradlew :NeuroID:jacocoTestReport
+          pwd
+          cd NeuroID/build/reports/jacoco/jacocoTestReport
+          ls
           cp NeuroID/build/reports/jacoco/jacocoTestReport/jacoco.xml .
 
       # Upload coverage to SonarCloud
