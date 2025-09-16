@@ -76,6 +76,7 @@ jobs:
           cd jacoco
           ls
           cd jacocoTestReport
+          cd tests
           ls
           cp NeuroID/build/reports/jacoco/jacocoTestReport/jacoco.xml .
 
