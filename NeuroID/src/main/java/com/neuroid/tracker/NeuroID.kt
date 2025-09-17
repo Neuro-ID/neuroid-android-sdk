@@ -275,6 +275,11 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
+
+            // testing coverage, remove after tests complete, do not merge
+            if (isAdvancedDevice) {
+                captureEvent(type = LOG, m = "Advanced Device Key: $advancedDeviceKey", level = "INFO")
+            }
         }
 
         fun incrementPacketNumber() {
