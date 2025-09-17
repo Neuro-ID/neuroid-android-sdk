@@ -4,12 +4,21 @@ plugins {
     id 'kotlin-kapt'
     id 'maven-publish'
     id 'jacoco'
+    id 'org.sonarqube' version '6.3.1.5724'
 }
 def versionPropsFile = rootProject.file("version.properties")
 def versionProps = new Properties()
 if (versionPropsFile.exists()) {
     versionProps.load(new FileInputStream(versionPropsFile))
 }
+
+sonar {
+    properties {
+        property("sonar.projectKey", "Neuro-ID_neuroid-android-sdk")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
+}
+
 def getGitHash = { ->
     def stdout = new ByteArrayOutputStream()
     exec {
