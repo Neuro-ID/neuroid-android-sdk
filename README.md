@@ -11,17 +11,17 @@ NeuroID's Android Mobile SDK makes it simple to embed behavioral analytics insid
 
 ## Installation and Requirements
 
-For installation instructions and minimum project requirements, please read our [Android Installation Guide](https://neuro-id.readme.io/docs/android-installation).
+For installation instructions and minimum project requirements, please read our [Android Installation Guide](https://neuro-id.readme.io/docs/android-sdk-3_5_x).
 
 ## Usage
 
 To use the NeuroID Android Mobile SDK there are 3 basic steps:
 
-1. [Installation](https://neuro-id.readme.io/docs/android-installation#installation)
-1. [Configuration/Initialization of the SDK](https://neuro-id.readme.io/docs/android-installation#2-initialize-the-sdk)
-1. [Linking People to Data](https://neuro-id.readme.io/docs/android-installation#3-link-people-to-data)
+1. [Installation](https://neuro-id.readme.io/docs/android-sdk-3_5_x#installation)
+1. [Configuration/Initialization of the SDK](https://neuro-id.readme.io/docs/android-sdk-3_5_x#initialize-the-sdk)
+1. [Linking People to Data](https://neuro-id.readme.io/docs/android-sdk-3_5_x#collection--link-people-to-data)
 
-For full instructions, available API commands, and documentation please visit our [Android Installation Guide](https://neuro-id.readme.io/docs/android-installation).
+For full instructions, available API commands, and documentation please visit our [Android Installation Guide](https://neuro-id.readme.io/docs/android-sdk-3_5_x).
 
 ## Examples
 
