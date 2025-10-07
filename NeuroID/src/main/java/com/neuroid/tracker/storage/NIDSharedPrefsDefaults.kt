@@ -2,6 +2,7 @@ package com.neuroid.tracker.storage
 
 import android.content.Context
 import android.content.res.Resources
+import com.neuroid.tracker.utils.NIDTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(
     context: Context,
+    val nidTime: NIDTime = NIDTime(),
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
@@ -89,7 +91,7 @@ class NIDSharedPrefsDefaults(
     fun getPlatform() = "Android"
 
     private fun getID(): String {
-        val timeNow = System.currentTimeMillis()
+        val timeNow = nidTime.getCurrentTimeMillis()
         val numRnd = Random.nextDouble() * Int.MAX_VALUE
 
         return "$timeNow.$numRnd"

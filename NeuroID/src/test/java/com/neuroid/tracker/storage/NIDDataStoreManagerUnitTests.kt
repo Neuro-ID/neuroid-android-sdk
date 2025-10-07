@@ -6,6 +6,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -161,9 +162,11 @@ class NIDDataStoreManagerUnitTests {
 
     @Test
     fun isFullBuffer_isFull() {
+        val nidTime = mockk<NIDTime>()
+        every {nidTime.getCurrentTimeMillis()} returns 472389534534
         val dataStore = mockDataStore()
         for (i in 0..5000) {
-            dataStore.saveEvent(NIDEventModel(INPUT))
+            dataStore.saveEvent(NIDEventModel(nidTime, INPUT))
         }
         assert(dataStore.isFullBuffer())
     }

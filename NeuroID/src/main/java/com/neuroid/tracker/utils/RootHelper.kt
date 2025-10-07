@@ -7,7 +7,9 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
-class RootHelper {
+class RootHelper(
+    internal val envrionmentProvider: NIDEnvironmentProvider = NIDSystemEnvironmentProvider(),
+    internal val runtimeProvider: NIDRuntimeProvider = NIDSystemRuntimeProvider()) {
     internal companion object {
         const val BINARY_SU = "su"
         const val BINARY_BUSYBOX = "busybox"
@@ -103,7 +105,7 @@ class RootHelper {
             checkForBinary(BINARY_BUSYBOX) || checkSuExists() || checkForMagiskBinary()
     }
 
-    private fun checkForBinary(filename: String): Boolean {
+    internal fun checkForBinary(filename: String): Boolean {
         val pathsArray: List<String> = getPaths()
         var result = false
         for (path in pathsArray) {
@@ -127,7 +129,7 @@ class RootHelper {
 
     private fun getPaths(): List<String> {
         val paths = ArrayList(suPaths)
-        val sysPaths = System.getenv("PATH")
+        val sysPaths = envrionmentProvider.getenv("PATH")
         if (sysPaths == null || sysPaths.isEmpty()) {
             return listOf(sysPaths ?: "")
         }
@@ -151,7 +153,7 @@ class RootHelper {
     private fun checkSuExists(): Boolean {
         var process: Process? = null
         return try {
-            process = Runtime.getRuntime().exec(arrayOf("which", BINARY_SU))
+            process = runtimeProvider.executeCommand(arrayOf("which", BINARY_SU))
             val `in` = BufferedReader(InputStreamReader(process.inputStream))
             `in`.readLine() != null
         } catch (t: Throwable) {

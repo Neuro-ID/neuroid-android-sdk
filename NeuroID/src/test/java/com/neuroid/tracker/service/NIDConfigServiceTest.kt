@@ -11,6 +11,7 @@ import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDLinkedSiteOption
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
@@ -100,11 +101,8 @@ class NIDConfigServiceTest {
      */
     @Test
     fun test_retrieveConfigCoroutine_success() {
-        val calendar = mockk<Calendar>()
-        every { calendar.timeInMillis } returns 5L
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance() } returns calendar
-
+        val nidTime = mockk<NIDTime>()
+        every { nidTime.getCurrentTimeMillis()} returns 5L
         val remoteConfig = NIDRemoteConfig(siteID = "TEST_SITE", callInProgress = false)
         val randomGenerator = mockk<RandomGenerator>()
         every { randomGenerator.getRandom(any()) } returns 50.0
@@ -120,8 +118,8 @@ class NIDConfigServiceTest {
                 logger,
                 neuroID,
                 httpService,
-
                 validationService,
+                nidTime = nidTime
             )
 
         var completionRun = false

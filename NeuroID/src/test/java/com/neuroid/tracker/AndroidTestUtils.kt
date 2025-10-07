@@ -28,6 +28,7 @@ import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.RandomGenerator
 import io.mockk.coEvery
 import io.mockk.every
@@ -50,9 +51,9 @@ internal fun getMockedNeuroID(
     mockCallActivityListener: NIDCallActivityListener = getMockedCallActivityListener(),
     mockSessionService: NIDSessionService = getMockedSessionService(),
     mockConfigService: ConfigService = getMockedConfigService(),
+    mockNIDTime: NIDTime = getMockedTime(),
 ): NeuroID {
     val nidMock = mockk<NeuroID>()
-
     every { nidMock.dispatcher } returns Dispatchers.Unconfined
     every { nidMock.dispatcher = any() } just runs
 
@@ -98,6 +99,7 @@ internal fun getMockedNeuroID(
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
     every { nidMock.configService } returns mockConfigService
+    every { nidMock.nidTime } returns mockNIDTime
 
     every { nidMock.setupListeners() } just runs
 
@@ -256,6 +258,12 @@ internal fun getMockedActivity(): Activity {
     val mockedActivity = mockk<Activity>()
     every { mockedActivity.resources } returns mockedResources
     return mockedActivity
+}
+
+internal fun getMockedTime(): NIDTime {
+    val nidTime = mockk<NIDTime>()
+    every { nidTime.getCurrentTimeMillis() } returns 0L
+    return nidTime
 }
 
 internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): ConfigService {

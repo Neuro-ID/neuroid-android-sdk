@@ -13,6 +13,7 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,8 @@ internal class AdvancedDeviceIDManager(
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
-    private val fpjsClient: FingerprintJS? = null
+    private val fpjsClient: FingerprintJS? = null,
+    val nidTime: NIDTime = NIDTime()
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -78,7 +80,7 @@ internal class AdvancedDeviceIDManager(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
-            ts = System.currentTimeMillis(),
+            ts = nidTime.getCurrentTimeMillis(),
             c = true,
             l = 0,
             // wifi/cell
@@ -100,7 +102,7 @@ internal class AdvancedDeviceIDManager(
             neuroID.captureEvent(
                 queuedEvent = true,
                 type = LOG,
-                ts = System.currentTimeMillis(),
+                ts = nidTime.getCurrentTimeMillis(),
                 level = "error",
                 m = nidKeyResponse.message,
             )
@@ -153,7 +155,7 @@ internal class AdvancedDeviceIDManager(
                 var jobErrorMessage = ""
                 for (retryCount in 1..maxRetryCount) {
                     // we want to see the latency from FPJS on each request
-                    val startTime = Calendar.getInstance().timeInMillis
+                    val startTime = nidTime.getCurrentTimeMillis()
                     // returns a Bool - success, String - key OR error message
                     val requestResponse = getVisitorId(fpjsClient)
                     // If Success - capture ID and cache, end loop
@@ -163,12 +165,12 @@ internal class AdvancedDeviceIDManager(
                                 "Generating Request ID for Advanced Device Signals: ${requestResponse.second}",
                         )
 
-                        val stopTime = Calendar.getInstance().timeInMillis
+                        val stopTime = nidTime.getCurrentTimeMillis()
                         neuroID.captureEvent(
                             queuedEvent = true,
                             type = ADVANCED_DEVICE_REQUEST,
                             rid = requestResponse.second,
-                            ts = Calendar.getInstance().timeInMillis,
+                            ts = nidTime.getCurrentTimeMillis(),
                             c = false,
                             // time start to end time
                             l = stopTime - startTime,
@@ -186,7 +188,7 @@ internal class AdvancedDeviceIDManager(
                                     "key" to requestResponse.second,
                                     "exp" to
                                         (configService.configCache.advancedCookieExpiration * 1000) +
-                                        System.currentTimeMillis(), // 12
+                                        nidTime.getCurrentTimeMillis(), // 12
                                     // hours from now
                                 ),
                             )
@@ -213,14 +215,14 @@ internal class AdvancedDeviceIDManager(
                     neuroID.captureEvent(
                         queuedEvent = true,
                         type = LOG,
-                        ts = Calendar.getInstance().timeInMillis,
+                        ts = nidTime.getCurrentTimeMillis(),
                         level = "error",
                         m = msg,
                     )
                     neuroID.captureEvent(
                         queuedEvent = true,
                         type = ADVANCED_DEVICE_REQUEST_FAILED,
-                        ts = Calendar.getInstance().timeInMillis,
+                        ts = nidTime.getCurrentTimeMillis(),
                         m = msg,
                     )
                     logger.e(msg = msg)

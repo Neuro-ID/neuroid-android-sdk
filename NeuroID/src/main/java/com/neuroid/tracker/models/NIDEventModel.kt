@@ -38,14 +38,15 @@ import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDTime
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Calendar
 
 data class NIDEventModel(
+    val nidTime: NIDTime = NIDTime(),
     val type: String,
     val ts: Long =
-        Calendar.getInstance().timeInMillis, // Default 0 because the DataStore.saveEvent method will
+        nidTime.getCurrentTimeMillis(), // Default 0 because the DataStore.saveEvent method will
     // always add real timestamp
     val attrs: List<Map<String, Any>>? = null,
     val tg: Map<String, Any>? = null,
