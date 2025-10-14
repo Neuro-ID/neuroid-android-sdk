@@ -80,7 +80,6 @@ internal class AdvancedDeviceIDManager(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
-            ts = nidTime.getCurrentTimeMillis(),
             c = true,
             l = 0,
             // wifi/cell

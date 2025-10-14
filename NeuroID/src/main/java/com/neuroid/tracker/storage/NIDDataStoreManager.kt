@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import java.util.LinkedList
 import java.util.Queue
@@ -38,6 +39,7 @@ fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
     var configService: ConfigService,
+    var nidTime: NIDTime = NIDTime(),
 ) : NIDDataStoreManager {
     companion object {
         private val listNonActiveEvents =
@@ -181,7 +183,7 @@ internal class NIDDataStoreManagerImp(
         } else if ((eventsList.size + queuedEvents.size) > configService.configCache.eventQueueFlushSize) {
             // add a full buffer event and drop the new event
             saveEvent(
-                NIDEventModel(type = FULL_BUFFER, ts = System.currentTimeMillis()),
+                NIDEventModel(type = FULL_BUFFER, ts = nidTime.getCurrentTimeMillis()),
             )
             return true
         }

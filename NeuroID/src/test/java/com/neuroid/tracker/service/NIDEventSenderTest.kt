@@ -13,6 +13,7 @@ import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.getMockedIdentifierService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
+import com.neuroid.tracker.utils.NIDTime
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -29,7 +30,7 @@ import retrofit2.Call
 import retrofit2.Response
 
 class NIDEventSenderTest {
-    val testEventList = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
+    private val testEventList = listOf(NIDEventModel(type = "TEST_EVENT", ts = 1))
 
     @Before
     fun setup() {
@@ -60,8 +61,10 @@ class NIDEventSenderTest {
                     responseMessage,
                 )
             val callback = getMockedNIDCallback()
+            val nidMockedTime = mockk<NIDTime>()
+            every { nidMockedTime.getCurrentTimeMillis() } returns 10L
 
-            val eventSender = NIDEventSender(mockedHttpService, getMockedApplication())
+            val eventSender = NIDEventSender(mockedHttpService, getMockedApplication(), nidMockedTime)
 
             eventSender.sendEvents(clientKey, testEventList, callback)
 

@@ -8,7 +8,7 @@ import java.io.File
 import java.io.InputStreamReader
 
 class RootHelper(
-    internal val envrionmentProvider: NIDEnvironmentProvider = NIDSystemEnvironmentProvider(),
+    internal val environmentProvider: NIDEnvironmentProvider = NIDSystemEnvironmentProvider(),
     internal val runtimeProvider: NIDRuntimeProvider = NIDSystemRuntimeProvider()) {
     internal companion object {
         const val BINARY_SU = "su"
@@ -129,7 +129,7 @@ class RootHelper(
 
     private fun getPaths(): List<String> {
         val paths = ArrayList(suPaths)
-        val sysPaths = envrionmentProvider.getenv("PATH")
+        val sysPaths = environmentProvider.getenv("PATH")
         if (sysPaths == null || sysPaths.isEmpty()) {
             return listOf(sysPaths ?: "")
         }

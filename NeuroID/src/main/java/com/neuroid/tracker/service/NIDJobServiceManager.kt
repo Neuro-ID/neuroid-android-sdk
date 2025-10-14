@@ -13,6 +13,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ internal class NIDJobServiceManager(
     private var logger: NIDLogWrapper,
     private var configService: ConfigService,
     private var dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private var nidTime: NIDTime = NIDTime(),
 ) {
     @Volatile
     var userActive = true
@@ -217,7 +219,7 @@ internal class NIDJobServiceManager(
         if (memoryInfo.lowMemory) {
             return NIDEventModel(
                 type = LOW_MEMORY,
-                ts = System.currentTimeMillis(),
+                ts = nidTime.getCurrentTimeMillis(),
                 attrs =
                     listOf(
                         mapOf<String, Any>(

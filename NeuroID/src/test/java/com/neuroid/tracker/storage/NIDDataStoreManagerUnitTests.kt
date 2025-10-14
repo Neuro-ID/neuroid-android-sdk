@@ -166,7 +166,7 @@ class NIDDataStoreManagerUnitTests {
         every {nidTime.getCurrentTimeMillis()} returns 472389534534
         val dataStore = mockDataStore()
         for (i in 0..5000) {
-            dataStore.saveEvent(NIDEventModel(nidTime, INPUT))
+            dataStore.saveEvent(NIDEventModel(ts = nidTime.getCurrentTimeMillis(), type = INPUT))
         }
         assert(dataStore.isFullBuffer())
     }

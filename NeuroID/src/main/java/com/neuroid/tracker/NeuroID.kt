@@ -909,7 +909,6 @@ class NeuroID
 
             val event =
                 NIDEventModel(
-                    nidTime,
                     type,
                     ts,
                     attrs,

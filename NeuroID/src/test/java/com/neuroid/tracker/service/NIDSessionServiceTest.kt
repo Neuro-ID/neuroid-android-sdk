@@ -1237,6 +1237,7 @@ class NIDSessionServiceTest {
                 }
                 NeuroID.getInternalInstance()?.dataStore?.saveEvent(
                     NIDEventModel(
+                        ts = 1,
                         type = CLOSE_SESSION,
                         v = siteID,
                     ),
@@ -1250,6 +1251,7 @@ class NIDSessionServiceTest {
                 verify {
                     NeuroID.getInternalInstance()?.dataStore?.saveEvent(
                         NIDEventModel(
+                            ts = 1,
                             type = SET_LINKED_SITE,
                             v = siteID,
                         ),
@@ -1265,6 +1267,7 @@ class NIDSessionServiceTest {
             verify(exactly = 0) {
                 NeuroID.getInternalInstance()?.dataStore?.saveEvent(
                     NIDEventModel(
+                        ts = 1,
                         type = SET_LINKED_SITE,
                         v = siteID,
                     ),

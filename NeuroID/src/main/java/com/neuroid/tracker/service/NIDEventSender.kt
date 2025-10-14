@@ -10,6 +10,7 @@ import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -35,6 +36,7 @@ interface NIDSendingService {
 class NIDEventSender(
     private var httpService: HttpService,
     private val context: Context,
+    private val nidTime: NIDTime = NIDTime()
 ) : NIDSendingService, RetrySender() {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
@@ -53,7 +55,7 @@ class NIDEventSender(
                     listOf(
                         NIDEventModel(
                             type = OUT_OF_MEMORY,
-                            ts = System.currentTimeMillis(),
+                            ts = nidTime.getCurrentTimeMillis(),
                         ),
                     ),
                 )
