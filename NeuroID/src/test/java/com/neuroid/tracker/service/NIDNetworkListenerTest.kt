@@ -8,6 +8,7 @@ import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkInfo
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.utils.NIDTime
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -254,11 +255,6 @@ class NIDNetworkListenerTest {
         resumeCalledCount: Int,
         userId: String,
     ) {
-        val calendar = mockk<Calendar>()
-        every { calendar.timeInMillis } returns 5
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance() } returns calendar
-
         val mockedSessionService = getMockedSessionService()
 
         val neuroID =
@@ -303,7 +299,6 @@ class NIDNetworkListenerTest {
                 0,
             )
         listener.onReceive(context, intent)
-
         verifyCaptureEvent(
             neuroID,
             NETWORK_STATE,

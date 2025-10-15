@@ -56,6 +56,7 @@ import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.RandomGenerator
@@ -68,9 +69,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import org.jetbrains.annotations.TestOnly
-import java.util.Calendar
 
 class NeuroID
     private constructor(
@@ -121,6 +120,7 @@ class NeuroID
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
         internal lateinit var locationService: LocationService
+        internal lateinit var nidTime: NIDTime
 
         internal var clipboardManager: ClipboardManager? = null
         internal var networkConnectionType = "unknown"
@@ -136,6 +136,7 @@ class NeuroID
             )
 
         init {
+            nidTime = NIDTime()
             when (serverEnvironment) {
                 PRODSCRIPT_DEVCOLLECTION -> {
                     endpoint = Constants.devEndpoint.displayName
@@ -829,8 +830,7 @@ class NeuroID
         internal fun captureEvent(
             queuedEvent: Boolean = false,
             type: String,
-            // had to change to Calendar for tests. Cannot mock System methods.
-            ts: Long = Calendar.getInstance().timeInMillis,
+            ts: Long = nidTime.getCurrentTimeMillis(),
             attrs: List<Map<String, Any>>? = null,
             tg: Map<String, Any>? = null,
             tgs: String? = null,

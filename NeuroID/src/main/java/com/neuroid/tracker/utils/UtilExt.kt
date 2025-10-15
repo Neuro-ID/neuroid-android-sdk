@@ -8,11 +8,14 @@ fun Activity.getGUID(): String {
     return UUID.nameUUIDFromBytes(hashCodeAct.toString().toByteArray()).toString()
 }
 
-internal fun generateUniqueHexID(requireNIDPrefix: Boolean = false): String {
+internal fun generateUniqueHexID(
+    requireNIDPrefix: Boolean = false,
+    uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider()): String {
+
     // use random UUID to ensure uniqueness amongst devices,
     var nidPrefix = ""
     if (requireNIDPrefix) {
         nidPrefix = "nid-"
     }
-    return "$nidPrefix${UUID.randomUUID()}"
+    return "$nidPrefix${uuidProvider.randomUUID()}"
 }

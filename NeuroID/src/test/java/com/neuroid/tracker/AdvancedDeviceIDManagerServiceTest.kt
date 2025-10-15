@@ -24,6 +24,7 @@ import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -187,9 +188,6 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
         val mockedNeuroID = mocks["mockedNeuroID"] as NeuroID
 
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance().timeInMillis } returns 0
-
         // need to let the job complete so the verification step can commence.
         // we do this with an unconfined dispatcher.
         val job =
@@ -209,14 +207,14 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedNeuroID.captureEvent(
                     queuedEvent = true,
                     type = "LOG",
-                    ts = 0,
+                    ts = 0L,
                     level = "error",
                     m = "Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure",
                 )
                 mockedNeuroID.captureEvent(
                     queuedEvent = true,
                     type ="ADVANCED_DEVICE_REQUEST_FAILED",
-                    ts = 0,
+                    ts = 0L,
                     m = "Reached maximum number of retries (3) to get Advanced Device Signal Request ID: FPJS Failure"
                 )
             }
@@ -292,7 +290,7 @@ class AdvancedDeviceIDManagerServiceTest {
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
                     mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, ct = any(), m="user entered FPJS key")
+                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = any(), ct = any(), m="user entered FPJS key")
                     mockedLogger.d(msg = "Caching Request ID: $validRID")
                     mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
                 }
@@ -309,6 +307,8 @@ class AdvancedDeviceIDManagerServiceTest {
         advancedDeviceKey: String? = null,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
+        val mockedNidTime = mockk<NIDTime>()
+        every { mockedNidTime.getCurrentTimeMillis() } returns 0L
         val mockedNeuroID = getMockedNeuroID()
         val mockedApplication = getMockedApplication()
         val mockedSharedPreferences = getMockedSharedPrefs(AdvancedDeviceIDManager.NID_RID, sharedPrefGetValue)
@@ -333,7 +333,8 @@ class AdvancedDeviceIDManagerServiceTest {
                 "",
                 getMockedConfigService(),
                 advancedDeviceKey,
-                mockedFPJSClient
+                mockedFPJSClient,
+                mockedNidTime
             )
 
         return mapOf(
@@ -400,7 +401,6 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun getMockedNeuroID(): NeuroID {
         val nidMock = com.neuroid.tracker.getMockedNeuroID()
         every { nidMock.networkConnectionType } returns "wifi"
-
         return nidMock
     }
 

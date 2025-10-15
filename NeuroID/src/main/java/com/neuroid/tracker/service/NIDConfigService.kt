@@ -11,6 +11,7 @@ import com.neuroid.tracker.events.UPDATE_IS_SAMPLED_STATUS
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.RandomGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +37,7 @@ internal class NIDConfigService(
     private val gson: Gson = GsonBuilder().create(),
     private val randomGenerator: RandomGenerator = RandomGenerator(),
     private val configRetrievalCallback: () -> Unit = {},
+    val nidTime: NIDTime = NIDTime()
 ) : ConfigService {
     companion object {
         const val DEFAULT_SAMPLE_RATE: Int = 100
@@ -79,7 +81,7 @@ internal class NIDConfigService(
                     logger.i(msg = "NID remoteConfig: $response")
 
                     cacheSetWithRemote = true
-                    cacheCreationTime = Calendar.getInstance().timeInMillis
+                    cacheCreationTime = nidTime.getCurrentTimeMillis()
                     initSiteIDSampleMap(response)
                     captureConfigEvent(response)
                     completion()
