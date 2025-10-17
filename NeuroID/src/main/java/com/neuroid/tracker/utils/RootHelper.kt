@@ -2,7 +2,6 @@ package com.neuroid.tracker.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import java.io.File
 import java.io.InputStreamReader
 
