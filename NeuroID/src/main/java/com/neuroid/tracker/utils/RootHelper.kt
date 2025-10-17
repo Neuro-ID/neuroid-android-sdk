@@ -3,13 +3,14 @@ package com.neuroid.tracker.utils
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
 class RootHelper(
     internal val environmentProvider: NIDEnvironmentProvider = NIDSystemEnvironmentProvider(),
-    internal val runtimeProvider: NIDRuntimeProvider = NIDSystemRuntimeProvider()) {
+    internal val runtimeProvider: NIDRuntimeProvider = NIDSystemRuntimeProvider(),
+    internal val fileCreationUtils: FileCreationUtils = FileCreationUtils(),
+    internal val buildTagUtils: NIDTagUtils = NIDTagUtils()) {
     internal companion object {
         const val BINARY_SU = "su"
         const val BINARY_BUSYBOX = "busybox"
@@ -109,7 +110,7 @@ class RootHelper(
         val pathsArray: List<String> = getPaths()
         var result = false
         for (path in pathsArray) {
-            val f = File(path, filename)
+            val f = fileCreationUtils.getFile(path, filename)
             val fileExists = f.exists()
             if (fileExists) {
                 result = true
@@ -127,7 +128,7 @@ class RootHelper(
         return false
     }
 
-    private fun getPaths(): List<String> {
+    internal fun getPaths(): List<String> {
         val paths = ArrayList(suPaths)
         val sysPaths = environmentProvider.getenv("PATH")
         if (sysPaths == null || sysPaths.isEmpty()) {
@@ -146,7 +147,7 @@ class RootHelper(
     }
 
     private fun detectTestKeys(): Boolean {
-        val buildTags = Build.TAGS
+        val buildTags = buildTagUtils.getBuildTags()
         return buildTags != null && buildTags.contains("test-keys")
     }
 
@@ -154,7 +155,7 @@ class RootHelper(
         var process: Process? = null
         return try {
             process = runtimeProvider.executeCommand(arrayOf("which", BINARY_SU))
-            val `in` = BufferedReader(InputStreamReader(process.inputStream))
+            val `in` = fileCreationUtils.getBufferedReader(InputStreamReader(process.inputStream))
             `in`.readLine() != null
         } catch (t: Throwable) {
             false
@@ -173,7 +174,7 @@ class RootHelper(
         return isAnyPackageFromListInstalled(context, packages)
     }
 
-    private fun isAnyPackageFromListInstalled(
+    internal fun isAnyPackageFromListInstalled(
         context: Context,
         packages: List<String>,
     ): Boolean {
@@ -191,7 +192,7 @@ class RootHelper(
         return result
     }
 
-    private fun detectPotentiallyDangerousApps(
+    internal fun detectPotentiallyDangerousApps(
         context: Context,
         additionalDangerousApps: List<String> = emptyList(),
     ): Boolean {
@@ -206,43 +207,44 @@ class RootHelper(
     fun isProbablyEmulator(): Boolean {
         return (
             (
-                Build.FINGERPRINT.startsWith("google/sdk_gphone_") &&
-                    Build.FINGERPRINT.endsWith(":user/release-keys") &&
-                    Build.MANUFACTURER == "Google" && Build.PRODUCT.startsWith("sdk_gphone_") &&
-                    Build.BRAND == "google" &&
-                    Build.MODEL.startsWith("sdk_gphone_")
-            ) ||
-                Build.FINGERPRINT.startsWith("generic") ||
-                Build.FINGERPRINT.startsWith("unknown") ||
-                Build.MODEL.contains("google_sdk") ||
-                Build.MODEL.contains("Emulator", true) ||
-                Build.DEVICE.contains("Emulator", true) ||
-                Build.MODEL.contains("Android SDK built for x86") ||
-                Build.BOARD == "QC_Reference_Phone" &&
-                !Build.MANUFACTURER.equals(
+                buildTagUtils.getFingerprint().startsWith("google/sdk_gphone_") &&
+                    buildTagUtils.getFingerprint().endsWith(":user/release-keys") &&
+                    buildTagUtils.getManufacturer() == "Google" &&
+                    buildTagUtils.getProduct().startsWith("sdk_gphone_") &&
+                    buildTagUtils.getBrand() == "google" &&
+                    buildTagUtils.getModel().startsWith("sdk_gphone_")
+            ) || buildTagUtils.getFingerprint().startsWith("generic") ||
+                    buildTagUtils.getFingerprint().startsWith("unknown") ||
+                    buildTagUtils.getModel().contains("google_sdk") ||
+                    buildTagUtils.getModel().contains("Emulator", true) ||
+                    buildTagUtils.getDevice().contains("Emulator", true) ||
+                    buildTagUtils.getModel().contains("Android SDK built for x86") ||
+                    buildTagUtils.getBoard() == "QC_Reference_Phone" &&
+                    !buildTagUtils.getManufacturer().equals(
                     "Xiaomi",
                     ignoreCase = true,
                 ) ||
-                Build.BOARD.lowercase().contains("nox") ||
+                    buildTagUtils.getBoard().lowercase().contains("nox") ||
 
-                // hardware check for vbox, nox, google
-                Build.HARDWARE == "goldfish" ||
-                Build.HARDWARE == "vbox86" ||
-                Build.HARDWARE.lowercase().contains("nox") ||
+                    // hardware check for vbox, nox, google
+                    buildTagUtils.getHardware() == "goldfish" ||
+                    buildTagUtils.getHardware() == "vbox86" ||
+                    buildTagUtils.getHardware().lowercase().contains("nox") ||
 
-                Build.MANUFACTURER.contains("Genymotion") ||
+                    buildTagUtils.getManufacturer().contains("Genymotion") ||
 
-                // pickup on secondary  manufacturer string for genymotion
-                Build.MANUFACTURER.contains("Genymobile") ||
+                    // pickup on secondary  manufacturer string for genymotion
+                    buildTagUtils.getManufacturer().contains("Genymobile") ||
 
-                Build.HOST.startsWith("Build") ||
-                Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic") ||
+                    buildTagUtils.getHost().startsWith("Build") ||
+                    buildTagUtils.getBrand().startsWith("generic") &&
+                    buildTagUtils.getDevice().startsWith("generic") ||
 
-                // products (looking for vbox, nox and any x86 based emulators on win11, mac intel)
-                Build.PRODUCT == "google_sdk" ||
-                Build.PRODUCT == "sdk_x86" ||
-                Build.PRODUCT == "vbox86p" ||
-                Build.PRODUCT.lowercase().contains("nox") ||
+                    // products (looking for vbox, nox and any x86 based emulators on win11, mac intel)
+                    buildTagUtils.getProduct() == "google_sdk" ||
+                    buildTagUtils.getProduct() == "sdk_x86" ||
+                    buildTagUtils.getProduct() == "vbox86p" ||
+                    buildTagUtils.getProduct().lowercase().contains("nox") ||
 
                 // sim file check (in case we miss anything above)
                 isEmulatorFilesPresent()
