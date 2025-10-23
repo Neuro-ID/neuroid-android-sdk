@@ -12,23 +12,24 @@ import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
+import com.neuroid.tracker.utils.RandomGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.min
 
 interface AdvancedDeviceIDManagerService {
     fun getCachedID(): Boolean
 
     fun getRemoteID(
         clientKey: String,
-        remoteUrl: String,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         delay: Long = 5000L,
     ): Job?
@@ -45,8 +46,9 @@ internal class AdvancedDeviceIDManager(
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
-    private val fpjsClient: FingerprintJS? = null,
-    val nidTime: NIDTime = NIDTime()
+    private var fpjsClient: FingerprintJS? = null,
+    val nidTime: NIDTime = NIDTime(),
+    private val nidRandomGenerator: RandomGenerator = RandomGenerator(),
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -112,7 +114,6 @@ internal class AdvancedDeviceIDManager(
 
     override fun getRemoteID(
         clientKey: String,
-        remoteUrl: String,
         dispatcher: CoroutineDispatcher,
         delay: Long,
     ): Job? {
@@ -126,25 +127,14 @@ internal class AdvancedDeviceIDManager(
                 return null
             } else {
                 // set the key for use later if successfully gotten from server.
-                keyFunctionResponse?.let {
+                keyFunctionResponse.let {
                     fpjsRetrievedKey = keyFunctionResponse.key
                 }
             }
         }
 
         // Call FPJS with our key (user entered or server retrieved)
-        val fpjsClient =
-            if (fpjsClient != null) {
-                fpjsClient
-            } else {
-                FingerprintJSFactory(applicationContext = context)
-                    .createInstance(
-                        Configuration(
-                            apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            endpointUrl = remoteUrl,
-                        ),
-                    )
-            }
+        fpjsClient = getFPJSClient(fpjsRetrievedKey)
 
         val remoteIDJob =
             CoroutineScope(dispatcher).launch {
@@ -153,6 +143,10 @@ internal class AdvancedDeviceIDManager(
                 var jobComplete = false
                 var jobErrorMessage = ""
                 for (retryCount in 1..maxRetryCount) {
+                    // we tried more than once, fallback to the non-proxy endpoint client
+                    if (retryCount > 1) {
+                        fpjsClient = getFPJSClient(fpjsRetrievedKey, false)
+                    }
                     // we want to see the latency from FPJS on each request
                     val startTime = nidTime.getCurrentTimeMillis()
                     // returns a Bool - success, String - key OR error message
@@ -231,9 +225,50 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Pair<Boolean, String> =
+    private fun getFPJSClient(fpjsRetrievedKey: String, useProxyEndpoint: Boolean = true) =
+        FingerprintJSFactory(applicationContext = context)
+                .createInstance(
+                    Configuration(
+                        apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
+                        endpointUrl = if (useProxyEndpoint) determineEndpoint() else Constants.fpjsProdDomain.displayName
+                    ),
+                )
+
+    /**
+     * ported from iOS!
+     */
+    internal fun determineEndpoint(): String {
+        // If both rates are zero, use default endpoint
+        if (configService.configCache.proxyPrimaryEndpointSampleRate == 0
+            && configService.configCache.proxyRcEndpointSampleRate == 0) {
+            return Constants.fpjsProdDomain.displayName
+        }
+
+        // Generate random number between 1-100 for sampling decision
+        val randomValue: Int = nidRandomGenerator.getRandom(100).toInt()
+
+        // Primary takes priority (capped at 100%)
+        val effectivePrimaryRate =
+            min(configService.configCache.proxyPrimaryEndpointSampleRate, 100)
+        if (randomValue <= effectivePrimaryRate) {
+            return Constants.fpjsPrimaryProxyDomain.displayName
+        }
+
+        // Canary gets remaining capacity
+        val canaryThreshold = effectivePrimaryRate +
+                min(configService.configCache.proxyRcEndpointSampleRate,
+                    100 - effectivePrimaryRate)
+        if (randomValue <= canaryThreshold) {
+            return Constants.fpjsRCProxyDomain.displayName
+        }
+
+        // Everything else goes to default
+        return Constants.fpjsProdDomain.displayName
+    }
+
+    private suspend fun getVisitorId(fpjsClient: FingerprintJS?): Pair<Boolean, String> =
         suspendCoroutine { continuation ->
-            fpjsClient.getVisitorId(
+            fpjsClient?.getVisitorId(
                 listener = { result ->
                     continuation.resume(Pair(true, result.requestId))
                 },

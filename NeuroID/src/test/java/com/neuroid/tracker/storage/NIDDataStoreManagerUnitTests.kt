@@ -63,27 +63,24 @@ class NIDDataStoreManagerUnitTests {
 
     //    saveAndClearAllQueuedEvents
     @Test
-    fun testSaveAndClearAllQueuedEvents() =
-        runTest(timeout = Duration.parse("120s")) {
-            val dataStore = mockDataStore()
-            advanceUntilIdle()
+    fun testSaveAndClearAllQueuedEvents() {
+        val dataStore = mockDataStore()
 
-            dataStore.queuedEvents.add(
-                NIDEventModel(
-                    type = INPUT,
-                    ts = System.currentTimeMillis(),
-                ),
-            )
-            Assert.assertEquals(1, dataStore.queuedEvents.count())
+        dataStore.queuedEvents.add(
+            NIDEventModel(
+                type = INPUT,
+                ts = System.currentTimeMillis(),
+            ),
+        )
+        Assert.assertEquals(1, dataStore.queuedEvents.count())
 
-            dataStore.saveAndClearAllQueuedEvents()
-            advanceUntilIdle()
+        dataStore.saveAndClearAllQueuedEvents()
 
-            Assert.assertEquals(0, dataStore.queuedEvents.count())
+        Assert.assertEquals(0, dataStore.queuedEvents.count())
 
-            val events = dataStore.getAllEvents()
-            Assert.assertEquals(1, events.count())
-        }
+        val events = dataStore.getAllEvents()
+        Assert.assertEquals(1, events.count())
+    }
 
     //     saveEvent
     @Test
@@ -108,30 +105,24 @@ class NIDDataStoreManagerUnitTests {
 
     //    getAllEvents
     @Test
-    fun testGetAllEvents() =
-        runTest(timeout = Duration.parse("120s")) {
-            val dataStore = mockDataStore()
-            advanceUntilIdle()
+    fun testGetAllEvents() {
+        val dataStore = mockDataStore()
 
-            dataStore.saveEvent(
-                NIDEventModel(
-                    type = INPUT,
-                    ts = System.currentTimeMillis(),
-                ),
-            )
-            advanceUntilIdle()
+        dataStore.saveEvent(
+            NIDEventModel(
+                type = INPUT,
+                ts = System.currentTimeMillis(),
+            ),
+        )
 
-            var events = dataStore.getAllEvents()
-            advanceUntilIdle()
+        var events = dataStore.getAllEvents()
 
-            Assert.assertEquals(1, events.count())
-            Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
+        Assert.assertEquals(1, events.count())
+        Assert.assertEquals(true, events.firstOrNull()?.type === "INPUT")
 
-            advanceUntilIdle()
-
-            events = dataStore.getAllEvents()
-            Assert.assertEquals(0, events.count())
-        }
+        events = dataStore.getAllEvents()
+        Assert.assertEquals(0, events.count())
+    }
 
     //    clearEvents
     @Test
