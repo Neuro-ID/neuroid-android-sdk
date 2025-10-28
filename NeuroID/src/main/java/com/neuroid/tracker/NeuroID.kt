@@ -224,10 +224,6 @@ class NeuroID
 
                 configService.retrieveOrRefreshCache()
 
-                if (isAdvancedDevice) {
-                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
-                }
-
                 sessionService =
                     NIDSessionService(
                         logger,
@@ -393,9 +389,6 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    if (neuroID.isAdvancedDevice) {
-                        neuroID.checkThenCaptureAdvancedDevice(true)
-                    }
                     singleton?.setupCallbacks()
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
@@ -527,6 +520,10 @@ class NeuroID
 
         internal fun configSetupCompletion() {
             // once the config comes back we update listeners that are dependent on a config option.
+            // since we are now dependent on the config for advanced device, capture adv here!
+            if (isAdvancedDevice) {
+                checkThenCaptureAdvancedDevice(isAdvancedDevice)
+            }
             captureEvent(type = LOG, level = "info", m = "Remote Config Retrieval Attempt Completed")
             logger.i(msg = "Remote Config Retrieval Attempt Completed")
             setupListeners()
