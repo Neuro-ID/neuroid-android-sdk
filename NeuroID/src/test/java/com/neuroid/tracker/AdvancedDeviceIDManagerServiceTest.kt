@@ -23,10 +23,8 @@ import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
-import com.neuroid.tracker.utils.RandomGenerator
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -160,7 +158,9 @@ class AdvancedDeviceIDManagerServiceTest {
 
         advancedDeviceIDManagerService.getRemoteID(
             "testKey",
-            Dispatchers.Unconfined, 10
+            "testEndpoint",
+            Dispatchers.Unconfined,
+            10,
         )
 
         verifyCaptureEvent(mockedNID, LOG, 1)
@@ -193,6 +193,7 @@ class AdvancedDeviceIDManagerServiceTest {
         val job =
             advancedDeviceIDManagerService.getRemoteID(
                 "testKey",
+                "testEndpoint",
                 dispatcher = Dispatchers.Unconfined,
                 delay = 10,
             )
@@ -223,80 +224,78 @@ class AdvancedDeviceIDManagerServiceTest {
     }
 
     @Test
-    fun testGetRemoteID_fpjs_success_server_set_key() {
-        val validRID = "Valid RID Key"
+    fun testGetRemoteID_fpjs_success_server_set_key() =
+        runTest(timeout = Duration.parse("120s")) {
+            val validRID = "Valid RID Key"
 
-        val mocks =
-            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
-                networkServiceResult = Triple("", true, ""),
-                fpjsResponse = Pair(validRID, null),
-            ) { e: NIDEventModel ->
-                assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
-                assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
-                assert(e.c == false) { "Expected event c value to be false, found true" }
-                assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
-                assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-            }
-        val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
-        val mockedNID = mocks["mockedNeuroID"] as NeuroID
-        val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
-        val mockedRandomGenerator = mocks["mockedRandomGenerator"] as RandomGenerator
-        val mockedNIDConfigService = mockk<ConfigService>()
-        every { mockedNIDConfigService.isSessionFlowSampled() } returns false
-        every { mockedNID.configService } returns mockedNIDConfigService
-        every { mockedRandomGenerator.getRandom(any()) } returns 50.0
+            val mocks =
+                buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
+                    networkServiceResult = Triple("", true, ""),
+                    fpjsResponse = Pair(validRID, null),
+                ) { e: NIDEventModel ->
+                    assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
+                    assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
+                    assert(e.c == false) { "Expected event c value to be false, found true" }
+                    assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
+                    assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
+                }
+            val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
+            val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
+            val mockedNID = mocks["mockedNeuroID"] as NeuroID
+            val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
+            mockkStatic(Calendar::class)
+            every { Calendar.getInstance().timeInMillis } returns 0
 
-        // need to let the job complete so the verification step can commence.
-        // we do this with an unconfined dispatcher.
-        val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
+            // need to let the job complete so the verification step can commence.
+            // we do this with an unconfined dispatcher.
+            val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint", Dispatchers.Unconfined, 10)
 
-        job?.invokeOnCompletion {
-            verify(exactly = 1) {
-                mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, ct = any(), m="server retrieved FPJS key")
-                mockedLogger.d(msg = "Caching Request ID: $validRID")
-                mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+            job?.invokeOnCompletion {
+                verify(exactly = 1) {
+                    mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
+                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, ct = any(), m="server retrieved FPJS key")
+                    mockedLogger.d(msg = "Caching Request ID: $validRID")
+                    mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+                }
             }
         }
-    }
 
     @Test
-    fun testGetRemoteID_fpjs_success_user_set_key() {
-        val validRID = "Valid RID Key"
+    fun testGetRemoteID_fpjs_success_user_set_key() =
+        runTest(timeout = Duration.parse("120s")) {
+            val validRID = "Valid RID Key"
 
-        val mocks =
-            buildAdvancedDeviceIDManagerService_userSetAdvancedKey(
-                networkServiceResult = Triple("", true, ""),
-                fpjsResponse = Pair(validRID, null),
-            ) { e: NIDEventModel ->
-                assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
-                assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
-                assert(e.c == false) { "Expected event c value to be false, found true" }
-                assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
-                assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-            }
-        val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-        val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
-        val mockedNID = mocks["mockedNeuroID"] as NeuroID
-        val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance().timeInMillis } returns 0
+            val mocks =
+                buildAdvancedDeviceIDManagerService_userSetAdvancedKey(
+                    networkServiceResult = Triple("", true, ""),
+                    fpjsResponse = Pair(validRID, null),
+                ) { e: NIDEventModel ->
+                    assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
+                    assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
+                    assert(e.c == false) { "Expected event c value to be false, found true" }
+                    assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
+                    assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
+                }
+            val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
+            val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
+            val mockedNID = mocks["mockedNeuroID"] as NeuroID
+            val mockedLogger = mocks["mockedLogger"] as NIDLogWrapper
+            mockkStatic(Calendar::class)
+            every { Calendar.getInstance().timeInMillis } returns 0
 
-        // need to let the job complete so the verification step can commence.
-        // we do this with an unconfined dispatcher.
-        val job = advancedDeviceIDManagerService.getRemoteID("testKey",
-            Dispatchers.Unconfined, 10)
+            // need to let the job complete so the verification step can commence.
+            // we do this with an unconfined dispatcher.
+            val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint", Dispatchers.Unconfined, 10)
 
-        job?.invokeOnCompletion {
-            verify(exactly = 1) {
-                mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = any(), ct = any(), m="user entered FPJS key")
-                mockedLogger.d(msg = "Caching Request ID: $validRID")
-                mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+            job?.invokeOnCompletion {
+                verify(exactly = 1) {
+                    mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
+                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = any(), ct = any(), m="user entered FPJS key")
+                    mockedLogger.d(msg = "Caching Request ID: $validRID")
+                    mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
+                }
             }
         }
-    }
 
     /*
         Mocking Functions
@@ -308,7 +307,6 @@ class AdvancedDeviceIDManagerServiceTest {
         advancedDeviceKey: String? = null,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
-        val mockedRandomGenerator = mockk<RandomGenerator>()
         val mockedNidTime = mockk<NIDTime>()
         every { mockedNidTime.getCurrentTimeMillis() } returns 0L
         val mockedNeuroID = getMockedNeuroID()
@@ -336,8 +334,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 getMockedConfigService(),
                 advancedDeviceKey,
                 mockedFPJSClient,
-                mockedNidTime,
-                mockedRandomGenerator
+                mockedNidTime
             )
 
         return mapOf(
@@ -349,8 +346,6 @@ class AdvancedDeviceIDManagerServiceTest {
             "mockedSharedPreferences" to mockedSharedPreferences,
             "mockedApplication" to mockedApplication,
             "mockedFPJSClient" to mockedFPJSClient,
-            "mockedNidTime" to mockedNidTime,
-            "mockedRandomGenerator" to mockedRandomGenerator,
         )
     }
 
@@ -376,11 +371,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 networkServiceResult.third,
             )
         val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second)
-        val mockedConfigService = getMockedConfigService()
-        val mockedNIDTime = mockk<NIDTime>()
-        every { mockedNIDTime.getCurrentTimeMillis() } returns 0L
-        val mockedRandomGenerator = mockk<RandomGenerator>()
-        every { mockedRandomGenerator.getRandom(any()) } returns 50.0
 
         val advancedDeviceIDManagerService =
             AdvancedDeviceIDManager(
@@ -391,11 +381,9 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedNetworkService,
                 "",
                 "",
-                mockedConfigService,
+                getMockedConfigService(),
                 advancedDeviceKey,
-                mockedFPJSClient,
-                mockedNIDTime,
-                mockedRandomGenerator
+                mockedFPJSClient
             )
 
         return mapOf(
@@ -407,9 +395,6 @@ class AdvancedDeviceIDManagerServiceTest {
             "mockedSharedPreferences" to mockedSharedPreferences,
             "mockedApplication" to mockedApplication,
             "mockedFPJSClient" to mockedFPJSClient,
-            "mockedConfigService" to mockedConfigService,
-            "mockedTime" to mockedNIDTime,
-            "mockedRandomGenerator" to mockedRandomGenerator,
         )
     }
 
@@ -504,41 +489,5 @@ class AdvancedDeviceIDManagerServiceTest {
         }
 
         return mockedFPJSClient
-    }
-
-    @Test
-    fun determineEndpointTest() {
-        // assert default with rc: 0, primary: 0
-        val mocks = buildAdvancedDeviceIDManagerService_userSetAdvancedKey()
-        val configService = mocks["mockedConfigService"] as ConfigService
-        every { configService.configCache.proxyRcEndpointSampleRate} returns 0
-        every { configService.configCache.proxyPrimaryEndpointSampleRate} returns 0
-        val advancedDeviceIDManager = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManager
-        val t = advancedDeviceIDManager.determineEndpoint()
-        assert(t == Constants.fpjsProdDomain.displayName)
-
-        // assert primary with rc: 0, primary: 40 random: 30
-        val randomGenerator = mocks["mockedRandomGenerator"] as RandomGenerator
-        every { randomGenerator.getRandom(100) } returns 30.0
-        every { configService.configCache.proxyRcEndpointSampleRate} returns 0
-        every { configService.configCache.proxyPrimaryEndpointSampleRate} returns 40
-        val t2 = advancedDeviceIDManager.determineEndpoint()
-        assert(t2 == Constants.fpjsPrimaryProxyDomain.displayName)
-
-        // assert rc with rc: 30, primary: 10, random: 50
-        val randomGenerator2 = mocks["mockedRandomGenerator"] as RandomGenerator
-        every { randomGenerator2.getRandom(100) } returns 30.0
-        every { configService.configCache.proxyRcEndpointSampleRate} returns 50
-        every { configService.configCache.proxyPrimaryEndpointSampleRate} returns 10
-        val t3 = advancedDeviceIDManager.determineEndpoint()
-        assert(t3 == Constants.fpjsRCProxyDomain.displayName)
-
-        // assert default with rc: 50, primary: 10, random: 70
-        val randomGenerator3 = mocks["mockedRandomGenerator"] as RandomGenerator
-        every { randomGenerator3.getRandom(100) } returns 70.0
-        every { configService.configCache.proxyRcEndpointSampleRate} returns 50
-        every { configService.configCache.proxyPrimaryEndpointSampleRate} returns 10
-        val t4 = advancedDeviceIDManager.determineEndpoint()
-        assert(t4 == Constants.fpjsProdDomain.displayName)
     }
 }
