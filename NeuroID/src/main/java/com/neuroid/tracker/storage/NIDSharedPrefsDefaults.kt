@@ -1,18 +1,22 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
-import android.content.res.Resources
+import com.neuroid.tracker.utils.NIDResourcesUtils
+import com.neuroid.tracker.utils.NIDSystemUuidProvider
 import com.neuroid.tracker.utils.NIDTime
+import com.neuroid.tracker.utils.RandomGenerator
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Locale
-import java.util.UUID
-import kotlin.random.Random
 
 class NIDSharedPrefsDefaults(
     context: Context,
     val nidTime: NIDTime = NIDTime(),
+    val uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider(),
+    val randomGenerator: RandomGenerator = RandomGenerator(),
+    val resourcesProvider: NIDResourcesUtils = NIDResourcesUtils(),
+    val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
@@ -22,7 +26,7 @@ class NIDSharedPrefsDefaults(
     }
 
     fun getNewSessionID(): String {
-        val sid = UUID.randomUUID().toString()
+        val sid = uuidProvider.randomUUID()
         putString(NID_SID, sid)
 
         return sid
@@ -31,7 +35,7 @@ class NIDSharedPrefsDefaults(
     fun getClientID(): String {
         var cid = getString(NID_CID)
         return if (cid == "") {
-            cid = UUID.randomUUID().toString()
+            cid = uuidProvider.randomUUID()
             putString(NID_CID, cid)
             cid
         } else {
@@ -71,7 +75,7 @@ class NIDSharedPrefsDefaults(
     fun getIntermediateID(): String {
         var iid = getString(NID_IID, "")
 
-        return if (iid == "") {
+        return if (iid == "")   {
             iid = getID()
             putString(NID_IID, iid)
             iid
@@ -80,11 +84,11 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun getLocale(): String = Locale.getDefault().toString()
+    fun getLocale() = resourcesProvider.getDefaultLocale()
 
-    fun getLanguage(): String = Locale.getDefault().language
+    fun getLanguage() = resourcesProvider.getDefaultLanguage()
 
-    fun getUserAgent() = System.getProperty("http.agent").orEmpty()
+    fun getUserAgent() = resourcesProvider.getHttpAgent()
 
     fun getTimeZone() = 300
 
@@ -92,8 +96,7 @@ class NIDSharedPrefsDefaults(
 
     private fun getID(): String {
         val timeNow = nidTime.getCurrentTimeMillis()
-        val numRnd = Random.nextDouble() * Int.MAX_VALUE
-
+        val numRnd = randomGenerator.getRandom(Int.MAX_VALUE)
         return "$timeNow.$numRnd"
     }
 
@@ -101,7 +104,7 @@ class NIDSharedPrefsDefaults(
         key: String,
         value: String,
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(dispatcher).launch {
             sharedPref?.let {
                 with(it.edit()) {
                     putString(key, value)
@@ -118,9 +121,9 @@ class NIDSharedPrefsDefaults(
         return sharedPref?.getString(key, "") ?: default
     }
 
-    internal fun getDisplayWidth() = Resources.getSystem().displayMetrics.widthPixels
+    internal fun getDisplayWidth() = resourcesProvider.getDisplayMetricsWidth()
 
-    internal fun getDisplayHeight() = Resources.getSystem().displayMetrics.heightPixels
+    internal fun getDisplayHeight() = resourcesProvider.getDisplayMetricsHeight()
 
     companion object {
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"

@@ -86,29 +86,30 @@ class NIDJobServiceManagerTest {
     }
 
     @Test
-    fun testSendEvents() {
-        val mockedSetup = setupNIDJobServiceManagerMocks()
-        val mockedApplication = mockedSetup.mockedApplication
-        val nidJobServiceManager = mockedSetup.nidJobServiceManager
+    fun testSendEvents() =
+        runTest(timeout = Duration.parse("120s")) {
+            val mockedSetup = setupNIDJobServiceManagerMocks()
+            val mockedApplication = mockedSetup.mockedApplication
+            val nidJobServiceManager = mockedSetup.nidJobServiceManager
 
-        nidJobServiceManager.startJob(
-            mockedApplication,
-            "clientKey",
-        )
-
-        // test the thing
-        nidJobServiceManager.sendEvents(
-            forceSendEvents = true,
-        )
-
-        verify {
-            mockedSetup.mockedEventSender.sendEvents(
-                any(),
-                any(),
-                any(),
+            nidJobServiceManager.startJob(
+                mockedApplication,
+                "clientKey",
             )
+
+            // test the thing
+            nidJobServiceManager.sendEvents(
+                forceSendEvents = true,
+            )
+
+            verify {
+                mockedSetup.mockedEventSender.sendEvents(
+                    any(),
+                    any(),
+                    any(),
+                )
+            }
         }
-    }
 
     internal data class MockedServices(
         val nidJobServiceManager: NIDJobServiceManager,

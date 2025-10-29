@@ -7,8 +7,6 @@ enum class Constants(val displayName: String) {
     integrationHealthAssetsFolder("integrationHealth"),
 
     debugEventTag("Event"),
-    fpjsPrimaryProxyDomain("https://dn.neuroid.cloud/iynlfqcb0t"),
-    fpjsRCProxyDomain("https://rc.dn.neuroid.cloud/iynlfqcb0t"),
     fpjsProdDomain("https://advanced.neuro-id.com"),
     productionEndpoint("https://receiver.neuroid.cloud/"),
     productionScriptsEndpoint("https://scripts.neuro-id.com/"),
