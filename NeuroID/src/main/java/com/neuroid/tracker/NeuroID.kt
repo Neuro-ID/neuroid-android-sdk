@@ -77,6 +77,7 @@ class NeuroID
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
+        internal var isFPJSProxyEnabled: Boolean = false,
         serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
@@ -331,7 +332,8 @@ class NeuroID
             val clientKey: String = "",
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
-            val serverEnvironment: String = PRODUCTION
+            val serverEnvironment: String = PRODUCTION,
+            val isFPJSProxyEnabled: Boolean = false
         ) {
             fun build() {
                 val neuroID =
@@ -340,6 +342,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
+                        isFPJSProxyEnabled,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -568,7 +571,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey)
+                captureAdvancedDevice(shouldCapture, advancedDeviceKey, isFPJSProxyEnabled)
             }
         }
 
@@ -887,6 +890,7 @@ class NeuroID
             isConnected: Boolean? = null,
             cp: String? = null,
             l: Long? = null,
+            cts: String? = null,
             synthetic: Boolean? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
@@ -967,6 +971,7 @@ class NeuroID
                     isConnected,
                     cp,
                     l,
+                    cts,
                     synthetic
                 )
 

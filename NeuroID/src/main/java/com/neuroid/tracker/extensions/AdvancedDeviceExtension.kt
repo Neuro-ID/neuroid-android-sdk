@@ -29,7 +29,8 @@ fun NeuroIDPublic.start(
         if (!it) {
             completion(it)
         } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
+                shouldCapture = advancedDeviceSignals)
 
             completion(it)
         }
@@ -54,7 +55,8 @@ fun NeuroIDPublic.startSession(
         if (!it.started) {
             completion(it)
         } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
+                shouldCapture = advancedDeviceSignals)
 
             completion(it)
         }
@@ -62,7 +64,8 @@ fun NeuroIDPublic.startSession(
 }
 
 @Synchronized
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?) = runBlocking {
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?,
+                                  isFPJSProxyEnabled: Boolean) = runBlocking {
     captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -75,14 +78,15 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: Str
                         this,
                         getADVNetworkService(
                             NeuroID.endpoint,
-                            logger,
+                            logger
                         ),
                         this.clientID,
                         this.linkedSiteID ?: "",
                         configService,
-                        advancedDeviceKey
+                        advancedDeviceKey,
+                        isFPJSProxyEnabled = isFPJSProxyEnabled
                     )
-                getADVSignal(advancedDeviceIDManagerService, clientKey, this )?.join()
+                getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
             }
         }
     } else {
@@ -94,7 +98,7 @@ internal fun getADVSignal(
     advancedDeviceIDManagerService: AdvancedDeviceIDManagerService,
     clientKey: String,
     neuroID: NeuroID,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): Job? {
     var job: Job? = null
     // do this in the background off main but wait for it to complete
@@ -106,6 +110,7 @@ internal fun getADVSignal(
                 advancedDeviceIDManagerService.getRemoteID(
                     clientKey,
                     Constants.fpjsProdDomain.displayName,
+                    Constants.fpjsPrimaryDomain.displayName
                 )?.join()
             }
         }
