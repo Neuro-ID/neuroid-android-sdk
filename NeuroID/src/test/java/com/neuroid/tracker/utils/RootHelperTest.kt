@@ -139,32 +139,191 @@ class RootHelperTest {
         assertFalse(result)
     }
 
-    @Test
-    fun test_isProbablyEmulator_true() {
-        every { mockedBuildTagUtils.getFingerprint() } returns "google/sdk_gphone_:user/release-keys"
-        every { mockedBuildTagUtils.getManufacturer() } returns "sdk"
-        every { mockedBuildTagUtils.getBrand() } returns "google"
-        every { mockedBuildTagUtils.getModel() } returns "sdk_gphone_"
-        every { mockedBuildTagUtils.getDevice() } returns "Emulator"
-        every { mockedBuildTagUtils.getBoard() } returns "QC_Reference_Phone"
-        every { mockedBuildTagUtils.getHardware() } returns "goldfish"
-        every { mockedBuildTagUtils.getHost() } returns "Build"
-        every { mockedBuildTagUtils.getProduct() } returns "sdk_x86"
+   private fun setupProbablyEmulatorTest(fingerprint: String = "defaultFingerprint",
+                                  manufacturer: String = "defaultManufacturer",
+                                  brand: String = "defaultBrand",
+                                  model: String = "defaultModel",
+                                  device: String = "defaultDevice",
+                                  board: String = "defaultBoard",
+                                  hardware: String = "defaultHardware",
+                                  host: String = "defaultHost",
+                                  product: String = "defaultProduct") {
+        every { mockedBuildTagUtils.getFingerprint() } returns fingerprint
+        every { mockedBuildTagUtils.getManufacturer() } returns manufacturer
+        every { mockedBuildTagUtils.getBrand() } returns brand
+        every { mockedBuildTagUtils.getModel() } returns model
+        every { mockedBuildTagUtils.getDevice() } returns device
+        every { mockedBuildTagUtils.getBoard() } returns board
+        every { mockedBuildTagUtils.getHardware() } returns hardware
+        every { mockedBuildTagUtils.getHost() } returns host
+        every { mockedBuildTagUtils.getProduct() } returns product
         assert(rootHelper.isProbablyEmulator())
     }
 
     @Test
-    fun test_isProbablyEmulator_false() {
-        every { mockedBuildTagUtils.getFingerprint() } returns "gdfsgd"
-        every { mockedBuildTagUtils.getManufacturer() } returns "sdgdfsgsdfk"
-        every { mockedBuildTagUtils.getBrand() } returns "genegsdfgsdfgdsric"
-        every { mockedBuildTagUtils.getModel() } returns "Emulhdhdsfhator"
-        every { mockedBuildTagUtils.getDevice() } returns "hdfshsdfhsdfh"
-        every { mockedBuildTagUtils.getBoard() } returns "hdfshsdfh"
-        every { mockedBuildTagUtils.getHardware() } returns "hdshdsfhdfh"
-        every { mockedBuildTagUtils.getHost() } returns "dhdsfh"
-        every { mockedBuildTagUtils.getProduct() } returns "sdhsdfhsdfh"
-        assertFalse(rootHelper.isProbablyEmulator())
+    fun test_isProbablyEmulator_true_google() {
+        setupProbablyEmulatorTest(
+            fingerprint = "google/sdk_gphoneghfkghldk:user/release-keys",
+            manufacturer = "Google",
+            product = "sdk_gphone_xx",
+            brand = "google",
+            model = "sdk_gphone_aa",
+            device = "Emulator"
+        )
+        assert(rootHelper.isProbablyEmulator())
     }
 
+    @Test
+    fun test_isProbablyEmulator_true_fingerprint_generic() {
+        setupProbablyEmulatorTest(
+            fingerprint = "generic/sdk_gphoneghfkghldk:user/release-keys",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_fingerprint_unknown() {
+        setupProbablyEmulatorTest(
+            fingerprint = "unknown/sdk_gphoneghfkghldk:user/release-keys",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_model_google() {
+        setupProbablyEmulatorTest(
+            model = "aagoogle_sdkaa",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true5() {
+        setupProbablyEmulatorTest(
+            model = "aaEmulatoraa",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_device_emulator() {
+        setupProbablyEmulatorTest(
+            device = "Emulator"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true7() {
+        setupProbablyEmulatorTest(
+            model = "aaAndroid SDK built for x86aa",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_model_QC() {
+        setupProbablyEmulatorTest(
+            board = "QC_Reference_Phone",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_board_nox() {
+        setupProbablyEmulatorTest(
+            board = "nox"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_hardware_goldfish() {
+        setupProbablyEmulatorTest(
+            hardware = "goldfish"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_hardware_vbox() {
+        setupProbablyEmulatorTest(
+            hardware = "vbox86"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_hardware_nox() {
+        setupProbablyEmulatorTest(
+            hardware = "nox"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_manufacturer_gennymotion() {
+        setupProbablyEmulatorTest(
+            manufacturer = "Genymotion"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_manufacturer_genymobile() {
+        setupProbablyEmulatorTest(
+            manufacturer = "Genymobile"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_host_build() {
+        setupProbablyEmulatorTest(
+            host = "Build"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_brand_generic_device_generic() {
+        setupProbablyEmulatorTest(
+            brand = "generic",
+            device = "generic"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_product_google_sdk() {
+        setupProbablyEmulatorTest(
+            product = "google_sdk",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_product_sdk_x86() {
+        setupProbablyEmulatorTest(
+            product = "sdk_x86",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_product_vbox86p() {
+        setupProbablyEmulatorTest(
+            product = "vbox86p",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_product_not_xiaomi() {
+        setupProbablyEmulatorTest(
+            product = "Xiaomi",
+            board = "QC_Reference_Phone",
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
 }
