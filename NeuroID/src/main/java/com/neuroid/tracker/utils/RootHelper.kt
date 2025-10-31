@@ -16,23 +16,23 @@ class RootHelper(
 
         var emulatorFiles =
             listOf(
-                File("ueventd.android_x86.rc"),
-                File("x86.prop"),
-                File("ueventd.ttVM_x86.rc"),
-                File("init.ttVM_x86.rc"),
-                File("fstab.ttVM_x86"),
-                File("fstab.vbox86"),
-                File("init.vbox86.rc"),
-                File("ueventd.vbox86.rc"),
-                File("fstab.andy"),
-                File("ueventd.andy.rc"),
-                File("fstab.nox"),
-                File("init.nox.rc"),
-                File("ueventd.nox.rc"),
-                File("/dev/socket/genyd"),
-                File("/dev/socket/baseband_genyd"),
-                File("/dev/socket/qemud"),
-                File("/dev/qemu_pipe"),
+                "ueventd.android_x86.rc",
+                "x86.prop",
+                "ueventd.ttVM_x86.rc",
+                "init.ttVM_x86.rc",
+                "fstab.ttVM_x86",
+                "fstab.vbox86",
+                "init.vbox86.rc",
+                "ueventd.vbox86.rc",
+                "fstab.andy",
+                "ueventd.andy.rc",
+                "fstab.nox",
+                "init.nox.rc",
+                "ueventd.nox.rc",
+                "/dev/socket/genyd",
+                "/dev/socket/baseband_genyd",
+                "/dev/socket/qemud",
+                "/dev/qemu_pipe",
             )
 
         val suPaths =
@@ -120,7 +120,8 @@ class RootHelper(
 
     private fun isEmulatorFilesPresent(): Boolean {
         emulatorFiles.forEach { path ->
-            if (path.exists()) {
+            val file = fileCreationUtils.getFileNoPath(path)
+            if (file.exists()) {
                 return true
             }
         }

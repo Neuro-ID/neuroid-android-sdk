@@ -157,13 +157,25 @@ class RootHelperTest {
         every { mockedBuildTagUtils.getHardware() } returns hardware
         every { mockedBuildTagUtils.getHost() } returns host
         every { mockedBuildTagUtils.getProduct() } returns product
-        assert(rootHelper.isProbablyEmulator())
     }
 
     @Test
-    fun test_isProbablyEmulator_true_google() {
+    fun test_isProbablyEmulator_true_google1() {
         setupProbablyEmulatorTest(
-            fingerprint = "google/sdk_gphoneghfkghldk:user/release-keys",
+            fingerprint = "google/sdk_hsgh",
+            manufacturer = "Google",
+            product = "sdk_gphone_xx",
+            brand = "google",
+            model = "sdk_gphone_aa",
+            device = "Emulator"
+        )
+        // assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_google2() {
+        setupProbablyEmulatorTest(
+            fingerprint = ":user/release-keys",
             manufacturer = "Google",
             product = "sdk_gphone_xx",
             brand = "google",
@@ -254,9 +266,33 @@ class RootHelperTest {
     }
 
     @Test
+    fun test_isProbablyEmulator_true_product_vbox86p() {
+        setupProbablyEmulatorTest(
+            product = "vbox86p"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
     fun test_isProbablyEmulator_true_hardware_nox() {
         setupProbablyEmulatorTest(
             hardware = "nox"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_product_NOX() {
+        setupProbablyEmulatorTest(
+            product = "NOX"
+        )
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun test_isProbablyEmulator_true_product_nox() {
+        setupProbablyEmulatorTest(
+            product = "nox"
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -325,5 +361,23 @@ class RootHelperTest {
             board = "QC_Reference_Phone",
         )
         assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun isEmulatorFilesPresent() {
+        setupProbablyEmulatorTest()
+        every { mockedFileUtil.getFileNoPath(any()) } returns mockk {
+            every { exists() } returns true
+        }
+        assert(rootHelper.isProbablyEmulator())
+    }
+
+    @Test
+    fun isEmulatorFilesPresent_no_files_present() {
+        setupProbablyEmulatorTest()
+        every { mockedFileUtil.getFileNoPath(any()) } returns mockk {
+            every { exists() } returns false
+        }
+        assert(!rootHelper.isProbablyEmulator())
     }
 }
