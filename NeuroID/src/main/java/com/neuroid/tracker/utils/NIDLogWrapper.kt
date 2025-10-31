@@ -4,17 +4,15 @@ class NIDLogWrapper {
     fun d(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
-        NIDLog.d(tag, msg, cb)
+        NIDLog.d(tag, msg)
     }
 
     fun e(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
-        NIDLog.e(tag, msg, cb)
+        NIDLog.e(tag, msg)
     }
 
     fun i(
@@ -27,16 +25,14 @@ class NIDLogWrapper {
     fun v(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
-        NIDLog.v(tag, msg, cb)
+        NIDLog.v(tag, msg)
     }
 
     fun w(
         tag: String? = null,
         msg: String,
-        cb: () -> String = { msg },
     ) {
-        NIDLog.w(tag, msg, cb)
+        NIDLog.w(tag, msg)
     }
 }

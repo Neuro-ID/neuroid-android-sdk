@@ -38,11 +38,8 @@ class NIDEventModelUnitTest {
 
     @Test
     fun testToJSONAdvanced() {
-        val logger = mockk<NIDLogWrapper>()
-        every { logger.d(any(), any(), any()) } just runs
         val event =
             NIDEventModel(
-                logger = logger,
                 tgs = "tgs-a",
                 touches = arrayListOf(NIDTouchModel(x = 10f, y = 20f, tid = 1f)),
                 type = "TEST_TYPE",
@@ -191,14 +188,5 @@ class NIDEventModelUnitTest {
 
         // Verify lsid is not present (was set to null)
         assertEquals(false, json.has("lsid"))
-
-        event.log()
-        verify {
-            logger.d(eq(debugEventTag.displayName), eq(""), match {
-                val logMessage = it()
-                        logMessage == "EVENT: TEST_TYPE - tgs-a - "
-            })
-        }
-
     }
 }
