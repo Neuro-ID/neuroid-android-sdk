@@ -38,6 +38,7 @@ import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
 import org.json.JSONObject
@@ -103,6 +104,7 @@ data class NIDEventModel(
     val l: Long? = null,
     val cts: String? = null,
     val synthetic: Boolean? = null,
+    val logger: NIDLogWrapper = NIDLogWrapper()
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
         return toJSON().toString()
@@ -200,7 +202,7 @@ data class NIDEventModel(
     }
 
     internal fun log() {
-        NIDLog.d(Constants.debugEventTag.displayName, "") {
+        logger.d(Constants.debugEventTag.displayName, "") {
             var contextString: String? = ""
             when (this.type) {
                 PAUSE_EVENT_CAPTURE -> contextString = ""
