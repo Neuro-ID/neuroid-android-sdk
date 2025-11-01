@@ -240,7 +240,7 @@ class AdvancedDeviceIDManagerServiceTest {
                     assert(e.c == false) { "Expected event c value to be false, found true" }
                     assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
                     assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-                    assert(e.cts  == "sealedResult") {"Expected event cts value to be sealedResult, found ${e.cts}"}
+                    assert(e.scr  == "sealedResult") {"Expected event scr value to be sealedResult, found ${e.scr}"}
                 }
             val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
             val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -256,7 +256,7 @@ class AdvancedDeviceIDManagerServiceTest {
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
                     mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, cts=any(), ct = any(), m="server retrieved FPJS key")
+                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = 0, scr=any(), ct = any(), m="server retrieved FPJS key")
                     mockedLogger.d(msg = "Caching Request ID: $validRID")
                     mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
                 }
@@ -302,7 +302,7 @@ class AdvancedDeviceIDManagerServiceTest {
                     assert(e.c == false) { "Expected event c value to be false, found true" }
                     assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
                     assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-                    assert(e.cts == "sealedResult") {"Expected event cts value to be sealedResult, found ${e.cts}"}
+                    assert(e.scr == "sealedResult") {"Expected event scr value to be sealedResult, found ${e.scr}"}
                 }
             val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
             val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -318,7 +318,7 @@ class AdvancedDeviceIDManagerServiceTest {
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
                     mockedLogger.d(msg = "Generating Request ID for Advanced Device Signals: $validRID")
-                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = any(), cts="sealedResult", ct = any(), m="user entered FPJS key")
+                    mockedNID.captureEvent(queuedEvent = true, type = ADVANCED_DEVICE_REQUEST, rid = any(), ts = any(), c = false, l = any(), scr="sealedResult", ct = any(), m="user entered FPJS key")
                     mockedLogger.d(msg = "Caching Request ID: $validRID")
                     mockedSharedPreferences.putString(AdvancedDeviceIDManager.NID_RID, any())
                 }

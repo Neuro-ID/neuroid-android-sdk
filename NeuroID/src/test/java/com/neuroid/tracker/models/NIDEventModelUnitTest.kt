@@ -89,7 +89,7 @@ class NIDEventModelUnitTest {
                 isConnected = true,
                 cp = "cp-a",
                 l = 12345L,
-                cts = "cts-a",
+                scr = "scr-a",
                 synthetic = false,
                 gyro = NIDSensorModel(x = 1.1f, y = 2.2f, z = 3.3f),
                 accel = NIDSensorModel(x = 4.4f, y = 5.5f, z = 6.6f),
@@ -155,7 +155,7 @@ class NIDEventModelUnitTest {
         assertTrue(json.getBoolean("isconnected"))
         assertEquals("cp-a", json.getString("cp"))
         assertEquals(12345L, json.getLong("l"))
-        assertEquals("cts-a", json.getString("cts"))
+        assertEquals("scr-a", json.getString("scr"))
         assertEquals(false, json.getBoolean("synthetic"))
         assertEquals(1L, json.getLong("ts"))
 

@@ -101,7 +101,7 @@ data class NIDEventModel(
     val isConnected: Boolean? = null,
     val cp: String? = null,
     val l: Long? = null,
-    val cts: String? = null,
+    val scr: String? = null,
     val synthetic: Boolean? = null,
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
@@ -188,7 +188,7 @@ data class NIDEventModel(
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
             l?.let { jsonObject.put("l", it) }
-            cts?.let {jsonObject.put("cts", it) }
+            scr?.let {jsonObject.put("scr", it) }
             synthetic?.let { jsonObject.put("synthetic", it) }
         }
 
@@ -243,7 +243,7 @@ data class NIDEventModel(
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
                 CALL_IN_PROGRESS -> contextString = "cp=${this.cp}, metadata=${this.attrs}"
                 APPLICATION_METADATA -> contextString = "attrs=${this.attrs}"
-                SEALED_PAYLOAD -> contextString = "cts=${this.cts?.substring(0, 15)}"
+                SEALED_PAYLOAD -> contextString = "scr=${this.scr?.substring(0, 15)}"
                 else -> {}
             }
 

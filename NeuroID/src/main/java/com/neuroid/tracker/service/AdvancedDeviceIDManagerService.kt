@@ -82,6 +82,7 @@ internal class AdvancedDeviceIDManager(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
+            scr = storedValue["scr"] as String,
             c = true,
             l = 0,
             // wifi/cell
@@ -190,7 +191,7 @@ internal class AdvancedDeviceIDManager(
                             l = stopTime - startTime,
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
-                            cts = requestResponse.third,
+                            scr = requestResponse.third,
                             m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
                         )
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
@@ -200,6 +201,7 @@ internal class AdvancedDeviceIDManager(
                         val cachedValueString =
                             gson.toJson(
                                 mapOf(
+                                    "scr" to requestResponse.third,
                                     "key" to requestResponse.second,
                                     "exp" to
                                         (configService.configCache.advancedCookieExpiration * 1000) +
