@@ -162,12 +162,11 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_google1() {
         setupProbablyEmulatorTest(
-            fingerprint = "google/sdk_hsgh",
+            fingerprint = "google/sdk_gphone_fsdfasdf:user/release-keys",
             manufacturer = "Google",
             product = "sdk_gphone_xx",
             brand = "google",
             model = "sdk_gphone_aa",
-            device = "Emulator"
         )
         assert(rootHelper.isProbablyEmulator())
     }
