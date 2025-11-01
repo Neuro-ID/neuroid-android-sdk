@@ -169,7 +169,7 @@ class RootHelperTest {
             model = "sdk_gphone_aa",
             device = "Emulator"
         )
-        // assert(rootHelper.isProbablyEmulator())
+        assert(rootHelper.isProbablyEmulator())
     }
 
     @Test
