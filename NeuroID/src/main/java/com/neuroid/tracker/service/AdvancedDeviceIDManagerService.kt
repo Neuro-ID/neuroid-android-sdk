@@ -28,7 +28,8 @@ interface AdvancedDeviceIDManagerService {
 
     fun getRemoteID(
         clientKey: String,
-        remoteUrl: String,
+        remoteUrlProd: String,
+        remoteUrlProxyPrimary: String,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         delay: Long = 5000L,
     ): Job?
@@ -46,6 +47,7 @@ internal class AdvancedDeviceIDManager(
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null,
+    private val isFPJSProxyEnabled: Boolean,
     val nidTime: NIDTime = NIDTime()
 ) : AdvancedDeviceIDManagerService {
     companion object {
@@ -80,6 +82,7 @@ internal class AdvancedDeviceIDManager(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
+            scr = storedValue["scr"] as String?,
             c = true,
             l = 0,
             // wifi/cell
@@ -110,11 +113,22 @@ internal class AdvancedDeviceIDManager(
         return nidKeyResponse
     }
 
+    internal fun chooseUrl(isFPJSProxyEnabled: Boolean,
+                           remoteUrlProxyPrimary: String,
+                     remoteProdUrl: String): String {
+        return if (isFPJSProxyEnabled) {
+            remoteUrlProxyPrimary
+        } else {
+            remoteProdUrl
+        }
+    }
+
     override fun getRemoteID(
         clientKey: String,
-        remoteUrl: String,
+        remoteProdUrl: String,
+        remoteUrlProxyPrimary: String,
         dispatcher: CoroutineDispatcher,
-        delay: Long,
+        delay: Long
     ): Job? {
         // check if we have a user entered FPJS key,
         // if not, get it from server
@@ -141,7 +155,9 @@ internal class AdvancedDeviceIDManager(
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            endpointUrl = remoteUrl,
+                            // endpointUrl = if (isFPJSProxyEnabled) remoteUrlProxyPrimary else remoteProdUrl,
+                            endpointUrl = chooseUrl(isFPJSProxyEnabled, remoteUrlProxyPrimary, remoteProdUrl),
+                            fallbackEndpointUrls = arrayListOf(remoteProdUrl)
                         ),
                     )
             }
@@ -175,6 +191,7 @@ internal class AdvancedDeviceIDManager(
                             l = stopTime - startTime,
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
+                            scr = requestResponse.third,
                             m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
                         )
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
@@ -184,6 +201,7 @@ internal class AdvancedDeviceIDManager(
                         val cachedValueString =
                             gson.toJson(
                                 mapOf(
+                                    "scr" to requestResponse.third,
                                     "key" to requestResponse.second,
                                     "exp" to
                                         (configService.configCache.advancedCookieExpiration * 1000) +
@@ -231,21 +249,21 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Pair<Boolean, String> =
+    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Triple<Boolean, String, String?> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 listener = { result ->
-                    continuation.resume(Pair(true, result.requestId))
+                    continuation.resume(Triple(true, result.requestId, result.sealedResult))
                 },
                 errorListener = { error ->
                     continuation.resume(
-                        Pair(
+                        Triple(
                             false,
                             if (error.description != null) {
                                 error.description as String
                             } else {
                                 "FPJS Empty Failure"
-                            },
+                            }, null
                         ),
                     )
                 },
