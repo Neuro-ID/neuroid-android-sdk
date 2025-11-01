@@ -82,7 +82,7 @@ internal class AdvancedDeviceIDManager(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
             rid = storedValue["key"] as String,
-            scr = storedValue["scr"] as String,
+            scr = storedValue["scr"] as String?,
             c = true,
             l = 0,
             // wifi/cell
