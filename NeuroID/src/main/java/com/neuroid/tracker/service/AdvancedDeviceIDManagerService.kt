@@ -12,6 +12,7 @@ import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,8 +29,6 @@ interface AdvancedDeviceIDManagerService {
 
     fun getRemoteID(
         clientKey: String,
-        remoteUrlProd: String,
-        remoteUrlProxyPrimary: String,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         delay: Long = 5000L,
     ): Job?
@@ -125,8 +124,6 @@ internal class AdvancedDeviceIDManager(
 
     override fun getRemoteID(
         clientKey: String,
-        remoteProdUrl: String,
-        remoteUrlProxyPrimary: String,
         dispatcher: CoroutineDispatcher,
         delay: Long
     ): Job? {
@@ -155,8 +152,10 @@ internal class AdvancedDeviceIDManager(
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            endpointUrl = chooseUrl(useFingerprintProxy, remoteUrlProxyPrimary, remoteProdUrl),
-                            fallbackEndpointUrls = arrayListOf(remoteProdUrl)
+                            endpointUrl = chooseUrl(useFingerprintProxy,
+                                Constants.fpjsPrimaryDomain.displayName,
+                                Constants.fpjsProdDomain.displayName),
+                            fallbackEndpointUrls = arrayListOf(Constants.fpjsProdDomain.displayName)
                         ),
                     )
             }

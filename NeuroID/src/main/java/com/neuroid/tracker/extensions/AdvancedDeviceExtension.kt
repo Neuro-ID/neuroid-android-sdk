@@ -108,9 +108,7 @@ internal fun getADVSignal(
             if (!advancedDeviceIDManagerService.getCachedID()) {
                 // no cached ID - contact NID & FPJS
                 advancedDeviceIDManagerService.getRemoteID(
-                    clientKey,
-                    Constants.fpjsProdDomain.displayName,
-                    Constants.fpjsPrimaryDomain.displayName
+                    clientKey
                 )?.join()
             }
         }

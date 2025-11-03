@@ -158,8 +158,6 @@ class AdvancedDeviceIDManagerServiceTest {
 
         advancedDeviceIDManagerService.getRemoteID(
             "testKey",
-            "testEndpoint",
-            "testProxyEndPoint",
             Dispatchers.Unconfined,
             10,
         )
@@ -194,8 +192,6 @@ class AdvancedDeviceIDManagerServiceTest {
         val job =
             advancedDeviceIDManagerService.getRemoteID(
                 "testKey",
-                "testEndpoint",
-                "testProxyEndPoint",
                 dispatcher = Dispatchers.Unconfined,
                 delay = 10,
             )
@@ -251,7 +247,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
             // need to let the job complete so the verification step can commence.
             // we do this with an unconfined dispatcher.
-            val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint","testProxyEndPoint", Dispatchers.Unconfined, 10)
+            val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
 
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
@@ -313,7 +309,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
             // need to let the job complete so the verification step can commence.
             // we do this with an unconfined dispatcher.
-            val job = advancedDeviceIDManagerService.getRemoteID("testKey", "testEndpoint", "testProxyEndPoint", Dispatchers.Unconfined, 10)
+            val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
 
             job?.invokeOnCompletion {
                 verify(exactly = 1) {
