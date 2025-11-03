@@ -77,7 +77,7 @@ class NeuroID
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
-        internal var isFPJSProxyEnabled: Boolean = false,
+        internal var useFingerprintProxy: Boolean = false,
         serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
@@ -333,7 +333,7 @@ class NeuroID
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
             val serverEnvironment: String = PRODUCTION,
-            val isFPJSProxyEnabled: Boolean = false
+            val useFingerprintProxy: Boolean = false
         ) {
             fun build() {
                 val neuroID =
@@ -342,7 +342,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
-                        isFPJSProxyEnabled,
+                        useFingerprintProxy,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -571,7 +571,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey, isFPJSProxyEnabled)
+                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useFingerprintProxy)
             }
         }
 

@@ -47,7 +47,7 @@ internal class AdvancedDeviceIDManager(
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null,
-    private val isFPJSProxyEnabled: Boolean,
+    private val useFingerprintProxy: Boolean,
     val nidTime: NIDTime = NIDTime()
 ) : AdvancedDeviceIDManagerService {
     companion object {
@@ -113,10 +113,10 @@ internal class AdvancedDeviceIDManager(
         return nidKeyResponse
     }
 
-    internal fun chooseUrl(isFPJSProxyEnabled: Boolean,
+    internal fun chooseUrl(useFingerprintProxy: Boolean,
                            remoteUrlProxyPrimary: String,
-                     remoteProdUrl: String): String {
-        return if (isFPJSProxyEnabled) {
+                           remoteProdUrl: String): String {
+        return if (useFingerprintProxy) {
             remoteUrlProxyPrimary
         } else {
             remoteProdUrl
@@ -155,8 +155,7 @@ internal class AdvancedDeviceIDManager(
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            // endpointUrl = if (isFPJSProxyEnabled) remoteUrlProxyPrimary else remoteProdUrl,
-                            endpointUrl = chooseUrl(isFPJSProxyEnabled, remoteUrlProxyPrimary, remoteProdUrl),
+                            endpointUrl = chooseUrl(useFingerprintProxy, remoteUrlProxyPrimary, remoteProdUrl),
                             fallbackEndpointUrls = arrayListOf(remoteProdUrl)
                         ),
                     )
