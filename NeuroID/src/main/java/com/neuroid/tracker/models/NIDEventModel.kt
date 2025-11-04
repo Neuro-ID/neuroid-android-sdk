@@ -23,7 +23,6 @@ import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.events.PAUSE_EVENT_CAPTURE
 import com.neuroid.tracker.events.REGISTER_TARGET
 import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
-import com.neuroid.tracker.events.SEALED_PAYLOAD
 import com.neuroid.tracker.events.SELECT_CHANGE
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
@@ -237,13 +236,12 @@ data class NIDEventModel(
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
-                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m}"
+                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m} scr=${this.scr?.substring(0, 15)}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
                 CALL_IN_PROGRESS -> contextString = "cp=${this.cp}, metadata=${this.attrs}"
                 APPLICATION_METADATA -> contextString = "attrs=${this.attrs}"
-                SEALED_PAYLOAD -> contextString = "scr=${this.scr?.substring(0, 15)}"
                 else -> {}
             }
 

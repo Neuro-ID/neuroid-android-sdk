@@ -362,7 +362,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
-                        useFingerprintProxy,
+                        useFingerprintProxy = false,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)

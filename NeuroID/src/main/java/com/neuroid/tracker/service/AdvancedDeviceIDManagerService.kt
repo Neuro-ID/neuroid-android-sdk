@@ -112,15 +112,12 @@ internal class AdvancedDeviceIDManager(
         return nidKeyResponse
     }
 
-    internal fun chooseUrl(useFingerprintProxy: Boolean,
-                           remoteUrlProxyPrimary: String,
-                           remoteProdUrl: String): String {
-        return if (useFingerprintProxy) {
-            remoteUrlProxyPrimary
+    internal fun chooseUrl(useFingerprintProxy: Boolean) =
+        if (useFingerprintProxy) {
+            Constants.fpjsPrimaryDomain.displayName
         } else {
-            remoteProdUrl
+            Constants.fpjsProdDomain.displayName
         }
-    }
 
     override fun getRemoteID(
         clientKey: String,
@@ -152,9 +149,7 @@ internal class AdvancedDeviceIDManager(
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            endpointUrl = chooseUrl(useFingerprintProxy,
-                                Constants.fpjsPrimaryDomain.displayName,
-                                Constants.fpjsProdDomain.displayName),
+                            endpointUrl = chooseUrl(useFingerprintProxy),
                             fallbackEndpointUrls = arrayListOf(Constants.fpjsProdDomain.displayName)
                         ),
                     )

@@ -265,20 +265,16 @@ class AdvancedDeviceIDManagerServiceTest {
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
 
         val proxyEnabledUrl = (advancedDeviceIDManagerService as AdvancedDeviceIDManager).chooseUrl(
-            useFingerprintProxy = true,
-            remoteUrlProxyPrimary = "https://proxy.endpoint.com",
-            remoteProdUrl = "https://standard.endpoint.com"
+            useFingerprintProxy = true
         )
-        assert(proxyEnabledUrl == "https://proxy.endpoint.com") {
+        assert(proxyEnabledUrl == "https://dn.neuroid.cloud/iynlfqcb0t") {
             "Expected proxy endpoint URL when proxy is enabled, found $proxyEnabledUrl"
         }
 
         val standardUrl = (advancedDeviceIDManagerService as AdvancedDeviceIDManager).chooseUrl(
-            useFingerprintProxy = false,
-            remoteUrlProxyPrimary = "https://proxy.endpoint.com",
-            remoteProdUrl = "https://standard.endpoint.com"
+            useFingerprintProxy = false
         )
-        assert(standardUrl == "https://standard.endpoint.com") {
+        assert(standardUrl == "https://advanced.neuro-id.com") {
             "Expected standard endpoint URL when proxy is disabled, found $standardUrl"
         }
     }
