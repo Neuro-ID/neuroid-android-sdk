@@ -78,7 +78,7 @@ jobs:
             SONAR_ORGANIZATION: 'neuroid'
 
   android_sdk_integration_test_layout_app:
-    runs-on: [ macos-latest]
+    runs-on: [ macos-latest ]  # ARM-based runner (M1/M2)
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -89,21 +89,46 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-30-arm64
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@v3
+        with:
+          api-level: 30
+          target: google_apis
+          arch: arm64-v8a
+          profile: Nexus 6P
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
       # Execute integration sample tests
       - name: Integration Test Sample app (compose)
-        uses: ReactiveCircus/android-emulator-runner@v2
+        uses: ReactiveCircus/android-emulator-runner@v3
         with:
-          api-level: 29
+          api-level: 30
+          target: google_apis
+          arch: arm64-v8a
           profile: Nexus 6P
-          cores: 4
-          ram-size: 4096M
-          heap-size: 2048M
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :testapp:connectedandroidLibDebugAndroidTest
 
   android_sdk_integration_test_sample_app:
-    runs-on: [ macos-latest ]
+    runs-on: [ macos-latest ]  # ARM-based runner (M1/M2)
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -114,15 +139,40 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-30-arm64
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@v3
+        with:
+          api-level: 30
+          target: google_apis
+          arch: arm64-v8a
+          profile: Nexus 6P
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
       # Execute integration sample tests
       - name: Integration Test Sample app (compose)
-        uses: ReactiveCircus/android-emulator-runner@v2
+        uses: ReactiveCircus/android-emulator-runner@v3
         with:
-          api-level: 29
+          api-level: 30
+          target: google_apis
+          arch: arm64-v8a
           profile: Nexus 6P
-          cores: 4
-          ram-size: 4096M
-          heap-size: 2048M
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew :app:connectedandroidLibDebugAndroidTest
