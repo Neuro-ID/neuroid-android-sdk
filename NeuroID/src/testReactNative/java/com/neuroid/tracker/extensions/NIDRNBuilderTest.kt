@@ -29,6 +29,7 @@ class NIDRNBuilderTest {
         every {options.hasKey(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.hasKey(RNConfigOptions.environment.name)} returns true
         every {options.hasKey(RNConfigOptions.advancedDeviceKey.name)} returns true
+        every {options.hasKey(RNConfigOptions.useFingerprintProxy.name)} returns true
         every {options.getBoolean(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.getString(RNConfigOptions.advancedDeviceKey.name)} returns "testkey"
         every {options.getBoolean(RNConfigOptions.useFingerprintProxy.name)} returns false
