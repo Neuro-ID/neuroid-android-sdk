@@ -352,8 +352,7 @@ class NeuroID
             val clientKey: String = "",
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
-            val serverEnvironment: String = PRODUCTION,
-            val useFingerprintProxy: Boolean = false
+            val serverEnvironment: String = PRODUCTION
         ) {
             fun build() {
                 val neuroID =
