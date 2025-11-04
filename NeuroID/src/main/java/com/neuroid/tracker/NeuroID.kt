@@ -34,6 +34,7 @@ import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureAdvancedDevice
+import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
@@ -327,6 +328,25 @@ class NeuroID
             }
         }
 
+        data class BuilderConfig(
+            val application: Application? = null,
+            val nidConfiguration: NIDConfiguration
+        ) {
+            fun build() {
+                val neuroID =
+                    NeuroID(
+                        application,
+                        nidConfiguration.clientKey,
+                        nidConfiguration.isAdvancedDevice,
+                        nidConfiguration.advancedDeviceKey,
+                        nidConfiguration.useFingerprintProxy,
+                        nidConfiguration.serverEnvironment
+                    )
+                setNeuroIDInstance(neuroID)
+            }
+        }
+
+        @Deprecated("Do not use. Please user BuilderConfig instead.")
         data class Builder(
             val application: Application? = null,
             val clientKey: String = "",

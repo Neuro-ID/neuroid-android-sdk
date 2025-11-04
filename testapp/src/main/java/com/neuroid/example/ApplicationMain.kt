@@ -2,6 +2,7 @@ package com.neuroid.example
 
 import android.app.Application
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.models.NIDConfiguration
 
 class ApplicationMain : Application() {
     companion object {
@@ -23,11 +24,17 @@ class ApplicationMain : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        NeuroID.Builder(
+        NeuroID.BuilderConfig(
             this,
-            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-            isAdvancedDevice = true,
-            serverEnvironment = NeuroID.TEST
+            NIDConfiguration(
+                "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+                true,
+                null,
+                false,
+                NeuroID.TEST)
+//            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+//            isAdvancedDevice = true,
+//            serverEnvironment = NeuroID.TEST
         ).build()
         NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
     }
