@@ -8,6 +8,7 @@ import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -71,6 +72,20 @@ open class NeuroIDClassUnitTests {
         // fail test when NeuroID is built.
         NeuroID.setSingletonNull()
         NeuroID.Builder(null, "key_test_fake1234", false, NeuroID.DEVELOPMENT).build()
+    }
+
+    private fun setNeuroIDInstanceBuilderConfig() {
+        // set NeuroID singleton to null, else the NeuroID already initialized error will occur and
+        // fail test when NeuroID is built.
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(null,
+            NIDConfiguration(
+                "key_test_fake1234",
+                false,
+                "",
+                false,
+                NeuroID.DEVELOPMENT)
+        ).build()
     }
 
     private fun setNeuroIDMockedLogger(
@@ -206,8 +221,8 @@ open class NeuroIDClassUnitTests {
 
     @Before
     fun setUp() {
-        // setup instance and logging
-        setNeuroIDInstance()
+        // setup instance and logging, use new BuilderConfig
+        setNeuroIDInstanceBuilderConfig()
         NeuroID.getInternalInstance()?.application = null
         setNeuroIDMockedLogger()
 
@@ -239,6 +254,19 @@ open class NeuroIDClassUnitTests {
     //    setNIDJobServiceManager - Used for mocking
 
     //   setTestURL
+
+    @Test
+    fun test_ConfigOld() {
+        // if this crashes, NeuroID singleton failed to initialize and test will fail
+        setNeuroIDInstance()
+        NeuroID.getInternalInstance()?.application = null
+        setNeuroIDMockedLogger()
+
+        clearLogCounts()
+        storedEvents.clear()
+        queuedEvents.clear()
+        NeuroID.getInternalInstance()?.excludedTestIDList?.clear()
+    }
 
     // Class Init Test
     @Test
