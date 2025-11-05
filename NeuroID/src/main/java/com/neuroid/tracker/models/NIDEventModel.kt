@@ -100,6 +100,7 @@ data class NIDEventModel(
     val isConnected: Boolean? = null,
     val cp: String? = null,
     val l: Long? = null,
+    val scr: String? = null,
     val synthetic: Boolean? = null,
 ) : Comparable<NIDEventModel> {
     fun toJSONString(): String {
@@ -186,6 +187,7 @@ data class NIDEventModel(
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
             l?.let { jsonObject.put("l", it) }
+            scr?.let {jsonObject.put("scr", it) }
             synthetic?.let { jsonObject.put("synthetic", it) }
         }
 
@@ -234,7 +236,7 @@ data class NIDEventModel(
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
-                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m}"
+                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m} scr=${this.scr?.substring(0, 15)}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"

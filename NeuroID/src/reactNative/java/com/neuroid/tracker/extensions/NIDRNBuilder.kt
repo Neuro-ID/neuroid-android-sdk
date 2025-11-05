@@ -5,18 +5,21 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.facebook.react.bridge.ReadableMap
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.models.NIDConfiguration
 
 class NIDRNBuilder( val application: Application? = null,
                     val clientKey: String = "",
                     private val rnOptions: ReadableMap? = null) {
     fun build() {
         val options = parseOptions(rnOptions)
-        // call NeuroID builder to initialize NeuroID with the options.
         Log.d("NIDRNBuilder", "set options: $options")
-        NeuroID.Builder(application, clientKey,
-            options[RNConfigOptions.isAdvancedDevice] as Boolean,
-            options[RNConfigOptions.advancedDeviceKey] as String,
-            options[RNConfigOptions.environment] as String).build()
+        NeuroID.BuilderConfig(application, NIDConfiguration(
+            clientKey = clientKey,
+            isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
+            advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
+            useFingerprintProxy = options[RNConfigOptions.useFingerprintProxy] as Boolean,
+            serverEnvironment = options[RNConfigOptions.environment] as String)).build()
+
         NeuroID.getInstance()?.setIsRN()
     }
 
@@ -30,6 +33,7 @@ class NIDRNBuilder( val application: Application? = null,
         var isAdvancedDevice = false
         var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
+        var useFingerprintProxy = false
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let {rnOptionsMap ->
@@ -37,6 +41,12 @@ class NIDRNBuilder( val application: Application? = null,
             if (rnOptionsMap.hasKey(RNConfigOptions.advancedDeviceKey.name)) {
                 rnOptionsMap.getString(RNConfigOptions.advancedDeviceKey.name)?.let {
                     advancedDeviceKey = it
+                }
+            }
+            // set the useFingerprintProxy flag true or false from useFingerprintProxy option, default false
+            if (rnOptionsMap.hasKey(RNConfigOptions.useFingerprintProxy.name)) {
+                rnOptionsMap.getBoolean(RNConfigOptions.useFingerprintProxy.name).let {
+                    useFingerprintProxy = it
                 }
             }
             // set the is advanced flag true or false from isAdvancedDevice option, default false
@@ -61,6 +71,8 @@ class NIDRNBuilder( val application: Application? = null,
         options[RNConfigOptions.environment] = environment
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
+        options[RNConfigOptions.useFingerprintProxy] = useFingerprintProxy
+
         return options
     }
 }
@@ -68,5 +80,6 @@ class NIDRNBuilder( val application: Application? = null,
 enum class RNConfigOptions {
     isAdvancedDevice,
     environment,
-    advancedDeviceKey
+    advancedDeviceKey,
+    useFingerprintProxy
 }

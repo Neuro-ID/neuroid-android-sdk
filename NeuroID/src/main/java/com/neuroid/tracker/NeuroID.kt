@@ -34,6 +34,7 @@ import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureAdvancedDevice
+import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
@@ -77,6 +78,7 @@ class NeuroID
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
+        internal var useFingerprintProxy: Boolean = false,
         serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
@@ -326,6 +328,25 @@ class NeuroID
             }
         }
 
+        data class BuilderConfig(
+            val application: Application? = null,
+            val nidConfiguration: NIDConfiguration
+        ) {
+            fun build() {
+                val neuroID =
+                    NeuroID(
+                        application,
+                        nidConfiguration.clientKey,
+                        nidConfiguration.isAdvancedDevice,
+                        nidConfiguration.advancedDeviceKey,
+                        nidConfiguration.useFingerprintProxy,
+                        nidConfiguration.serverEnvironment
+                    )
+                setNeuroIDInstance(neuroID)
+            }
+        }
+
+        @Deprecated("Do not use. Please user BuilderConfig instead.")
         data class Builder(
             val application: Application? = null,
             val clientKey: String = "",
@@ -340,6 +361,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
+                        useFingerprintProxy = false,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -568,7 +590,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey)
+                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useFingerprintProxy)
             }
         }
 
@@ -887,6 +909,7 @@ class NeuroID
             isConnected: Boolean? = null,
             cp: String? = null,
             l: Long? = null,
+            scr: String? = null,
             synthetic: Boolean? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
@@ -967,6 +990,7 @@ class NeuroID
                     isConnected,
                     cp,
                     l,
+                    scr,
                     synthetic
                 )
 

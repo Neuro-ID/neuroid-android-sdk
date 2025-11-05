@@ -19,6 +19,7 @@ class NIDRNBuilderTest {
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
+        assert(!(mapOptions[RNConfigOptions.useFingerprintProxy] as Boolean))
     }
 
     @Test
@@ -28,8 +29,10 @@ class NIDRNBuilderTest {
         every {options.hasKey(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.hasKey(RNConfigOptions.environment.name)} returns true
         every {options.hasKey(RNConfigOptions.advancedDeviceKey.name)} returns true
+        every {options.hasKey(RNConfigOptions.useFingerprintProxy.name)} returns true
         every {options.getBoolean(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.getString(RNConfigOptions.advancedDeviceKey.name)} returns "testkey"
+        every {options.getBoolean(RNConfigOptions.useFingerprintProxy.name)} returns false
         every {options.getString(RNConfigOptions.environment.name)} returns NeuroID.PRODSCRIPT_DEVCOLLECTION
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
@@ -37,6 +40,7 @@ class NIDRNBuilderTest {
         assert((mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODSCRIPT_DEVCOLLECTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "testkey")
+        assert(!(mapOptions[RNConfigOptions.useFingerprintProxy] as Boolean))
     }
 
     @Test
@@ -48,5 +52,6 @@ class NIDRNBuilderTest {
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
+        assert(!(mapOptions[RNConfigOptions.useFingerprintProxy] as Boolean))
     }
 }
