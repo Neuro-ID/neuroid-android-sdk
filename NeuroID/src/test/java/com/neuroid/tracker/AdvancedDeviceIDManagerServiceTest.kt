@@ -265,14 +265,14 @@ class AdvancedDeviceIDManagerServiceTest {
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
 
         val proxyEnabledUrl = (advancedDeviceIDManagerService as AdvancedDeviceIDManager).chooseUrl(
-            useFingerprintProxy = true
+            useAdvancedDeviceProxy = true
         )
         assert(proxyEnabledUrl == "https://dn.neuroid.cloud/iynlfqcb0t") {
             "Expected proxy endpoint URL when proxy is enabled, found $proxyEnabledUrl"
         }
 
         val standardUrl = (advancedDeviceIDManagerService as AdvancedDeviceIDManager).chooseUrl(
-            useFingerprintProxy = false
+            useAdvancedDeviceProxy = false
         )
         assert(standardUrl == "https://advanced.neuro-id.com") {
             "Expected standard endpoint URL when proxy is disabled, found $standardUrl"
@@ -325,7 +325,7 @@ class AdvancedDeviceIDManagerServiceTest {
         networkServiceResult: Triple<String, Boolean, String> = Triple("", false, ""),
         fpjsResponse: Triple<String?, String?, String?> = Triple(null, null, null),
         advancedDeviceKey: String? = null,
-        useFingerprintProxy: Boolean = false,
+        useAdvancedDeviceProxy: Boolean = false,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNidTime = mockk<NIDTime>()
@@ -355,7 +355,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 getMockedConfigService(),
                 advancedDeviceKey,
                 mockedFPJSClient,
-                useFingerprintProxy = useFingerprintProxy,
+                useAdvancedDeviceProxy = useAdvancedDeviceProxy,
                 mockedNidTime
             )
 
@@ -379,7 +379,7 @@ class AdvancedDeviceIDManagerServiceTest {
         networkServiceResult: Triple<String, Boolean, String> = Triple("", false, ""),
         fpjsResponse: Triple<String?, String?, String?> = Triple(null, null, null),
         advancedDeviceKey: String? = "gsagasdgasdgsdg",
-        useFingerprintProxy: Boolean = false,
+        useAdvancedDeviceProxy: Boolean = false,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNeuroID = getMockedNeuroID()
@@ -407,7 +407,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 getMockedConfigService(),
                 advancedDeviceKey,
                 mockedFPJSClient,
-                useFingerprintProxy = useFingerprintProxy
+                useAdvancedDeviceProxy = useAdvancedDeviceProxy
             )
 
         return mapOf(

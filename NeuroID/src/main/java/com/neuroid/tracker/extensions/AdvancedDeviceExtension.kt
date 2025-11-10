@@ -65,7 +65,7 @@ fun NeuroIDPublic.startSession(
 
 @Synchronized
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?,
-                                  useFingerprintProxy: Boolean) = runBlocking {
+                                  useAdvancedDeviceProxy: Boolean) = runBlocking {
     captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -84,7 +84,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: Str
                         this.linkedSiteID ?: "",
                         configService,
                         advancedDeviceKey,
-                        useFingerprintProxy = useFingerprintProxy
+                        useAdvancedDeviceProxy = useAdvancedDeviceProxy
                     )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
             }

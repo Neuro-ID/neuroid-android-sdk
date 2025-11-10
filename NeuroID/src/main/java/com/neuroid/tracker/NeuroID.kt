@@ -78,7 +78,7 @@ class NeuroID
         internal var clientKey: String,
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
-        internal var useFingerprintProxy: Boolean = false,
+        internal var useAdvancedDeviceProxy: Boolean = false,
         serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
@@ -339,7 +339,7 @@ class NeuroID
                         nidConfiguration.clientKey,
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
-                        nidConfiguration.useFingerprintProxy,
+                        nidConfiguration.useAdvancedDeviceProxy,
                         nidConfiguration.serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -361,7 +361,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
-                        useFingerprintProxy = false,
+                        useAdvancedDeviceProxy = false,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -590,7 +590,7 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useFingerprintProxy)
+                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useAdvancedDeviceProxy)
             }
         }
 
