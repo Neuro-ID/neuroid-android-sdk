@@ -17,7 +17,7 @@ class NIDRNBuilder( val application: Application? = null,
             clientKey = clientKey,
             isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
             advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
-            useFingerprintProxy = options[RNConfigOptions.useFingerprintProxy] as Boolean,
+            useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
             serverEnvironment = options[RNConfigOptions.environment] as String)).build()
 
         NeuroID.getInstance()?.setIsRN()
@@ -33,7 +33,7 @@ class NIDRNBuilder( val application: Application? = null,
         var isAdvancedDevice = false
         var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
-        var useFingerprintProxy = false
+        var useAdvancedDeviceProxy = false
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let {rnOptionsMap ->
@@ -43,10 +43,10 @@ class NIDRNBuilder( val application: Application? = null,
                     advancedDeviceKey = it
                 }
             }
-            // set the useFingerprintProxy flag true or false from useFingerprintProxy option, default false
-            if (rnOptionsMap.hasKey(RNConfigOptions.useFingerprintProxy.name)) {
-                rnOptionsMap.getBoolean(RNConfigOptions.useFingerprintProxy.name).let {
-                    useFingerprintProxy = it
+            // set the useAdvancedDeviceProxy flag true or false from useAdvancedDeviceProxy option, default false
+            if (rnOptionsMap.hasKey(RNConfigOptions.useAdvancedDeviceProxy.name)) {
+                rnOptionsMap.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name).let {
+                    useAdvancedDeviceProxy = it
                 }
             }
             // set the is advanced flag true or false from isAdvancedDevice option, default false
@@ -71,7 +71,7 @@ class NIDRNBuilder( val application: Application? = null,
         options[RNConfigOptions.environment] = environment
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
-        options[RNConfigOptions.useFingerprintProxy] = useFingerprintProxy
+        options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
 
         return options
     }
@@ -81,5 +81,5 @@ enum class RNConfigOptions {
     isAdvancedDevice,
     environment,
     advancedDeviceKey,
-    useFingerprintProxy
+    useAdvancedDeviceProxy
 }
