@@ -245,6 +245,11 @@ internal class AdvancedDeviceIDManager(
     private suspend fun getVisitorId(fpjsClient: FingerprintJS): Triple<Boolean, String, String?> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
+                tags = mapOf(
+                    "siteId" to linkedSiteID,
+                    "clientId" to clientID,
+                    "environment" to "LIVE",
+                    "requestStartTime" to nidTime.getCurrentTimeMillis()),
                 listener = { result ->
                     continuation.resume(Triple(true, result.requestId, result.sealedResult))
                 },
