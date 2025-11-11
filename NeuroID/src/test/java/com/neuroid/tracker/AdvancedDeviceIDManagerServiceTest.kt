@@ -504,7 +504,6 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedFPJSClient = mockk<FingerprintJS>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
-                // args[0] = tags, args[1] = listener, args[2] = errorListener
                 val successListener = args[1] as (FingerprintJSProResponse) -> Unit
                 val mockSuccessResponse = mockk<FingerprintJSProResponse>()
                 every {mockSuccessResponse.sealedResult} returns sealedResult
