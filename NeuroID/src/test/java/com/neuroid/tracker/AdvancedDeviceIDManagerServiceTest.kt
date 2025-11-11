@@ -511,7 +511,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 successListener(mockSuccessResponse)
             }
             if (errorResponse != null) {
-                // args[0] = tags, args[1] = listener, args[2] = errorListener
                 val errorListener = args[2] as (Error) -> Unit
                 val mockSuccessResponse = mockk<Error>()
                 every { mockSuccessResponse.description } returns errorResponse
