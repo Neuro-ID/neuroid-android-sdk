@@ -227,6 +227,7 @@ class NeuroID
                 configService.retrieveOrRefreshCache()
 
                 if (isAdvancedDevice) {
+                    resetClientId()
                     checkThenCaptureAdvancedDevice(isAdvancedDevice)
                 }
 
