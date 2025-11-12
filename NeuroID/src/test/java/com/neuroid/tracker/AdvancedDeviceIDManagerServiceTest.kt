@@ -502,16 +502,16 @@ class AdvancedDeviceIDManagerServiceTest {
         sealedResult: String?
     ): FingerprintJS {
         val mockedFPJSClient = mockk<FingerprintJS>()
-        every { mockedFPJSClient.getVisitorId(listener = any(), errorListener = any()) }.answers {
+        every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
-                val successListener = args[0] as (FingerprintJSProResponse) -> Unit
+                val successListener = args[1] as (FingerprintJSProResponse) -> Unit
                 val mockSuccessResponse = mockk<FingerprintJSProResponse>()
                 every {mockSuccessResponse.sealedResult} returns sealedResult
                 every {mockSuccessResponse.requestId} returns successResponse
                 successListener(mockSuccessResponse)
             }
             if (errorResponse != null) {
-                val errorListener = args[1] as (Error) -> Unit
+                val errorListener = args[2] as (Error) -> Unit
                 val mockSuccessResponse = mockk<Error>()
                 every { mockSuccessResponse.description } returns errorResponse
                 errorListener(mockSuccessResponse)
