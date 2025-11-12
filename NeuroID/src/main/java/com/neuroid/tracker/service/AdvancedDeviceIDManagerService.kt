@@ -246,9 +246,8 @@ internal class AdvancedDeviceIDManager(
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 tags = mapOf(
-                    "siteId" to NeuroID.siteID,
+                    "collectorKey" to neuroID.clientKey,
                     "clientId" to clientID,
-                    "environment" to "LIVE",
                     "requestStartTime" to nidTime.getCurrentTimeMillis()),
                 listener = { result ->
                     continuation.resume(Triple(true, result.requestId, result.sealedResult))
