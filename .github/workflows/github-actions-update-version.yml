@@ -39,6 +39,74 @@ permissions:
   issues: write
 
 jobs:
+  buildAllFlavors:
+    name: Build All Flavors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - name: Build All Flavors ⚙️🛠
+        run: bash testBuildFlavors.sh
+
+  build:
+    name: Build AAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - name: Build AAR ⚙️🛠
+        run: bash ./gradlew :NeuroID:assemble
+
+  test:
+    name: SDK Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      # Execute unit test neuroid lib
+      - name: Unit Test NeuroId (android lib)
+        run: ./gradlew :NeuroID:testAndroidLibDebugUnitTest
+
+      # Execute unit test neuroid reactnative lib
+      - name: Unit Test NeuroId (ReactNative)
+        run: ./gradlew :NeuroID:testReactNativeLibDebugUnitTest
+
+      # Generate Jacoco coverage report
+      - name: Jacoco Coverage
+        run: |
+          ./gradlew :NeuroID:jacocoTestReport
+          cp NeuroID/build/reports/jacocoTestReport/jacoco.xml .
+
+      # Upload coverage to SonarCloud
+      - name: SonarQube Scan
+        uses: SonarSource/sonarcloud-github-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: 'NeuroID-neuroid-android'
+          SONAR_ORGANIZATION: 'neuroid'
+
   update_version:
     name: Update package version
     runs-on: ubuntu-latest
