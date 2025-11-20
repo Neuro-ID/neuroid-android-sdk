@@ -347,7 +347,7 @@ class NeuroID
             }
         }
 
-        @Deprecated("Do not use. Please user BuilderConfig instead.")
+        @Deprecated("Do not use. Please use BuilderConfig instead.")
         data class Builder(
             val application: Application? = null,
             val clientKey: String = "",
