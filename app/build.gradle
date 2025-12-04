@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId "com.sample.neuroid.us"
-        minSdk 28
+        minSdk 31
         targetSdk 35
         multiDexEnabled true
         versionCode 1

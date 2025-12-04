@@ -31,7 +31,7 @@ class MyApplicationDemo : MultiDexApplication() {
         )
 
         NeuroID.Builder(this, "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-            isAdvancedDevice = true, serverEnvironment = NeuroID.PRODSCRIPT_DEVCOLLECTION
+            isAdvancedDevice = true, serverEnvironment = NeuroID.DEVELOPMENT
         ).build()
         // NeuroID.getInstance()?.start()
         // NeuroID.getInstance()?.setEnvironmentProduction(true)

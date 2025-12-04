@@ -10,6 +10,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.view.View
+import android.webkit.WebView
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -71,6 +72,8 @@ import kotlinx.coroutines.launch
 import okhttp3.Dispatcher
 import org.jetbrains.annotations.TestOnly
 import java.util.Calendar
+//import com.udicollector.sdk.UDICollector
+import java.net.URLEncoder
 
 class NeuroID
     private constructor(
@@ -478,7 +481,7 @@ class NeuroID
             }
         }
 
-        @VisibleForTesting
+    @VisibleForTesting
         override fun setTestingNeuroIDDevURL() {
             endpoint = Constants.devEndpoint.displayName
             scriptEndpoint = Constants.devScriptsEndpoint.displayName

@@ -3,12 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.sample.neuroid.us">
 
+    <uses-sdk tools:overrideLibrary="com.udicollector.sdk"/>
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
+        tools:overrideLibrary="com.udicollector.sdk"
+        tools:replace="android:name"
         android:name=".MyApplicationDemo"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"

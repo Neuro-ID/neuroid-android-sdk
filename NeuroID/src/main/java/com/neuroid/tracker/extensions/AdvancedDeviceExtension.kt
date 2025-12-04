@@ -100,6 +100,9 @@ internal fun getADVSignal(
     // do this in the background off main but wait for it to complete
     if (neuroID.configService.isSessionFlowSampled()) {
         job = CoroutineScope(dispatcher).launch {
+            // UDI collection
+            advancedDeviceIDManagerService.collectUDIData()
+
             // check for cachedID first
             if (!advancedDeviceIDManagerService.getCachedID()) {
                 // no cached ID - contact NID & FPJS

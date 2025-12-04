@@ -13,6 +13,7 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.udicollector.sdk.UDICollector
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,8 @@ interface AdvancedDeviceIDManagerService {
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         delay: Long = 5000L,
     ): Job?
+
+    fun collectUDIData(dispatcher: CoroutineDispatcher = Dispatchers.IO)
 }
 
 internal class AdvancedDeviceIDManager(
@@ -107,6 +110,19 @@ internal class AdvancedDeviceIDManager(
             return null
         }
         return nidKeyResponse
+    }
+
+    override fun collectUDIData(dispatcher: CoroutineDispatcher) {
+        CoroutineScope(dispatcher).launch {
+            neuroID.getApplicationContext()?.let {
+                val udiPayload = UDICollector.collect(it).await()
+                println("kurt_test UDI Payload: $udiPayload")
+                neuroID.captureEvent(
+                    type = "UDI_PAYLOAD",
+                    m = udiPayload ?: "",
+                )
+            }
+        }
     }
 
     override fun getRemoteID(
