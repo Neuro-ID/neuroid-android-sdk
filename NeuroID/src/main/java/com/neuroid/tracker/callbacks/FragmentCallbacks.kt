@@ -62,7 +62,7 @@ class FragmentCallbacks(
             if (listFragment.contains(fragName)) {
                 val index = listFragment.indexOf(fragName)
                 if (index != listFragment.size - 1) {
-                    listFragment.removeLast()
+                    listFragment.removeAt(listFragment.lastIndex)
                     registrationHelper.registerTargetFromScreen(
                         f.requireActivity(),
                         registerTarget = true,
