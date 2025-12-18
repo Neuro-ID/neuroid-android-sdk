@@ -44,7 +44,7 @@ android {
     compileSdkVersion = 35
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
         targetSdk 35
         multiDexEnabled true
         android.buildFeatures.buildConfig true
@@ -141,7 +141,7 @@ dependencies {
 
     reactNativeImplementation("com.facebook.react:react-android:0.71.0-rc.1")
 
-    implementation("com.fingerprint.android:pro:2.10.0") {
+    implementation("com.fingerprint.android:pro:2.11.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
