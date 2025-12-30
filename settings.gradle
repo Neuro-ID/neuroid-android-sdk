@@ -3,12 +3,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         jcenter() // Warning: this repository is going to shut down soon
         maven { url 'https://maven.fpregistry.io/releases' }
         maven { url 'https://jitpack.io' }
-        flatDir {
-            dirs 'libs'
-        }
     }
 }
 rootProject.name = "NeuroIdAndroidSdk"
