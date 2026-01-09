@@ -16,7 +16,6 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -101,13 +100,10 @@ class NeuroID
 
         internal var metaData: NIDMetaData? = null
 
-        internal var verifyIntegrationHealth: Boolean = false
-
         internal var isRN = false
 
         // Dependency Injections
         internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
-        internal var randomGenerator = RandomGenerator()
         internal var logger: NIDLogWrapper = NIDLogWrapper()
         internal var configService: ConfigService
         internal var dataStore: NIDDataStoreManager
@@ -224,8 +220,6 @@ class NeuroID
                     clientKey,
                 )
 
-                configService.retrieveOrRefreshCache()
-
                 if (isAdvancedDevice) {
                     resetClientId()
                     checkThenCaptureAdvancedDevice(isAdvancedDevice)
@@ -279,6 +273,8 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
+
+            configService.retrieveOrRefreshCache()
         }
 
         fun incrementPacketNumber() {
@@ -528,17 +524,38 @@ class NeuroID
 
         internal fun setupListeners() {
             getApplicationContext()?.let {
-                if (configService.configCache.callInProgress) {
-                    nidCallActivityListener.setCallActivityListener(it)
-                } else {
-                    nidCallActivityListener.unregisterCallActivityListener(it)
+                try {
+                    if (configService.configCache.callInProgress) {
+                        nidCallActivityListener.setCallActivityListener(it)
+                    } else {
+                        nidCallActivityListener.unregisterCallActivityListener(it)
+                    }
+                } catch (e: Exception) {
+                    logger.w(msg = "possible nidCallActivityListener might not be setup, skipping nidCallActivityListener setup ${e.message} $siteID")
+                    captureEvent(
+                        queuedEvent = true,
+                        type = LOG,
+                        level = "ERROR",
+                        m = "possible nidCallActivityListener might not be setup, skipping nidCallActivityListener setup ${e.message} $siteID",
+                    )
                 }
 
-                if (configService.configCache.geoLocation) {
-                    locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                } else {
-                    locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                try {
+                    if (configService.configCache.geoLocation) {
+                        locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                    } else {
+                        locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+                    }
+                } catch (e: Exception) {
+                    logger.w(msg = "possible locationService might not be setup, skipping locationService setup ${e.message} ${siteID}")
+                    captureEvent(
+                        queuedEvent = true,
+                        type = LOG,
+                        level = "ERROR",
+                        m = "possible locationService might not be setup, skipping locationService setup ${e.message} ${siteID}",
+                    )
                 }
+
 
                 // This will restart the collection job (config has a interval option) and
                 //  restart the gyroCadence job (config has a interval option)

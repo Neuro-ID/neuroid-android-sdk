@@ -3,6 +3,7 @@ package com.neuroid.tracker.service
 import android.content.Context
 import android.location.LocationManager
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroID.Companion.siteID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
@@ -186,9 +187,20 @@ internal class NIDSessionService(
             neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
         }
 
-        if (configService.configCache.geoLocation) {
-            neuroID.locationService.setupLocationCoroutine(
-                neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
+        try {
+            if (configService.configCache.geoLocation) {
+                neuroID.locationService.setupLocationCoroutine(
+                    neuroID.getApplicationContext()
+                        ?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
+                )
+            }
+        } catch (e: Exception) {
+            logger.w(msg = "locationService might not be setup, skipping locationServer setup ${e.message} ${siteID}")
+            neuroID.captureEvent(
+                queuedEvent = true,
+                type = LOG,
+                level = "ERROR",
+                m = "locationService might not be setup, skipping locationServer setup ${e.message} ${siteID}",
             )
         }
     }
