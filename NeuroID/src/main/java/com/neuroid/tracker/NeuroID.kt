@@ -224,8 +224,6 @@ class NeuroID
                     clientKey,
                 )
 
-                configService.retrieveOrRefreshCache()
-
                 if (isAdvancedDevice) {
                     resetClientId()
                     checkThenCaptureAdvancedDevice(isAdvancedDevice)
@@ -274,6 +272,7 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
+                configService.retrieveOrRefreshCache()
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
