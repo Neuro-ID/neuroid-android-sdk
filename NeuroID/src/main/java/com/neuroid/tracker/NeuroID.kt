@@ -268,13 +268,12 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
+                configService.retrieveOrRefreshCache()
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
-
-            configService.retrieveOrRefreshCache()
         }
 
         fun incrementPacketNumber() {
