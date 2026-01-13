@@ -5,6 +5,7 @@
 # ******************************************************************
 
 name: Release SDK Version
+
 on:
   push:
     branches:
@@ -12,14 +13,16 @@ on:
     paths:
       - version.properties
 
+env: 
+  ACTION_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
 jobs:
   publish:
     name: Publishing SDK
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -63,14 +66,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Send Slack Notification on Success
-#        if: success()
-#        uses: rtCamp/action-slack-notify@v2
-#        env:
-#          SLACK_CHANNEL: ${{ secrets.MOBILE_SLACK_NOTIFICATIONS_CHANNEL }}
-#          SLACK_COLOR: ${{ job.status }}
-#          SLACK_ICON: https://github.com/rtCamp.png?size=48
-#          SLACK_MESSAGE: "Successful Android SDK Deployment"
-#          SLACK_TITLE: Successful Android SDK Deployment
-#          SLACK_USERNAME: rtBot
-#          SLACK_WEBHOOK: ${{ secrets.MOBILE_SLACK_WEBHOOK }}
+      - name: Send Release Succeeded Result to NID Mobile Infra Repo
+        if: success()
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-mobile-infra/dispatches \
+            -d '{"event_type":"release","client_payload":{"status":"success", "service": "android", "version": "${{ env.TAG_NAME }}", "action_url": "${{ env.ACTION_URL }}"}}'
+
+      - name: Send Release Failure Result to NID Mobile Infra Repo
+        if: failure()
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-mobile-infra/dispatches \
+            -d '{"event_type":"release","client_payload":{"status":"failure", "service": "android", "version": "${{ env.TAG_NAME }}", "action_url": "${{ env.ACTION_URL }}"}}'
