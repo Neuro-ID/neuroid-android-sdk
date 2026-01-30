@@ -1,0 +1,41 @@
+name: Deploy Dev Sandbox Apps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sandbox:
+    name: Deploy Dev Sandbox Apps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Trigger Android Sandbox Dev Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-compose/dispatches \
+            -d '{"event_type":"sandbox-deploy-dev"}'
+
+      - name: Trigger Android Layout Sandbox Dev Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
+            -d '{"event_type":"sandbox-deploy-dev"}'
+
+      - name: Trigger React Native Sandbox Dev Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk-sandbox/dispatches \
+            -d '{"event_type":"sandbox-deploy-dev"}'

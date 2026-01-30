@@ -1,0 +1,72 @@
+name: Deploy Prod Sandbox Apps
+
+on:
+  push:
+    tags:
+      - '**'
+      - '!development'
+      - '!latest'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to deploy'
+        required: true
+        type: string
+
+jobs:
+  sandbox:
+    name: Deploy Prod Sandbox Apps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Determine Version to Deploy
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # Triggered by tag push
+            VERSION="${{ github.ref }}"
+            VERSION="${VERSION#refs/tags/}"
+            echo "Using version from tag push: $VERSION"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # Triggered manually - use input version
+            VERSION="${INPUT_VERSION}"
+            echo "Using manually specified version: $VERSION"
+            
+            # Verify the tag exists
+            if ! git rev-parse "refs/tags/$VERSION" >/dev/null 2>&1; then
+              echo "Error: Tag '$VERSION' does not exist"
+              exit 1
+            fi
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Trigger Android Sandbox Prod Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-compose/dispatches \
+            -d '{"event_type":"sandbox-deploy-prod","client_payload":{"version":"${{ steps.version.outputs.version }}"}}'
+
+      - name: Trigger Android Layout Sandbox Prod Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-layout/dispatches \
+            -d '{"event_type":"sandbox-deploy-prod","client_payload":{"version":"${{ steps.version.outputs.version }}"}}'
+
+      - name: Trigger ReactNative Sandbox Prod Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk-sandbox/dispatches \
+            -d '{"event_type":"sandbox-deploy-prod","client_payload":{"version":"${{ steps.version.outputs.version }}"}}'
