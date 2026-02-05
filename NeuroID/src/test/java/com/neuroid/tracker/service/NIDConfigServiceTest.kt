@@ -7,6 +7,8 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
+import com.neuroid.tracker.getMockedRandomNumberGenerator
+import com.neuroid.tracker.getMockedTime
 import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDLinkedSiteOption
 import com.neuroid.tracker.models.NIDRemoteConfig
@@ -14,11 +16,14 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.verifyCaptureEvent
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -42,22 +47,13 @@ class NIDConfigServiceTest {
 
     @Before
     fun setup() {
-        neuroID = getMockedNeuroID()
+        neuroID = getMockedNeuroID(mockedRandomNumberGenerator = getMockedRandomNumberGenerator(50.0), mockNIDTime = getMockedTime(5L))
         dispatcher = neuroID.dispatcher
         logger = getMockedLogger()
-        httpService = getMockedHTTPService()
+        httpService = getMockedHTTPService(true)
         validationService = getMockedValidationService()
         configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                validationService,
-                configRetrievalCallback = {
-                    callbackCalled = true
-                },
-            )
+            NIDConfigService()
     }
 
     @After
@@ -85,7 +81,14 @@ class NIDConfigServiceTest {
             configService.cacheSetWithRemote = true
 
             // When
-            configService.retrieveConfig()
+            configService.retrieveConfig(
+                Dispatchers.Unconfined,
+                getMockedNeuroID(),
+                httpService,
+                Gson()
+            ) {
+                callbackCalled = true
+            }
 
             assert(!configService.cacheSetWithRemote)
             assert(callbackCalled)
@@ -112,18 +115,9 @@ class NIDConfigServiceTest {
                 200,
                 remoteConfig,
             )
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                validationService,
-                nidTime = nidTime
-            )
-
+        configService = NIDConfigService()
         var completionRun = false
-        configService.retrieveConfigCoroutine {
+        configService.retrieveConfigCoroutine(neuroID, httpService, Gson()) {
             completionRun = true
         }
 
@@ -168,19 +162,10 @@ class NIDConfigServiceTest {
         val vs = mockk<NIDValidationService>()
         every { vs.verifyClientKeyExists(any()) } returns true
 
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                randomGenerator = randomGenerator,
-                validationService = vs
-            )
-
+        configService = NIDConfigService()
         // test roll 30
         every { randomGenerator.getRandom(any()) } returns 30.0
-        configService.retrieveConfig()
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -198,10 +183,9 @@ class NIDConfigServiceTest {
                 assert(value)
             }
         }
-
         // test roll 50
         every { randomGenerator.getRandom(any()) } returns 50.0
-        configService.retrieveConfig()
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -222,7 +206,7 @@ class NIDConfigServiceTest {
 
         // test roll 100
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.retrieveConfig()
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -243,7 +227,7 @@ class NIDConfigServiceTest {
 
         // test roll 0
         every { randomGenerator.getRandom(any()) } returns 0.0
-        configService.retrieveConfig()
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(value)
@@ -264,8 +248,8 @@ class NIDConfigServiceTest {
 
         // unknown form, should be true for all forms
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.retrieveConfig()
-        configService.updateIsSampledStatus("hgjksdahgkldashlg")
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
+        configService.updateIsSampledStatus(getMockedNeuroID(), "hgjksdahgkldashlg")
         assert(configService.isSessionFlowSampled())
     }
 
@@ -288,18 +272,11 @@ class NIDConfigServiceTest {
         val mockValidationService = mockk<NIDValidationService>()
         every { mockValidationService.verifyClientKeyExists(any()) } returns true
 
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                randomGenerator = randomGenerator,
-                validationService = mockValidationService
-            )
-        configService.retrieveConfig()
+        configService = NIDConfigService()
+        val mockGson = mockk<Gson>()
+        configService.retrieveConfig(Dispatchers.Unconfined, getMockedNeuroID(), httpService, Gson())
         assert(configService.siteIDSampleMap.isEmpty())
-        configService.updateIsSampledStatus("formTest_1234")
+        configService.updateIsSampledStatus(getMockedNeuroID(), "formTest_1234")
         assert(configService.isSessionFlowSampled())
 
     }
@@ -320,17 +297,10 @@ class NIDConfigServiceTest {
                 400,
                 "ERROR",
             )
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                validationService,
-            )
-
+        configService = NIDConfigService()
+        val mockGson = mockk<Gson>()
         var completionRun = false
-        configService.retrieveConfigCoroutine {
+        configService.retrieveConfigCoroutine(neuroID, httpService, Gson()) {
             completionRun = true
         }
 
@@ -378,8 +348,14 @@ class NIDConfigServiceTest {
     @Test
     fun test_captureConfigEvent_success() {
         val remoteConfig = NIDRemoteConfig()
-
-        configService.captureConfigEvent(remoteConfig)
+        val neuroID = mockk<NeuroID>(relaxed = true)
+        val nidTime = mockk<NIDTime>()
+        every { nidTime.getCurrentTimeMillis() } returns 1000
+        every { neuroID.nidTime } returns nidTime
+        every { neuroID.captureEvent(any(), any(), 1000) } just Runs
+        
+        neuroID.nidTime = nidTime
+        configService.captureConfigEvent(Gson(), neuroID, remoteConfig)
 
         verifyCaptureEvent(
             neuroID,
@@ -390,22 +366,14 @@ class NIDConfigServiceTest {
 
     @Test
     fun test_captureConfigEvent_failure() {
-        val gsonMock = mockk<Gson>()
-        every { gsonMock.toJson(any()) } throws Error("NOPE")
+        val mockGson = mockk<Gson>()
+        every { mockGson.toJson(any()) } throws Error("NOPE")
 
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                validationService,
-                gsonMock,
-            )
+        configService = NIDConfigService()
 
         val remoteConfig = NIDRemoteConfig()
 
-        configService.captureConfigEvent(remoteConfig)
+        configService.captureConfigEvent(mockGson, neuroID, remoteConfig)
 
         verifyCaptureEvent(
             neuroID,

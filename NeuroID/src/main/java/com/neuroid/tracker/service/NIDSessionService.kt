@@ -34,7 +34,7 @@ internal class NIDSessionService(
             neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
-            configService.updateIsSampledStatus(neuroID.linkedSiteID)
+            configService.updateIsSampledStatus(neuroID, neuroID.linkedSiteID)
             captureSessionOrMetaDataEvent(
                 type = CREATE_SESSION,
             )
@@ -50,9 +50,9 @@ internal class NIDSessionService(
         customFunctionality: () -> Unit,
         completion: () -> Unit,
     ) {
-        configService.retrieveOrRefreshCache()
+        configService.retrieveOrRefreshCache(neuroID)
 
-        configService.updateIsSampledStatus(siteID)
+        configService.updateIsSampledStatus(neuroID, siteID)
         logger.i(msg = "NID isSessionFlowSampled ${configService.isSessionFlowSampled()} for $siteID")
 
         neuroID.setupListeners()
@@ -253,7 +253,7 @@ internal class NIDSessionService(
         neuroID.userID = ""
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
-        configService.clearSiteIDSampleMap()
+        configService.clearSiteIDSampleMap(neuroID)
 
         neuroID.captureEvent(
             type = LOG,
