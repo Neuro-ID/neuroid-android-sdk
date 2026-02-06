@@ -106,7 +106,7 @@ internal fun getMockedNeuroID(
     every { nidMock.validationService } returns getMockedValidationService()
     every { nidMock.httpService } returns getMockedHTTPService()
     every { nidMock.logger } returns getMockedLogger()
-    every {nidMock.randomGenerator} returns mockedRandomNumberGenerator
+    every { nidMock.randomGenerator} returns mockedRandomNumberGenerator
 
     every { nidMock.setupListeners() } just runs
 
@@ -286,7 +286,7 @@ internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): Confi
     every {mockedNeuroID.captureEvent(any(), any())} just runs
     every {mockedConfigService.configCache } returns NIDRemoteConfig()
     every {
-        mockedConfigService.retrieveOrRefreshCache(any(), any(), any(), any())
+        mockedConfigService.retrieveOrRefreshCache(any())
     } just runs
     every { mockedConfigService.siteIDSampleMap} returns mutableMapOf("test1" to true, "test2" to false)
     every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs

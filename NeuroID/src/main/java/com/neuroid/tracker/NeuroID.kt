@@ -190,7 +190,7 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            configService = NIDConfigService()
+            configService = NIDConfigService(dispatcher, logger, httpService, validationService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
@@ -265,7 +265,7 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
-                configService.retrieveOrRefreshCache(this, configRetrievalCallback = { configSetupCompletion() })
+                configService.retrieveOrRefreshCache(this)
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)

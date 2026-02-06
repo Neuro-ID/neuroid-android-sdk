@@ -88,7 +88,7 @@ class NIDSessionServiceTest {
         every { mockedConfigService.configCache.geoLocation } returns true
         every { mockedConfigService.configCache.callInProgress } returns true
         every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
-        every { mockedConfigService.retrieveOrRefreshCache(any(), any(), any(), any()) } just runs
+        every { mockedConfigService.retrieveOrRefreshCache(any()) } just runs
 
         val mockedValidationService = getMockedValidationService()
         val mockedIdentifierService = getMockedIdentifierService()
@@ -232,7 +232,7 @@ class NIDSessionServiceTest {
         assert(completionFuncRan)
 
         verify(exactly = 1) {
-            mockedConfigService.retrieveOrRefreshCache(any(), any(), any(), any())
+            mockedConfigService.retrieveOrRefreshCache(any())
 
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
