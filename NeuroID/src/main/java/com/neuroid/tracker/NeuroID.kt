@@ -40,6 +40,7 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.ConfigService
+import com.neuroid.tracker.service.HttpService
 import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
@@ -113,7 +114,7 @@ class NeuroID
         internal var dataStore: NIDDataStoreManager
         internal var registrationIdentificationHelper: RegistrationIdentificationHelper
         internal var nidActivityCallbacks: ActivityCallbacks
-        internal val httpService: NIDHttpService
+        internal val httpService: HttpService
         internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
         internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
@@ -189,15 +190,7 @@ class NeuroID
                     configTimeout = 10,
                 )
 
-            configService =
-                NIDConfigService(
-                    dispatcher,
-                    logger,
-                    this,
-                    httpService,
-                    validationService,
-                    configRetrievalCallback = { configSetupCompletion() },
-                )
+            configService = NIDConfigService(dispatcher, logger, httpService, validationService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
@@ -272,7 +265,7 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
-                configService.retrieveOrRefreshCache()
+                configService.retrieveOrRefreshCache(this)
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)

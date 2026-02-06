@@ -29,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -79,12 +80,15 @@ class NIDSessionServiceTest {
                 isSessionFlowSampled = true,
             )
 
+        // Mock configService on mockedNeuroID BEFORE using it
+        every { mockedNeuroID.configService } returns mockedConfigService
+
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
         every { mockedConfigService.configCache.geoLocation } returns true
         every { mockedConfigService.configCache.callInProgress } returns true
-
-        every {mockedNeuroID.configService} returns getMockedConfigService()
+        every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
+        every { mockedConfigService.retrieveOrRefreshCache(any()) } just runs
 
         val mockedValidationService = getMockedValidationService()
         val mockedIdentifierService = getMockedIdentifierService()
@@ -228,9 +232,9 @@ class NIDSessionServiceTest {
         assert(completionFuncRan)
 
         verify(exactly = 1) {
-            mockedConfigService.retrieveOrRefreshCache()
+            mockedConfigService.retrieveOrRefreshCache(any())
 
-            mockedConfigService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
             mockedNeuroID.setupListeners()
         }
@@ -404,6 +408,7 @@ class NIDSessionServiceTest {
     @Test
     fun test_startSession_existing_UID_success() {
         val mockedServices = buildMockClasses()
+        val mockConfigService = mockedServices.mockedConfigService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
         val mockedValidationService = mockedServices.mockedValidationService
         val mockedIdentifierService = mockedServices.mockedIdentifierService
@@ -845,7 +850,7 @@ class NIDSessionServiceTest {
                 shouldMockApplication = true,
             )
         val mockedConfigService = mockk<ConfigService>()
-        every { mockedConfigService.clearSiteIDSampleMap() } just runs
+        every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
 
         val sessionService =
             createSessionServiceInstance(
@@ -859,7 +864,7 @@ class NIDSessionServiceTest {
             mockedNeuroID.userID = ""
             mockedNeuroID.registeredUserID = ""
             mockedNeuroID.linkedSiteID = ""
-            mockedConfigService.clearSiteIDSampleMap()
+            mockedConfigService.clearSiteIDSampleMap(any())
         }
     }
 
@@ -1041,7 +1046,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedConfigService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
             mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
@@ -1107,7 +1112,7 @@ class NIDSessionServiceTest {
 
             mockedIdentifierService.setUserID(userID, any())
 
-            mockedConfigService.updateIsSampledStatus(testSiteID)
+            mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
             mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
         }

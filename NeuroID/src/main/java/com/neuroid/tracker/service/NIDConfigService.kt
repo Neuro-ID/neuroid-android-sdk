@@ -16,22 +16,20 @@ import com.neuroid.tracker.utils.RandomGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 interface ConfigService {
     val configCache: NIDRemoteConfig
     val siteIDSampleMap: MutableMap<String, Boolean>
 
-    fun retrieveOrRefreshCache()
-    fun clearSiteIDSampleMap()
+    fun retrieveOrRefreshCache(neuroID: NeuroID)
+    fun clearSiteIDSampleMap(neuroID: NeuroID)
     fun isSessionFlowSampled(): Boolean
-    fun updateIsSampledStatus(siteID: String?)
+    fun updateIsSampledStatus(neuroID: NeuroID, siteID: String?)
 }
 
 internal class NIDConfigService(
     private val dispatcher: CoroutineDispatcher,
     private val logger: NIDLogWrapper,
-    private val neuroID: NeuroID,
     private val httpService: HttpService,
     private val validationService: NIDValidationService,
     private val gson: Gson = GsonBuilder().create(),
@@ -51,7 +49,7 @@ internal class NIDConfigService(
     override var configCache: NIDRemoteConfig = NIDRemoteConfig()
     override var siteIDSampleMap: MutableMap<String, Boolean> = mutableMapOf()
 
-    internal fun retrieveConfig() {
+    internal fun retrieveConfig(neuroID: NeuroID) {
         if (!validationService.verifyClientKeyExists(neuroID.clientKey)) {
             cacheSetWithRemote = false
             configRetrievalCallback()
@@ -59,7 +57,7 @@ internal class NIDConfigService(
         }
 
         CoroutineScope(dispatcher).launch {
-            retrieveConfigCoroutine {
+            retrieveConfigCoroutine(neuroID) {
                 configRetrievalCallback()
             }
         }
@@ -69,7 +67,7 @@ internal class NIDConfigService(
      * This function is broke out from `retrieveConfig` in order to test because our coroutine
      * tests immediately end and do not run the inner function
      */
-    internal fun retrieveConfigCoroutine(completion: () -> Unit) {
+    internal fun retrieveConfigCoroutine(neuroID: NeuroID, completion: () -> Unit) {
         httpService.getConfig(
             neuroID.clientKey,
             object : NIDResponseCallBack<NIDRemoteConfig> {
@@ -82,8 +80,8 @@ internal class NIDConfigService(
 
                     cacheSetWithRemote = true
                     cacheCreationTime = nidTime.getCurrentTimeMillis()
-                    initSiteIDSampleMap(response)
-                    captureConfigEvent(response)
+                    initSiteIDSampleMap(neuroID, response)
+                    captureConfigEvent(neuroID,response)
                     completion()
                 }
 
@@ -100,7 +98,7 @@ internal class NIDConfigService(
                             """.replace("\n", "").trim(),
                         level = "ERROR",
                     )
-                    logger.e(
+                    neuroID.logger.e(
                         msg =
                             """
                              Failed to retrieve NID Config for key ${neuroID.clientKey}. Default values will be used
@@ -109,7 +107,7 @@ internal class NIDConfigService(
 
                     val newConfig = NIDRemoteConfig()
                     setCache(newConfig)
-                    captureConfigEvent(newConfig)
+                    captureConfigEvent(neuroID, newConfig)
                     cacheSetWithRemote = false
                     completion()
                 }
@@ -117,7 +115,7 @@ internal class NIDConfigService(
         )
     }
 
-    override fun clearSiteIDSampleMap() {
+    override fun clearSiteIDSampleMap(neuroID: NeuroID) {
         siteIDSampleMap.clear()
         neuroID.captureEvent(
             queuedEvent = true,
@@ -125,7 +123,7 @@ internal class NIDConfigService(
         )
     }
 
-    internal fun initSiteIDSampleMap(config: NIDRemoteConfig) {
+    internal fun initSiteIDSampleMap(neuroID: NeuroID, config: NIDRemoteConfig) {
         for (linkedSiteID in config.linkedSiteOptions.keys) {
             config.linkedSiteOptions[linkedSiteID]?.let {
                 if (it.sampleRate == 0) {
@@ -158,20 +156,20 @@ internal class NIDConfigService(
         return !cacheSetWithRemote
     }
 
-    override fun retrieveOrRefreshCache() {
+    override fun retrieveOrRefreshCache(neuroID: NeuroID) {
         if (expiredCache()) {
-            retrieveConfig()
+            retrieveConfig(neuroID)
         }
     }
 
-    fun captureConfigEvent(configData: NIDRemoteConfig) {
+    fun captureConfigEvent(neuroID: NeuroID, configData: NIDRemoteConfig) {
         try {
-            this.neuroID.captureEvent(
+            neuroID.captureEvent(
                 type = CONFIG_CACHED,
                 v = gson.toJson(configData),
             )
         } catch (e: Exception) {
-            this.neuroID.captureEvent(
+            neuroID.captureEvent(
                 type = LOG,
                 m = "Failed to parse config",
                 level = "ERROR",
@@ -182,9 +180,9 @@ internal class NIDConfigService(
     /**
      * given a site id, tell me if we sample events or not. the site ID will be compared
      */
-    override fun updateIsSampledStatus(siteID: String?) {
+    override fun updateIsSampledStatus(neuroID: NeuroID, siteID: String?) {
         isSessionFlowSampled = siteIDSampleMap[siteID]?:true
-        this.neuroID.captureEvent(
+        neuroID.captureEvent(
             queuedEvent = true,
             type = UPDATE_IS_SAMPLED_STATUS,
         )

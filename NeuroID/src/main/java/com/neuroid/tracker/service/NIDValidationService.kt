@@ -2,7 +2,7 @@ package com.neuroid.tracker.service
 
 import com.neuroid.tracker.utils.NIDLogWrapper
 
-internal class NIDValidationService(
+class NIDValidationService(
     val logger: NIDLogWrapper,
 ) {
     fun validateClientKey(clientKey: String): Boolean {

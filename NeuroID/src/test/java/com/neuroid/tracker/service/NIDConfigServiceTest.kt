@@ -2,11 +2,14 @@ package com.neuroid.tracker.service
 
 import com.google.gson.Gson
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.CLEAR_SAMPLE_SITE_ID_MAP
 import com.neuroid.tracker.events.CONFIG_CACHED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.getMockedHTTPService
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNeuroID
+import com.neuroid.tracker.getMockedRandomNumberGenerator
+import com.neuroid.tracker.getMockedTime
 import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDLinkedSiteOption
 import com.neuroid.tracker.models.NIDRemoteConfig
@@ -14,17 +17,21 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.verifyCaptureEvent
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.lang.Error
 import java.util.Calendar
+import kotlin.math.log
 
 /**
  * NOTE: Ignoring testing `retrieveOrRefreshCache` because it just calls other functions
@@ -42,21 +49,20 @@ class NIDConfigServiceTest {
 
     @Before
     fun setup() {
-        neuroID = getMockedNeuroID()
+        neuroID = getMockedNeuroID(mockedRandomNumberGenerator = getMockedRandomNumberGenerator(50.0), mockNIDTime = getMockedTime(5L))
         dispatcher = neuroID.dispatcher
         logger = getMockedLogger()
-        httpService = getMockedHTTPService()
+        httpService = getMockedHTTPService(true)
         validationService = getMockedValidationService()
         configService =
             NIDConfigService(
                 dispatcher,
                 logger,
-                neuroID,
                 httpService,
                 validationService,
                 configRetrievalCallback = {
                     callbackCalled = true
-                },
+                }
             )
     }
 
@@ -85,13 +91,27 @@ class NIDConfigServiceTest {
             configService.cacheSetWithRemote = true
 
             // When
-            configService.retrieveConfig()
+            configService.retrieveConfig(
+                neuroID
+            )
 
             assert(!configService.cacheSetWithRemote)
             assert(callbackCalled)
         }
 
     // retrieveConfigCoroutine
+
+    @Test
+    fun test_clearSiteSampleMap() {
+        configService = NIDConfigService(dispatcher, logger, httpService, validationService)
+        configService.clearSiteIDSampleMap(neuroID)
+        assert(configService.siteIDSampleMap.isEmpty())
+        verifyCaptureEvent(
+            neuroID,
+            queuedEvent = true,
+            eventType = CLEAR_SAMPLE_SITE_ID_MAP,
+        )
+    }
 
     /***
      * This test will verify that the callback used in the HTTPService fires and works as expected
@@ -112,18 +132,14 @@ class NIDConfigServiceTest {
                 200,
                 remoteConfig,
             )
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                neuroID,
-                httpService,
-                validationService,
-                nidTime = nidTime
-            )
-
+        configService = NIDConfigService(
+            dispatcher,
+            logger,
+            httpService,
+            validationService,
+            nidTime = nidTime)
         var completionRun = false
-        configService.retrieveConfigCoroutine {
+        configService.retrieveConfigCoroutine(neuroID) {
             completionRun = true
         }
 
@@ -172,15 +188,27 @@ class NIDConfigServiceTest {
             NIDConfigService(
                 dispatcher,
                 logger,
-                neuroID,
                 httpService,
-                randomGenerator = randomGenerator,
-                validationService = vs
+                vs,
+                randomGenerator = randomGenerator
             )
 
         // test roll 30
         every { randomGenerator.getRandom(any()) } returns 30.0
-        configService.retrieveConfig()
+        every {neuroID.randomGenerator} returns randomGenerator
+        configService.retrieveConfig(neuroID)
+        configService.initSiteIDSampleMap(neuroID, remoteConfig)
+
+        for (linkedSiteID in remoteConfig.linkedSiteOptions.keys) {
+            remoteConfig.linkedSiteOptions[linkedSiteID]?.let  {
+                if (it.sampleRate == 0) {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == false)
+                } else {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == 30.0 <= it.sampleRate)
+                }
+            }
+        }
+
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -198,10 +226,20 @@ class NIDConfigServiceTest {
                 assert(value)
             }
         }
-
         // test roll 50
         every { randomGenerator.getRandom(any()) } returns 50.0
-        configService.retrieveConfig()
+        every {neuroID.randomGenerator} returns randomGenerator
+        configService.retrieveConfig(neuroID)
+        configService.initSiteIDSampleMap(neuroID, remoteConfig)
+        for (linkedSiteID in remoteConfig.linkedSiteOptions.keys) {
+            remoteConfig.linkedSiteOptions[linkedSiteID]?.let  {
+                if (it.sampleRate == 0) {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == false)
+                } else {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == 50.0 <= it.sampleRate)
+                }
+            }
+        }
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -222,7 +260,18 @@ class NIDConfigServiceTest {
 
         // test roll 100
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.retrieveConfig()
+        every {neuroID.randomGenerator} returns randomGenerator
+        configService.retrieveConfig(neuroID)
+        configService.initSiteIDSampleMap(neuroID, remoteConfig)
+        for (linkedSiteID in remoteConfig.linkedSiteOptions.keys) {
+            remoteConfig.linkedSiteOptions[linkedSiteID]?.let  {
+                if (it.sampleRate == 0) {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == false)
+                } else {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == 100.0 <= it.sampleRate)
+                }
+            }
+        }
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(!value)
@@ -243,7 +292,18 @@ class NIDConfigServiceTest {
 
         // test roll 0
         every { randomGenerator.getRandom(any()) } returns 0.0
-        configService.retrieveConfig()
+        every {neuroID.randomGenerator} returns randomGenerator
+        configService.retrieveConfig(neuroID)
+        configService.initSiteIDSampleMap(neuroID, remoteConfig)
+        for (linkedSiteID in remoteConfig.linkedSiteOptions.keys) {
+            remoteConfig.linkedSiteOptions[linkedSiteID]?.let  {
+                if (it.sampleRate == 0) {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == false)
+                } else {
+                    assert(configService.siteIDSampleMap[linkedSiteID] == 0.0 <= it.sampleRate)
+                }
+            }
+        }
         configService.siteIDSampleMap.forEach { (key, value) ->
             if (key == "form_testa123") {
                 assert(value)
@@ -264,8 +324,9 @@ class NIDConfigServiceTest {
 
         // unknown form, should be true for all forms
         every { randomGenerator.getRandom(any()) } returns 100.0
-        configService.retrieveConfig()
-        configService.updateIsSampledStatus("hgjksdahgkldashlg")
+        every {neuroID.randomGenerator} returns randomGenerator
+        configService.retrieveConfig(neuroID)
+        configService.updateIsSampledStatus(getMockedNeuroID(), "hgjksdahgkldashlg")
         assert(configService.isSessionFlowSampled())
     }
 
@@ -292,16 +353,15 @@ class NIDConfigServiceTest {
             NIDConfigService(
                 dispatcher,
                 logger,
-                neuroID,
                 httpService,
-                randomGenerator = randomGenerator,
-                validationService = mockValidationService
-            )
-        configService.retrieveConfig()
-        assert(configService.siteIDSampleMap.isEmpty())
-        configService.updateIsSampledStatus("formTest_1234")
-        assert(configService.isSessionFlowSampled())
+                mockValidationService,
+                randomGenerator = randomGenerator
 
+            )
+        configService.retrieveConfig(neuroID)
+        assert(configService.siteIDSampleMap.isEmpty())
+        configService.updateIsSampledStatus(getMockedNeuroID(), "formTest_1234")
+        assert(configService.isSessionFlowSampled())
     }
 
     /***
@@ -324,13 +384,12 @@ class NIDConfigServiceTest {
             NIDConfigService(
                 dispatcher,
                 logger,
-                neuroID,
                 httpService,
-                validationService,
+                validationService
             )
 
         var completionRun = false
-        configService.retrieveConfigCoroutine {
+        configService.retrieveConfigCoroutine(neuroID) {
             completionRun = true
         }
 
@@ -378,8 +437,14 @@ class NIDConfigServiceTest {
     @Test
     fun test_captureConfigEvent_success() {
         val remoteConfig = NIDRemoteConfig()
-
-        configService.captureConfigEvent(remoteConfig)
+        val neuroID = mockk<NeuroID>(relaxed = true)
+        val nidTime = mockk<NIDTime>()
+        every { nidTime.getCurrentTimeMillis() } returns 1000
+        every { neuroID.nidTime } returns nidTime
+        every { neuroID.captureEvent(any(), any(), 1000) } just Runs
+        
+        neuroID.nidTime = nidTime
+        configService.captureConfigEvent(neuroID, remoteConfig)
 
         verifyCaptureEvent(
             neuroID,
@@ -397,15 +462,13 @@ class NIDConfigServiceTest {
             NIDConfigService(
                 dispatcher,
                 logger,
-                neuroID,
                 httpService,
                 validationService,
-                gsonMock,
-            )
+                gsonMock)
 
         val remoteConfig = NIDRemoteConfig()
 
-        configService.captureConfigEvent(remoteConfig)
+        configService.captureConfigEvent(neuroID, remoteConfig)
 
         verifyCaptureEvent(
             neuroID,
