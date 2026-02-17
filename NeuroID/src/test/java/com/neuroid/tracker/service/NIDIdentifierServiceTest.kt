@@ -42,7 +42,6 @@ class NIDIdentifierServiceTest {
         identifierService =
             NIDIdentifierService(
                 logger = logger,
-                neuroID,
                 validationService,
             )
 
@@ -102,7 +101,7 @@ class NIDIdentifierServiceTest {
                 "testType",
             )
 
-        identifierService.sendOriginEvent(originResult)
+        identifierService.sendOriginEvent(neuroID, originResult)
 
         verifyCaptureEvent(
             neuroID,
@@ -136,6 +135,7 @@ class NIDIdentifierServiceTest {
 
         val validID =
             identifierService.setGenericUserID(
+                neuroID,
                 SET_USER_ID,
                 badUID,
                 false,
@@ -156,6 +156,7 @@ class NIDIdentifierServiceTest {
 
         val validID =
             identifierService.setGenericUserID(
+                neuroID,
                 SET_USER_ID,
                 goodUID,
                 false,
@@ -182,7 +183,7 @@ class NIDIdentifierServiceTest {
     fun test_getUserID() {
         every { neuroID.userID } returns goodUID
 
-        assert(identifierService.getUserID() == goodUID)
+        assert(identifierService.getUserID(neuroID) == goodUID)
     }
 
     //    setUserID
@@ -190,7 +191,7 @@ class NIDIdentifierServiceTest {
     fun test_setUserId_not_empty() {
         every { validationService.validateUserID(any()) } returns true
 
-        val result = identifierService.setUserID(goodUID, false)
+        val result = identifierService.setUserID(neuroID, goodUID, false)
 
         Assert.assertTrue(result)
 
@@ -212,7 +213,7 @@ class NIDIdentifierServiceTest {
     fun test_getRegisteredUserID() {
         every { neuroID.registeredUserID } returns goodUID
 
-        assert(identifierService.getRegisteredUserID() == goodUID)
+        assert(identifierService.getRegisteredUserID(neuroID) == goodUID)
     }
 
     //    setRegisteredUserID
@@ -220,7 +221,7 @@ class NIDIdentifierServiceTest {
     fun test_setRegisteredUserId_success() {
         every { validationService.validateUserID(any()) } returns true
 
-        val result = identifierService.setRegisteredUserID(goodUID)
+        val result = identifierService.setRegisteredUserID(neuroID, goodUID)
 
         Assert.assertTrue(result)
         verify(exactly = 1) {
@@ -241,7 +242,7 @@ class NIDIdentifierServiceTest {
         every { validationService.validateUserID(any()) } returns true
         every { neuroID.registeredUserID } returns goodUID
 
-        val result = identifierService.setRegisteredUserID("newValue")
+        val result = identifierService.setRegisteredUserID(neuroID, "newValue")
         Assert.assertTrue(result)
 
         verify(exactly = 1) {

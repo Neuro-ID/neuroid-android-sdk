@@ -196,7 +196,6 @@ class NeuroID
             identifierService =
                 NIDIdentifierService(
                     logger,
-                    neuroID = this,
                     validationService,
                 )
 
@@ -560,6 +559,7 @@ class NeuroID
 
             val captured =
                 identifierService.setGenericUserID(
+                    this,
                     ATTEMPTED_LOGIN,
                     attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
                     attemptedRegisteredUserId != null,
@@ -739,18 +739,18 @@ class NeuroID
 
         // Identifier Commands
         @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-        override fun getUserId() = identifierService.getUserID()
+        override fun getUserId() = identifierService.getUserID(this)
 
-        override fun getUserID() = identifierService.getUserID()
+        override fun getUserID() = identifierService.getUserID(this)
 
         override fun setUserID(userID: String): Boolean {
-            return identifierService.setUserID(userID, true)
+            return identifierService.setUserID(this, userID, true)
         }
 
-        override fun getRegisteredUserID() = identifierService.getRegisteredUserID()
+        override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 
         override fun setRegisteredUserID(registeredUserID: String): Boolean {
-            return identifierService.setRegisteredUserID(registeredUserID)
+            return identifierService.setRegisteredUserID(this, registeredUserID)
         }
 
         // new Session Commands

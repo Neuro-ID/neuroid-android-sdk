@@ -290,7 +290,7 @@ open class NeuroIDClassUnitTests {
 
         // make the validation service throw
         val mockIdentificationService = getMockedIdentifierService()
-        every { mockIdentificationService.setGenericUserID(any(), any(), any()) } returns validID
+        every { mockIdentificationService.setGenericUserID(any(), any(), any(), any()) } returns validID
         NeuroID.getInternalInstance()?.identifierService = mockIdentificationService
         setMockedDataStore()
         setMockedNIDJobServiceManager(false)
@@ -308,7 +308,12 @@ open class NeuroIDClassUnitTests {
 
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
         verify {
-            mockIdentificationService?.setGenericUserID(any(), userId ?: any(), any())
+            mockIdentificationService?.setGenericUserID(
+                any(),
+                "ATTEMPTED_LOGIN",
+                userId ?: "scrubbed-id-failed-validation",
+                userId != null
+            )
         }
 
         if (expectedFailedResult) {
