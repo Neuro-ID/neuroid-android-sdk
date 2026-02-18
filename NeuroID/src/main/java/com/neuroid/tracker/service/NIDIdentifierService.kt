@@ -15,7 +15,6 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 
 internal class NIDIdentifierService(
     val logger: NIDLogWrapper,
-    val neuroID: NeuroID,
     val validationService: NIDValidationService,
 ) {
     internal fun getOriginResult(
@@ -44,7 +43,7 @@ internal class NIDIdentifierService(
         return SessionIDOriginResult(origin, originCode, idValue, idType)
     }
 
-    internal fun sendOriginEvent(originResult: SessionIDOriginResult) {
+    internal fun sendOriginEvent(neuroID: NeuroID, originResult: SessionIDOriginResult) {
         // sending these as individual items.
         neuroID.captureEvent(
             queuedEvent = !NeuroID.isSDKStarted,
@@ -76,6 +75,7 @@ internal class NIDIdentifierService(
     }
 
     fun setGenericUserID(
+        neuroID: NeuroID,
         type: String,
         genericUserID: String,
         userGenerated: Boolean = true,
@@ -90,7 +90,7 @@ internal class NIDIdentifierService(
                     idType = type,
                 )
 
-            sendOriginEvent(originRes)
+            sendOriginEvent(neuroID, originRes)
 
             if (!validID) {
                 return false
@@ -117,9 +117,10 @@ internal class NIDIdentifierService(
         }
     }
 
-    fun getUserID() = neuroID.userID
+    fun getUserID(neuroID: NeuroID) = neuroID.userID
 
     fun setUserID(
+        neuroID: NeuroID,
         userId: String,
         userGenerated: Boolean,
     ): Boolean {
@@ -129,7 +130,7 @@ internal class NIDIdentifierService(
             m = "Set User Id Attempt ${validationService.scrubIdentifier(userId)}",
         )
 
-        val validID = setGenericUserID(SET_USER_ID, userId, userGenerated)
+        val validID = setGenericUserID(neuroID, SET_USER_ID, userId, userGenerated)
 
         if (!validID) {
             return false
@@ -139,9 +140,9 @@ internal class NIDIdentifierService(
         return true
     }
 
-    fun getRegisteredUserID() = neuroID.registeredUserID
+    fun getRegisteredUserID(neuroID: NeuroID) = neuroID.registeredUserID
 
-    fun setRegisteredUserID(registeredUserID: String): Boolean {
+    fun setRegisteredUserID(neuroID: NeuroID, registeredUserID: String): Boolean {
         if (neuroID.registeredUserID.isNotEmpty() && registeredUserID != neuroID.registeredUserID) {
             neuroID.captureEvent(
                 type = LOG,
@@ -161,6 +162,7 @@ internal class NIDIdentifierService(
 
         val validID =
             setGenericUserID(
+                neuroID,
                 SET_REGISTERED_USER_ID,
                 registeredUserID,
             )
