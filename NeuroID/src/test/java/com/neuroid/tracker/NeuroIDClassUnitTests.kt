@@ -3,6 +3,7 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
@@ -711,6 +712,225 @@ open class NeuroIDClassUnitTests {
 
         var value = NeuroID.getInternalInstance()?.getApplicationContext()
         assertEquals(mockedContext, value)
+    }
+
+    //    getNetworkType
+    @Test
+    fun testGetNetworkType_wifi_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_WIFI
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("wifi", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_cellular_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_MOBILE
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("cell", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_ethernet_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_ETHERNET
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns true
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("eth", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_unknown_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns 645645
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns false
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("unknown", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_noNetwork_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+
+        every { mockedConnectivityManager.activeNetworkInfo} returns null
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns null
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("noNetwork", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_wifi_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_WIFI
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("wifi", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_cellular_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_MOBILE
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("cell", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_ethernet_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_ETHERNET
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns true
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("eth", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_unknown_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns 645645
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns false
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("unknown", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_noNetwork_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+
+        every { mockedConnectivityManager.activeNetworkInfo} returns null
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns null
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("noNetwork", networkType)
     }
 
 //    createSession - Need to mock Application

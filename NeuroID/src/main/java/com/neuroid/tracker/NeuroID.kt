@@ -119,6 +119,7 @@ class NeuroID
         internal var identifierService: NIDIdentifierService
         internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
 
+        internal lateinit var connectivityManager: ConnectivityManager
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
@@ -246,7 +247,7 @@ class NeuroID
                 // get connectivity info on startup
                 // register network listener here. >=API24 will not receive if registered
                 // in the manifest so we do it here for full compatibility
-                val connectivityManager =
+                connectivityManager =
                     it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
                 val info = connectivityManager.activeNetworkInfo
@@ -279,9 +280,9 @@ class NeuroID
         /**
          * Function to retrieve the current network type (wifi, cell, eth, unknown)
          */
-        internal fun getNetworkType(context: Context): String {
+        internal fun getNetworkType(context: Context, buildVersion: Int = Build.VERSION.SDK_INT): String {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (buildVersion >= Build.VERSION_CODES.M) {
                 val activeNetwork = connectivityManager.activeNetwork
                 activeNetwork?.let {
                     val networkCapabilities = connectivityManager.getNetworkCapabilities(it)
