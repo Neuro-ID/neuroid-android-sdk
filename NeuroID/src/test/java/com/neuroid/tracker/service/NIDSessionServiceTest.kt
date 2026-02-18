@@ -479,11 +479,8 @@ class NIDSessionServiceTest {
             mockedJobServiceManager.sendEvents(true)
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any() , ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
-        }
-
-        // assert resumeCollection job was called
-        verify(exactly = 1) {
             mockedLocationService.shutdownLocationCoroutine(any())
+            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -525,6 +522,78 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.shutdownLocationCoroutine(any())
+        }
+    }
+
+    /**
+     * Test pauseCollection when pauseCollectionJob is cancelled
+     * Should create a new job and call sendEvents and stopJob
+     */
+    @Test
+    fun test_pauseCollection_cancelledJob() {
+        val mockedServices = buildMockClasses()
+        val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedLocationService = mockedServices.mockedLocationService
+
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        val mockedJob =
+            getMockedJob(
+                isCompleted = false,
+                isCancelled = true,
+            )
+
+        every { mockedNeuroID.pauseCollectionJob } returns mockedJob
+
+        val sessionService =
+            createSessionServiceInstance(
+                mockedNeuroID,
+            )
+
+        sessionService.pauseCollection(true)
+
+        verify(exactly = 1) {
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedJobServiceManager.sendEvents(true)
+            mockedJobServiceManager.stopJob()
+            mockedLocationService.shutdownLocationCoroutine(any())
+            mockedNeuroID.getApplicationContext()
+        }
+    }
+
+    /**
+     * Test pauseCollection when pauseCollectionJob is completed
+     * Should create a new job and call sendEvents and stopJob
+     */
+    @Test
+    fun test_pauseCollection_completedJob() {
+        val mockedServices = buildMockClasses()
+        val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedLocationService = mockedServices.mockedLocationService
+
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        val mockedJob =
+            getMockedJob(
+                isCompleted = true,
+                isCancelled = false,
+            )
+
+        every { mockedNeuroID.pauseCollectionJob } returns mockedJob
+
+        val sessionService =
+            createSessionServiceInstance(
+                mockedNeuroID,
+            )
+
+        sessionService.pauseCollection(true)
+
+        verify(exactly = 1) {
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedJobServiceManager.sendEvents(true)
+            mockedJobServiceManager.stopJob()
+            mockedLocationService.shutdownLocationCoroutine(any())
+            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -581,6 +650,9 @@ class NIDSessionServiceTest {
 
         every { mockedNeuroID.pauseCollectionJob } returns null
 
+        // Mock isSetup as false to trigger startJob path
+        every { mockedJobServiceManager.isSetup } returns false
+
         // need to mock config and return true for location service since this is now
         // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
@@ -594,8 +666,19 @@ class NIDSessionServiceTest {
 
         sessionService.resumeCollection()
 
+        // Verify isSetup check is performed
+        verify(exactly = 1) {
+            mockedJobServiceManager.isSetup
+        }
+
+        // Verify startJob is called when isSetup == false
         verify(exactly = 1) {
             mockedJobServiceManager.startJob(any(), any())
+        }
+
+        // Verify restart is NOT called when isSetup == false
+        verify(exactly = 0) {
+            mockedJobServiceManager.restart()
         }
 
         // assert resumeCollection job was called
@@ -655,6 +738,63 @@ class NIDSessionServiceTest {
         NeuroID._isSDKStarted = false
     }
 
+    /**
+     * Test resumeCollection when isSetup == true
+     * Should call restart() instead of startJob()
+     */
+    @Test
+    fun test_resumeCollection_isSetupTrue() {
+        val mockedServices = buildMockClasses()
+        val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedLocationService = mockedServices.mockedLocationService
+
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        NeuroID._isSDKStarted = true
+        every { mockedNeuroID.userID } returns "ID"
+
+        every { mockedNeuroID.pauseCollectionJob } returns null
+
+        // Mock isSetup as true to trigger restart path
+        every { mockedJobServiceManager.isSetup } returns true
+
+        // need to mock config and return true for location service since this is now
+        // set false by default
+        val mockedConfigService = mockk<NIDConfigService>()
+        every { mockedConfigService.configCache.geoLocation } returns true
+
+        val sessionService =
+            createSessionServiceInstance(
+                configService = mockedConfigService,
+                mockedNeuroID = mockedNeuroID,
+            )
+
+        sessionService.resumeCollection()
+
+        // Verify isSetup check is performed
+        verify(exactly = 1) {
+            mockedJobServiceManager.isSetup
+        }
+
+        // Verify restart is called when isSetup == true
+        verify(exactly = 1) {
+            mockedJobServiceManager.restart()
+        }
+
+        // Verify startJob is NOT called when isSetup == true
+        verify(exactly = 0) {
+            mockedJobServiceManager.startJob(any(), any())
+        }
+
+        // assert resumeCollection job was called
+        verify(exactly = 1) {
+            mockedLocationService.setupLocationCoroutine(any())
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+        }
+
+        NeuroID._isSDKStarted = false
+    }
+
     // RESUME COLLECTION COMPLETION
 
     /**
@@ -676,9 +816,19 @@ class NIDSessionServiceTest {
 
         sessionService.resumeCollectionCompletion()
 
+        // Verify isSetup is checked
         verify(exactly = 1) {
             mockedJobServiceManager.isSetup
+        }
+
+        // Verify startJob is called when isSetup == false
+        verify(exactly = 1) {
             mockedJobServiceManager.startJob(any(), any())
+        }
+
+        // Verify restart is NOT called when isSetup == false
+        verify(exactly = 0) {
+            mockedJobServiceManager.restart()
         }
 
         assert(NeuroID._isSDKStarted)
@@ -705,9 +855,19 @@ class NIDSessionServiceTest {
 
         sessionService.resumeCollectionCompletion()
 
+        // Verify isSetup is checked
         verify(exactly = 1) {
             mockedJobServiceManager.isSetup
+        }
+
+        // Verify restart is called when isSetup == true
+        verify(exactly = 1) {
             mockedJobServiceManager.restart()
+        }
+
+        // Verify startJob is NOT called when isSetup == true
+        verify(exactly = 0) {
+            mockedJobServiceManager.startJob(any(), any())
         }
 
         assert(NeuroID._isSDKStarted)

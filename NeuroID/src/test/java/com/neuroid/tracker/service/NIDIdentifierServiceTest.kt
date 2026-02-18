@@ -153,6 +153,7 @@ class NIDIdentifierServiceTest {
     @Test
     fun test_setGenericUserID_valid() {
         every { validationService.validateUserID(any()) } returns true
+        NeuroID._isSDKStarted = false
 
         val validID =
             identifierService.setGenericUserID(
@@ -164,18 +165,143 @@ class NIDIdentifierServiceTest {
 
         assert(validID)
 
+        // Verify origin events are captured
         verifyCaptureEvent(
             neuroID,
             SET_VARIABLE,
             4,
         )
 
+        // Verify main event is captured with queuedEvent=true when SDK is not started
         verifyCaptureEvent(
             neuroID,
             SET_USER_ID,
             1,
+            queuedEvent = true,
             uid = goodUID,
         )
+    }
+
+    @Test
+    fun test_setGenericUserID_valid_sdkStarted() {
+        every { validationService.validateUserID(any()) } returns true
+        NeuroID._isSDKStarted = true
+
+        val validID =
+            identifierService.setGenericUserID(
+                neuroID,
+                SET_USER_ID,
+                goodUID,
+                false,
+            )
+
+        assert(validID)
+
+        // Verify origin events are captured
+        verifyCaptureEvent(
+            neuroID,
+            SET_VARIABLE,
+            4,
+        )
+
+        // Verify main event is captured WITHOUT queuedEvent when SDK is started
+        verifyCaptureEvent(
+            neuroID,
+            SET_USER_ID,
+            1,
+            queuedEvent = false,
+            uid = goodUID,
+        )
+
+        NeuroID._isSDKStarted = false
+    }
+
+    @Test
+    fun test_setGenericUserID_exception() {
+        // Make validateUserID throw an exception
+        every { validationService.validateUserID(any()) } throws RuntimeException("Test exception")
+
+        val validID =
+            identifierService.setGenericUserID(
+                neuroID,
+                SET_USER_ID,
+                goodUID,
+                false,
+            )
+
+        // Should return false when exception is thrown
+        Assert.assertFalse(validID)
+
+        // Verify error LOG event is captured with the error message containing key parts
+        verify(exactly = 1) {
+            neuroID.captureEvent(
+                queuedEvent = any(),
+                type = LOG,
+                ts = any(),
+                attrs = any(),
+                tg = any(),
+                tgs = any(),
+                touches = any(),
+                key = any(),
+                gyro = any(),
+                accel = any(),
+                v = any(),
+                hv = any(),
+                en = any(),
+                etn = any(),
+                ec = any(),
+                et = any(),
+                eid = any(),
+                ct = any(),
+                sm = any(),
+                pd = any(),
+                x = any(),
+                y = any(),
+                w = any(),
+                h = any(),
+                sw = any(),
+                sh = any(),
+                f = any(),
+                lsid = any(),
+                sid = any(),
+                siteId = any(),
+                cid = any(),
+                did = any(),
+                iid = any(),
+                loc = any(),
+                ua = any(),
+                tzo = any(),
+                lng = any(),
+                ce = any(),
+                je = any(),
+                ol = any(),
+                p = any(),
+                dnt = any(),
+                tch = any(),
+                url = any(),
+                ns = any(),
+                jsl = any(),
+                jsv = any(),
+                uid = any(),
+                o = any(),
+                rts = any(),
+                metadata = any(),
+                rid = any(),
+                m = match { it?.contains("failure processing user id!") == true && it.contains(SET_USER_ID) && it.contains(goodUID) },
+                level = "ERROR",
+                c = any(),
+                isWifi = any(),
+                isConnected = any(),
+                cp = any(),
+                l = any(),
+                synthetic = any(),
+            )
+        }
+
+        // Verify logger.e was called with error message
+        verify(exactly = 1) {
+            logger.e(msg = match { it.contains("failure processing user id!") && it.contains(SET_USER_ID) && it.contains(goodUID) })
+        }
     }
 
     //    getUserID
