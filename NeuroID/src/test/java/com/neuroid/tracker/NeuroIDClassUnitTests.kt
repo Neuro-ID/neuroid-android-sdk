@@ -725,6 +725,244 @@ open class NeuroIDClassUnitTests {
         assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
     }
 
+    // getUserId() Tests (deprecated method)
+    @Test
+    fun test_getUserId_returnsUserID() {
+        val testUserID = "test-user-123"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return test user ID
+        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+
+        @Suppress("DEPRECATION")
+        val result = NeuroID.getInstance()?.getUserId()
+
+        // Verify identifierService.getUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testUserID, result)
+    }
+
+    // getUserID() Tests
+    @Test
+    fun test_getUserID_returnsUserID() {
+        val testUserID = "test-user-456"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return test user ID
+        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+
+        val result = NeuroID.getInstance()?.getUserID()
+
+        // Verify identifierService.getUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testUserID, result)
+    }
+
+    @Test
+    fun test_getUserID_returnsEmptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return empty string
+        every { mockedIdentifierService.getUserID(any()) } returns ""
+
+        val result = NeuroID.getInstance()?.getUserID()
+
+        // Verify result is empty
+        assertEquals("", result)
+    }
+
+    // setUserID() Tests
+    @Test
+    fun test_setUserID_success() {
+        val testUserID = "valid-user-id-789"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return true
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+
+        val result = NeuroID.getInstance()?.setUserID(testUserID)
+
+        // Verify identifierService.setUserID was called with correct parameters
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), testUserID, true)
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_setUserID_failure() {
+        val invalidUserID = "invalid id"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false (validation failed)
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setUserID(invalidUserID)
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setUserID_emptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false for empty string
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setUserID("")
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), "", true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    // getRegisteredUserID() Tests
+    @Test
+    fun test_getRegisteredUserID_returnsRegisteredUserID() {
+        val testRegisteredUserID = "registered-user-123"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getRegisteredUserID to return test registered user ID
+        every { mockedIdentifierService.getRegisteredUserID(any()) } returns testRegisteredUserID
+
+        val result = NeuroID.getInstance()?.getRegisteredUserID()
+
+        // Verify identifierService.getRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getRegisteredUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testRegisteredUserID, result)
+    }
+
+    @Test
+    fun test_getRegisteredUserID_returnsEmptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getRegisteredUserID to return empty string
+        every { mockedIdentifierService.getRegisteredUserID(any()) } returns ""
+
+        val result = NeuroID.getInstance()?.getRegisteredUserID()
+
+        // Verify result is empty
+        assertEquals("", result)
+    }
+
+    // setRegisteredUserID() Tests
+    @Test
+    fun test_setRegisteredUserID_success() {
+        val testRegisteredUserID = "valid-registered-user-456"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return true
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns true
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID(testRegisteredUserID)
+
+        // Verify identifierService.setRegisteredUserID was called with correct parameters
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), testRegisteredUserID)
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_failure() {
+        val invalidRegisteredUserID = "invalid registered id"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return false (validation failed)
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID(invalidRegisteredUserID)
+
+        // Verify identifierService.setRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), invalidRegisteredUserID)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_emptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return false for empty string
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID("")
+
+        // Verify identifierService.setRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), "")
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_multipleCalls() {
+        val firstUserID = "first-user"
+        val secondUserID = "second-user"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return true both times
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns true
+
+        // First call
+        val firstResult = NeuroID.getInstance()?.setRegisteredUserID(firstUserID)
+
+        // Second call (should log warning about multiple registered user IDs)
+        val secondResult = NeuroID.getInstance()?.setRegisteredUserID(secondUserID)
+
+        // Verify identifierService.setRegisteredUserID was called twice
+        verify(exactly = 2) {
+            mockedIdentifierService.setRegisteredUserID(any(), any())
+        }
+
+        // Verify both calls succeeded
+        assertEquals(true, firstResult)
+        assertEquals(true, secondResult)
+    }
+
     @Test
     fun testSetTestURL() {
         val testUrl = "https://test.example.com"
