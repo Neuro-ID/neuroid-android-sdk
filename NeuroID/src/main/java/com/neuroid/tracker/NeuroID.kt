@@ -311,7 +311,7 @@ class NeuroID
         }
 
         @Synchronized
-        private fun setupCallbacks() {
+        internal fun setupCallbacks() {
             if (firstTime) {
                 firstTime = false
                 application?.let {

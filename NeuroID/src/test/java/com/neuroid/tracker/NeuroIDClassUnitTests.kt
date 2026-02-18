@@ -8,6 +8,7 @@ import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
@@ -278,6 +279,245 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.resetSingletonInstance()
 
         assert(ogTabID != NeuroID.getInternalInstance()?.tabID)
+    }
+
+    // setNeuroIDInstance Tests
+    @Test
+    fun test_setNeuroIDInstance_firstTime() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Create a mocked NeuroID instance
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        val mockedLogger = mockk<NIDLogWrapper>()
+
+        // Mock the necessary properties and methods
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.logger } returns mockedLogger
+        every { mockedNeuroID.setupCallbacks() } just runs
+        every { mockedNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { mockedLogger.e(any(), any()) } just runs
+
+        // Call setNeuroIDInstance
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Verify setupCallbacks was called
+        verify(exactly = 1) {
+            mockedNeuroID.setupCallbacks()
+        }
+
+        // Verify logger.e was NOT called (no error)
+        verify(exactly = 0) {
+            mockedLogger.e(any(), any())
+        }
+
+        // Verify captureEvent was NOT called with error
+        verify(exactly = 0) {
+            mockedNeuroID.captureEvent(
+                queuedEvent = any(),
+                type = LOG,
+                ts = any(),
+                attrs = any(),
+                tg = any(),
+                tgs = any(),
+                touches = any(),
+                key = any(),
+                gyro = any(),
+                accel = any(),
+                v = any(),
+                hv = any(),
+                en = any(),
+                etn = any(),
+                ec = any(),
+                et = any(),
+                eid = any(),
+                ct = any(),
+                sm = any(),
+                pd = any(),
+                x = any(),
+                y = any(),
+                w = any(),
+                h = any(),
+                sw = any(),
+                sh = any(),
+                f = any(),
+                lsid = any(),
+                sid = any(),
+                siteId = any(),
+                cid = any(),
+                did = any(),
+                iid = any(),
+                loc = any(),
+                ua = any(),
+                tzo = any(),
+                lng = any(),
+                ce = any(),
+                je = any(),
+                ol = any(),
+                p = any(),
+                dnt = any(),
+                tch = any(),
+                url = any(),
+                ns = any(),
+                jsl = any(),
+                jsv = any(),
+                uid = any(),
+                o = any(),
+                rts = any(),
+                metadata = any(),
+                rid = any(),
+                m = "NeuroID SDK should only be built once.",
+                level = "ERROR",
+                c = any(),
+                isWifi = any(),
+                isConnected = any(),
+                cp = any(),
+                l = any(),
+                synthetic = any(),
+            )
+        }
+
+        // Verify getInstance returns the set instance
+        assertEquals(mockedNeuroID, NeuroID.getInstance())
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_duplicate() {
+        // Initialize with a first instance
+        NeuroID.setSingletonNull()
+        val firstNeuroID = mockk<NeuroID>(relaxed = true)
+        val firstLogger = mockk<NIDLogWrapper>()
+
+        every { firstNeuroID.isAdvancedDevice } returns false
+        every { firstNeuroID.logger } returns firstLogger
+        every { firstNeuroID.setupCallbacks() } just runs
+        every { firstNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { firstLogger.e(any(), any()) } just runs
+
+        NeuroID.setNeuroIDInstance(firstNeuroID)
+
+        // Now try to set a second instance
+        val secondNeuroID = mockk<NeuroID>(relaxed = true)
+        val secondLogger = mockk<NIDLogWrapper>()
+
+        every { secondNeuroID.isAdvancedDevice } returns false
+        every { secondNeuroID.logger } returns secondLogger
+        every { secondNeuroID.setupCallbacks() } just runs
+        every { secondLogger.e(any(), any()) } just runs
+
+        NeuroID.setNeuroIDInstance(secondNeuroID)
+
+        // Verify logger.e was called with error message
+        verify(exactly = 1) {
+            firstLogger.e("NeuroID", "NeuroID SDK should only be built once.")
+        }
+
+        // Verify captureEvent was called with error
+        verify(exactly = 1) {
+            firstNeuroID.captureEvent(
+                queuedEvent = any(),
+                type = LOG,
+                ts = any(),
+                attrs = any(),
+                tg = any(),
+                tgs = any(),
+                touches = any(),
+                key = any(),
+                gyro = any(),
+                accel = any(),
+                v = any(),
+                hv = any(),
+                en = any(),
+                etn = any(),
+                ec = any(),
+                et = any(),
+                eid = any(),
+                ct = any(),
+                sm = any(),
+                pd = any(),
+                x = any(),
+                y = any(),
+                w = any(),
+                h = any(),
+                sw = any(),
+                sh = any(),
+                f = any(),
+                lsid = any(),
+                sid = any(),
+                siteId = any(),
+                cid = any(),
+                did = any(),
+                iid = any(),
+                loc = any(),
+                ua = any(),
+                tzo = any(),
+                lng = any(),
+                ce = any(),
+                je = any(),
+                ol = any(),
+                p = any(),
+                dnt = any(),
+                tch = any(),
+                url = any(),
+                ns = any(),
+                jsl = any(),
+                jsv = any(),
+                uid = any(),
+                o = any(),
+                rts = any(),
+                metadata = any(),
+                rid = any(),
+                m = "NeuroID SDK should only be built once.",
+                level = "ERROR",
+                c = any(),
+                isWifi = any(),
+                isConnected = any(),
+                cp = any(),
+                l = any(),
+                synthetic = any(),
+            )
+        }
+
+        // Verify the singleton is still the first instance (not replaced)
+        assertEquals(firstNeuroID, NeuroID.getInstance())
+
+        // Verify setupCallbacks was NOT called on the second instance
+        verify(exactly = 0) {
+            secondNeuroID.setupCallbacks()
+        }
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_withAdvancedDevice() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Create a mocked NeuroID instance with advanced device enabled
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        val mockedLogger = mockk<NIDLogWrapper>()
+
+        every { mockedNeuroID.isAdvancedDevice } returns true
+        every { mockedNeuroID.logger } returns mockedLogger
+        every { mockedNeuroID.setupCallbacks() } just runs
+        every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
+        every { mockedNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { mockedLogger.e(any(), any()) } just runs
+
+        // Call setNeuroIDInstance
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Verify checkThenCaptureAdvancedDevice was called with true
+        verify(exactly = 1) {
+            mockedNeuroID.checkThenCaptureAdvancedDevice(true)
+        }
+
+        // Verify setupCallbacks was called
+        verify(exactly = 1) {
+            mockedNeuroID.setupCallbacks()
+        }
+
+        // Verify getInstance returns the set instance
+        assertEquals(mockedNeuroID, NeuroID.getInstance())
     }
 
     private fun setupAttemptedLoginTestEnvironment(validID: Boolean = false) {
