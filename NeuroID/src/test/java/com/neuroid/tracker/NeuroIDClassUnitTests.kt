@@ -14,15 +14,18 @@ import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
+import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Job
@@ -577,6 +580,149 @@ open class NeuroIDClassUnitTests {
         testAttemptedLogin("¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö", "scrubbed-id-failed-validation", true)
         testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true)
+    }
+
+    // start() Tests
+    @Test
+    fun test_start_success() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = false
+
+        // Mock start to call completion with true
+        every { mockedSessionService.start(siteID = null, completion = any()) } answers {
+            val completion = secondArg<(Boolean) -> Unit>()
+            completion(true)
+        }
+
+        var completionResult: Boolean? = null
+        NeuroID.getInstance()?.start { result ->
+            completionResult = result
+        }
+
+        // Verify sessionService.start was called
+        verify(exactly = 1) {
+            mockedSessionService.start(siteID = null, completion = any())
+        }
+
+        // Verify completion callback was invoked with true
+        assertEquals(true, completionResult)
+    }
+
+    @Test
+    fun test_start_alreadyStarted() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = true
+
+        // Mock start to call completion with false (already started)
+        every { mockedSessionService.start(siteID = null, completion = any()) } answers {
+            val completion = secondArg<(Boolean) -> Unit>()
+            completion(false)
+        }
+
+        var completionResult: Boolean? = null
+        NeuroID.getInstance()?.start { result ->
+            completionResult = result
+        }
+
+        // Verify sessionService.start was called
+        verify(exactly = 1) {
+            mockedSessionService.start(siteID = null, completion = any())
+        }
+
+        // Verify completion callback was invoked with false
+        assertEquals(false, completionResult)
+    }
+
+    // stop() Tests
+    @Test
+    fun test_stop_success() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = true
+
+        // Mock stop to return true
+        every { mockedSessionService.stop() } returns true
+
+        val result = NeuroID.getInstance()?.stop()
+
+        // Verify sessionService.stop was called
+        verify(exactly = 1) {
+            mockedSessionService.stop()
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_stop_whenNotStarted() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = false
+
+        // Mock stop to return true
+        every { mockedSessionService.stop() } returns true
+
+        val result = NeuroID.getInstance()?.stop()
+
+        // Verify sessionService.stop was called
+        verify(exactly = 1) {
+            mockedSessionService.stop()
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    // resetClientId() Tests
+    @Test
+    fun test_resetClientId_withApplication() {
+        // Setup mocked application and SharedPreferences
+        val mockedApplication = getMockedApplication()
+        NeuroID.getInternalInstance()?.application = mockedApplication
+
+        // Mock NIDSharedPrefsDefaults
+        mockkConstructor(NIDSharedPrefsDefaults::class)
+        val newClientID = "new-client-id-12345"
+        every { anyConstructed<NIDSharedPrefsDefaults>().resetClientID() } returns newClientID
+
+        // Get original clientID
+        val originalClientID = NeuroID.getInternalInstance()?.clientID
+
+        // Call resetClientId
+        NeuroID.getInternalInstance()?.resetClientId()
+
+        // Verify clientID was updated
+        assertEquals(newClientID, NeuroID.getInternalInstance()?.clientID)
+        assert(originalClientID != NeuroID.getInternalInstance()?.clientID)
+
+        // Verify resetClientID was called
+        verify(exactly = 1) {
+            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
+        }
+
+        unmockkConstructor(NIDSharedPrefsDefaults::class)
+    }
+
+    @Test
+    fun test_resetClientId_withoutApplication() {
+        // Ensure application is null
+        NeuroID.getInternalInstance()?.application = null
+
+        // Get original clientID
+        val originalClientID = NeuroID.getInternalInstance()?.clientID
+
+        // Call resetClientId (should do nothing since application is null)
+        NeuroID.getInternalInstance()?.resetClientId()
+
+        // Verify clientID was NOT changed
+        assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
     }
 
     @Test
