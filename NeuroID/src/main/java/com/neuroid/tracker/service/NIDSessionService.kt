@@ -131,7 +131,7 @@ internal class NIDSessionService(
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID(true)
-        if (!identifierService.setUserID(finalSessionID, sessionID != null)) {
+        if (!identifierService.setUserID(neuroID, finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }

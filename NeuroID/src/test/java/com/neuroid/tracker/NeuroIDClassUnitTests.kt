@@ -3,24 +3,29 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
 import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
+import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Job
@@ -279,6 +284,245 @@ open class NeuroIDClassUnitTests {
         assert(ogTabID != NeuroID.getInternalInstance()?.tabID)
     }
 
+    // setNeuroIDInstance Tests
+    @Test
+    fun test_setNeuroIDInstance_firstTime() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Create a mocked NeuroID instance
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        val mockedLogger = mockk<NIDLogWrapper>()
+
+        // Mock the necessary properties and methods
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.logger } returns mockedLogger
+        every { mockedNeuroID.setupCallbacks() } just runs
+        every { mockedNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { mockedLogger.e(any(), any()) } just runs
+
+        // Call setNeuroIDInstance
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Verify setupCallbacks was called
+        verify(exactly = 1) {
+            mockedNeuroID.setupCallbacks()
+        }
+
+        // Verify logger.e was NOT called (no error)
+        verify(exactly = 0) {
+            mockedLogger.e(any(), any())
+        }
+
+        // Verify captureEvent was NOT called with error
+        verify(exactly = 0) {
+            mockedNeuroID.captureEvent(
+                queuedEvent = any(),
+                type = LOG,
+                ts = any(),
+                attrs = any(),
+                tg = any(),
+                tgs = any(),
+                touches = any(),
+                key = any(),
+                gyro = any(),
+                accel = any(),
+                v = any(),
+                hv = any(),
+                en = any(),
+                etn = any(),
+                ec = any(),
+                et = any(),
+                eid = any(),
+                ct = any(),
+                sm = any(),
+                pd = any(),
+                x = any(),
+                y = any(),
+                w = any(),
+                h = any(),
+                sw = any(),
+                sh = any(),
+                f = any(),
+                lsid = any(),
+                sid = any(),
+                siteId = any(),
+                cid = any(),
+                did = any(),
+                iid = any(),
+                loc = any(),
+                ua = any(),
+                tzo = any(),
+                lng = any(),
+                ce = any(),
+                je = any(),
+                ol = any(),
+                p = any(),
+                dnt = any(),
+                tch = any(),
+                url = any(),
+                ns = any(),
+                jsl = any(),
+                jsv = any(),
+                uid = any(),
+                o = any(),
+                rts = any(),
+                metadata = any(),
+                rid = any(),
+                m = "NeuroID SDK should only be built once.",
+                level = "ERROR",
+                c = any(),
+                isWifi = any(),
+                isConnected = any(),
+                cp = any(),
+                l = any(),
+                synthetic = any(),
+            )
+        }
+
+        // Verify getInstance returns the set instance
+        assertEquals(mockedNeuroID, NeuroID.getInstance())
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_duplicate() {
+        // Initialize with a first instance
+        NeuroID.setSingletonNull()
+        val firstNeuroID = mockk<NeuroID>(relaxed = true)
+        val firstLogger = mockk<NIDLogWrapper>()
+
+        every { firstNeuroID.isAdvancedDevice } returns false
+        every { firstNeuroID.logger } returns firstLogger
+        every { firstNeuroID.setupCallbacks() } just runs
+        every { firstNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { firstLogger.e(any(), any()) } just runs
+
+        NeuroID.setNeuroIDInstance(firstNeuroID)
+
+        // Now try to set a second instance
+        val secondNeuroID = mockk<NeuroID>(relaxed = true)
+        val secondLogger = mockk<NIDLogWrapper>()
+
+        every { secondNeuroID.isAdvancedDevice } returns false
+        every { secondNeuroID.logger } returns secondLogger
+        every { secondNeuroID.setupCallbacks() } just runs
+        every { secondLogger.e(any(), any()) } just runs
+
+        NeuroID.setNeuroIDInstance(secondNeuroID)
+
+        // Verify logger.e was called with error message
+        verify(exactly = 1) {
+            firstLogger.e("NeuroID", "NeuroID SDK should only be built once.")
+        }
+
+        // Verify captureEvent was called with error
+        verify(exactly = 1) {
+            firstNeuroID.captureEvent(
+                queuedEvent = any(),
+                type = LOG,
+                ts = any(),
+                attrs = any(),
+                tg = any(),
+                tgs = any(),
+                touches = any(),
+                key = any(),
+                gyro = any(),
+                accel = any(),
+                v = any(),
+                hv = any(),
+                en = any(),
+                etn = any(),
+                ec = any(),
+                et = any(),
+                eid = any(),
+                ct = any(),
+                sm = any(),
+                pd = any(),
+                x = any(),
+                y = any(),
+                w = any(),
+                h = any(),
+                sw = any(),
+                sh = any(),
+                f = any(),
+                lsid = any(),
+                sid = any(),
+                siteId = any(),
+                cid = any(),
+                did = any(),
+                iid = any(),
+                loc = any(),
+                ua = any(),
+                tzo = any(),
+                lng = any(),
+                ce = any(),
+                je = any(),
+                ol = any(),
+                p = any(),
+                dnt = any(),
+                tch = any(),
+                url = any(),
+                ns = any(),
+                jsl = any(),
+                jsv = any(),
+                uid = any(),
+                o = any(),
+                rts = any(),
+                metadata = any(),
+                rid = any(),
+                m = "NeuroID SDK should only be built once.",
+                level = "ERROR",
+                c = any(),
+                isWifi = any(),
+                isConnected = any(),
+                cp = any(),
+                l = any(),
+                synthetic = any(),
+            )
+        }
+
+        // Verify the singleton is still the first instance (not replaced)
+        assertEquals(firstNeuroID, NeuroID.getInstance())
+
+        // Verify setupCallbacks was NOT called on the second instance
+        verify(exactly = 0) {
+            secondNeuroID.setupCallbacks()
+        }
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_withAdvancedDevice() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Create a mocked NeuroID instance with advanced device enabled
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        val mockedLogger = mockk<NIDLogWrapper>()
+
+        every { mockedNeuroID.isAdvancedDevice } returns true
+        every { mockedNeuroID.logger } returns mockedLogger
+        every { mockedNeuroID.setupCallbacks() } just runs
+        every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
+        every { mockedNeuroID.captureEvent(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } just runs
+        every { mockedLogger.e(any(), any()) } just runs
+
+        // Call setNeuroIDInstance
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Verify checkThenCaptureAdvancedDevice was called with true
+        verify(exactly = 1) {
+            mockedNeuroID.checkThenCaptureAdvancedDevice(true)
+        }
+
+        // Verify setupCallbacks was called
+        verify(exactly = 1) {
+            mockedNeuroID.setupCallbacks()
+        }
+
+        // Verify getInstance returns the set instance
+        assertEquals(mockedNeuroID, NeuroID.getInstance())
+    }
+
     private fun setupAttemptedLoginTestEnvironment(validID: Boolean = false) {
         // fake out the clock
         mockkStatic(Calendar::class)
@@ -290,7 +534,7 @@ open class NeuroIDClassUnitTests {
 
         // make the validation service throw
         val mockIdentificationService = getMockedIdentifierService()
-        every { mockIdentificationService.setGenericUserID(any(), any(), any()) } returns validID
+        every { mockIdentificationService.setGenericUserID(any(), any(), any(), any()) } returns validID
         NeuroID.getInternalInstance()?.identifierService = mockIdentificationService
         setMockedDataStore()
         setMockedNIDJobServiceManager(false)
@@ -308,7 +552,12 @@ open class NeuroIDClassUnitTests {
 
         val actualResult = NeuroID.getInstance()?.attemptedLogin(userId)
         verify {
-            mockIdentificationService?.setGenericUserID(any(), userId ?: any(), any())
+            mockIdentificationService?.setGenericUserID(
+                any(),
+                "ATTEMPTED_LOGIN",
+                userId ?: "scrubbed-id-failed-validation",
+                userId != null
+            )
         }
 
         if (expectedFailedResult) {
@@ -333,11 +582,446 @@ open class NeuroIDClassUnitTests {
         testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true)
     }
 
+    // start() Tests
+    @Test
+    fun test_start_success() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = false
+
+        // Mock start to call completion with true
+        every { mockedSessionService.start(siteID = null, completion = any()) } answers {
+            val completion = secondArg<(Boolean) -> Unit>()
+            completion(true)
+        }
+
+        var completionResult: Boolean? = null
+        NeuroID.getInstance()?.start { result ->
+            completionResult = result
+        }
+
+        // Verify sessionService.start was called
+        verify(exactly = 1) {
+            mockedSessionService.start(siteID = null, completion = any())
+        }
+
+        // Verify completion callback was invoked with true
+        assertEquals(true, completionResult)
+    }
+
+    @Test
+    fun test_start_alreadyStarted() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = true
+
+        // Mock start to call completion with false (already started)
+        every { mockedSessionService.start(siteID = null, completion = any()) } answers {
+            val completion = secondArg<(Boolean) -> Unit>()
+            completion(false)
+        }
+
+        var completionResult: Boolean? = null
+        NeuroID.getInstance()?.start { result ->
+            completionResult = result
+        }
+
+        // Verify sessionService.start was called
+        verify(exactly = 1) {
+            mockedSessionService.start(siteID = null, completion = any())
+        }
+
+        // Verify completion callback was invoked with false
+        assertEquals(false, completionResult)
+    }
+
+    // stop() Tests
+    @Test
+    fun test_stop_success() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = true
+
+        // Mock stop to return true
+        every { mockedSessionService.stop() } returns true
+
+        val result = NeuroID.getInstance()?.stop()
+
+        // Verify sessionService.stop was called
+        verify(exactly = 1) {
+            mockedSessionService.stop()
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_stop_whenNotStarted() {
+        // Setup mocks
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = false
+
+        // Mock stop to return true
+        every { mockedSessionService.stop() } returns true
+
+        val result = NeuroID.getInstance()?.stop()
+
+        // Verify sessionService.stop was called
+        verify(exactly = 1) {
+            mockedSessionService.stop()
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    // resetClientId() Tests
+    @Test
+    fun test_resetClientId_withApplication() {
+        // Setup mocked application and SharedPreferences
+        val mockedApplication = getMockedApplication()
+        NeuroID.getInternalInstance()?.application = mockedApplication
+
+        // Mock NIDSharedPrefsDefaults
+        mockkConstructor(NIDSharedPrefsDefaults::class)
+        val newClientID = "new-client-id-12345"
+        every { anyConstructed<NIDSharedPrefsDefaults>().resetClientID() } returns newClientID
+
+        // Get original clientID
+        val originalClientID = NeuroID.getInternalInstance()?.clientID
+
+        // Call resetClientId
+        NeuroID.getInternalInstance()?.resetClientId()
+
+        // Verify clientID was updated
+        assertEquals(newClientID, NeuroID.getInternalInstance()?.clientID)
+        assert(originalClientID != NeuroID.getInternalInstance()?.clientID)
+
+        // Verify resetClientID was called
+        verify(exactly = 1) {
+            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
+        }
+
+        unmockkConstructor(NIDSharedPrefsDefaults::class)
+    }
+
+    @Test
+    fun test_resetClientId_withoutApplication() {
+        // Ensure application is null
+        NeuroID.getInternalInstance()?.application = null
+
+        // Get original clientID
+        val originalClientID = NeuroID.getInternalInstance()?.clientID
+
+        // Call resetClientId (should do nothing since application is null)
+        NeuroID.getInternalInstance()?.resetClientId()
+
+        // Verify clientID was NOT changed
+        assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
+    }
+
+    // getUserId() Tests (deprecated method)
+    @Test
+    fun test_getUserId_returnsUserID() {
+        val testUserID = "test-user-123"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return test user ID
+        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+
+        @Suppress("DEPRECATION")
+        val result = NeuroID.getInstance()?.getUserId()
+
+        // Verify identifierService.getUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testUserID, result)
+    }
+
+    // getUserID() Tests
+    @Test
+    fun test_getUserID_returnsUserID() {
+        val testUserID = "test-user-456"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return test user ID
+        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+
+        val result = NeuroID.getInstance()?.getUserID()
+
+        // Verify identifierService.getUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testUserID, result)
+    }
+
+    @Test
+    fun test_getUserID_returnsEmptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getUserID to return empty string
+        every { mockedIdentifierService.getUserID(any()) } returns ""
+
+        val result = NeuroID.getInstance()?.getUserID()
+
+        // Verify result is empty
+        assertEquals("", result)
+    }
+
+    // setUserID() Tests
+    @Test
+    fun test_setUserID_success() {
+        val testUserID = "valid-user-id-789"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return true
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+
+        val result = NeuroID.getInstance()?.setUserID(testUserID)
+
+        // Verify identifierService.setUserID was called with correct parameters
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), testUserID, true)
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_setUserID_failure() {
+        val invalidUserID = "invalid id"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false (validation failed)
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setUserID(invalidUserID)
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setUserID_emptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false for empty string
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setUserID("")
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), "", true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    // getRegisteredUserID() Tests
+    @Test
+    fun test_getRegisteredUserID_returnsRegisteredUserID() {
+        val testRegisteredUserID = "registered-user-123"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getRegisteredUserID to return test registered user ID
+        every { mockedIdentifierService.getRegisteredUserID(any()) } returns testRegisteredUserID
+
+        val result = NeuroID.getInstance()?.getRegisteredUserID()
+
+        // Verify identifierService.getRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.getRegisteredUserID(any())
+        }
+
+        // Verify result matches
+        assertEquals(testRegisteredUserID, result)
+    }
+
+    @Test
+    fun test_getRegisteredUserID_returnsEmptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock getRegisteredUserID to return empty string
+        every { mockedIdentifierService.getRegisteredUserID(any()) } returns ""
+
+        val result = NeuroID.getInstance()?.getRegisteredUserID()
+
+        // Verify result is empty
+        assertEquals("", result)
+    }
+
+    // setRegisteredUserID() Tests
+    @Test
+    fun test_setRegisteredUserID_success() {
+        val testRegisteredUserID = "valid-registered-user-456"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return true
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns true
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID(testRegisteredUserID)
+
+        // Verify identifierService.setRegisteredUserID was called with correct parameters
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), testRegisteredUserID)
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_failure() {
+        val invalidRegisteredUserID = "invalid registered id"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return false (validation failed)
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID(invalidRegisteredUserID)
+
+        // Verify identifierService.setRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), invalidRegisteredUserID)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_emptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return false for empty string
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.setRegisteredUserID("")
+
+        // Verify identifierService.setRegisteredUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setRegisteredUserID(any(), "")
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_setRegisteredUserID_multipleCalls() {
+        val firstUserID = "first-user"
+        val secondUserID = "second-user"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setRegisteredUserID to return true both times
+        every { mockedIdentifierService.setRegisteredUserID(any(), any()) } returns true
+
+        // First call
+        val firstResult = NeuroID.getInstance()?.setRegisteredUserID(firstUserID)
+
+        // Second call (should log warning about multiple registered user IDs)
+        val secondResult = NeuroID.getInstance()?.setRegisteredUserID(secondUserID)
+
+        // Verify identifierService.setRegisteredUserID was called twice
+        verify(exactly = 2) {
+            mockedIdentifierService.setRegisteredUserID(any(), any())
+        }
+
+        // Verify both calls succeeded
+        assertEquals(true, firstResult)
+        assertEquals(true, secondResult)
+    }
+
     @Test
     fun testSetTestURL() {
-        NeuroID.getInstance()?.setTestURL("myTests")
+        val testUrl = "https://test.example.com"
 
-        assertEquals(true, NeuroID.endpoint == "myTests")
+        // Setup mocked application with SharedPreferences
+        val mockedApplication = getMockedApplication()
+        NeuroID.getInternalInstance()?.application = mockedApplication
+
+        // Setup mocked job service manager with setTestEventSender
+        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
+        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
+        every { mockedJobServiceManager.startJob(any(), any()) } just runs
+        every { mockedJobServiceManager.isStopped() } returns true
+        every { mockedJobServiceManager.stopJob() } just runs
+        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
+
+        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
+
+        // Call setTestURL
+        NeuroID.getInstance()?.setTestURL(testUrl)
+
+        // Verify endpoint was set
+        assertEquals(testUrl, NeuroID.endpoint)
+        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+
+        // Verify setTestEventSender was called on the job service manager
+        verify(exactly = 1) {
+            mockedJobServiceManager.setTestEventSender(any())
+        }
+    }
+
+    @Test
+    fun testSetTestURL_withoutApplication() {
+        val testUrl = "https://test.example.com"
+
+        // Setup mocked job service manager
+        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
+        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
+        every { mockedJobServiceManager.startJob(any(), any()) } just runs
+        every { mockedJobServiceManager.isStopped() } returns true
+        every { mockedJobServiceManager.stopJob() } just runs
+        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
+
+        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
+
+        // Ensure application is null
+        NeuroID.getInternalInstance()?.application = null
+
+        // Call setTestURL
+        NeuroID.getInstance()?.setTestURL(testUrl)
+
+        // Verify endpoint was set
+        assertEquals(testUrl, NeuroID.endpoint)
+        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+
+        // Verify setTestEventSender was NOT called since application is null
+        verify(exactly = 0) {
+            mockedJobServiceManager.setTestEventSender(any())
+        }
     }
 
     //   setTestingNeuroIDDevURL
@@ -652,6 +1336,225 @@ open class NeuroIDClassUnitTests {
 
         var value = NeuroID.getInternalInstance()?.getApplicationContext()
         assertEquals(mockedContext, value)
+    }
+
+    //    getNetworkType
+    @Test
+    fun testGetNetworkType_wifi_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_WIFI
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("wifi", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_cellular_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_MOBILE
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("cell", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_ethernet_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_ETHERNET
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns true
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("eth", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_unknown_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns 645645
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns false
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("unknown", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_noNetwork_23() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+
+        every { mockedConnectivityManager.activeNetworkInfo} returns null
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns null
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 23)
+
+        assertEquals("noNetwork", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_wifi_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_WIFI
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("wifi", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_cellular_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_MOBILE
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns true
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("cell", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_ethernet_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns android.net.ConnectivityManager.TYPE_ETHERNET
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns true
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("eth", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_unknown_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+        val mockedNetwork = mockk<android.net.Network>()
+        val mockedNetworkCapabilities = mockk<android.net.NetworkCapabilities>()
+        val mockedNetworkInfo = mockk<NetworkInfo>()
+        every {mockedNetworkInfo.type } returns 645645
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns mockedNetwork
+        every { mockedConnectivityManager.activeNetworkInfo} returns mockedNetworkInfo
+        every { mockedConnectivityManager.getNetworkCapabilities(mockedNetwork) } returns mockedNetworkCapabilities
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) } returns false
+        every { mockedNetworkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) } returns false
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("unknown", networkType)
+    }
+
+    @Test
+    fun testGetNetworkType_noNetwork_22() {
+        val mockedContext = mockk<Context>()
+        val mockedConnectivityManager = mockk<android.net.ConnectivityManager>()
+
+        every { mockedConnectivityManager.activeNetworkInfo} returns null
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedConnectivityManager.activeNetwork } returns null
+
+        val neuroID = NeuroID.getInternalInstance()
+        neuroID?.connectivityManager = mockedConnectivityManager
+        val networkType = neuroID?.getNetworkType(mockedContext, 22)
+
+        assertEquals("noNetwork", networkType)
     }
 
 //    createSession - Need to mock Application
