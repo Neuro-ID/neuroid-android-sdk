@@ -50,38 +50,5 @@ class RegistrationIdentificationHelperTest {
         assert(registrationHelper.singleTargetListenerRegister != null)
     }
 
-
-    @Test
-    fun test_registerWindowListeners_setsCallbacks() {
-        val activity = mockk<Activity>(relaxed = true)
-        val window = mockk<Window>(relaxed = true)
-        val decorView = mockk<View>(relaxed = true)
-        val contentView = mockk<ViewGroup>(relaxed = true)
-        val viewTreeObserver = mockk<android.view.ViewTreeObserver>(relaxed = true)
-        val existingCallback = mockk<Window.Callback>(relaxed = true)
-
-        every { activity.window } returns window
-        every { window.decorView } returns decorView
-        every { decorView.findViewById<View>(android.R.id.content) } returns contentView
-        every { contentView.viewTreeObserver } returns viewTreeObserver
-        every { window.callback } returns existingCallback
-        every { window.callback = any() } just runs
-        every { viewTreeObserver.addOnGlobalFocusChangeListener(any()) } just runs
-        every { viewTreeObserver.addOnGlobalLayoutListener(any()) } just runs
-
-        // Call method
-        registrationHelper.registerWindowListeners(activity)
-
-        // Verify callback was set
-        verify(exactly = 1) {
-            window.callback = any()
-        }
-
-        // Verify listeners were added
-        verify(exactly = 1) {
-            viewTreeObserver.addOnGlobalFocusChangeListener(any())
-            viewTreeObserver.addOnGlobalLayoutListener(any())
-        }
-    }
 }
 

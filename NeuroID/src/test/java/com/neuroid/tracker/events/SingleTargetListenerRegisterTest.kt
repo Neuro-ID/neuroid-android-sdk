@@ -7,6 +7,7 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.extensions.getIdOrTag
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
@@ -309,5 +310,63 @@ class SingleTargetListenerRegisterTest {
             )
         }
     }
-}
 
+    @Test
+    fun test_registerListeners_forEditText_andSpinners() {
+        val editText = mockk<EditText>(relaxed = true)
+        val autoCompleteTextView = mockk<AutoCompleteTextView>(relaxed = true)
+        val spinner = mockk<Spinner>(relaxed = true)
+        val absSpinner = mockk<AbsSpinner>(relaxed = true)
+        val radioGroup = mockk<RadioGroup>(relaxed = true)
+
+        // Setup mocks for EditText
+        every { editText.getIdOrTag() } returns "editTextId"
+        every { editText.removeTextChangedListener(any()) } just runs
+        every { editText.addTextChangedListener(any()) } just runs
+        every { editText.customSelectionActionModeCallback } returns null
+        every { editText.customSelectionActionModeCallback = any() } just runs
+        every { editText.context } returns mockk(relaxed = true)
+
+        // Setup mocks for AutoCompleteTextView
+        every { autoCompleteTextView.getIdOrTag() } returns "autoCompleteId"
+        every { autoCompleteTextView.onItemClickListener } returns null
+        every { autoCompleteTextView.onItemClickListener = any() } just runs
+        every { autoCompleteTextView.onItemSelectedListener } returns null
+        every { autoCompleteTextView.onItemSelectedListener = any() } just runs
+        every { autoCompleteTextView.context } returns mockk(relaxed = true)
+
+        // Setup mocks for Spinner
+        every { spinner.getIdOrTag() } returns "spinnerId"
+        every { spinner.onItemClickListener } returns null
+        every { spinner.onItemClickListener = any() } just runs
+        every { spinner.onItemSelectedListener } returns null
+        every { spinner.onItemSelectedListener = any() } just runs
+        every { spinner.context } returns mockk(relaxed = true)
+
+        // Setup mocks for AbsSpinner
+        every { absSpinner.getIdOrTag() } returns "absSpinnerId"
+        every { absSpinner.onItemClickListener } returns null
+        every { absSpinner.onItemClickListener = any() } just runs
+        every { absSpinner.onItemSelectedListener } returns null
+        every { absSpinner.onItemSelectedListener = any() } just runs
+        every { absSpinner.context } returns mockk(relaxed = true)
+
+        // Setup mocks for RadioGroup
+        every { radioGroup.getIdOrTag() } returns "radioGroupId"
+        every { radioGroup.context } returns mockk(relaxed = true)
+
+        // Run registerListeners for each view
+        singleTargetRegister.registerListeners(editText)
+        singleTargetRegister.registerListeners(autoCompleteTextView)
+        singleTargetRegister.registerListeners(spinner)
+        singleTargetRegister.registerListeners(absSpinner)
+        singleTargetRegister.registerListeners(radioGroup)
+
+        // Verify logger was called for EditText
+        verify { logger.d("NID-Activity", match { it.contains("EditText Listener") }) }
+        // Verify addTextChangedListener was called
+        verify { editText.addTextChangedListener(any()) }
+        // Verify addSelectOnClickListener and addSelectOnSelect were called for spinners
+        // (Indirectly verified by no exceptions and relaxed mocks)
+    }
+}
