@@ -119,6 +119,7 @@ class NeuroID
         internal var identifierService: NIDIdentifierService
         internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
 
+        internal lateinit var connectivityManager: ConnectivityManager
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
@@ -196,7 +197,6 @@ class NeuroID
             identifierService =
                 NIDIdentifierService(
                     logger,
-                    neuroID = this,
                     validationService,
                 )
 
@@ -247,7 +247,7 @@ class NeuroID
                 // get connectivity info on startup
                 // register network listener here. >=API24 will not receive if registered
                 // in the manifest so we do it here for full compatibility
-                val connectivityManager =
+                connectivityManager =
                     it.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
                 val info = connectivityManager.activeNetworkInfo
@@ -280,9 +280,9 @@ class NeuroID
         /**
          * Function to retrieve the current network type (wifi, cell, eth, unknown)
          */
-        internal fun getNetworkType(context: Context): String {
+        internal fun getNetworkType(context: Context, buildVersion: Int = Build.VERSION.SDK_INT): String {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (buildVersion >= Build.VERSION_CODES.M) {
                 val activeNetwork = connectivityManager.activeNetwork
                 activeNetwork?.let {
                     val networkCapabilities = connectivityManager.getNetworkCapabilities(it)
@@ -311,7 +311,7 @@ class NeuroID
         }
 
         @Synchronized
-        private fun setupCallbacks() {
+        internal fun setupCallbacks() {
             if (firstTime) {
                 firstTime = false
                 application?.let {
@@ -560,6 +560,7 @@ class NeuroID
 
             val captured =
                 identifierService.setGenericUserID(
+                    this,
                     ATTEMPTED_LOGIN,
                     attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
                     attemptedRegisteredUserId != null,
@@ -739,18 +740,18 @@ class NeuroID
 
         // Identifier Commands
         @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-        override fun getUserId() = identifierService.getUserID()
+        override fun getUserId() = identifierService.getUserID(this)
 
-        override fun getUserID() = identifierService.getUserID()
+        override fun getUserID() = identifierService.getUserID(this)
 
         override fun setUserID(userID: String): Boolean {
-            return identifierService.setUserID(userID, true)
+            return identifierService.setUserID(this, userID, true)
         }
 
-        override fun getRegisteredUserID() = identifierService.getRegisteredUserID()
+        override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 
         override fun setRegisteredUserID(registeredUserID: String): Boolean {
-            return identifierService.setRegisteredUserID(registeredUserID)
+            return identifierService.setRegisteredUserID(this, registeredUserID)
         }
 
         // new Session Commands
