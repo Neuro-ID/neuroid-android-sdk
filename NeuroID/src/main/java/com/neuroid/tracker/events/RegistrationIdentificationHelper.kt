@@ -34,7 +34,7 @@ class RegistrationIdentificationHelper(
     val neuroID: NeuroID,
     val logger: NIDLogWrapper,
 ) {
-    val additionalListeners: AdditionalListeners = AdditionalListeners(neuroID, logger)
+    val additionalListeners: AdditionalListeners = AdditionalListeners(logger)
     val singleTargetListenerRegister: SingleTargetListenerRegister =
         SingleTargetListenerRegister(neuroID, logger, additionalListeners)
 
@@ -250,7 +250,7 @@ class SingleTargetListenerRegister(
 
             // if later api version, add additional action menu watcher
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                additionalListeners.addExtraActionMenuListener(view)
+                additionalListeners.addExtraActionMenuListener(neuroID, view)
             }
         }
 
@@ -261,6 +261,7 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener = null
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
+                        neuroID,
                         idName,
                         lastClickListener,
                     )
@@ -269,6 +270,7 @@ class SingleTargetListenerRegister(
                 view.onItemSelectedListener = null
                 view.onItemSelectedListener =
                     additionalListeners.addSelectOnSelect(
+                        neuroID,
                         idName,
                         lastSelectListener,
                         simpleClassName,
@@ -280,6 +282,7 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener = null
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
+                        neuroID,
                         idName,
                         lastClickListener,
                     )
@@ -288,6 +291,7 @@ class SingleTargetListenerRegister(
                 view.onItemSelectedListener = null
                 view.onItemSelectedListener =
                     additionalListeners.addSelectOnSelect(
+                        neuroID,
                         idName,
                         lastSelectListener,
                         simpleClassName,
@@ -299,6 +303,7 @@ class SingleTargetListenerRegister(
                 view.onItemClickListener = null
                 view.onItemClickListener =
                     additionalListeners.addSelectOnClickListener(
+                        neuroID,
                         idName,
                         lastClickListener,
                     )
@@ -307,6 +312,7 @@ class SingleTargetListenerRegister(
                 view.onItemSelectedListener = null
                 view.onItemSelectedListener =
                     additionalListeners.addSelectOnSelect(
+                        neuroID,
                         idName,
                         lastSelectListener,
                         simpleClassName,
@@ -450,8 +456,9 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
+class AdditionalListeners(val logger: NIDLogWrapper) {
     internal fun addSelectOnSelect(
+        neuroID: NeuroID,
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
         simpleClassName: String,
@@ -484,6 +491,7 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
     }
 
     internal fun addSelectOnClickListener(
+        neuroID: NeuroID,
         idName: String,
         lastClickListener: AdapterView.OnItemClickListener?,
     ): AdapterView.OnItemClickListener {
@@ -504,7 +512,10 @@ class AdditionalListeners(val neuroID: NeuroID, val logger: NIDLogWrapper) {
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    internal fun addExtraActionMenuListener(view: EditText) {
+    internal fun addExtraActionMenuListener(
+        neuroID: NeuroID,
+        view: EditText,
+    ) {
         val actionInsertionCallback = view.customInsertionActionModeCallback
         if (actionInsertionCallback !is NIDLongPressContextMenuCallbacks) {
             view.customInsertionActionModeCallback =
