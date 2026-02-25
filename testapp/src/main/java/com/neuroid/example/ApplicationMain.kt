@@ -31,6 +31,7 @@ class ApplicationMain : Application() {
                 true,
                 null,
                 false,
+                "",
                 NeuroID.TEST)
 //            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
 //            isAdvancedDevice = true,
