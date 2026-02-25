@@ -44,7 +44,7 @@ android {
     compileSdkVersion = 35
 
     defaultConfig {
-        minSdk 23
+        minSdk 24
         targetSdk 35
         multiDexEnabled true
         android.buildFeatures.buildConfig true

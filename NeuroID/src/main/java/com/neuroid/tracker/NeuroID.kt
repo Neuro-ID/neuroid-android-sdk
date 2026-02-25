@@ -80,7 +80,8 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        serverEnvironment: String = PRODUCTION
+        internal var hostReactNativeVersion: String = "",
+        internal var serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -333,6 +334,7 @@ class NeuroID
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
+                        nidConfiguration.hostReactNativeVersion,
                         nidConfiguration.serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -355,6 +357,7 @@ class NeuroID
                         isAdvancedDevice,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = false,
+                        hostReactNativeVersion = "",
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -822,7 +825,9 @@ class NeuroID
 
         internal fun captureApplicationMetaData() {
             getApplicationContext()?.let {
-                val appInfo = getAppMetaData(it)
+                val appInfo = getAppMetaData(
+                    it,
+                    hostReactNativeVersion)
                 captureEvent(
                     queuedEvent = !isSDKStarted,
                     type = APPLICATION_METADATA,

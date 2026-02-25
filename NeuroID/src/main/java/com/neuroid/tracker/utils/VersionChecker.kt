@@ -14,7 +14,8 @@ class VersionChecker {
     }
 }
 
-fun getAppMetaData(context: Context): ApplicationMetaData? {
+fun getAppMetaData(context: Context,
+                   hostReactNativeVersion: String): ApplicationMetaData? {
     return try {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
@@ -30,6 +31,9 @@ fun getAppMetaData(context: Context): ApplicationMetaData? {
             versionNumber = versionCode,
             packageName = packageInfo.packageName,
             applicationName = packageInfo.applicationInfo?.name?:"",
+            hostRNVersion = hostReactNativeVersion,
+            hostMinSDKLevel = context.applicationInfo.minSdkVersion,
+            hostTargetSDKLevel = context.applicationInfo.targetSdkVersion
         )
     } catch (e: PackageManager.NameNotFoundException) {
         e.printStackTrace()
