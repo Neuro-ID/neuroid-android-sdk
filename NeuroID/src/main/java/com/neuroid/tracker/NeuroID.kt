@@ -80,7 +80,6 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        internal var hostReactNativeVersion: String = "",
         internal var serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
@@ -106,6 +105,7 @@ class NeuroID
         internal var verifyIntegrationHealth: Boolean = false
 
         internal var isRN = false
+        internal var hostReactNativeVersion = ""
 
         // Dependency Injections
         internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -334,7 +334,6 @@ class NeuroID
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
-                        nidConfiguration.hostReactNativeVersion,
                         nidConfiguration.serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -357,7 +356,6 @@ class NeuroID
                         isAdvancedDevice,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = false,
-                        hostReactNativeVersion = "",
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)
@@ -731,8 +729,9 @@ class NeuroID
             return this.application?.applicationContext
         }
 
-        override fun setIsRN() {
+        fun setIsRN(hostReactNativeVersion: String) {
             this.isRN = true
+            this.hostReactNativeVersion = hostReactNativeVersion
         }
 
         override fun enableLogging(enable: Boolean) {

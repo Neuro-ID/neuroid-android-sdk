@@ -1773,9 +1773,10 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.isRN = false
         assertEquals(false, NeuroID.getInternalInstance()?.isRN)
 
-        NeuroID.getInstance()?.setIsRN()
+        NeuroID.getInternalInstance()?.setIsRN("0.74.5")
 
         assertEquals(true, NeuroID.getInternalInstance()?.isRN)
+        assertEquals("0.74.5", NeuroID.getInternalInstance()?.hostReactNativeVersion)
     }
 
     //    enableLogging

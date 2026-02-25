@@ -18,10 +18,9 @@ class NIDRNBuilder( val application: Application? = null,
             isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
             advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
             useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
-            hostReactNativeVersion = options[RNConfigOptions.hostReactNativeVersion] as String,
             serverEnvironment = options[RNConfigOptions.environment] as String)).build()
 
-        NeuroID.getInstance()?.setIsRN()
+        NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.hostReactNativeVersion] as String)
     }
 
     /**
