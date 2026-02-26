@@ -80,7 +80,7 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        serverEnvironment: String = PRODUCTION
+        internal var serverEnvironment: String = PRODUCTION
 
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -105,6 +105,7 @@ class NeuroID
         internal var verifyIntegrationHealth: Boolean = false
 
         internal var isRN = false
+        internal var hostReactNativeVersion = ""
 
         // Dependency Injections
         internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -728,8 +729,9 @@ class NeuroID
             return this.application?.applicationContext
         }
 
-        override fun setIsRN() {
+        fun setIsRN(hostReactNativeVersion: String) {
             this.isRN = true
+            this.hostReactNativeVersion = hostReactNativeVersion
         }
 
         override fun enableLogging(enable: Boolean) {
@@ -822,7 +824,9 @@ class NeuroID
 
         internal fun captureApplicationMetaData() {
             getApplicationContext()?.let {
-                val appInfo = getAppMetaData(it)
+                val appInfo = getAppMetaData(
+                    it,
+                    hostReactNativeVersion)
                 captureEvent(
                     queuedEvent = !isSDKStarted,
                     type = APPLICATION_METADATA,

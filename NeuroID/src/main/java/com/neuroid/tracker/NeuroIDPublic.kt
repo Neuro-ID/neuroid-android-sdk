@@ -167,11 +167,6 @@ interface NeuroIDPublic {
     fun isStopped(): Boolean
 
     /**
-     * Set the ReactNative flag to true.
-     */
-    fun setIsRN()
-
-    /**
      * Enable/disable logging for the SDK, This is set true on startup. This turns on/off
      * all logging levels (error, debug, verbose, info and warn) that are generated in logcat.
      */

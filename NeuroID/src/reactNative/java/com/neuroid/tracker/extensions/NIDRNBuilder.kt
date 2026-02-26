@@ -20,7 +20,7 @@ class NIDRNBuilder( val application: Application? = null,
             useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
             serverEnvironment = options[RNConfigOptions.environment] as String)).build()
 
-        NeuroID.getInstance()?.setIsRN()
+        NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.hostReactNativeVersion] as String)
     }
 
     /**
@@ -34,6 +34,7 @@ class NIDRNBuilder( val application: Application? = null,
         var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
         var useAdvancedDeviceProxy = false
+        var hostReactNativeVersion = ""
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let {rnOptionsMap ->
@@ -55,6 +56,12 @@ class NIDRNBuilder( val application: Application? = null,
                     isAdvancedDevice = it
                 }
             }
+            // set the host reactnative version from hostReactNativeVersion option, default ""
+            if (rnOptionsMap.hasKey(RNConfigOptions.hostReactNativeVersion.name)) {
+                rnOptionsMap.getString(RNConfigOptions.hostReactNativeVersion.name)?.let {
+                    hostReactNativeVersion = it
+                }
+            }
             // set the environment params from the environment option, default PRODUCTION
             if (rnOptionsMap.hasKey(RNConfigOptions.environment.name)) {
                 rnOptionsMap.getString(RNConfigOptions.environment.name)?.let {
@@ -72,6 +79,7 @@ class NIDRNBuilder( val application: Application? = null,
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
         options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
+        options[RNConfigOptions.hostReactNativeVersion] = hostReactNativeVersion
 
         return options
     }
@@ -81,5 +89,6 @@ enum class RNConfigOptions {
     isAdvancedDevice,
     environment,
     advancedDeviceKey,
-    useAdvancedDeviceProxy
+    useAdvancedDeviceProxy,
+    hostReactNativeVersion
 }

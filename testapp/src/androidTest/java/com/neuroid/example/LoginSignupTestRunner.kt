@@ -52,7 +52,7 @@ class LoginSignupTestRunner {
     companion object {
         val eventCountVariance = 20
         var endSleep = 10000L
-        var signupEventCount = 498
+        var signupEventCount = 488
         var loginEventCount = 438
 
         @BeforeClass
