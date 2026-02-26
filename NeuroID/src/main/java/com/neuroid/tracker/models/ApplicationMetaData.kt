@@ -9,7 +9,6 @@ data class ApplicationMetaData(
     val applicationName: String,
     val hostRNVersion: String = "",
     val hostMinSDKLevel: Int = -1,
-    val hostTargetSDKLevel: Int = -1
 ) {
     fun toList(): List<Map<String, Any>> {
         return listOf(
@@ -20,10 +19,6 @@ data class ApplicationMetaData(
             mapOf(
                 "n" to "hostMinSDKLevel",
                 "v" to hostMinSDKLevel
-            ),
-            mapOf(
-                "n" to "hostTargetSDKLevel",
-                "v" to hostTargetSDKLevel
             ),
             mapOf(
                 "n" to "versionName",

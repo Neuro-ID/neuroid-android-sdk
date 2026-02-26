@@ -13,13 +13,11 @@ class ApplicationMetaDataTest {
             applicationName = "ExampleApp",
             hostRNVersion = "0.72.0",
             hostMinSDKLevel = 21,
-            hostTargetSDKLevel = 34
         )
         val list = metaData.toList()
         val map = list.associate { it["n"] to it["v"] }
         assertEquals("0.72.0", map["hostRNVersion"])
         assertEquals(21, map["hostMinSDKLevel"])
-        assertEquals(34, map["hostTargetSDKLevel"])
         assertEquals("1.2.3", map["versionName"])
         assertEquals(123, map["versionNumber"])
         assertEquals("com.example.app", map["packageName"])
@@ -38,7 +36,6 @@ class ApplicationMetaDataTest {
         val map = list.associate { it["n"] to it["v"] }
         assertEquals("", map["hostRNVersion"])
         assertEquals(-1, map["hostMinSDKLevel"])
-        assertEquals(-1, map["hostTargetSDKLevel"])
     }
 }
 

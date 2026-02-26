@@ -33,7 +33,6 @@ fun getAppMetaData(context: Context,
             applicationName = packageInfo.applicationInfo?.name?:"",
             hostRNVersion = hostReactNativeVersion,
             hostMinSDKLevel = context.applicationInfo.minSdkVersion,
-            hostTargetSDKLevel = context.applicationInfo.targetSdkVersion
         )
     } catch (e: PackageManager.NameNotFoundException) {
         e.printStackTrace()

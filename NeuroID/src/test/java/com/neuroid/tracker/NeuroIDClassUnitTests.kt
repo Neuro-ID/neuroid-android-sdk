@@ -1999,10 +1999,6 @@ open class NeuroIDClassUnitTests {
         val hostMinSDKLevelAttr = attrs.find { it["n"] == "hostMinSDKLevel" }
         assertEquals(24, hostMinSDKLevelAttr?.get("v"))
 
-        // Check for hostTargetSDKLevel
-        val hostTargetSDKLevelAttr = attrs.find { it["n"] == "hostTargetSDKLevel" }
-        assertEquals(34, hostTargetSDKLevelAttr?.get("v"))
-
         // Check for original parameters
         val versionNameAttr = attrs.find { it["n"] == "versionName" }
         assertEquals("1.2.3", versionNameAttr?.get("v"))
