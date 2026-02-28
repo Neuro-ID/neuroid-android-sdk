@@ -19,7 +19,7 @@ class NIDRNBuilderTest {
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
-        assert(!(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
+        assert((mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
         assert((mapOptions[RNConfigOptions.hostReactNativeVersion] as String) == "")
     }
 
@@ -56,7 +56,7 @@ class NIDRNBuilderTest {
         assert(!(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean))
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
-        assert(!(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
+        assert((mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
         assert((mapOptions[RNConfigOptions.hostReactNativeVersion] as String) == "")
     }
 }
