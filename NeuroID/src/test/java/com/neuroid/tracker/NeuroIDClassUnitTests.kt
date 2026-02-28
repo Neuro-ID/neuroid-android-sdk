@@ -90,7 +90,7 @@ open class NeuroIDClassUnitTests {
                 "key_test_fake1234",
                 false,
                 "",
-                false,
+                true,
                 ""
             )
         ).build()
