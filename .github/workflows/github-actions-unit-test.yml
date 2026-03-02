@@ -15,7 +15,7 @@ concurrency:
 jobs:
   buildAllFlavors:
     name: Build All Flavors
-    runs-on: ubuntu-latest-4-cores  # Use larger runner (requires Team/Enterprise) or use ubuntu-latest for free tier
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout
