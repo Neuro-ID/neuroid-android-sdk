@@ -21,29 +21,12 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      # - name: Configure swap space
-      #   run: |
-      #     sudo swapoff -a
-      #     sudo fallocate -l 8G /swapfile
-      #     sudo chmod 600 /swapfile
-      #     sudo mkswap /swapfile
-      #     sudo swapon /swapfile
-      #     sudo swapon --show
-
       - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: 'temurin'
-      
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: false
-      
       - name: Build All Flavors ⚙️🛠
-        # env:
-        #   GRADLE_OPTS: -Xmx3072m -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
         run: bash testBuildFlavors.sh
 
   build:
