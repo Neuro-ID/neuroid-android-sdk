@@ -355,7 +355,7 @@ class NeuroID
                         clientKey,
                         isAdvancedDevice,
                         advancedDeviceKey,
-                        useAdvancedDeviceProxy = false,
+                        useAdvancedDeviceProxy = true,
                         serverEnvironment
                     )
                 setNeuroIDInstance(neuroID)

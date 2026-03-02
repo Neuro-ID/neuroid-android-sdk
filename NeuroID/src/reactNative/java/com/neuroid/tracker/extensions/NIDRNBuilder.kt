@@ -33,7 +33,7 @@ class NIDRNBuilder( val application: Application? = null,
         var isAdvancedDevice = false
         var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
-        var useAdvancedDeviceProxy = false
+        var useAdvancedDeviceProxy = true
         var hostReactNativeVersion = ""
 
         val options = mutableMapOf<RNConfigOptions, Any>()
