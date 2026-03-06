@@ -282,6 +282,7 @@ class NIDGlobalEventCallback(
 
             // Used a callback to ensure the registration event happens before the callback
             singleTargetListenerRegister.registerComponent(
+                neuroID,
                 view,
                 guid,
                 "targetInteractionEvent",

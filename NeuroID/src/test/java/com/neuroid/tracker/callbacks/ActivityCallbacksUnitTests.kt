@@ -30,6 +30,7 @@ internal class ActivityCallbacksUnitTests {
 
         verify(exactly = 1) {
             mocks.mockedRegistration.registerTargetFromScreen(
+                mocks.mockedNeuroID,
                 mocks.mockedActivity,
                 true,
                 true,
@@ -37,7 +38,7 @@ internal class ActivityCallbacksUnitTests {
                 parent = mocks.mockedActivity::class.java.simpleName,
             )
 
-            mocks.mockedRegistration.registerWindowListeners(mocks.mockedActivity)
+            mocks.mockedRegistration.registerWindowListeners(mocks.mockedNeuroID, mocks.mockedActivity)
         }
     }
 
@@ -226,13 +227,15 @@ internal class ActivityCallbacksUnitTests {
                 )
 
                 mocks.mockedRegistration.registerTargetFromScreen(
+                    mocks.mockedNeuroID,
                     mocks.mockedActivity,
                     true,
                     true,
                     "activity",
                     parent = expectedActivityName,
                 )
-                mocks.mockedRegistration.registerWindowListeners(mocks.mockedActivity)
+                mocks.mockedRegistration.registerWindowListeners(mocks.mockedNeuroID,
+                    mocks.mockedActivity)
             }
         }
 

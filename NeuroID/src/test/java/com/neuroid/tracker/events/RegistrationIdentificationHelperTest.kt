@@ -33,14 +33,13 @@ class RegistrationIdentificationHelperTest {
         every { logger.e(any(), any()) } just runs
 
         neuroID = getMockedNeuroID()
-        registrationHelper = RegistrationIdentificationHelper(neuroID, logger)
+        registrationHelper = RegistrationIdentificationHelper(logger)
     }
 
     // RegistrationIdentificationHelper Tests
     @Test
     fun test_registrationIdentificationHelper_initialization() {
         // Verify the helper is created with correct dependencies
-        assertEquals(neuroID, registrationHelper.neuroID)
         assertEquals(logger, registrationHelper.logger)
 
         // Verify additionalListeners is created
@@ -50,5 +49,5 @@ class RegistrationIdentificationHelperTest {
         assert(registrationHelper.singleTargetListenerRegister != null)
     }
 
+    // Add more tests here for registerTargetFromScreen, registerWindowListeners, etc., passing neuroID as needed
 }
-

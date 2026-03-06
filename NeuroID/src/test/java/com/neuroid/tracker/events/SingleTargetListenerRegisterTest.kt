@@ -34,13 +34,12 @@ class SingleTargetListenerRegisterTest {
         neuroID = getMockedNeuroID()
         additionalListeners = AdditionalListeners(logger)
 
-        singleTargetRegister = SingleTargetListenerRegister(neuroID, logger, additionalListeners)
+        singleTargetRegister = SingleTargetListenerRegister(logger, additionalListeners)
     }
 
     // Initialization Tests
     @Test
     fun test_singleTargetListenerRegister_initialization() {
-        assertEquals(neuroID, singleTargetRegister.neuroID)
         assertEquals(logger, singleTargetRegister.logger)
         assertEquals(additionalListeners, singleTargetRegister.additionalListeners)
     }
@@ -142,6 +141,7 @@ class SingleTargetListenerRegisterTest {
 
         // Call method
         singleTargetRegister.registerFinalComponent(
+            neuroID,
             rts = null,
             idName = idName,
             et = et,
@@ -236,6 +236,7 @@ class SingleTargetListenerRegisterTest {
 
         // Call method
         singleTargetRegister.registerFinalComponent(
+            neuroID,
             rts = "test-rts",
             idName = idName,
             et = et,
@@ -356,11 +357,11 @@ class SingleTargetListenerRegisterTest {
         every { radioGroup.context } returns mockk(relaxed = true)
 
         // Run registerListeners for each view
-        singleTargetRegister.registerListeners(editText)
-        singleTargetRegister.registerListeners(autoCompleteTextView)
-        singleTargetRegister.registerListeners(spinner)
-        singleTargetRegister.registerListeners(absSpinner)
-        singleTargetRegister.registerListeners(radioGroup)
+        singleTargetRegister.registerListeners(neuroID, editText)
+        singleTargetRegister.registerListeners(neuroID, autoCompleteTextView)
+        singleTargetRegister.registerListeners(neuroID, spinner)
+        singleTargetRegister.registerListeners(neuroID,absSpinner)
+        singleTargetRegister.registerListeners(neuroID,radioGroup)
 
         // Verify logger was called for EditText
         verify { logger.d("NID-Activity", match { it.contains("EditText Listener") }) }

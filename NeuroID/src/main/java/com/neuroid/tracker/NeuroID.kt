@@ -269,7 +269,7 @@ class NeuroID
                 configService.retrieveOrRefreshCache(this)
             }
 
-            registrationIdentificationHelper = RegistrationIdentificationHelper(this, logger)
+            registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
         }
@@ -717,6 +717,7 @@ class NeuroID
             addListener: Boolean,
         ) {
             registrationIdentificationHelper.identifySingleView(
+                this,
                 view,
                 activity.getGUID(),
                 true,

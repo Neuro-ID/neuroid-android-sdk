@@ -41,8 +41,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -66,8 +66,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -91,8 +91,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -116,8 +116,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -141,8 +141,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: SeekBar, eid: seek bar, v:S~C~~0") }
     }
 
@@ -161,8 +161,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify {
             logger.d(
                 "NID test output",
@@ -209,8 +209,8 @@ class NIDIdentityAllViewsTest {
 
         val nidMock = getMockedNeuroID()
 
-        val registrationIdentificationHelper = RegistrationIdentificationHelper(nidMock, logger)
-        registrationIdentificationHelper.identifySingleView(view, "someguid")
+        val registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+        registrationIdentificationHelper.identifySingleView(nidMock, view, "someguid")
         verify { logger.d("NID test output", "etn: INPUT, et: RadioGroup, eid: RadioGroup, v:12") }
         verify(exactly = 2) {
             logger.d(

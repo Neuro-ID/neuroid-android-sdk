@@ -31,14 +31,14 @@ import java.util.UUID
 val textWatchers = mutableListOf<TextWatcher>()
 
 class RegistrationIdentificationHelper(
-    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
 ) {
     val additionalListeners: AdditionalListeners = AdditionalListeners(logger)
     val singleTargetListenerRegister: SingleTargetListenerRegister =
-        SingleTargetListenerRegister(neuroID, logger, additionalListeners)
+        SingleTargetListenerRegister(logger, additionalListeners)
 
     fun registerTargetFromScreen(
+        neuroID: NeuroID,
         activity: Activity,
         registerTarget: Boolean = true,
         registerListeners: Boolean = true,
@@ -56,6 +56,7 @@ class RegistrationIdentificationHelper(
 
         handleIdentifyAllViews {
             identifyAllViews(
+                neuroID,
                 viewMainContainer,
                 guid,
                 registerTarget,
@@ -66,7 +67,7 @@ class RegistrationIdentificationHelper(
         }
     }
 
-    fun registerWindowListeners(activity: Activity) {
+    fun registerWindowListeners(neuroID: NeuroID, activity: Activity) {
         val viewMainContainer =
             activity.window.decorView.findViewById<View>(
                 android.R.id.content,
@@ -98,6 +99,7 @@ class RegistrationIdentificationHelper(
     }
 
     fun registerSingleTargetListeners(
+        neuroID: NeuroID,
         view: View,
         guid: String,
         registerTarget: Boolean = true,
@@ -107,6 +109,7 @@ class RegistrationIdentificationHelper(
     ) {
         if (registerTarget) {
             singleTargetListenerRegister.registerComponent(
+                neuroID,
                 view,
                 guid,
                 activityOrFragment = activityOrFragment,
@@ -114,11 +117,12 @@ class RegistrationIdentificationHelper(
             )
         }
         if (registerListeners) {
-            singleTargetListenerRegister.registerListeners(view)
+            singleTargetListenerRegister.registerListeners(neuroID, view)
         }
     }
 
     fun identifyAllViews(
+        neuroID: NeuroID,
         viewParent: ViewGroup,
         guid: String,
         registerTarget: Boolean = true,
@@ -127,12 +131,12 @@ class RegistrationIdentificationHelper(
         parent: String = "",
     ) {
         logger.d("NIDDebug identifyAllViews", "viewParent: ${viewParent.getIdOrTag()}")
-
         viewParent.forEach {
             var shouldRegister = false
             when (it) {
                 is ViewGroup -> {
                     identifyAllViews(
+                        neuroID,
                         it,
                         guid,
                         registerTarget,
@@ -156,6 +160,7 @@ class RegistrationIdentificationHelper(
 
             if (shouldRegister) {
                 identifySingleView(
+                    neuroID,
                     it,
                     guid,
                     registerTarget,
@@ -168,6 +173,7 @@ class RegistrationIdentificationHelper(
     }
 
     fun identifySingleView(
+        neuroID: NeuroID,
         view: View,
         guid: String,
         registerTarget: Boolean = true,
@@ -179,6 +185,7 @@ class RegistrationIdentificationHelper(
         when (view) {
             is ViewGroup -> {
                 identifyAllViews(
+                    neuroID,
                     view,
                     guid,
                     registerTarget,
@@ -199,6 +206,7 @@ class RegistrationIdentificationHelper(
 
         if (shouldRegister) {
             registerSingleTargetListeners(
+                neuroID,
                 view,
                 guid,
                 registerTarget,
@@ -211,11 +219,10 @@ class RegistrationIdentificationHelper(
 }
 
 class SingleTargetListenerRegister(
-    val neuroID: NeuroID,
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
 ) {
-    fun registerListeners(view: View) {
+    fun registerListeners(neuroID: NeuroID, view: View) {
         val idName = view.getIdOrTag()
         val simpleClassName = view.javaClass.simpleName
 
@@ -322,6 +329,7 @@ class SingleTargetListenerRegister(
     }
 
     fun registerComponent(
+        neuroID: NeuroID,
         view: View,
         guid: String,
         rts: String? = null,
@@ -356,6 +364,7 @@ class SingleTargetListenerRegister(
         attrJson.add(metaData)
 
         registerFinalComponent(
+            neuroID,
             rts,
             idName,
             et,
@@ -368,6 +377,7 @@ class SingleTargetListenerRegister(
     }
 
     fun registerFinalComponent(
+        neuroID: NeuroID,
         rts: String? = null,
         idName: String,
         et: String,

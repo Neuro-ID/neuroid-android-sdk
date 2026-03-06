@@ -64,6 +64,7 @@ class FragmentCallbacks(
                 if (index != listFragment.size - 1) {
                     listFragment.removeAt(listFragment.lastIndex)
                     registrationHelper.registerTargetFromScreen(
+                        neuroID,
                         f.requireActivity(),
                         registerTarget = true,
                         registerListeners = false,
@@ -74,6 +75,7 @@ class FragmentCallbacks(
             } else {
                 listFragment.add(fragName)
                 registrationHelper.registerTargetFromScreen(
+                    neuroID,
                     f.requireActivity(),
                     registerTarget = true,
                     registerListeners = true,
@@ -116,6 +118,7 @@ class FragmentCallbacks(
         // On clients where we have trouble starting the registration do a force start
         if (neuroID.shouldForceStart()) {
             registrationHelper.registerTargetFromScreen(
+                neuroID,
                 f.requireActivity(),
                 true,
                 true,
@@ -130,6 +133,7 @@ class FragmentCallbacks(
                 msg = "Fragment - Resumed - REGISTER TARGET $simpleClassName",
             )
             registrationHelper.registerTargetFromScreen(
+                neuroID,
                 f.requireActivity(),
                 _isChangeOrientation.not(),
                 true,

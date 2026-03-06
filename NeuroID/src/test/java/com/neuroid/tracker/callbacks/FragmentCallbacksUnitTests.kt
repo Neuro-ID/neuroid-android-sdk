@@ -53,6 +53,7 @@ internal class FragmentCallbacksUnitTests {
             )
 
             mocks.mockedRegistration.registerTargetFromScreen(
+                mocks.mockedNeuroID,
                 mocks.mockedFragmentActivity,
                 true,
                 true,
@@ -122,6 +123,7 @@ internal class FragmentCallbacksUnitTests {
 
         verify(exactly = 0) {
             mocks.mockedRegistration.registerTargetFromScreen(
+                mocks.mockedNeuroID,
                 mocks.mockedFragmentActivity,
                 true,
                 true,
@@ -209,6 +211,7 @@ internal class FragmentCallbacksUnitTests {
             mocks.mockedNeuroID.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
+                mocks.mockedNeuroID,
                 mocks.mockedFragmentActivity,
                 false,
                 true,
@@ -236,6 +239,7 @@ internal class FragmentCallbacksUnitTests {
             mocks.mockedNeuroID.shouldForceStart()
 
             mocks.mockedRegistration.registerTargetFromScreen(
+                mocks.mockedNeuroID,
                 mocks.mockedFragmentActivity,
                 true,
                 true,
