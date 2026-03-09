@@ -256,8 +256,9 @@ internal fun getMockedNIDJobServiceManager(isStopped: Boolean = true): NIDJobSer
 
 internal fun getMockedRegistrationIdentificationHelper(): RegistrationIdentificationHelper {
     val mocked = mockk<RegistrationIdentificationHelper>()
-    every { mocked.registerTargetFromScreen(any(), any(), any(), any(), any()) } just runs
-    every { mocked.registerWindowListeners(any()) } just runs
+    val mockedNeuroID = getMockedNeuroID()
+    every { mocked.registerTargetFromScreen(any(), any(), any(), any(), any(), any()) } just runs
+    every { mocked.registerWindowListeners(any(), any()) } just runs
     return mocked
 }
 

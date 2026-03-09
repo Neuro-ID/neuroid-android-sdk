@@ -31,6 +31,7 @@ class ActivityCallbacks(
      */
     fun forceStart(activity: Activity) {
         registrationHelper.registerTargetFromScreen(
+            neuroID,
             activity,
             true,
             true,
@@ -38,7 +39,7 @@ class ActivityCallbacks(
             parent = activity::class.java.simpleName,
         )
         // register listeners for focus, blur and touch events
-        registrationHelper.registerWindowListeners(activity)
+        registrationHelper.registerWindowListeners(neuroID, activity)
     }
 
     override fun onActivityCreated(
@@ -149,6 +150,7 @@ class ActivityCallbacks(
             activitiesStarted++
 
             registrationHelper.registerTargetFromScreen(
+                neuroID,
                 activity,
                 registerTarget = true,
                 registerListeners = true,
@@ -156,7 +158,7 @@ class ActivityCallbacks(
                 parent = currentActivityName,
             )
 
-            registrationHelper.registerWindowListeners(activity)
+            registrationHelper.registerWindowListeners(neuroID, activity)
         }
     }
 
