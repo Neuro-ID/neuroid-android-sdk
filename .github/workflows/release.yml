@@ -4,7 +4,7 @@
 # in https://jitpack.io/#neuro-id/neuroid-android-sdk
 # ******************************************************************
 
-name: Release SDK Version
+name: Release Android SDK
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
     paths:
       - version.properties
 
-env: 
-  ACTION_URL: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+env:
+  ACTION_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
 
 jobs:
   publish:
@@ -40,31 +40,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Grant Permission for Gradlew and ReadProperties to Execute
-        run: | 
+      - name: Get Version and Grant Permission for Gradlew
+        run: |
           chmod +x gradlew
-          chmod +x properties_read.sh
-          ./properties_read.sh
+          echo "TAG=$(grep '^SDK_VERSION=' version.properties | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Build AAR ⚙️🛠
         run: bash ./gradlew :NeuroID:assemble
 
-      - name: Create TAG Name
-        run: |
-            git config --global user.email "developer@neuro-id.com"
-            git config --global user.name "neuroid-developer"
-            echo "TAG_NAME=v${{env.GITHUB_SDK_VERSION}}" >> $GITHUB_ENV
-
-      - name: Create Release ✅ and upload assets
-        run: |
-          gh release create ${{ env.TAG_NAME }} \
-          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-release \
-          NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-release \
-          NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-androidLib-${{ env.GITHUB_SDK_VERSION}}-debug \
-          NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-debug.aar#neuro-id-android-sdk-reactNativeLib-${{ env.GITHUB_SDK_VERSION}}-debug \
-          --generate-notes --title "${{ env.TAG_NAME }}"
+      - name: Create Release and upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ env.TAG }}" \
+            NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.TAG }}-release.aar#neuro-id-android-sdk-androidLib-${{ env.TAG }}-release \
+            NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.TAG }}-release.aar#neuro-id-android-sdk-reactNativeLib-${{ env.TAG }}-release \
+            NeuroID/build/outputs/aar/androidLib/neuro-id-android-sdk-androidLib-${{ env.TAG }}-debug.aar#neuro-id-android-sdk-androidLib-${{ env.TAG }}-debug \
+            NeuroID/build/outputs/aar/reactNativeLib/neuro-id-android-sdk-reactNativeLib-${{ env.TAG }}-debug.aar#neuro-id-android-sdk-reactNativeLib-${{ env.TAG }}-debug \
+            --latest \
+            --title "${{ env.TAG }}" \
+            --notes 'The NeuroID Android SDK (${{ env.TAG }}) is now available.' \
+            --generate-notes
 
       - name: Send Release Succeeded Result to NID Mobile Infra Repo
         if: success()
@@ -74,7 +70,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
             https://api.github.com/repos/Neuro-ID/neuroid-mobile-infra/dispatches \
-            -d '{"event_type":"release","client_payload":{"status":"success", "service": "android", "version": "${{ env.TAG_NAME }}", "action_url": "${{ env.ACTION_URL }}"}}'
+            -d '{"event_type":"release","client_payload":{"status":"success", "service": "android", "version": "${{ env.TAG }}", "action_url": "${{ env.ACTION_URL }}"}}'
 
       - name: Send Release Failure Result to NID Mobile Infra Repo
         if: failure()
@@ -84,4 +80,4 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
             https://api.github.com/repos/Neuro-ID/neuroid-mobile-infra/dispatches \
-            -d '{"event_type":"release","client_payload":{"status":"failure", "service": "android", "version": "${{ env.TAG_NAME }}", "action_url": "${{ env.ACTION_URL }}"}}'
+            -d '{"event_type":"release","client_payload":{"status":"failure", "service": "android", "version": "${{ env.TAG }}", "action_url": "${{ env.ACTION_URL }}"}}'
