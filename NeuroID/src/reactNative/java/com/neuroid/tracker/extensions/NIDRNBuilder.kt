@@ -20,7 +20,7 @@ class NIDRNBuilder( val application: Application? = null,
             useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
             serverEnvironment = options[RNConfigOptions.environment] as String)).build()
 
-        NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.hostReactNativeVersion] as String)
+        NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.rnVersion] as String)
     }
 
     /**
@@ -34,7 +34,7 @@ class NIDRNBuilder( val application: Application? = null,
         var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
         var useAdvancedDeviceProxy = true
-        var hostReactNativeVersion = ""
+        var rnVersion = ""
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let {rnOptionsMap ->
@@ -56,10 +56,10 @@ class NIDRNBuilder( val application: Application? = null,
                     isAdvancedDevice = it
                 }
             }
-            // set the host reactnative version from hostReactNativeVersion option, default ""
-            if (rnOptionsMap.hasKey(RNConfigOptions.hostReactNativeVersion.name)) {
-                rnOptionsMap.getString(RNConfigOptions.hostReactNativeVersion.name)?.let {
-                    hostReactNativeVersion = it
+            // set the host reactnative version from rnVersion option, default ""
+            if (rnOptionsMap.hasKey(RNConfigOptions.rnVersion.name)) {
+                rnOptionsMap.getString(RNConfigOptions.rnVersion.name)?.let {
+                    rnVersion = it
                 }
             }
             // set the environment params from the environment option, default PRODUCTION
@@ -79,7 +79,7 @@ class NIDRNBuilder( val application: Application? = null,
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
         options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
-        options[RNConfigOptions.hostReactNativeVersion] = hostReactNativeVersion
+        options[RNConfigOptions.rnVersion] = rnVersion
 
         return options
     }
@@ -90,5 +90,5 @@ enum class RNConfigOptions {
     environment,
     advancedDeviceKey,
     useAdvancedDeviceProxy,
-    hostReactNativeVersion
+    rnVersion
 }

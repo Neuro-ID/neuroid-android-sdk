@@ -105,7 +105,7 @@ class NeuroID
         internal var verifyIntegrationHealth: Boolean = false
 
         internal var isRN = false
-        internal var hostReactNativeVersion = ""
+        internal var rnVersion = ""
 
         // Dependency Injections
         internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -126,6 +126,7 @@ class NeuroID
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
         internal lateinit var locationService: LocationService
         internal lateinit var nidTime: NIDTime
+        internal lateinit var sharedPrefsDefaults: NIDSharedPrefsDefaults
 
         internal var clipboardManager: ClipboardManager? = null
         internal var networkConnectionType = "unknown"
@@ -218,6 +219,7 @@ class NeuroID
                     clientKey,
                 )
 
+                sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
                 if (isAdvancedDevice) {
                     resetClientId()
                     checkThenCaptureAdvancedDevice(isAdvancedDevice)
@@ -228,7 +230,7 @@ class NeuroID
                         logger,
                         this,
                         configService,
-                        NIDSharedPrefsDefaults(it),
+                        sharedPrefsDefaults,
                         identifierService,
                         validationService,
                     )
@@ -704,8 +706,7 @@ class NeuroID
 
         internal fun resetClientId() {
             application?.let {
-                val sharedDefaults = NIDSharedPrefsDefaults(it)
-                clientID = sharedDefaults.resetClientID()
+                clientID = sharedPrefsDefaults.resetClientID()
             }
         }
 
@@ -730,9 +731,9 @@ class NeuroID
             return this.application?.applicationContext
         }
 
-        fun setIsRN(hostReactNativeVersion: String) {
+        fun setIsRN(rnVersion: String) {
             this.isRN = true
-            this.hostReactNativeVersion = hostReactNativeVersion
+            this.rnVersion = rnVersion
         }
 
         override fun enableLogging(enable: Boolean) {
@@ -827,9 +828,10 @@ class NeuroID
             getApplicationContext()?.let {
                 val appInfo = getAppMetaData(
                     it,
-                    hostReactNativeVersion)
+                    rnVersion)
                 captureEvent(
                     queuedEvent = !isSDKStarted,
+                    p = sharedPrefsDefaults.getPlatform(),
                     type = APPLICATION_METADATA,
                     attrs =
                         appInfo?.toList()

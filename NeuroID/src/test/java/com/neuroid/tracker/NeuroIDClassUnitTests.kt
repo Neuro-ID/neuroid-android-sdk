@@ -903,6 +903,9 @@ open class NeuroIDClassUnitTests {
         val originalClientID = NeuroID.getInternalInstance()?.clientID
 
         // Call resetClientId
+        val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
+        every{mockNIDSharedPrefsDefaults.resetClientID()} returns "new-client-id-12345"
+        NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.resetClientId()
 
         // Verify clientID was updated
@@ -911,7 +914,7 @@ open class NeuroIDClassUnitTests {
 
         // Verify resetClientID was called
         verify(exactly = 1) {
-            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
+            mockNIDSharedPrefsDefaults.resetClientID()
         }
 
         unmockkConstructor(NIDSharedPrefsDefaults::class)
@@ -1776,7 +1779,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.setIsRN("0.74.5")
 
         assertEquals(true, NeuroID.getInternalInstance()?.isRN)
-        assertEquals("0.74.5", NeuroID.getInternalInstance()?.hostReactNativeVersion)
+        assertEquals("0.74.5", NeuroID.getInternalInstance()?.rnVersion)
     }
 
     //    enableLogging
@@ -1976,9 +1979,12 @@ open class NeuroIDClassUnitTests {
         every { mockApplication.applicationContext } returns mockContext
 
         NeuroID.getInternalInstance()?.application = mockApplication
-        NeuroID.getInternalInstance()?.hostReactNativeVersion = "0.72.0"
+        NeuroID.getInternalInstance()?.rnVersion = "0.72.0"
 
         // Call captureApplicationMetaData
+        val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
+        every{mockNIDSharedPrefsDefaults.getPlatform()}  returns "Android"
+        NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
         // Verify event was captured
@@ -1991,12 +1997,12 @@ open class NeuroIDClassUnitTests {
         assert(attrs != null)
         assert(attrs!!.isNotEmpty())
 
-        // Check for hostRNVersion
-        val hostRNVersionAttr = attrs.find { it["n"] == "hostRNVersion" }
+        // Check for rnVersion
+        val hostRNVersionAttr = attrs.find { it["n"] == "rnVersion" }
         assertEquals("0.72.0", hostRNVersionAttr?.get("v"))
 
-        // Check for hostMinSDKLevel
-        val hostMinSDKLevelAttr = attrs.find { it["n"] == "hostMinSDKLevel" }
+        // Check for minOSVersion
+        val hostMinSDKLevelAttr = attrs.find { it["n"] == "minOSVersion" }
         assertEquals(24, hostMinSDKLevelAttr?.get("v"))
 
         // Check for original parameters
@@ -2034,9 +2040,12 @@ open class NeuroIDClassUnitTests {
         every { mockApplication.applicationContext } returns mockContext
 
         NeuroID.getInternalInstance()?.application = mockApplication
-        // Don't set hostReactNativeVersion - should use default empty string
+        // Don't set rnVersion - should use default empty string
 
         // Call captureApplicationMetaData
+        val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
+        every{mockNIDSharedPrefsDefaults.getPlatform()}  returns "Android"
+        NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
         // Verify event was captured
@@ -2049,7 +2058,7 @@ open class NeuroIDClassUnitTests {
         assert(attrs != null)
 
         // Check for hostRNVersion (should be empty string by default)
-        val hostRNVersionAttr = attrs?.find { it["n"] == "hostRNVersion" }
+        val hostRNVersionAttr = attrs?.find { it["n"] == "rnVersion" }
         assertEquals("", hostRNVersionAttr?.get("v"))
     }
 

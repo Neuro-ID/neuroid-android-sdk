@@ -20,7 +20,7 @@ class NIDRNBuilderTest {
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
         assert((mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
-        assert((mapOptions[RNConfigOptions.hostReactNativeVersion] as String) == "")
+        assert((mapOptions[RNConfigOptions.rnVersion] as String) == "")
     }
 
     @Test
@@ -31,12 +31,12 @@ class NIDRNBuilderTest {
         every {options.hasKey(RNConfigOptions.environment.name)} returns true
         every {options.hasKey(RNConfigOptions.advancedDeviceKey.name)} returns true
         every {options.hasKey(RNConfigOptions.useAdvancedDeviceProxy.name)} returns true
-        every {options.hasKey( RNConfigOptions.hostReactNativeVersion.name)} returns true
+        every {options.hasKey( RNConfigOptions.rnVersion.name)} returns true
         every {options.getBoolean(RNConfigOptions.isAdvancedDevice.name)} returns true
         every {options.getString(RNConfigOptions.advancedDeviceKey.name)} returns "testkey"
         every {options.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name)} returns false
         every {options.getString(RNConfigOptions.environment.name)} returns NeuroID.PRODSCRIPT_DEVCOLLECTION
-        every {options.getString(RNConfigOptions.hostReactNativeVersion.name)} returns "0.71.0"
+        every {options.getString(RNConfigOptions.rnVersion.name)} returns "0.71.0"
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         println(mapOptions)
@@ -44,7 +44,7 @@ class NIDRNBuilderTest {
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODSCRIPT_DEVCOLLECTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "testkey")
         assert(!(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
-        assert(mapOptions[RNConfigOptions.hostReactNativeVersion] as String == "0.71.0")
+        assert(mapOptions[RNConfigOptions.rnVersion] as String == "0.71.0")
     }
 
     @Test
@@ -57,6 +57,6 @@ class NIDRNBuilderTest {
         assert((mapOptions[RNConfigOptions.environment] as String) == NeuroID.PRODUCTION)
         assert((mapOptions[RNConfigOptions.advancedDeviceKey] as String) == "")
         assert((mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean))
-        assert((mapOptions[RNConfigOptions.hostReactNativeVersion] as String) == "")
+        assert((mapOptions[RNConfigOptions.rnVersion] as String) == "")
     }
 }
