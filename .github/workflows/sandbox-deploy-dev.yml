@@ -39,3 +39,12 @@ jobs:
             -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
             https://api.github.com/repos/Neuro-ID/neuroid-reactnative-sdk-sandbox/dispatches \
             -d '{"event_type":"sandbox-deploy-dev"}'
+
+      - name: Trigger Sandbox Compose Dev Deployment
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GPR_API_KEY }}" \
+            https://api.github.com/repos/Neuro-ID/neuroid-android-sdk-sandbox-compose/dispatches \
+            -d '{"event_type":"sandbox-deploy-dev"}'
