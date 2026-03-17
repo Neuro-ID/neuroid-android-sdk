@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.atomic.AtomicInteger
 
 internal class NIDSessionService(
     val logger: NIDLogWrapper,
@@ -27,6 +28,12 @@ internal class NIDSessionService(
     private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
 ) {
+    // Tracks the number of pauseCollection calls to detect stale resumeCollectionCompletion callbacks.
+    // When resumeCollection registers an invokeOnCompletion callback, it captures the current
+    // generation. If another pauseCollection (or stopSession) occurs before the callback fires,
+    // the generation will have incremented and the stale callback will be a no-op.
+    internal val pauseGeneration = AtomicInteger(0)
+
     internal fun createSession() {
         neuroID.timestamp = System.currentTimeMillis()
 
@@ -152,6 +159,7 @@ internal class NIDSessionService(
 
     @Synchronized
     internal fun pauseCollection(flushEvents: Boolean) {
+        pauseGeneration.incrementAndGet()
         neuroID.captureEvent(type = PAUSE_EVENT_CAPTURE, ct = "SDK_EVENT")
         NeuroID._isSDKStarted = false
         if (neuroID.pauseCollectionJob == null ||
@@ -163,6 +171,10 @@ internal class NIDSessionService(
                     neuroID.nidJobServiceManager?.sendEvents(flushEvents)
                     neuroID.nidJobServiceManager?.stopJob()
                 }
+        }
+
+        runBlocking {
+            neuroID.pauseCollectionJob?.join()
         }
 
         neuroID.locationService.shutdownLocationCoroutine(
@@ -177,13 +189,14 @@ internal class NIDSessionService(
         if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
             return
         }
+        val currentGeneration = pauseGeneration.get()
         if (neuroID.pauseCollectionJob?.isCompleted == true ||
             neuroID.pauseCollectionJob?.isCancelled == true ||
             neuroID.pauseCollectionJob == null
         ) {
-            resumeCollectionCompletion()
+            resumeCollectionCompletion(currentGeneration)
         } else {
-            neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion() }
+            neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion(currentGeneration) }
         }
 
         if (configService.configCache.geoLocation) {
@@ -193,7 +206,12 @@ internal class NIDSessionService(
         }
     }
 
-    internal fun resumeCollectionCompletion() {
+    internal fun resumeCollectionCompletion(expectedGeneration: Int) {
+        // If another pauseCollection (or stopSession) was called after this resume was
+        // scheduled, the generation will have incremented — ignore this stale callback.
+        if (pauseGeneration.get() != expectedGeneration) {
+            return
+        }
         NeuroID._isSDKStarted = true
         neuroID.application?.let {
             if (neuroID.nidJobServiceManager?.isSetup == false) {
