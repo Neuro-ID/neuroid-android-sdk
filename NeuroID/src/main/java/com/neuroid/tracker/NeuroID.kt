@@ -376,6 +376,8 @@ class NeuroID
 
             // Internal accessible property to allow internal get/set
             @Suppress("ktlint:standard:backing-property-naming")
+
+            @Volatile
             internal var _isSDKStarted: Boolean = false
 
             // public exposed variable for customers to see but NOT write to

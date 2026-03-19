@@ -814,7 +814,7 @@ class NIDSessionServiceTest {
                 mockedNeuroID,
             )
 
-        sessionService.resumeCollectionCompletion()
+        sessionService.resumeCollectionCompletion(sessionService.pauseGeneration.get())
 
         // Verify isSetup is checked
         verify(exactly = 1) {
@@ -853,7 +853,7 @@ class NIDSessionServiceTest {
                 mockedNeuroID,
             )
 
-        sessionService.resumeCollectionCompletion()
+        sessionService.resumeCollectionCompletion(sessionService.pauseGeneration.get())
 
         // Verify isSetup is checked
         verify(exactly = 1) {
@@ -873,6 +873,47 @@ class NIDSessionServiceTest {
         assert(NeuroID._isSDKStarted)
 
         NeuroID._isSDKStarted = false
+    }
+
+    /**
+     * Test that a stale resumeCollectionCompletion callback (with an outdated pauseGeneration)
+     * does NOT set _isSDKStarted to true. This verifies the race condition fix where:
+     *   pauseCollection() -> resumeCollection() -> stopSession()
+     * would previously allow a deferred resumeCollectionCompletion to overwrite the stopped state.
+     */
+    @Test
+    fun test_resumeCollectionCompletion_staleGeneration_ignored() {
+        val mockedServices = buildMockClasses()
+        val mockedJobServiceManager = mockedServices.mockedJobServiceManager
+        val mockedNeuroID = mockedServices.mockedNeuroID
+
+        every { mockedJobServiceManager.isSetup } returns false
+
+        val sessionService =
+            createSessionServiceInstance(
+                mockedNeuroID,
+            )
+
+        // Capture the current generation
+        val staleGeneration = sessionService.pauseGeneration.get()
+
+        // Simulate a pauseCollection call which increments the generation
+        sessionService.pauseGeneration.incrementAndGet()
+
+        // Now call resumeCollectionCompletion with the OLD generation
+        NeuroID._isSDKStarted = false
+        sessionService.resumeCollectionCompletion(staleGeneration)
+
+        // _isSDKStarted should remain false because the generation was stale
+        assert(!NeuroID._isSDKStarted)
+
+        // Verify that no job service methods were called
+        verify(exactly = 0) {
+            mockedJobServiceManager.startJob(any(), any())
+        }
+        verify(exactly = 0) {
+            mockedJobServiceManager.restart()
+        }
     }
 
     // STOP SESSION
