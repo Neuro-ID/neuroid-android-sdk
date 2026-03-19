@@ -173,10 +173,6 @@ internal class NIDSessionService(
                 }
         }
 
-        runBlocking {
-            neuroID.pauseCollectionJob?.join()
-        }
-
         neuroID.locationService.shutdownLocationCoroutine(
             neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
         )
@@ -189,6 +185,13 @@ internal class NIDSessionService(
         if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
             return
         }
+
+        // Set started flag eagerly so isStopped() reflects the resumed state
+        // immediately. The generation counter in resumeCollectionCompletion
+        // will protect against a subsequent pauseCollection/stopSession
+        // reverting this.
+        NeuroID._isSDKStarted = true
+
         val currentGeneration = pauseGeneration.get()
         if (neuroID.pauseCollectionJob?.isCompleted == true ||
             neuroID.pauseCollectionJob?.isCancelled == true ||
@@ -206,6 +209,7 @@ internal class NIDSessionService(
         }
     }
 
+    @Synchronized
     internal fun resumeCollectionCompletion(expectedGeneration: Int) {
         // If another pauseCollection (or stopSession) was called after this resume was
         // scheduled, the generation will have incremented — ignore this stale callback.

@@ -425,10 +425,6 @@ internal fun getMockedJob(
         mockedJob.isCompleted
     } returns isCompleted
 
-    coEvery {
-        mockedJob.join()
-    } just runs
-
     every {
         mockedJob.isCancelled
     } returns isCancelled
