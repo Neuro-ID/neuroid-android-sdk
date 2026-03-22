@@ -30,6 +30,16 @@ interface NeuroIDPublic {
     fun setTestingNeuroIDDevURL()
 
     /**
+     * Set a user id.
+     */
+    fun setUserID(userID: String): Boolean
+
+    /**
+     * Return the currently set user id.
+     */
+    fun getUserID(): String
+
+    /**
      * Return the currently set registered user id.
      */
     fun getRegisteredUserID(): String

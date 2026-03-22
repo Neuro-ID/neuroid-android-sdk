@@ -613,6 +613,8 @@ class NeuroID
 
         override fun getEnvironment(): String = environment
 
+        override fun getSessionID(): String = sessionID
+
         override fun getClientID(): String = clientID
 
         internal fun shouldForceStart(): Boolean {
@@ -674,6 +676,8 @@ class NeuroID
         }
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
+
+        override fun getUserID() = identifierService.getUserID(this)
 
         override fun setUserID(userID: String): Boolean {
             return identifierService.setUserID(this, userID, true)
