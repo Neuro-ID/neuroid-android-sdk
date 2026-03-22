@@ -117,8 +117,6 @@ internal class NIDIdentifierService(
         }
     }
 
-    fun getUserID(neuroID: NeuroID) = neuroID.userID
-
     fun setUserID(
         neuroID: NeuroID,
         userId: String,

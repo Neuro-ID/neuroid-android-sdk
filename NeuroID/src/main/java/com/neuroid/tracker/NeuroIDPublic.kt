@@ -12,24 +12,6 @@ interface NeuroIDPublic {
     val compose: JetpackCompose
 
     /**
-     * Enable/Disable a Debug Integration Health Report to be generated. (Note: Debug Build Only)
-     */
-    @Deprecated("setVerifyIntegrationHealth is deprecated")
-    fun setVerifyIntegrationHealth(verify:Boolean)
-
-    /**
-     * Print Instructions to locate and run Debug Integration Health Report. (Note: Debug Build Only)
-     */
-    @Deprecated("printIntegrationHealthInstruction is deprecated")
-    fun printIntegrationHealthInstruction()
-
-    /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
-    fun getClientId(): String
-
-    /**
      * Return the currently set client id (use this one).
      */
     fun getClientID(): String
@@ -46,22 +28,6 @@ interface NeuroIDPublic {
      */
     @VisibleForTesting
     fun setTestingNeuroIDDevURL()
-
-    /**
-     * Set a user id.
-     */
-    fun setUserID(userID: String): Boolean
-
-    /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-    fun getUserId(): String
-
-    /**
-     * Return the currently set user id.
-     */
-    fun getUserID(): String
 
     /**
      * Return the currently set registered user id.
@@ -97,56 +63,14 @@ interface NeuroIDPublic {
     fun excludeViewByTestID(id: String)
 
     /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("setEnvironment is deprecated and no longer required")
-    fun setEnvironment(environment: String)
-
-    /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("setEnvironmentProduction is deprecated and no longer required")
-    fun setEnvironmentProduction(prod: Boolean)
-
-    /**
      * Return the current environment set for operation (live/test).
      */
     fun getEnvironment(): String
 
     /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("setSiteId is deprecated and no longer required")
-    fun setSiteId(siteId: String)
-
-    /**
-     * Deprecated, do not use
-     */
-    @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
-    fun getSessionId(): String
-
-    /**
      * get the currently set session id
      */
     fun getSessionID(): String
-
-    /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("formSubmit is deprecated and no longer required")
-    fun formSubmit()
-
-    /**
-     * Deprecated, do not use!
-     */
-    @Deprecated("formSubmitSuccess is deprecated and no longer required")
-    fun formSubmitSuccess()
-
-    /**
-     * Deprecated, do not use
-     */
-    @Deprecated("formSubmitFailure is deprecated and no longer required")
-    fun formSubmitFailure()
 
     /**
      * Start the SDK, start a new session and use the userID as the sessionID. Return true if
