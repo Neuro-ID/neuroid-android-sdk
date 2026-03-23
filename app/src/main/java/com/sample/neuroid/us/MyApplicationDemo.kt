@@ -34,8 +34,6 @@ class MyApplicationDemo : MultiDexApplication() {
             isAdvancedDevice = true, serverEnvironment = NeuroID.PRODSCRIPT_DEVCOLLECTION
         ).build()
         // NeuroID.getInstance()?.start()
-        // NeuroID.getInstance()?.setEnvironmentProduction(true)
-        // NeuroID.getInstance()?.setSiteId(configHelper.formId)
         NeuroID.getInstance()?.startAppFlow("form_parks912", null)
         // NeuroID.getInstance()?.startAppFlow("form_skein469", "testSession")
         // NeuroID.getInstance()?.startSession("hasdklghs")

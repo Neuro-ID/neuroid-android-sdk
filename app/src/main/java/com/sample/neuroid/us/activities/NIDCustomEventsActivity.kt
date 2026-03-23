@@ -26,18 +26,6 @@ class NIDCustomEventsActivity : AppCompatActivity() {
             buttonSendCustomEvent.setOnClickListener {
                 showToast()
             }
-            buttonSendFormSubmit.setOnClickListener {
-                NeuroID.getInstance()?.formSubmit()
-                showToast()
-            }
-            buttonSendFormSuccess.setOnClickListener {
-                NeuroID.getInstance()?.formSubmitSuccess()
-                showToast()
-            }
-            buttonSendFormFailure.setOnClickListener {
-                NeuroID.getInstance()?.formSubmitFailure()
-                showToast()
-            }
         }
     }
 

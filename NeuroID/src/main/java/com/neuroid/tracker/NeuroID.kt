@@ -16,15 +16,11 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.FOCUS
-import com.neuroid.tracker.events.FORM_SUBMIT
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.FULL_BUFFER
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.PAGE_SUBMIT
@@ -101,8 +97,6 @@ class NeuroID
         internal var forceStart: Boolean = false
 
         internal var metaData: NIDMetaData? = null
-
-        internal var verifyIntegrationHealth: Boolean = false
 
         internal var isRN = false
         internal var rnVersion = ""
@@ -614,42 +608,9 @@ class NeuroID
             }
         }
 
-        @Deprecated("setEnvironment is deprecated and no longer required")
-        override fun setEnvironment(environment: String) {
-            logger.i(msg = "**** NOTE: setEnvironment METHOD IS DEPRECATED")
-        }
-
-        @Deprecated("setEnvironmentProduction is deprecated and no longer required")
-        override fun setEnvironmentProduction(prod: Boolean) {
-            logger.i(msg = "**** NOTE: setEnvironmentProduction METHOD IS DEPRECATED")
-        }
-
         override fun getEnvironment(): String = environment
 
-        @Deprecated("setSiteId is deprecated and no longer required")
-        override fun setSiteId(siteId: String) {
-            logger.i(msg = "**** NOTE: setSiteId METHOD IS DEPRECATED")
-
-            siteID = siteId
-        }
-
-        @Deprecated("getSiteId is deprecated")
-        internal fun getSiteId(): String {
-            logger.i(msg = "**** NOTE: getSiteId METHOD IS DEPRECATED")
-            return ""
-        }
-
-        @Deprecated("Replaced with getSessionID", ReplaceWith("getSessionID()"))
-        override fun getSessionId(): String {
-            return getSessionID()
-        }
-
         override fun getSessionID(): String = sessionID
-
-        @Deprecated("Replaced with getClientID", ReplaceWith("getClientID()"))
-        override fun getClientId(): String {
-            return getClientID()
-        }
 
         override fun getClientID(): String = clientID
 
@@ -665,37 +626,6 @@ class NeuroID
         internal fun getTabId(): String = tabID
 
         internal fun getFirstTS(): Long = timestamp
-
-        @Deprecated("setVerifyIntegrationHealth is deprecated")
-        override fun setVerifyIntegrationHealth(verify: Boolean) {
-            logger.i(msg="**** NOTE: THIS METHOD IS DEPRECATED AND IS NO LONGER FUNCTIONAL")
-        }
-
-        @Deprecated("printIntegrationHealthInstruction is deprecated")
-        override fun printIntegrationHealthInstruction() {
-            logger.i(msg="**** NOTE: THIS METHOD IS DEPRECATED AND IS NO LONGER FUNCTIONAL")
-        }
-
-        @Deprecated("formSubmit is deprecated and no longer required")
-        override fun formSubmit() {
-            logger.i(msg = "**** NOTE: formSubmit METHOD IS DEPRECATED")
-
-            captureEvent(type = FORM_SUBMIT)
-        }
-
-        @Deprecated("formSubmitSuccess is deprecated and no longer required")
-        override fun formSubmitSuccess() {
-            logger.i(msg = "**** NOTE: formSubmitSuccess METHOD IS DEPRECATED")
-
-            captureEvent(type = FORM_SUBMIT_SUCCESS)
-        }
-
-        @Deprecated("formSubmitFailure is deprecated and no longer required")
-        override fun formSubmitFailure() {
-            logger.i(msg = "**** NOTE: formSubmitFailure METHOD IS DEPRECATED")
-
-            captureEvent(type = FORM_SUBMIT_FAILURE)
-        }
 
         override fun start(completion: (Boolean) -> Unit) =
             sessionService.start(siteID = null) {
@@ -743,10 +673,6 @@ class NeuroID
         }
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
-
-        // Identifier Commands
-        @Deprecated("Replaced with getUserID", ReplaceWith("getUserID()"))
-        override fun getUserId() = identifierService.getUserID(this)
 
         override fun getUserID() = identifierService.getUserID(this)
 
@@ -1007,9 +933,6 @@ class NeuroID
 
             // force event buffer flush when these events are encountered.
             when (type) {
-                FORM_SUBMIT -> {
-                    nidJobServiceManager.sendEvents(true)
-                }
                 PAGE_SUBMIT -> {
                     nidJobServiceManager.sendEvents(true)
                 }
