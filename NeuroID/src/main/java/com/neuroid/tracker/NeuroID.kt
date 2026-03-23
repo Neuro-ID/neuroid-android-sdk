@@ -98,8 +98,6 @@ class NeuroID
 
         internal var metaData: NIDMetaData? = null
 
-        internal var verifyIntegrationHealth: Boolean = false
-
         internal var isRN = false
         internal var rnVersion = ""
 
