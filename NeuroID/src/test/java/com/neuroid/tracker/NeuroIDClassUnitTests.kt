@@ -5,10 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDConfiguration
@@ -935,28 +932,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
     }
 
-    // getUserId() Tests (deprecated method)
-    @Test
-    fun test_getUserId_returnsUserID() {
-        val testUserID = "test-user-123"
-        val mockedIdentifierService = getMockedIdentifierService()
-        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
-
-        // Mock getUserID to return test user ID
-        every { mockedIdentifierService.getUserID(any()) } returns testUserID
-
-        @Suppress("DEPRECATION")
-        val result = NeuroID.getInstance()?.getUserId()
-
-        // Verify identifierService.getUserID was called
-        verify(exactly = 1) {
-            mockedIdentifierService.getUserID(any())
-        }
-
-        // Verify result matches
-        assertEquals(testUserID, result)
-    }
-
     // getUserID() Tests
     @Test
     fun test_getUserID_returnsUserID() {
@@ -1298,45 +1273,7 @@ open class NeuroIDClassUnitTests {
         assertEquals(1, NeuroID.getInternalInstance()?.excludedTestIDList?.count())
     }
 
-    //    setEnvironment - DEPRECATED
-    @Test
-    fun testSetEnvironment() {
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironment"))
-
-        NeuroID.environment = ""
-
-        NeuroID.getInstance()?.setEnvironment("MYENV")
-
-        assertEquals("", NeuroID.environment)
-        assertInfoCount(1)
-    }
-
-    //    setEnvironmentProduction - DEPRECATED
-    @Test
-    fun testSetEnvironmentProduction_true() {
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
-
-        NeuroID.environment = ""
-
-        NeuroID.getInstance()?.setEnvironmentProduction(true)
-
-        assertEquals("", NeuroID.environment)
-        assertInfoCount(1)
-    }
-
-    @Test
-    fun testSetEnvironmentProduction_false() {
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setEnvironmentProduction"))
-
-        NeuroID.environment = ""
-
-        NeuroID.getInstance()?.setEnvironmentProduction(false)
-
-        assertEquals("", NeuroID.environment)
-        assertInfoCount(1)
-    }
-
-    //    getEnvironment - DEPRECATED
+    //    getEnvironment
     @Test
     fun testGetEnvironment() {
         val expectedValue = "MyEnv"
@@ -1347,35 +1284,7 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    setSiteId - DEPRECATED
-    @Test
-    fun testSetSiteId() {
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("setSiteId"))
-
-        val expectedValue = "TestSiteId"
-        NeuroID.siteID = "DifferentSiteID"
-
-        NeuroID.getInstance()?.setSiteId(expectedValue)
-
-        assertEquals(expectedValue, NeuroID.siteID)
-        assertInfoCount(1)
-    }
-
-    //    getSiteId - DEPRECATED
-    @Test
-    fun testGetSiteId() {
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("getSiteId"))
-
-        val expectedValue = ""
-        NeuroID.siteID = "TestSiteId"
-
-        val value = NeuroID.getInternalInstance()?.getSiteId()
-
-        assertEquals(expectedValue, value)
-        assertInfoCount(1)
-    }
-
-    //    getSessionId
+    //    getSessionID
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
@@ -1386,7 +1295,7 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    getClientId
+    //    getClientID
     @Test
     fun testGetClientID() {
         val expectedValue = "testClientID"
@@ -1457,51 +1366,6 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInternalInstance()?.getFirstTS()
 
         assertEquals(expectedValue, value)
-    }
-
-    //    formSubmit - Deprecated
-    @Test
-    fun testFormSubmit() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmit"))
-
-        NeuroID.getInstance()?.formSubmit()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === APPLICATION_SUBMIT)
-    }
-
-    //    formSubmitSuccess - Deprecated
-    @Test
-    fun testFormSubmitSuccess() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitSuccess"))
-
-        NeuroID.getInstance()?.formSubmitSuccess()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_SUCCESS)
-    }
-
-    //    formSubmitFailure - Deprecated
-    @Test
-    fun testFormSubmitFailure() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitFailure"))
-
-        NeuroID.getInstance()?.formSubmitFailure()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_FAILURE)
     }
 
 //    closeSession - Need to mock NIDJobServiceManager

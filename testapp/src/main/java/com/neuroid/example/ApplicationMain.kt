@@ -36,7 +36,6 @@ class ApplicationMain : Application() {
 //            isAdvancedDevice = true,
 //            serverEnvironment = NeuroID.TEST
         ).build()
-        NeuroID.getInstance()?.setVerifyIntegrationHealth(true)
     }
 
     fun setUserID(userId: String) {
