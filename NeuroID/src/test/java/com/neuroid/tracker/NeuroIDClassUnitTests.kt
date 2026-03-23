@@ -1284,7 +1284,7 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    getSessionId
+    //    getSessionID
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
@@ -1295,7 +1295,7 @@ open class NeuroIDClassUnitTests {
         assertEquals(expectedValue, value)
     }
 
-    //    getClientId
+    //    getClientID
     @Test
     fun testGetClientID() {
         val expectedValue = "testClientID"
