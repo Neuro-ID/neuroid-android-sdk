@@ -18,8 +18,8 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.nid_activity_main)
 
         binding.apply {
-            textViewSidValue.setText(NeuroID.getInstance()?.getSessionId())
-            textViewCidValue.setText(NeuroID.getInstance()?.getClientId())
+            textViewSidValue.setText(NeuroID.getInstance()?.getSessionID())
+            textViewCidValue.setText(NeuroID.getInstance()?.getClientID())
             buttonShowActivityNoAutomaticEvents.setOnClickListener {
                 startActivity(Intent(this@MainActivity, NIDCustomEventsActivity::class.java))
             }
