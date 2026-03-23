@@ -5,10 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.FORM_SUBMIT_FAILURE
-import com.neuroid.tracker.events.FORM_SUBMIT_SUCCESS
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.models.NIDConfiguration
@@ -1457,51 +1454,6 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInternalInstance()?.getFirstTS()
 
         assertEquals(expectedValue, value)
-    }
-
-    //    formSubmit - Deprecated
-    @Test
-    fun testFormSubmit() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmit"))
-
-        NeuroID.getInstance()?.formSubmit()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === APPLICATION_SUBMIT)
-    }
-
-    //    formSubmitSuccess - Deprecated
-    @Test
-    fun testFormSubmitSuccess() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitSuccess"))
-
-        NeuroID.getInstance()?.formSubmitSuccess()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_SUCCESS)
-    }
-
-    //    formSubmitFailure - Deprecated
-    @Test
-    fun testFormSubmitFailure() {
-        NeuroID._isSDKStarted = true
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-        setNeuroIDMockedLogger(infoMessage = getDeprecatedMessage("formSubmitFailure"))
-
-        NeuroID.getInstance()?.formSubmitFailure()
-        assertInfoCount(1)
-
-        assertEquals(1, storedEvents.count())
-        assertEquals(true, storedEvents.firstOrNull()?.type === FORM_SUBMIT_FAILURE)
     }
 
 //    closeSession - Need to mock NIDJobServiceManager

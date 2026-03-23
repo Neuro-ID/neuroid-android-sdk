@@ -16,7 +16,6 @@ import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -936,9 +935,6 @@ class NeuroID
 
             // force event buffer flush when these events are encountered.
             when (type) {
-                FORM_SUBMIT -> {
-                    nidJobServiceManager.sendEvents(true)
-                }
                 PAGE_SUBMIT -> {
                     nidJobServiceManager.sendEvents(true)
                 }

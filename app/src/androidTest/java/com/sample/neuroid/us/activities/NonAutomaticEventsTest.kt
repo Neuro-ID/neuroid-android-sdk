@@ -47,55 +47,6 @@ class NonAutomaticEventsTest: MockServerTest() {
      */
 
     /**
-     * Validate FORM_SUBMIT on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test01ValidateFormSubmit() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        delay(500)
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        Espresso.onView(ViewMatchers.withId(R.id.button_send_form_submit))
-            .perform(ViewActions.click())
-
-        forceSendEvents()
-        assertRequestBodyContains("APPLICATION_SUBMIT")
-    }
-
-    /**
-     * Validate FORM_SUBMIT_SUCCESS on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test02ValidateFormSubmitSuccess() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        delay(500) //Wait a half second for create the MainActivity View
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        Espresso.onView(ViewMatchers.withId(R.id.button_send_form_success))
-            .perform(ViewActions.click())
-
-
-        forceSendEvents()
-        assertRequestBodyContains("APPLICATION_SUBMIT_SUCCESS")
-    }
-
-    /**
-     * Validate FORM_SUBMIT_FAILURE on NIDCustomEventsActivity class
-     */
-    @Test
-    fun test03ValidateFormSubmitFailure() = runTest(timeout = Duration.parse("120s")) {
-        NIDLog.d("----> UITest", "-------------------------------------------------")
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        delay(500) //Wait a half second for create the MainActivity View
-        NeuroID.getInstance()?.getTestingDataStoreInstance()?.clearEvents()
-        Espresso.onView(ViewMatchers.withId(R.id.button_send_form_failure))
-            .perform(ViewActions.click())
-
-        forceSendEvents()
-        assertRequestBodyContains("APPLICATION_SUBMIT_FAILURE")
-    }
-
-    /**
      * Validate CUSTOM_EVENT on NIDCustomEventsActivity class
      * Ignore this one and move all of these to SDK as a unit test.
      */

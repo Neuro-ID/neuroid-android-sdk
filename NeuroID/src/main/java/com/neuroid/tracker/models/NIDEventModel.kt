@@ -3,7 +3,6 @@ package com.neuroid.tracker.models
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.APPLICATION_SUBMIT
 import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
@@ -206,7 +205,6 @@ data class NIDEventModel(
                 RESUME_EVENT_CAPTURE -> contextString = ""
                 SET_USER_ID -> contextString = "uid=${this.uid}"
                 CREATE_SESSION -> contextString = "cid=${this.cid}, sh=${this.sh}, sw=${this.sw}"
-                APPLICATION_SUBMIT -> contextString = ""
                 TEXT_CHANGE -> contextString = "v=${this.v}, tg=${this.tg}"
                 "SET_CHECKPOINT" -> contextString = ""
                 "STATE_CHANGE" -> contextString = this.url ?: ""
