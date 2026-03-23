@@ -1,3 +1,20 @@
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="/resources/lockup_white.png" />
+        <source media="(prefers-color-scheme: light)" srcset="/resources/lockup.png" />
+        <img src="/resources/lockup.png" alt="NeuroID" width="320px" />
+    </picture>
+</p>
+
+<p align="center">
+    <a href="https://cocoapods.org/pods/NeuroID">
+        <img src="https://img.shields.io/cocoapods/v/NeuroID.svg" alt="CocoaPods" />
+    </a>
+    <a href="https://sonarcloud.io/summary/new_code?id=Neuro-ID_neuroid-ios-sdk">
+        <img src="https://sonarcloud.io/api/project_badges/measure?project=Neuro-ID_neuroid-ios-sdk&metric=alert_status" alt="Quality Gate Status" />
+    </a>
+</p>
+
 # NeuroID Android Mobile SDK
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Neuro-ID_neuroid-android-sdk&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Neuro-ID_neuroid-android-sdk)
