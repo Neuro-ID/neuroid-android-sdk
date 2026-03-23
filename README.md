@@ -7,20 +7,15 @@
 </p>
 
 <p align="center">
-    <a href="https://cocoapods.org/pods/NeuroID">
-        <img src="https://img.shields.io/cocoapods/v/NeuroID.svg" alt="CocoaPods" />
+    <a href="https://jitpack.io/#Neuro-ID/neuroid-android-sdk">
+        <img src="https://jitpack.io/v/Neuro-ID/neuroid-android-sdk.svg" alt="Jitpack Latest Build" />
     </a>
-    <a href="https://sonarcloud.io/summary/new_code?id=Neuro-ID_neuroid-ios-sdk">
-        <img src="https://sonarcloud.io/api/project_badges/measure?project=Neuro-ID_neuroid-ios-sdk&metric=alert_status" alt="Quality Gate Status" />
+    <a href="https://sonarcloud.io/summary/new_code?id=Neuro-ID_neuroid-android-sdk">
+        <img src="https://sonarcloud.io/api/project_badges/measure?project=Neuro-ID_neuroid-android-sdk&metric=alert_status" alt="Quality Gate Status" />
     </a>
 </p>
 
 # NeuroID Android Mobile SDK
-
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Neuro-ID_neuroid-android-sdk&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Neuro-ID_neuroid-android-sdk)
-[![Jitpack Latest Build](https://jitpack.io/v/Neuro-ID/neuroid-android-sdk.svg)](https://jitpack.io/#Neuro-ID/neuroid-android-sdk)
-
-![Neuro-ID Logo](/docs/images/NeuroID_Logo.png)
 
 ## Overview
 
