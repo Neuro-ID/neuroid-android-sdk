@@ -163,16 +163,6 @@ jobs:
           sed -i "s/VERSION_PATCH=*[0-9]*/VERSION_PATCH=${{ env.PATCH_VERSION }}/" version.properties
           echo "BRANCH_NAME=releases/${package_version}_version_update" >> $GITHUB_ENV
 
-        # Get tag of latest release to create comparison URL in PR description
-      - name: Get previous release tag
-        run: echo PREV_TAG="$(gh release view --json tagName -q .tagName)" >> $GITHUB_ENV
-
-      - name: Get current commit hash
-        run: echo HASH="$(git rev-parse HEAD)" >> $GITHUB_ENV
-
-      - name: Create comparison URL
-        run: echo URL="https://github.com/Neuro-ID/neuroid-android-sdk/compare/${{ env.PREV_TAG }}...${{ env.HASH }}" >> $GITHUB_ENV
-
       - name: Commit version update
         run: |
           package_version=${{ env.PACKAGE_VERSION }}
@@ -180,33 +170,16 @@ jobs:
           git config --global user.name neuroid-developer   
           git checkout -b ${{ env.BRANCH_NAME }}
           git status
-          set +e
           git add version.properties
           git commit -m "Update Android SDK to ${package_version}"
-          git tag "${package_version}"
           git push --set-upstream origin ${{ env.BRANCH_NAME }}
-          set -e
 
       - name: Create Pull Request
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const title = 'Update To Version: ${{ env.PACKAGE_VERSION }}';
-            const body = 'Once merged, this PR will trigger an action to release version: ${{ env.PACKAGE_VERSION }}.Please review detailed release changes: ${{ env.URL }}';
-            const headBranch = '${{ env.BRANCH_NAME }}';
-            const baseBranch = 'main';
-            
-            const createPullRequest = async () => {
-              const response = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                head: headBranch,
-                base: baseBranch
-              });
-              console.log(`Pull request ${response.data.number} created`);
-            };
-            
-            createPullRequest();
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            gh pr create \
+              --base main \
+              --head ${{ env.BRANCH_NAME }} \
+              --title "Update version for Release ${{ env.PACKAGE_VERSION }}" \
+              --body "Updates the SDK version to the \`${{ env.PACKAGE_VERSION }}\` release line."

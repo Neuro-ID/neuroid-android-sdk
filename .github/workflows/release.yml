@@ -7,11 +7,7 @@
 name: Release Android SDK
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - version.properties
+  workflow_dispatch:
 
 env:
   ACTION_URL: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
