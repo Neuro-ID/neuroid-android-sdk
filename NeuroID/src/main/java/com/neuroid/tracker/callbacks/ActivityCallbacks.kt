@@ -7,11 +7,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SCREEN_CAPTURE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
@@ -116,6 +118,9 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
+        // Tear down screen capture listener for this activity
+        neuroID.nidScreenCaptureService.teardownScreenCaptureListener()
+
         neuroID.captureEvent(
             type = WINDOW_BLUR,
             attrs =
@@ -143,6 +148,18 @@ class ActivityCallbacks(
                         "className" to currentActivityName,
                     ),
                 ),
+        )
+
+        // Set up screen capture detection for this activity
+        neuroID.nidScreenCaptureService.setupScreenCaptureListener(
+            activity,
+            object : NIDScreenCaptureService.ScreenCaptureListener {
+                override fun onScreenCaptured() {
+                    neuroID.captureEvent(
+                        type = SCREEN_CAPTURE,
+                    )
+                }
+            },
         )
 
         // depending on RN or Android run the following code
