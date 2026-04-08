@@ -22,6 +22,7 @@ import com.neuroid.tracker.extensions.getParentActivity
 import com.neuroid.tracker.extensions.getParentFragment
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDSdkVersionProvider
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.handleIdentifyAllViews
 import com.neuroid.tracker.utils.verifyComponentType
@@ -221,6 +222,7 @@ class RegistrationIdentificationHelper(
 class SingleTargetListenerRegister(
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
+    private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
     fun registerListeners(neuroID: NeuroID, view: View) {
         val idName = view.getIdOrTag()
@@ -256,7 +258,7 @@ class SingleTargetListenerRegister(
             }
 
             // if later api version, add additional action menu watcher
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.M) {
                 additionalListeners.addExtraActionMenuListener(neuroID, view)
             }
         }

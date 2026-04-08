@@ -13,14 +13,17 @@ import com.neuroid.tracker.models.NIDLocation
 import com.neuroid.tracker.service.LocationService
 import org.json.JSONObject
 
-class NIDMetaData(context: Context) {
+class NIDMetaData(
+    context: Context,
+    sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
+) {
     private val brand = Build.BRAND
     private var device = Build.DEVICE
     private var display = Build.DISPLAY
     private var manufacturer = Build.MANUFACTURER
     private var model = Build.MODEL
     private var product = Build.PRODUCT
-    private var osVersion = "${Build.VERSION.SDK_INT ?: ""}"
+    private var osVersion = "${sdkVersionProvider.getSdkInt()}"
     private var displayResolution = ""
     private var carrier = ""
     private var totalMemory: Double = (-1).toDouble()

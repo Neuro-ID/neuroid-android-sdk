@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.annotation.RequiresPermission
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDSdkVersionProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ import kotlinx.coroutines.withContext
 class NIDScreenCaptureService(
     private val logger: NIDLogWrapper,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
     companion object {
         private const val TAG = "NIDScreenCaptureService"
@@ -61,7 +63,7 @@ class NIDScreenCaptureService(
 
         registeredActivity = activity
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // API 34+ — native screenshot detection
             setupNativeScreenCaptureCallback(activity, listener)
         } else {
@@ -69,7 +71,7 @@ class NIDScreenCaptureService(
             setupContentObserverFallback(activity, listener)
         }
 
-        logger.d(TAG, "Screen capture listener registered (API ${Build.VERSION.SDK_INT})")
+        logger.d(TAG, "Screen capture listener registered (API ${sdkVersionProvider.getSdkInt()})")
     }
 
     /**
@@ -80,9 +82,8 @@ class NIDScreenCaptureService(
         val activity = registeredActivity
 
         // Unregister native callback (API 34+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             try {
-                println("kurt_test teardown native screen capture callback")
                 val callback = screenCaptureCallback
                 if (callback != null && activity != null) {
                     @Suppress("NewApi")
@@ -160,7 +161,6 @@ class NIDScreenCaptureService(
                 // avoid StrictMode DiskReadViolation on the main thread.
                 scope.launch {
                     try {
-                        println("kurt_test DISPLAY_NAME for URI: $uri")
                         val detected = isScreenshotUri(activity, uri)
                         if (detected) {
                             logger.d(TAG, "Screenshot detected via ContentObserver: $uri")
@@ -222,7 +222,7 @@ class NIDScreenCaptureService(
         }
 
         // Strategy 3: Query RELATIVE_PATH (API 29+, no storage permission needed)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.Q) {
             try {
                 val relPathProjection = arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
                 activity.contentResolver.query(uri, relPathProjection, null, null, null)
@@ -244,7 +244,7 @@ class NIDScreenCaptureService(
         }
 
         // Strategy 4: Fallback to DATA column on API < 29 (works without permissions)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        if (sdkVersionProvider.getSdkInt() < Build.VERSION_CODES.Q) {
             try {
                 val dataProjection = arrayOf(MediaStore.Images.Media.DATA)
                 activity.contentResolver.query(uri, dataProjection, null, null, null)

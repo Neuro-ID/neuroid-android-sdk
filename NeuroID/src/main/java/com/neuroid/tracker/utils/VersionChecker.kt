@@ -5,22 +5,25 @@ import android.content.pm.PackageManager
 import android.os.Build
 import com.neuroid.tracker.models.ApplicationMetaData
 
-class VersionChecker {
+class VersionChecker(
+    private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
+) {
     /**
      * Returns Boolean to indicate if device build version is >= 31
      */
     fun isBuildVersionGreaterThanOrEqualTo31(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        return sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.S
     }
 }
 
 fun getAppMetaData(context: Context,
-                   rnVersion: String): ApplicationMetaData? {
+                   rnVersion: String,
+                   sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider()): ApplicationMetaData? {
     return try {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
         val versionCode =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode.toInt()
             } else {
                 packageInfo.versionCode
