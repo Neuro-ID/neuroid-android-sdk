@@ -273,7 +273,7 @@ class NIDScreenCaptureService(
             return true
         }
 
-        // Strategy 2: Query DISPLAY_NAME (does not require storage permissions)
+        // Strategy 2: Query DISPLAY_NAME
         try {
             val displayNameProjection = arrayOf(MediaStore.Images.Media.DISPLAY_NAME)
             activity.contentResolver.query(uri, displayNameProjection, null, null, null)
@@ -293,7 +293,7 @@ class NIDScreenCaptureService(
             logger.e(TAG, "Error querying DISPLAY_NAME: ${e.message}")
         }
 
-        // Strategy 3: Query RELATIVE_PATH (API 29+, no storage permission needed)
+        // Strategy 3: Query RELATIVE_PATH (API 29+)
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.Q) {
             try {
                 val relPathProjection = arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
@@ -315,7 +315,7 @@ class NIDScreenCaptureService(
             }
         }
 
-        // Strategy 4: Fallback to DATA column on API < 29 (works without permissions)
+        // Strategy 4: Fallback to DATA column on API < 29
         if (sdkVersionProvider.getSdkInt() < Build.VERSION_CODES.Q) {
             try {
                 val dataProjection = arrayOf(MediaStore.Images.Media.DATA)
