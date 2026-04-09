@@ -1,15 +1,17 @@
 package com.neuroid.tracker.service
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSdkVersionProvider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.function.Consumer
 
 class NIDScreenCaptureService(
     private val logger: NIDLogWrapper,
@@ -45,6 +48,7 @@ class NIDScreenCaptureService(
     // References kept for cleanup
     private var contentObserver: ContentObserver? = null
     private var screenCaptureCallback: Any? = null // typed as Any to avoid class reference on < API 34
+    private var screenRecordingCallback: Any? = null // typed as Any to avoid class reference on < API 35
     private var registeredActivity: Activity? = null
     private var coroutineScope: CoroutineScope? = null
 
@@ -57,15 +61,48 @@ class NIDScreenCaptureService(
      * - API 24–33: Uses a ContentObserver monitoring MediaStore for new images whose
      *   file path contains a screenshot-related keyword.
      */
-    fun setupScreenCaptureListener(activity: Activity, listener: ScreenCaptureListener) {
+    @SuppressLint("MissingPermission", "InlinedApi")
+    fun setupScreenCaptureListener(activity: Activity, listener: ScreenCaptureListener, listenerRecording: ScreenRecordingListener) {
         // Clean up any previous registration
         teardownScreenCaptureListener()
 
         registeredActivity = activity
 
+        // setup screen recording callback for API 35+
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            logger.d(TAG, "Setting up native ScreenCapture (API ${sdkVersionProvider.getSdkInt()})")
+            val hasPermission = ActivityCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.DETECT_SCREEN_RECORDING,
+                ) == PackageManager.PERMISSION_GRANTED
+            if (hasPermission) {
+                val recordingConsumer = Consumer<Int> { state ->
+                    val isRecording = state == android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE
+                    logger.d(TAG, "Screen recording state changed: isRecording=$isRecording")
+                    listenerRecording.onScreenRecorded(isRecording)
+                }
+                screenRecordingCallback = recordingConsumer
+                activity.windowManager.addScreenRecordingCallback(
+                    activity.mainExecutor,
+                    recordingConsumer,
+                )
+            } else {
+                logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted, skipping screen recording callback setup")
+            }
+        }
+        // setup screen capture callback for API 34+
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // API 34+ — native screenshot detection
-            setupNativeScreenCaptureCallback(activity, listener)
+            val hasPermission = ActivityCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.DETECT_SCREEN_CAPTURE,
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (hasPermission) {
+                setupNativeScreenCaptureCallback(activity, listener)
+            } else {
+                logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted, skipping native setup")
+            }
         } else {
             // API 24-33 — ContentObserver fallback
             setupContentObserverFallback(activity, listener)
@@ -78,19 +115,53 @@ class NIDScreenCaptureService(
      * Removes the screen capture listener that was previously registered.
      * Safe to call even if no listener was registered.
      */
+    @SuppressLint("MissingPermission", "NewApi")
     fun teardownScreenCaptureListener() {
         val activity = registeredActivity
+
+        // Unregister screen recording callback (API 35+)
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            try {
+                val callback = screenRecordingCallback
+                if (callback != null && activity != null) {
+                    val hasPermission = ActivityCompat.checkSelfPermission(
+                        activity,
+                        Manifest.permission.DETECT_SCREEN_RECORDING,
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (hasPermission) {
+                        @Suppress("UNCHECKED_CAST")
+                        activity.windowManager.removeScreenRecordingCallback(
+                            callback as Consumer<Int>,
+                        )
+                        logger.d(TAG, "Screen recording callback unregistered")
+                    } else {
+                        logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted, skipping unregister")
+                    }
+                }
+            } catch (e: Exception) {
+                logger.e(TAG, "Error unregistering screen recording callback: ${e.message}")
+            }
+        }
 
         // Unregister native callback (API 34+)
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             try {
                 val callback = screenCaptureCallback
                 if (callback != null && activity != null) {
-                    @Suppress("NewApi")
-                    activity.unregisterScreenCaptureCallback(
-                        callback as Activity.ScreenCaptureCallback,
-                    )
-                    logger.d(TAG, "Native ScreenCaptureCallback unregistered")
+                    val hasPermission = ActivityCompat.checkSelfPermission(
+                        activity,
+                        Manifest.permission.DETECT_SCREEN_CAPTURE,
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (hasPermission) {
+                        activity.unregisterScreenCaptureCallback(
+                            callback as Activity.ScreenCaptureCallback,
+                        )
+                        logger.d(TAG, "Native ScreenCaptureCallback unregistered")
+                    } else {
+                        logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted, skipping unregister")
+                    }
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error unregistering native ScreenCaptureCallback: ${e.message}")
@@ -109,6 +180,7 @@ class NIDScreenCaptureService(
         }
 
         screenCaptureCallback = null
+        screenRecordingCallback = null
         contentObserver = null
         registeredActivity = null
 
@@ -120,15 +192,16 @@ class NIDScreenCaptureService(
     // API 34+ — Native ScreenCaptureCallback
     // -----------------------------------------------------------------------
 
+
     @RequiresPermission(Manifest.permission.DETECT_SCREEN_CAPTURE)
     @Suppress("NewApi")
     private fun setupNativeScreenCaptureCallback(
         activity: Activity,
-        listener: ScreenCaptureListener,
+        listenerScreen: ScreenCaptureListener,
     ) {
         val callback = Activity.ScreenCaptureCallback {
             logger.d(TAG, "Screenshot detected via native ScreenCaptureCallback")
-            listener.onScreenCaptured()
+            listenerScreen.onScreenCaptured()
         }
 
         screenCaptureCallback = callback
@@ -144,7 +217,7 @@ class NIDScreenCaptureService(
 
     private fun setupContentObserverFallback(
         activity: Activity,
-        listener: ScreenCaptureListener,
+        listenerScreen: ScreenCaptureListener,
     ) {
         val handler = Handler(Looper.getMainLooper())
         val scope = CoroutineScope(SupervisorJob() + dispatcher)
@@ -165,7 +238,7 @@ class NIDScreenCaptureService(
                         if (detected) {
                             logger.d(TAG, "Screenshot detected via ContentObserver: $uri")
                             withContext(Dispatchers.Main) {
-                                listener.onScreenCaptured()
+                                listenerScreen.onScreenCaptured()
                             }
                         }
                     } catch (e: Exception) {
@@ -187,12 +260,11 @@ class NIDScreenCaptureService(
     /**
      * Determines whether the given media content URI represents a screenshot.
      *
-     * Uses a multi-strategy approach that does NOT require READ_EXTERNAL_STORAGE
-     * or READ_MEDIA_IMAGES permissions:
+     * Uses a multi-strategy approach, requires READ_MEDIA_IMAGES permissions:
      *  1. Check the URI path string itself for screenshot keywords.
-     *  2. Query DISPLAY_NAME (filename) — no storage permission needed.
-     *  3. Query RELATIVE_PATH (API 29+) — no storage permission needed.
-     *  4. Fallback to DATA column on API < 29 where it works without permissions.
+     *  2. Query DISPLAY_NAME (filename)
+     *  3. Query RELATIVE_PATH (API 29+)
+     *  4. Fallback to DATA column on API < 29 w
      */
     @Suppress("deprecation")
     internal fun isScreenshotUri(activity: Activity, uri: Uri): Boolean {
@@ -279,6 +351,10 @@ class NIDScreenCaptureService(
 
     interface ScreenCaptureListener {
         fun onScreenCaptured()
+    }
+
+    interface ScreenRecordingListener {
+        fun onScreenRecorded(isRecording: Boolean)
     }
 
 }

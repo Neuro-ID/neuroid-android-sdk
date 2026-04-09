@@ -420,7 +420,7 @@ internal fun getMockedIdentifierService(): NIDIdentifierService {
 internal fun getMockedScreenCaptureService(): NIDScreenCaptureService {
     val mockedScreenCaptureService = mockk<NIDScreenCaptureService>()
 
-    every { mockedScreenCaptureService.setupScreenCaptureListener(any(), any()) } just runs
+    every { mockedScreenCaptureService.setupScreenCaptureListener(any(), any(), any()) } just runs
     every { mockedScreenCaptureService.teardownScreenCaptureListener() } just runs
 
     return mockedScreenCaptureService

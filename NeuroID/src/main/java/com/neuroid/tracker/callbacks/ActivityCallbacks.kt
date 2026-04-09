@@ -150,7 +150,7 @@ class ActivityCallbacks(
                 ),
         )
 
-        // Set up screen capture detection for this activity
+        // Set up screen capture and recording detection for this activity
         neuroID.nidScreenCaptureService.setupScreenCaptureListener(
             activity,
             object : NIDScreenCaptureService.ScreenCaptureListener {
@@ -158,6 +158,18 @@ class ActivityCallbacks(
                     neuroID.captureEvent(
                         type = SCREEN_CAPTURE,
                     )
+                }
+            }, listenerRecording = object: NIDScreenCaptureService.ScreenRecordingListener {
+                override fun onScreenRecorded(isRecording: Boolean) {
+                    if(isRecording) {
+                        neuroID.captureEvent(
+                            type = "screen_recording",
+                        )
+                    } else {
+                        neuroID.captureEvent(
+                            type = "screen_recording_stopped",
+                        )
+                    }
                 }
             },
         )
