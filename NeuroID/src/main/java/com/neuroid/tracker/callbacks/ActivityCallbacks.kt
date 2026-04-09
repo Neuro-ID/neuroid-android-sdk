@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SCREEN_CAPTURE
+import com.neuroid.tracker.events.SCREEN_RECORDING
+import com.neuroid.tracker.events.SCREEN_RECORDING_COMPLETE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
@@ -163,11 +165,11 @@ class ActivityCallbacks(
                 override fun onScreenRecorded(isRecording: Boolean) {
                     if(isRecording) {
                         neuroID.captureEvent(
-                            type = "screen_recording",
+                            type = SCREEN_RECORDING,
                         )
                     } else {
                         neuroID.captureEvent(
-                            type = "screen_recording_stopped",
+                            type = SCREEN_RECORDING_COMPLETE,
                         )
                     }
                 }
