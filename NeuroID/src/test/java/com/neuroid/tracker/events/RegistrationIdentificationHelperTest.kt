@@ -9,13 +9,17 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.handleIdentifyAllViews
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkAll
 import io.mockk.verify
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -32,8 +36,21 @@ class RegistrationIdentificationHelperTest {
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs
 
+        // Mock handleIdentifyAllViews to run the Runnable immediately.
+        // In the React Native variant this function posts with a 300ms delay,
+        // which would cause verify calls on identifyAllViews to fail.
+        mockkStatic(::handleIdentifyAllViews)
+        every { handleIdentifyAllViews(any()) } answers {
+            firstArg<Runnable>().run()
+        }
+
         neuroID = getMockedNeuroID()
         registrationHelper = RegistrationIdentificationHelper(logger)
+    }
+
+    @After
+    fun teardown() {
+        unmockkAll()
     }
 
     // -----------------------------------------------------------------------
