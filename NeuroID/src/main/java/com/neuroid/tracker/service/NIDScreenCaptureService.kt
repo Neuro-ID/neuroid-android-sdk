@@ -10,32 +10,16 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSdkVersionProvider
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import java.util.function.Consumer
 
 class NIDScreenCaptureService(
     private val logger: NIDLogWrapper,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
     companion object {
         private const val TAG = "NIDScreenCaptureService"
-
-        // Common screenshot directory names across Android OEMs
-        private val SCREENSHOT_PATH_KEYWORDS = listOf(
-            "screenshot",
-            "screenshots",
-            "screen_shot",
-            "screen-shot",
-            "screen shot",
-            "screencapture",
-            "screen_capture",
-            "screen-capture",
-            "screen capture",
-        )
     }
 
     // References kept for cleanup
@@ -44,8 +28,6 @@ class NIDScreenCaptureService(
     private var screenRecordingCallback: Any? = null // typed as Any to avoid class reference on < API 35
     private var registeredActivity: Activity? = null
     private var coroutineScope: CoroutineScope? = null
-
-    private var captureUriPath: String = ""
 
     /**
      * Sets up a screen capture (screenshot) listener on the provided Activity.

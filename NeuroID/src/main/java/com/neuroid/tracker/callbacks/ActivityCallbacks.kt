@@ -9,7 +9,6 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.SCREEN_CAPTURE
 import com.neuroid.tracker.events.SCREEN_RECORDING
-import com.neuroid.tracker.events.SCREEN_RECORDING_COMPLETE
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
@@ -166,10 +165,20 @@ class ActivityCallbacks(
                     if(isRecording) {
                         neuroID.captureEvent(
                             type = SCREEN_RECORDING,
+                            attrs = listOf(
+                                mapOf(
+                                    "status" to "active",
+                                ),
+                            ),
                         )
                     } else {
                         neuroID.captureEvent(
-                            type = SCREEN_RECORDING_COMPLETE,
+                            type = SCREEN_RECORDING,
+                            attrs = listOf(
+                                mapOf(
+                                    "status" to "inactive",
+                                ),
+                            ),
                         )
                     }
                 }
