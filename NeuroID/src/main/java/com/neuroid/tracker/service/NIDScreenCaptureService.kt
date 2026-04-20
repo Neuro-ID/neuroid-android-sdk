@@ -4,14 +4,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.database.ContentObserver
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSdkVersionProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import java.util.function.Consumer
 
 class NIDScreenCaptureService(
@@ -23,11 +20,9 @@ class NIDScreenCaptureService(
     }
 
     // References kept for cleanup
-    private var contentObserver: ContentObserver? = null
     private var screenCaptureCallback: Any? = null // typed as Any to avoid class reference on < API 34
     private var screenRecordingCallback: Any? = null // typed as Any to avoid class reference on < API 35
     private var registeredActivity: Activity? = null
-    private var coroutineScope: CoroutineScope? = null
 
     /**
      * Sets up a screen capture (screenshot) listener on the provided Activity.
@@ -65,7 +60,7 @@ class NIDScreenCaptureService(
                     listenerRecording.onScreenRecorded(true)
                 }
             } else {
-                logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted, skipping screen recording callback setup")
+                logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted")
             }
         }
         // setup screen capture callback for API 34+
@@ -79,14 +74,9 @@ class NIDScreenCaptureService(
             if (hasPermission) {
                 setupNativeScreenCaptureCallback(activity, listener)
             } else {
-                logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted, skipping native setup")
+                logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted")
             }
-        } else {
-            // API 24 <= i < 33 not supported
-            logger.d(TAG, "DETECT_SCREEN_CAPTURE not supported for API < 33 skipping native setup")
         }
-
-        logger.d(TAG, "Screen capture listener registered (API ${sdkVersionProvider.getSdkInt()})")
     }
 
     /**
@@ -101,21 +91,21 @@ class NIDScreenCaptureService(
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             try {
                 val callback = screenRecordingCallback
-                if (callback != null && activity != null) {
-                    val hasPermission = ActivityCompat.checkSelfPermission(
+                if (callback != null && activity != null && ActivityCompat.checkSelfPermission(
                         activity,
                         Manifest.permission.DETECT_SCREEN_RECORDING,
-                    ) == PackageManager.PERMISSION_GRANTED
+                    ) == PackageManager.PERMISSION_GRANTED) {
 
-                    if (hasPermission) {
                         @Suppress("UNCHECKED_CAST")
                         activity.windowManager.removeScreenRecordingCallback(
                             callback as Consumer<Int>,
                         )
                         logger.d(TAG, "Screen recording callback unregistered")
                     } else {
-                        logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted, skipping unregister")
-                    }
+                        logger.d(
+                            TAG,
+                            "DETECT_SCREEN_RECORDING permission not granted or some error has occurred, skipping unregister"
+                        )
                 }
             } catch (e: Exception) {
                 logger.e(TAG, "Error unregistering screen recording callback: ${e.message}")
@@ -148,11 +138,7 @@ class NIDScreenCaptureService(
 
         screenCaptureCallback = null
         screenRecordingCallback = null
-        contentObserver = null
         registeredActivity = null
-
-        coroutineScope?.cancel()
-        coroutineScope = null
     }
 
     // -----------------------------------------------------------------------

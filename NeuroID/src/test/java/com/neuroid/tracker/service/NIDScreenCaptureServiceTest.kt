@@ -437,7 +437,7 @@ class NIDScreenCaptureServiceTest {
         service35.teardownScreenCaptureListener()
 
         verify(exactly = 0) { mockWindowManager.removeScreenRecordingCallback(any()) }
-        verify { logger.d(any(), match { it.contains("DETECT_SCREEN_RECORDING permission not granted, skipping unregister") }) }
+        verify { logger.d(any(), match { it.contains("DETECT_SCREEN_RECORDING permission not granted or some error has occurred, skipping unregister") }) }
     }
 
     @Test
