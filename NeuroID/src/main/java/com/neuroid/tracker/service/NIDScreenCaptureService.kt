@@ -80,14 +80,46 @@ class NIDScreenCaptureService(
     }
 
     /**
-     * Removes the screen capture listener that was previously registered.
+     * Removes the screen capture listeners that were previously registered.
      * Safe to call even if no listener was registered.
      */
     @SuppressLint("MissingPermission", "NewApi")
     fun teardownScreenCaptureListener() {
-        val activity = registeredActivity
+        teardownScreenCaptureCallback()
+        tearDownRecordingCallback()
+        screenCaptureCallback = null
+        screenRecordingCallback = null
+        registeredActivity = null
+    }
 
-        // Unregister screen recording callback (API 35+)
+    private fun teardownScreenCaptureCallback() {
+        val activity = registeredActivity
+        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            try {
+                val callback = screenCaptureCallback
+                if (callback != null && activity != null) {
+                    val hasPermission = ActivityCompat.checkSelfPermission(
+                        activity,
+                        Manifest.permission.DETECT_SCREEN_CAPTURE,
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (hasPermission) {
+                        activity.unregisterScreenCaptureCallback(
+                            callback as Activity.ScreenCaptureCallback,
+                        )
+                        logger.d(TAG, "Native ScreenCaptureCallback unregistered")
+                    } else {
+                        logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted, skipping unregister")
+                    }
+                }
+            } catch (e: Exception) {
+                logger.e(TAG, "Error unregistering native ScreenCaptureCallback: ${e.message}")
+            }
+        }
+    }
+
+    private fun tearDownRecordingCallback() {
+        val activity = registeredActivity
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             try {
                 val callback = screenRecordingCallback
@@ -111,34 +143,6 @@ class NIDScreenCaptureService(
                 logger.e(TAG, "Error unregistering screen recording callback: ${e.message}")
             }
         }
-
-        // Unregister native callback (API 34+)
-        if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            try {
-                val callback = screenCaptureCallback
-                if (callback != null && activity != null) {
-                    val hasPermission = ActivityCompat.checkSelfPermission(
-                        activity,
-                        Manifest.permission.DETECT_SCREEN_CAPTURE,
-                    ) == PackageManager.PERMISSION_GRANTED
-
-                    if (hasPermission) {
-                        activity.unregisterScreenCaptureCallback(
-                            callback as Activity.ScreenCaptureCallback,
-                        )
-                        logger.d(TAG, "Native ScreenCaptureCallback unregistered")
-                    } else {
-                        logger.d(TAG, "DETECT_SCREEN_CAPTURE permission not granted, skipping unregister")
-                    }
-                }
-            } catch (e: Exception) {
-                logger.e(TAG, "Error unregistering native ScreenCaptureCallback: ${e.message}")
-            }
-        }
-
-        screenCaptureCallback = null
-        screenRecordingCallback = null
-        registeredActivity = null
     }
 
     // -----------------------------------------------------------------------

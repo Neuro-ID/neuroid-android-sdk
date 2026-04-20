@@ -488,6 +488,33 @@ class NIDScreenCaptureServiceTest {
         service35.teardownScreenCaptureListener()
 
         // Should not crash - the null activity check prevents removeScreenRecordingCallback call
+        verify { logger.d(any(), match { it.contains("DETECT_SCREEN_RECORDING permission not granted or some error has occurred, skipping unregister") }) }
+    }
+
+    @Test
+    fun test_teardown_api34_withoutPermission_skipsUnregisterScreenCapture() {
+        every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        val service34 = NIDScreenCaptureService(logger, mockSdkVersionProvider)
+
+        val mockActivity = mockk<Activity>(relaxed = true)
+        val mockCallback = mockk<Activity.ScreenCaptureCallback>(relaxed = true)
+
+        mockkStatic(ActivityCompat::class)
+        every { ActivityCompat.checkSelfPermission(mockActivity, any()) } returns PackageManager.PERMISSION_DENIED
+
+        val callbackField = NIDScreenCaptureService::class.java.getDeclaredField("screenCaptureCallback")
+        callbackField.isAccessible = true
+        callbackField.set(service34, mockCallback)
+
+        val activityField = NIDScreenCaptureService::class.java.getDeclaredField("registeredActivity")
+        activityField.isAccessible = true
+        activityField.set(service34, mockActivity)
+
+        service34.teardownScreenCaptureListener()
+
+        verify(exactly = 0) { mockActivity.unregisterScreenCaptureCallback(any()) }
+        verify { logger.d(any(), match { it.contains("DETECT_SCREEN_CAPTURE permission not granted, skipping unregister") }) }
     }
 
     // -----------------------------------------------------------------------
