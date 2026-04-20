@@ -236,6 +236,63 @@ class NIDScreenCaptureServiceTest {
     }
 
     // -----------------------------------------------------------------------
+    // Screen Recording — initial state detection at registration time
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun test_setupScreenCaptureListener_api35_recordingAlreadyInProgress_notifiesListenerImmediately() {
+        every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.VANILLA_ICE_CREAM
+
+        val service35 = NIDScreenCaptureService(logger, mockSdkVersionProvider)
+
+        val mockActivity = mockk<Activity>(relaxed = true)
+        val mockWindowManager = mockk<android.view.WindowManager>(relaxed = true)
+        every { mockActivity.windowManager } returns mockWindowManager
+
+        mockkStatic(ActivityCompat::class)
+        every { ActivityCompat.checkSelfPermission(mockActivity, any()) } returns PackageManager.PERMISSION_GRANTED
+
+        // Simulate recording already in progress when callback is registered
+        every {
+            mockWindowManager.addScreenRecordingCallback(any(), any())
+        } returns android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE
+
+        val captureListener = mockk<NIDScreenCaptureService.ScreenCaptureListener>(relaxed = true)
+        val recordingListener = mockk<NIDScreenCaptureService.ScreenRecordingListener>(relaxed = true)
+
+        service35.setupScreenCaptureListener(mockActivity, captureListener, recordingListener)
+
+        verify { recordingListener.onScreenRecorded(true) }
+        verify { logger.d(any(), match { it.contains("Screen recording already in progress at registration time") }) }
+    }
+
+    @Test
+    fun test_setupScreenCaptureListener_api35_recordingNotInProgress_doesNotNotifyListenerImmediately() {
+        every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.VANILLA_ICE_CREAM
+
+        val service35 = NIDScreenCaptureService(logger, mockSdkVersionProvider)
+
+        val mockActivity = mockk<Activity>(relaxed = true)
+        val mockWindowManager = mockk<android.view.WindowManager>(relaxed = true)
+        every { mockActivity.windowManager } returns mockWindowManager
+
+        mockkStatic(ActivityCompat::class)
+        every { ActivityCompat.checkSelfPermission(mockActivity, any()) } returns PackageManager.PERMISSION_GRANTED
+
+        // Simulate no recording in progress when callback is registered
+        every {
+            mockWindowManager.addScreenRecordingCallback(any(), any())
+        } returns android.view.WindowManager.SCREEN_RECORDING_STATE_NOT_VISIBLE
+
+        val captureListener = mockk<NIDScreenCaptureService.ScreenCaptureListener>(relaxed = true)
+        val recordingListener = mockk<NIDScreenCaptureService.ScreenRecordingListener>(relaxed = true)
+
+        service35.setupScreenCaptureListener(mockActivity, captureListener, recordingListener)
+
+        verify(exactly = 0) { recordingListener.onScreenRecorded(any()) }
+    }
+
+    // -----------------------------------------------------------------------
     // Screen Recording — callback invocation (recording start and stop)
     // -----------------------------------------------------------------------
 
@@ -490,3 +547,4 @@ class NIDScreenCaptureServiceTest {
         verify(exactly = 2) { mockWindowManager.addScreenRecordingCallback(any(), any()) }
     }
 }
+

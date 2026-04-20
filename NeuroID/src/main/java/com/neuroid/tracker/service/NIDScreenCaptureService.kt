@@ -55,10 +55,15 @@ class NIDScreenCaptureService(
                     listenerRecording.onScreenRecorded(isRecording)
                 }
                 screenRecordingCallback = recordingConsumer
-                activity.windowManager.addScreenRecordingCallback(
+                val currentState = activity.windowManager.addScreenRecordingCallback(
                     activity.mainExecutor,
                     recordingConsumer,
                 )
+                // Notify listener immediately if recording is already in progress at registration time
+                if (currentState == android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE) {
+                    logger.d(TAG, "Screen recording already in progress at registration time")
+                    listenerRecording.onScreenRecorded(true)
+                }
             } else {
                 logger.d(TAG, "DETECT_SCREEN_RECORDING permission not granted, skipping screen recording callback setup")
             }
