@@ -119,8 +119,8 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
-        // Tear down screen capture listener for this activity
-        neuroID.nidScreenCaptureService.teardownScreenCaptureListener()
+        // Only tear down if this activity owns the current registration
+        neuroID.nidScreenCaptureService.teardownScreenCaptureListener(activity)
 
         neuroID.captureEvent(
             type = WINDOW_BLUR,

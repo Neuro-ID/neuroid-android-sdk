@@ -55,6 +55,61 @@ class NIDScreenCaptureServiceTest {
     }
 
     // -----------------------------------------------------------------------
+    // teardownScreenCaptureListener(activity) — activity-scoped overload
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun test_teardownWithActivity_whenMatchingActivity_tearsDown() {
+        every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        val service34 = NIDScreenCaptureService(logger, mockSdkVersionProvider)
+        val mockActivity = mockk<Activity>(relaxed = true)
+
+        mockkStatic(ActivityCompat::class)
+        every { ActivityCompat.checkSelfPermission(mockActivity, any()) } returns PackageManager.PERMISSION_GRANTED
+
+        val captureListener = mockk<NIDScreenCaptureService.ScreenCaptureListener>(relaxed = true)
+        val recordingListener = mockk<NIDScreenCaptureService.ScreenRecordingListener>(relaxed = true)
+
+        service34.setupScreenCaptureListener(mockActivity, captureListener, recordingListener)
+        service34.teardownScreenCaptureListener(mockActivity)
+
+        verify { mockActivity.unregisterScreenCaptureCallback(any()) }
+    }
+
+    @Test
+    fun test_teardownWithActivity_whenDifferentActivity_skipsTeardown() {
+        every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        val service34 = NIDScreenCaptureService(logger, mockSdkVersionProvider)
+        val activityA = mockk<Activity>(relaxed = true)
+        val activityB = mockk<Activity>(relaxed = true)
+
+        mockkStatic(ActivityCompat::class)
+        every { ActivityCompat.checkSelfPermission(activityA, any()) } returns PackageManager.PERMISSION_GRANTED
+        every { ActivityCompat.checkSelfPermission(activityB, any()) } returns PackageManager.PERMISSION_GRANTED
+
+        val captureListener = mockk<NIDScreenCaptureService.ScreenCaptureListener>(relaxed = true)
+        val recordingListener = mockk<NIDScreenCaptureService.ScreenRecordingListener>(relaxed = true)
+
+        // Register for activityA
+        service34.setupScreenCaptureListener(activityA, captureListener, recordingListener)
+
+        // Teardown with activityB — should be a no-op
+        service34.teardownScreenCaptureListener(activityB)
+
+        verify(exactly = 0) { activityA.unregisterScreenCaptureCallback(any()) }
+        verify { logger.d(any(), match { it.contains("teardown skipped") }) }
+    }
+
+    @Test
+    fun test_teardownWithActivity_whenNoRegistration_doesNotThrow() {
+        val someActivity = mockk<Activity>(relaxed = true)
+        service.teardownScreenCaptureListener(someActivity)
+        verify { logger.d(any(), match { it.contains("teardown skipped") }) }
+    }
+
+    // -----------------------------------------------------------------------
     // Teardown — API 34+ native callback path via reflection
     // -----------------------------------------------------------------------
 

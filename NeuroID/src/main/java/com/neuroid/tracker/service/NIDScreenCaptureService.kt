@@ -80,6 +80,19 @@ class NIDScreenCaptureService(
     }
 
     /**
+     * Removes the screen capture listeners only if [activity] is the one currently registered.
+     * Safe to call even if no listener was registered or if a different activity owns the registration.
+     */
+    @SuppressLint("MissingPermission", "NewApi")
+    fun teardownScreenCaptureListener(activity: Activity) {
+        if (registeredActivity !== activity) {
+            logger.d(TAG, "teardown skipped — activity is not the registered owner")
+            return
+        }
+        teardownScreenCaptureListener()
+    }
+
+    /**
      * Removes the screen capture listeners that were previously registered.
      * Safe to call even if no listener was registered.
      */

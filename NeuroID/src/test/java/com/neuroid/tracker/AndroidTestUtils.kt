@@ -422,6 +422,7 @@ internal fun getMockedScreenCaptureService(): NIDScreenCaptureService {
 
     every { mockedScreenCaptureService.setupScreenCaptureListener(any(), any(), any()) } just runs
     every { mockedScreenCaptureService.teardownScreenCaptureListener() } just runs
+    every { mockedScreenCaptureService.teardownScreenCaptureListener(any()) } just runs
 
     return mockedScreenCaptureService
 }
