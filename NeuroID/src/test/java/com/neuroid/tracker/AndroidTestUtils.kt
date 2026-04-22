@@ -23,6 +23,7 @@ import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -107,6 +108,7 @@ internal fun getMockedNeuroID(
     every { nidMock.httpService } returns getMockedHTTPService()
     every { nidMock.logger } returns getMockedLogger()
     every { nidMock.randomGenerator} returns mockedRandomNumberGenerator
+    every { nidMock.nidScreenCaptureService } returns getMockedScreenCaptureService()
 
     every { nidMock.setupListeners() } just runs
 
@@ -413,6 +415,16 @@ internal fun getMockedIdentifierService(): NIDIdentifierService {
     val mockedIdentifierService = mockk<NIDIdentifierService>()
 
     return mockedIdentifierService
+}
+
+internal fun getMockedScreenCaptureService(): NIDScreenCaptureService {
+    val mockedScreenCaptureService = mockk<NIDScreenCaptureService>()
+
+    every { mockedScreenCaptureService.setupScreenCaptureListener(any(), any(), any()) } just runs
+    every { mockedScreenCaptureService.teardownScreenCaptureListener() } just runs
+    every { mockedScreenCaptureService.teardownScreenCaptureListener(any()) } just runs
+
+    return mockedScreenCaptureService
 }
 
 internal fun getMockedJob(

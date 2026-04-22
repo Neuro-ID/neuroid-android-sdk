@@ -7,11 +7,14 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
+import com.neuroid.tracker.events.SCREEN_CAPTURE
+import com.neuroid.tracker.events.SCREEN_RECORDING
 import com.neuroid.tracker.events.WINDOW_BLUR
 import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_ORIENTATION_CHANGE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
+import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.registrationHelpers
 
@@ -116,6 +119,9 @@ class ActivityCallbacks(
         logger.d(msg = "Activity - Paused")
         val currentActivityName = activity::class.java.name
 
+        // Only tear down if this activity owns the current registration
+        neuroID.nidScreenCaptureService.teardownScreenCaptureListener(activity)
+
         neuroID.captureEvent(
             type = WINDOW_BLUR,
             attrs =
@@ -143,6 +149,40 @@ class ActivityCallbacks(
                         "className" to currentActivityName,
                     ),
                 ),
+        )
+
+        // Set up screen capture and recording detection for this activity
+        neuroID.nidScreenCaptureService.setupScreenCaptureListener(
+            activity,
+            object : NIDScreenCaptureService.ScreenCaptureListener {
+                override fun onScreenCaptured() {
+                    neuroID.captureEvent(
+                        type = SCREEN_CAPTURE,
+                    )
+                }
+            }, listenerRecording = object: NIDScreenCaptureService.ScreenRecordingListener {
+                override fun onScreenRecorded(isRecording: Boolean) {
+                    if(isRecording) {
+                        neuroID.captureEvent(
+                            type = SCREEN_RECORDING,
+                            attrs = listOf(
+                                mapOf(
+                                    "status" to "active",
+                                ),
+                            ),
+                        )
+                    } else {
+                        neuroID.captureEvent(
+                            type = SCREEN_RECORDING,
+                            attrs = listOf(
+                                mapOf(
+                                    "status" to "inactive",
+                                ),
+                            ),
+                        )
+                    }
+                }
+            },
         )
 
         // depending on RN or Android run the following code

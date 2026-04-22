@@ -44,6 +44,7 @@ import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDNetworkListener
+import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.service.getSendingService
@@ -113,6 +114,7 @@ class NeuroID
         internal var validationService: NIDValidationService = NIDValidationService(logger)
         internal var identifierService: NIDIdentifierService
         internal var nidComposeTextWatcher: NIDComposeTextWatcherUtils
+        internal var nidScreenCaptureService: NIDScreenCaptureService = NIDScreenCaptureService(logger)
 
         internal lateinit var connectivityManager: ConnectivityManager
         internal lateinit var sessionService: NIDSessionService
@@ -189,6 +191,7 @@ class NeuroID
 
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
+
 
             identifierService =
                 NIDIdentifierService(

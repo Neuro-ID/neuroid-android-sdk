@@ -209,7 +209,7 @@ def exclusions = [
         "**/R\$*.class",
         "**/BuildConfig.*",
         "**/Manifest*.*",
-        "**/*Test*.*"
+        "**/*Test*.*",
 ]
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testAndroidLibDebugUnitTest']) {
