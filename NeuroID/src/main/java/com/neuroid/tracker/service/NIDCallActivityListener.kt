@@ -16,13 +16,18 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDPermissionChecker
 import com.neuroid.tracker.utils.VersionChecker
 
 class NIDCallActivityListener(
     private val neuroID: NeuroID,
     private val versionChecker: VersionChecker,
+    private val permissionChecker: NIDPermissionChecker = NIDPermissionChecker(),
+    private val phoneStateIntentFilter: IntentFilter = IntentFilter("android.intent.action.PHONE_STATE"),
 ) : BroadcastReceiver() {
-    private lateinit var intentFilter: IntentFilter
+    // intentFilter kept for backwards-compat internal use; replaced by phoneStateIntentFilter param
+    @Suppress("unused")
+    private val intentFilter: IntentFilter get() = phoneStateIntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
     private var callStateActive = false
@@ -51,14 +56,13 @@ class NIDCallActivityListener(
     }
 
     internal fun setCallActivityListener(context: Context) {
-        if (ActivityCompat.checkSelfPermission(
+        if (permissionChecker.checkSelfPermission(
                 context,
                 Manifest.permission.READ_PHONE_STATE,
             ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
-            intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
-            context.registerReceiver(this, intentFilter)
+            context.registerReceiver(this, phoneStateIntentFilter)
         } else {
             NIDLog.d(msg = "Permission to listen to call status not found")
             saveCallInProgressEvent(CallInProgress.UNAUTHORIZED.state)

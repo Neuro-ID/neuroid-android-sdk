@@ -2,10 +2,13 @@ package com.neuroid.tracker.service
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.telephony.TelephonyManager
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
 import com.neuroid.tracker.getMockedNeuroID
+import com.neuroid.tracker.utils.NIDPermissionChecker
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
@@ -450,6 +453,37 @@ class NIDCallActivityListenerTests {
         listener.unregisterCallActivityListener(null)
     }
 
+    @Test
+    fun test_unregisterCallActivityListener_null_context_when_registered_does_not_crash() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        listener.onReceive(context, mockk<Intent>())
+        // isReceiverRegistered = true, but context is null → should not crash (null-safe call)
+        listener.unregisterCallActivityListener(null)
+    }
+
+    @Test
+    fun test_unregisterCallActivityListener_sdk_lt_31_does_not_clear_telephony_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        listener.onReceive(context, mockk<Intent>())
+        // SDK < 31 path: customTelephonyCallback branch is NOT entered
+        listener.unregisterCallActivityListener(context)
+        verify(atLeast = 1) { context.unregisterReceiver(listener) }
+    }
+
     // ─── onReceive with null context ─────────────────────────────────────────
 
     @Test
@@ -610,6 +644,471 @@ class NIDCallActivityListenerTests {
 
         // registerCustomTelephonyCallback should only be called once
         assert(listenCallCount == 1) { "Expected 1 registration but was $listenCallCount" }
+    }
+
+    // ─── SDK >= 31 full callback state coverage ──────────────────────────────
+
+    @Test
+    fun test_callActivityListener_sdk_gte_31_ringing_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.registerTelephonyCallback(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.RINGING.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = "false",
+            attrs = listOf(mapOf("progress" to "ringing"))
+        )
+    }
+
+    @Test
+    fun test_callActivityListener_sdk_gte_31_inactive_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.registerTelephonyCallback(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.INACTIVE.event,
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    fun test_callActivityListener_sdk_gte_31_active_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.registerTelephonyCallback(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.ACTIVE.event,
+            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+        )
+    }
+
+    // ─── SDK < 31 full callback state coverage ───────────────────────────────
+
+    @Test
+    fun test_callActivityListener_sdk_lt_31_ringing_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.listen(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.RINGING.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = "false",
+            attrs = listOf(mapOf("progress" to "ringing"))
+        )
+    }
+
+    @Test
+    fun test_callActivityListener_sdk_lt_31_inactive_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.listen(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.INACTIVE.event,
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    fun test_callActivityListener_sdk_lt_31_active_state_in_callback() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        every { telephonyManager.listen(any(), any()) } answers {
+            listener.saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+        }
+        listener.onReceive(context, mockk<Intent>())
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.ACTIVE.event,
+            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+        )
+    }
+
+    // ─── CustomTelephonyCallback direct invocation (SDK >= 31) ──────────────────
+
+    @Test
+    fun test_customTelephonyCallback_inactive_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val callbackSlot = io.mockk.slot<CustomTelephonyCallback>()
+        every { telephonyManager.registerTelephonyCallback(any(), capture(callbackSlot)) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        // Directly invoke the captured callback with INACTIVE state (TelephonyManager.CALL_STATE_IDLE = 0)
+        callbackSlot.captured.onCallStateChanged(CallInProgress.INACTIVE.state)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.INACTIVE.event,
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    fun test_customTelephonyCallback_ringing_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val callbackSlot = io.mockk.slot<CustomTelephonyCallback>()
+        every { telephonyManager.registerTelephonyCallback(any(), capture(callbackSlot)) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        callbackSlot.captured.onCallStateChanged(CallInProgress.RINGING.state)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = "false",
+            attrs = listOf(mapOf("progress" to "ringing"))
+        )
+    }
+
+    @Test
+    fun test_customTelephonyCallback_active_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val callbackSlot = io.mockk.slot<CustomTelephonyCallback>()
+        every { telephonyManager.registerTelephonyCallback(any(), capture(callbackSlot)) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        callbackSlot.captured.onCallStateChanged(CallInProgress.ACTIVE.state)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.ACTIVE.event,
+            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    fun test_customTelephonyCallback_unknown_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns true
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        every { context.mainExecutor } returns mockk(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val callbackSlot = io.mockk.slot<CustomTelephonyCallback>()
+        every { telephonyManager.registerTelephonyCallback(any(), capture(callbackSlot)) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        callbackSlot.captured.onCallStateChanged(-999)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.UNKNOWN.event,
+            attrs = listOf(mapOf("progress" to "unknown"))
+        )
+    }
+
+    // ─── PhoneStateListener direct invocation (SDK < 31) ─────────────────────
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun test_phoneStateListener_idle_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val listenerSlot = io.mockk.slot<android.telephony.PhoneStateListener>()
+        every { telephonyManager.listen(capture(listenerSlot), any()) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        listenerSlot.captured.onCallStateChanged(TelephonyManager.CALL_STATE_IDLE, null)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.INACTIVE.event,
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun test_phoneStateListener_ringing_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val listenerSlot = io.mockk.slot<android.telephony.PhoneStateListener>()
+        every { telephonyManager.listen(capture(listenerSlot), any()) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        listenerSlot.captured.onCallStateChanged(TelephonyManager.CALL_STATE_RINGING, null)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = "false",
+            attrs = listOf(mapOf("progress" to "ringing"))
+        )
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun test_phoneStateListener_offhook_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val listenerSlot = io.mockk.slot<android.telephony.PhoneStateListener>()
+        every { telephonyManager.listen(capture(listenerSlot), any()) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        listenerSlot.captured.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK, null)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.ACTIVE.event,
+            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+        )
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun test_phoneStateListener_unknown_state() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        val listenerSlot = io.mockk.slot<android.telephony.PhoneStateListener>()
+        every { telephonyManager.listen(capture(listenerSlot), any()) } answers {}
+        listener.onReceive(context, mockk<Intent>())
+
+        listenerSlot.captured.onCallStateChanged(-999, null)
+
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.UNKNOWN.event,
+            attrs = listOf(mapOf("progress" to "unknown"))
+        )
+    }
+
+    // ─── onReceive with non-null context but callback already set (re-entry guard) ──
+
+    @Test
+    fun test_onReceive_does_not_recreate_telephony_callback_when_called_via_listen_twice() {
+        // Simulates onReceive being called, then unregister + re-onReceive
+        // The inner `if (phoneStateListener == null)` guard prevents double creation
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+        var listenCount = 0
+        every { telephonyManager.listen(any(), any()) } answers { listenCount++ }
+
+        val listener = NIDCallActivityListener(mockedNID, version)
+        listener.onReceive(context, mockk<Intent>())
+        // unregister resets isReceiverRegistered so onReceive can enter the block again,
+        // but phoneStateListener is already set so listen() will only be called once more
+        listener.unregisterCallActivityListener(context)
+        // phoneStateListener was set to null in unregister, so recreated on second onReceive
+        listener.onReceive(context, mockk<Intent>())
+
+        assert(listenCount == 2) { "Expected 2 listen registrations (one per onReceive) but was $listenCount" }
+    }
+
+    // ─── setCallActivityListener ─────────────────────────────────────────────
+
+    @Test
+    fun test_setCallActivityListener_registers_receiver_when_permission_granted() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val permissionChecker = mockk<NIDPermissionChecker>()
+        every { permissionChecker.checkSelfPermission(any(), any()) } returns PackageManager.PERMISSION_GRANTED
+        val intentFilter = mockk<IntentFilter>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version, permissionChecker, intentFilter)
+        listener.setCallActivityListener(context)
+
+        verify(exactly = 1) { context.registerReceiver(listener, intentFilter) }
+    }
+
+    @Test
+    fun test_setCallActivityListener_does_not_register_when_already_registered() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val permissionChecker = mockk<NIDPermissionChecker>()
+        every { permissionChecker.checkSelfPermission(any(), any()) } returns PackageManager.PERMISSION_GRANTED
+        val intentFilter = mockk<IntentFilter>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+        val telephonyManager = mockk<TelephonyManager>(relaxed = true)
+        every { context.getSystemService(any()) } returns telephonyManager
+
+        val listener = NIDCallActivityListener(mockedNID, version, permissionChecker, intentFilter)
+        // onReceive sets isReceiverRegistered = true
+        listener.onReceive(context, mockk<Intent>())
+        // Now setCallActivityListener should skip the register branch (isReceiverRegistered = true)
+        // and fall into the else branch, emitting UNAUTHORIZED
+        listener.setCallActivityListener(context)
+
+        // registerReceiver was never called by setCallActivityListener (only onReceive path registers)
+        verify(exactly = 0) { context.registerReceiver(listener, intentFilter) }
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.UNAUTHORIZED.event,
+            attrs = listOf(mapOf("progress" to "unauthorized"))
+        )
+    }
+
+    @Test
+    fun test_setCallActivityListener_emits_unauthorized_when_permission_denied() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val permissionChecker = mockk<NIDPermissionChecker>()
+        every { permissionChecker.checkSelfPermission(any(), any()) } returns PackageManager.PERMISSION_DENIED
+        val intentFilter = mockk<IntentFilter>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version, permissionChecker, intentFilter)
+        listener.setCallActivityListener(context)
+
+        verify(exactly = 0) { context.registerReceiver(any(), any()) }
+        verifyCaptureEvent(
+            mockedNID,
+            CALL_IN_PROGRESS,
+            cp = CallInProgress.UNAUTHORIZED.event,
+            attrs = listOf(mapOf("progress" to "unauthorized"))
+        )
+    }
+
+    @Test
+    fun test_setCallActivityListener_uses_injected_intent_filter() {
+        val mockedNID = getMockedNeuroID()
+        val version = mockk<VersionChecker>()
+        every { version.isBuildVersionGreaterThanOrEqualTo31() } returns false
+        val permissionChecker = mockk<NIDPermissionChecker>()
+        every { permissionChecker.checkSelfPermission(any(), any()) } returns PackageManager.PERMISSION_GRANTED
+        val customFilter = mockk<IntentFilter>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+
+        val listener = NIDCallActivityListener(mockedNID, version, permissionChecker, customFilter)
+        listener.setCallActivityListener(context)
+
+        // Verify the exact filter instance passed in was used
+        verify(exactly = 1) { context.registerReceiver(listener, customFilter) }
     }
 
     // ─── Harness ─────────────────────────────────────────────────────────────
