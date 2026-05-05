@@ -31,6 +31,11 @@ class NIDCallActivityListener(
     // for phones >= API 31 (S)
     private var customTelephonyCallback: CustomTelephonyCallback? = null
 
+    private var lastInactiveTime: Long = 0
+    private var lastActiveTime: Long = 0
+    private var callStartTime: Long = 0
+    private var wasRinging = false
+
     @RequiresApi(Build.VERSION_CODES.S)
     @Synchronized
     override fun onReceive(
@@ -75,23 +80,39 @@ class NIDCallActivityListener(
         when (state) {
             CallInProgress.INACTIVE.state -> {
                 callStateActive = false
-                NIDLog.d(msg = "Call inactive")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.INACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "hangup")),
-                )
+                val currentInactiveTime = System.currentTimeMillis()
+                if (currentInactiveTime - lastInactiveTime > 500) {
+                    val duration = if (callStartTime > 0) currentInactiveTime - callStartTime else 0L
+                    val direction = if (wasRinging) "inbound" else "outbound"
+                    NIDLog.d(msg = "Call inactive")
+                    NIDLog.d(msg = "Call duration: $duration ms, direction: $direction")
+                    neuroID.captureEvent(
+                        type = CALL_IN_PROGRESS,
+                        cp = CallInProgress.INACTIVE.event,
+                        attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "$duration", "direction" to direction)),
+                    )
+                    callStartTime = 0
+                    wasRinging = false
+                }
+                lastInactiveTime = currentInactiveTime
             }
             CallInProgress.ACTIVE.state -> {
                 callStateActive = true
-                NIDLog.d(msg = "Call in progress")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.ACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "active")),
-                )
+                val currentActiveTime = System.currentTimeMillis()
+                if (currentActiveTime - lastActiveTime > 500) {
+                    val direction = if (wasRinging) "inbound" else "outbound"
+                    NIDLog.d(msg = "Call in progress, direction: $direction")
+                    callStartTime = currentActiveTime
+                    neuroID.captureEvent(
+                        type = CALL_IN_PROGRESS,
+                        cp = CallInProgress.ACTIVE.event,
+                        attrs = listOf(mapOf("progress" to "active", "direction" to direction)),
+                    )
+                }
+                lastInactiveTime = currentActiveTime
             }
             CallInProgress.RINGING.state -> {
+                wasRinging = true
                 NIDLog.d(msg = "Call Ringing")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
@@ -146,6 +167,7 @@ class NIDCallActivityListener(
 
                         CallInProgress.ACTIVE.state -> {
                             saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+
                         }
 
                         else -> {
