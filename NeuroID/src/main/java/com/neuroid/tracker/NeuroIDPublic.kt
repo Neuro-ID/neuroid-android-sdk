@@ -32,7 +32,13 @@ interface NeuroIDPublic {
     /**
      * Set a user id.
      */
+    @Deprecated("setUserID is deprecated, please use `identify` instead.")
     fun setUserID(userID: String): Boolean
+
+    /**
+     * Set a user id.
+     */
+    fun identify(userID: String): Boolean
 
     /**
      * Return the currently set user id.

@@ -969,6 +969,66 @@ open class NeuroIDClassUnitTests {
 
     // setUserID() Tests
     @Test
+    fun test_identify_success() {
+        val testUserID = "valid-user-id-789"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return true
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+
+        val result = NeuroID.getInstance()?.identify(testUserID)
+
+        // Verify identifierService.setUserID was called with correct parameters
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), testUserID, true)
+        }
+
+        // Verify result is true
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_identify_failure() {
+        val invalidUserID = "invalid id"
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false (validation failed)
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.identify(invalidUserID)
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    @Test
+    fun test_identify_emptyString() {
+        val mockedIdentifierService = getMockedIdentifierService()
+        NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
+
+        // Mock setUserID to return false for empty string
+        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+
+        val result = NeuroID.getInstance()?.identify("")
+
+        // Verify identifierService.setUserID was called
+        verify(exactly = 1) {
+            mockedIdentifierService.setUserID(any(), "", true)
+        }
+
+        // Verify result is false
+        assertEquals(false, result)
+    }
+
+    // setUserID() Tests
+    @Test
     fun test_setUserID_success() {
         val testUserID = "valid-user-id-789"
         val mockedIdentifierService = getMockedIdentifierService()
