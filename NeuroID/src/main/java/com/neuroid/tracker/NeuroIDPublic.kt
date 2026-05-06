@@ -43,6 +43,7 @@ interface NeuroIDPublic {
     /**
      * Return the currently set user id.
      */
+    @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed, replaced with`getSessionID`")
     fun getUserID(): String
 
     /**
