@@ -679,7 +679,12 @@ class NeuroID
 
         override fun getUserID() = identifierService.getUserID(this)
 
+        @Deprecated("Use identify instead, setUserID is being deprecated")
         override fun setUserID(userID: String): Boolean {
+            return identifierService.setUserID(this, userID, true)
+        }
+
+        override fun identify(userID: String): Boolean {
             return identifierService.setUserID(this, userID, true)
         }
 
