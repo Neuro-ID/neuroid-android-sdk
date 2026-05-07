@@ -8,6 +8,9 @@ import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.utils.NIDBuildConfigWrapper
+import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -1987,4 +1990,313 @@ open class NeuroIDClassUnitTests {
     }
 
     //    captureEvent
+
+    // ── getSDKVersion ────────────────────────────────────────────────────────
+
+    @Test
+    fun test_getSDKVersion_returnsNonEmptyString() {
+        val version = NeuroID.getInstance()?.getSDKVersion()
+        assert(!version.isNullOrEmpty()) { "getSDKVersion() should return a non-empty string" }
+    }
+
+    @Test
+    fun test_getSDKVersion_matchesNIDVersionUtil() {
+        // The NeuroID implementation delegates directly to NIDVersion.getSDKVersion(),
+        // so the two values must be identical.
+        val expected = NIDVersion.getSDKVersion()
+        val actual = NeuroID.getInstance()?.getSDKVersion()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun test_getSDKVersion_androidFlavour_doesNotContainRnSuffix() {
+        // In the android flavour the version string must NOT have "-rn"
+        val mockedBuildConfigWrapper = mockk<NIDBuildConfigWrapper>()
+        every { mockedBuildConfigWrapper.getFlavor() } returns "android"
+        every { mockedBuildConfigWrapper.getBuildVersion() } returns "4.0.0"
+        every { mockedBuildConfigWrapper.getGitHash() } returns "abc1234"
+
+        val version = NIDVersion.getSDKVersion(mockedBuildConfigWrapper)
+        assert(!version.contains("-rn")) { "Android flavour should not contain '-rn', got: $version" }
+        assert(version.contains("android")) { "Version should contain 'android', got: $version" }
+    }
+
+    // ── stopSession ──────────────────────────────────────────────────────────
+
+    @Test
+    fun test_stopSession_delegatesToSessionService_returnsTrue() {
+        val mockedSessionService = getMockedSessionService()
+        every { mockedSessionService.stopSession() } returns true
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        val result = NeuroID.getInstance()?.stopSession()
+
+        verify(exactly = 1) { mockedSessionService.stopSession() }
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_stopSession_delegatesToSessionService_returnsFalse() {
+        val mockedSessionService = getMockedSessionService()
+        every { mockedSessionService.stopSession() } returns false
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        val result = NeuroID.getInstance()?.stopSession()
+
+        verify(exactly = 1) { mockedSessionService.stopSession() }
+        assertEquals(false, result)
+    }
+
+    // ── pauseCollection ───────────────────────────────────────────────────────
+
+    @Test
+    fun test_pauseCollection_delegatesToSessionService() {
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInstance()?.pauseCollection()
+
+        // pauseCollection() always calls sessionService.pauseCollection(true)
+        verify(exactly = 1) { mockedSessionService.pauseCollection(true) }
+    }
+
+    @Test
+    fun test_pauseCollection_whenSDKNotStarted_stillDelegates() {
+        NeuroID._isSDKStarted = false
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInstance()?.pauseCollection()
+
+        verify(exactly = 1) { mockedSessionService.pauseCollection(true) }
+    }
+
+    // ── resumeCollection ──────────────────────────────────────────────────────
+
+    @Test
+    fun test_resumeCollection_delegatesToSessionService() {
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInstance()?.resumeCollection()
+
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
+    @Test
+    fun test_resumeCollection_whenSDKNotStarted_stillDelegates() {
+        NeuroID._isSDKStarted = false
+        val mockedSessionService = getMockedSessionService()
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInstance()?.resumeCollection()
+
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
+    // ── startSession ──────────────────────────────────────────────────────────
+
+    @Test
+    fun test_startSession_withSessionID_completionInvokedWithSuccess() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "session-abc")
+        every { mockedSessionService.startSession(null, "session-abc", any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startSession(sessionID = "session-abc") { result ->
+            completionResult = result
+        }
+
+        verify(exactly = 1) { mockedSessionService.startSession(null, "session-abc", any()) }
+        assertEquals(expectedResult, completionResult)
+    }
+
+    @Test
+    fun test_startSession_withNullSessionID_completionInvoked() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "generated-id")
+        every { mockedSessionService.startSession(null, null, any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startSession(sessionID = null) { result ->
+            completionResult = result
+        }
+
+        verify(exactly = 1) { mockedSessionService.startSession(null, null, any()) }
+        assertEquals(expectedResult, completionResult)
+    }
+
+    @Test
+    fun test_startSession_failure_completionInvokedWithFalse() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        every { mockedSessionService.startSession(null, any(), any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startSession { result ->
+            completionResult = result
+        }
+
+        assertEquals(false, completionResult?.started)
+    }
+
+    // ── startAppFlow ──────────────────────────────────────────────────────────
+
+    @Test
+    fun test_startAppFlow_withUserID_completionInvokedWithSuccess() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-1")
+        every { mockedSessionService.startAppFlow("site-123", "user-abc", any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startAppFlow(siteID = "site-123", userID = "user-abc") { result ->
+            completionResult = result
+        }
+
+        verify(exactly = 1) { mockedSessionService.startAppFlow("site-123", "user-abc", any()) }
+        assertEquals(expectedResult, completionResult)
+    }
+
+    @Test
+    fun test_startAppFlow_withNullUserID_completionInvoked() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-2")
+        every { mockedSessionService.startAppFlow("site-xyz", null, any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startAppFlow(siteID = "site-xyz") { result ->
+            completionResult = result
+        }
+
+        verify(exactly = 1) { mockedSessionService.startAppFlow("site-xyz", null, any()) }
+        assertEquals(expectedResult, completionResult)
+    }
+
+    @Test
+    fun test_startAppFlow_failure_completionInvokedWithFalse() {
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        every { mockedSessionService.startAppFlow(any(), any(), any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        var completionResult: SessionStartResult? = null
+        NeuroID.getInstance()?.startAppFlow(siteID = "site-fail") { result ->
+            completionResult = result
+        }
+
+        assertEquals(false, completionResult?.started)
+    }
+
+    // ── Default-parameter overloads (cover the 5 missing NeuroIDPublic methods) ──
+
+    @Test
+    fun test_start_defaultCompletion_doesNotThrow() {
+        // Exercises: start(completion = {}) — the no-arg default overload
+        val mockedSessionService = getMockedSessionService()
+        every { mockedSessionService.start(siteID = null, completion = any()) } answers {
+            val completion = secondArg<(Boolean) -> Unit>()
+            completion(true)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+        NeuroID._isSDKStarted = false
+
+        // Call with NO arguments — exercises the synthesised default parameter path
+        NeuroID.getInstance()?.start()
+
+        verify(exactly = 1) { mockedSessionService.start(siteID = null, completion = any()) }
+    }
+
+    @Test
+    fun test_startSession_noArgs_defaultCompletion() {
+        // Exercises: startSession() — both sessionID and completion use defaults
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "auto-id")
+        every { mockedSessionService.startSession(null, null, any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        // No arguments at all
+        NeuroID.getInstance()?.startSession()
+
+        verify(exactly = 1) { mockedSessionService.startSession(null, null, any()) }
+    }
+
+    @Test
+    fun test_startSession_withSessionID_defaultCompletion() {
+        // Exercises: startSession(sessionID = "id") — completion uses default {}
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "given-id")
+        every { mockedSessionService.startSession(null, "given-id", any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        // Provide sessionID but omit completion
+        NeuroID.getInstance()?.startSession(sessionID = "given-id")
+
+        verify(exactly = 1) { mockedSessionService.startSession(null, "given-id", any()) }
+    }
+
+    @Test
+    fun test_attemptedLogin_noArgs_defaultNullUserId() {
+        // Exercises: attemptedLogin() — the no-arg default overload (userId = null)
+        setupAttemptedLoginTestEnvironment(false)
+        val mockIdentificationService = NeuroID.getInternalInstance()?.identifierService
+
+        // Call WITHOUT arguments — covers the default parameter synthetic path
+        val result = NeuroID.getInstance()?.attemptedLogin()
+
+        verify {
+            mockIdentificationService?.setGenericUserID(
+                any(),
+                "ATTEMPTED_LOGIN",
+                "scrubbed-id-failed-validation",
+                false
+            )
+        }
+        assertEquals(true, result)
+    }
+
+    @Test
+    fun test_startAppFlow_withSiteIDOnly_defaultCompletion() {
+        // Exercises: startAppFlow(siteID = "site") — userID and completion use defaults
+        val mockedSessionService = getMockedSessionService()
+        val expectedResult = SessionStartResult(started = true, sessionID = "flow-default")
+        every { mockedSessionService.startAppFlow("site-default", null, any()) } answers {
+            val completion = thirdArg<(SessionStartResult) -> Unit>()
+            completion(expectedResult)
+        }
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        // Provide only siteID; omit userID and completion
+        NeuroID.getInstance()?.startAppFlow(siteID = "site-default")
+
+        verify(exactly = 1) { mockedSessionService.startAppFlow("site-default", null, any()) }
+    }
 }
