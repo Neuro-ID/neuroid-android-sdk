@@ -549,7 +549,6 @@ class NeuroID
             setupListeners()
         }
 
-        @Deprecated("attemptedLogin is deprecated, do not use ")
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             captureEvent(
                 type = LOG,
