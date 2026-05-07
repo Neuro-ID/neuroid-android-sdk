@@ -151,6 +151,7 @@ interface NeuroIDPublic {
      * This should be called when the user attempts to login. Returns true always. Returns false if
      * exception is thrown during the process.
      */
+    @Deprecated("attemptedLogin is deprecated, do not use ")
     fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
 
     /**
