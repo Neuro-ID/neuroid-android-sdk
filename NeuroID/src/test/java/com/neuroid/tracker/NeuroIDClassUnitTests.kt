@@ -33,6 +33,7 @@ import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -275,6 +276,147 @@ open class NeuroIDClassUnitTests {
         storedEvents.clear()
         queuedEvents.clear()
         NeuroID.getInternalInstance()?.excludedTestIDList?.clear()
+    }
+
+    // NeuroID.init() Tests
+    // The init block runs inside the private constructor, exercised via BuilderConfig.build()
+
+    @Test
+    fun test_init_serverEnvironment_production_setsProductionEndpoints() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertEquals(Constants.productionEndpoint.displayName, NeuroID.endpoint)
+        assertEquals(Constants.productionScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+    }
+
+    @Test
+    fun test_init_serverEnvironment_development_setsDevEndpoints() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.DEVELOPMENT)
+        ).build()
+
+        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
+        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+    }
+
+    @Test
+    fun test_init_serverEnvironment_test_setsTestEndpoints() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.TEST)
+        ).build()
+
+        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.endpoint)
+        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.scriptEndpoint)
+    }
+
+    @Test
+    fun test_init_serverEnvironment_prodScriptDevCollection_setsMixedEndpoints() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODSCRIPT_DEVCOLLECTION)
+        ).build()
+
+        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
+        assertEquals(Constants.productionScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+    }
+
+    @Test
+    fun test_init_invalidClientKey_clearsKeyAndSetsInvalidTabID() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("invalid_key", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val instance = NeuroID.getInternalInstance()
+        assertEquals("", instance?.clientKey)
+        assert(instance?.tabID?.endsWith("-invalid-client-key") == true)
+    }
+
+    @Test
+    fun test_init_liveClientKey_setsEnvironmentLive() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_live_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertEquals("LIVE", NeuroID.environment)
+    }
+
+    @Test
+    fun test_init_testClientKey_setsEnvironmentTest() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertEquals("TEST", NeuroID.environment)
+    }
+
+    @Test
+    fun test_init_nullApplication_doesNotInitialiseApplicationDependentServices() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val instance = NeuroID.getInternalInstance()
+        // metaData and nidCallActivityListener are only set inside application?.let block
+        assertEquals(null, instance?.metaData)
+        assertEquals(null, instance?.application)
+    }
+
+    @Test
+    fun test_init_validKey_tabIDDoesNotContainInvalidSuffix() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val tabID = NeuroID.getInternalInstance()?.tabID
+        assert(tabID?.contains("-invalid-client-key") == false)
+        assert(tabID?.isNotEmpty() == true)
+    }
+
+    @Test
+    fun test_init_coreServicesAlwaysInitialised() {
+        // configService, dataStore, identifierService are always initialised regardless of application
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val instance = NeuroID.getInternalInstance()
+        assertNotNull(instance?.configService)
+        assertNotNull(instance?.dataStore)
+        assertNotNull(instance?.identifierService)
+        assertNotNull(instance?.registrationIdentificationHelper)
+        assertNotNull(instance?.nidActivityCallbacks)
+        assertNotNull(instance?.nidComposeTextWatcher)
     }
 
     // Class Init Test

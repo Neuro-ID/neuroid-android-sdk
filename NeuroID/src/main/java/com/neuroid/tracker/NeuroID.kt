@@ -854,7 +854,7 @@ class NeuroID
             scr: String? = null,
             synthetic: Boolean? = null,
         ) {
-            if (!queuedEvent && (!isSDKStarted || nidJobServiceManager?.isStopped() == true)) {
+            if (!queuedEvent && (!isSDKStarted || (::nidJobServiceManager.isInitialized && nidJobServiceManager.isStopped()))) {
                 return
             }
 
