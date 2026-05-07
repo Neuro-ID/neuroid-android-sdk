@@ -3,6 +3,10 @@ package com.neuroid.tracker
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.IntentFilter
+import android.content.SharedPreferences
+import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -14,8 +18,14 @@ import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDSessionService
+import com.neuroid.tracker.service.LocationService
+import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
+import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.coEvery
@@ -417,6 +427,247 @@ open class NeuroIDClassUnitTests {
         assertNotNull(instance?.registrationIdentificationHelper)
         assertNotNull(instance?.nidActivityCallbacks)
         assertNotNull(instance?.nidComposeTextWatcher)
+    }
+
+    // Helper used by application?.let init block tests
+    private fun buildMockedApplication(): Application {
+        val mockedSharedPreferencesEditor = mockk<SharedPreferences.Editor>()
+        every { mockedSharedPreferencesEditor.apply() } just runs
+        every { mockedSharedPreferencesEditor.putString(any(), any()) } returns mockedSharedPreferencesEditor
+
+        val mockedSharedPreferences = mockk<SharedPreferences>()
+        every { mockedSharedPreferences.edit() } returns mockedSharedPreferencesEditor
+        every { mockedSharedPreferences.getString(any(), any()) } returns ""
+
+        // Use a relaxed context mock so unstubbed calls (e.g. getPackageManager in NIDMetaData) don't throw
+        val mockedContext = mockk<Context>(relaxed = true)
+        every { mockedContext.getSharedPreferences(any(), any()) } returns mockedSharedPreferences
+
+        val mockedConnectivityManager = mockk<ConnectivityManager>()
+        every { mockedConnectivityManager.activeNetworkInfo } returns null
+        every { mockedConnectivityManager.activeNetwork } returns null
+        every { mockedConnectivityManager.getNetworkCapabilities(any()) } returns null
+
+        every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedContext.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
+
+        val mockedApplication = mockk<Application>()
+        every { mockedApplication.applicationContext } returns mockedContext
+        every { mockedApplication.getSharedPreferences(any(), any()) } returns mockedSharedPreferences
+        every { mockedApplication.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
+        every { mockedApplication.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
+        every { mockedApplication.registerReceiver(any(), any<IntentFilter>()) } returns null
+        every { mockedApplication.registerActivityLifecycleCallbacks(any()) } just runs
+
+        mockkStatic(::getSendingService)
+        every { getSendingService(any(), any()) } returns mockk(relaxed = true)
+
+        mockkConstructor(NIDJobServiceManager::class)
+        every { anyConstructed<NIDJobServiceManager>().startJob(any(), any()) } just runs
+        every { anyConstructed<NIDJobServiceManager>().isStopped() } returns false
+        every { anyConstructed<NIDJobServiceManager>().sendEvents(any()) } just runs
+
+        mockkConstructor(NIDSharedPrefsDefaults::class)
+        every { anyConstructed<NIDSharedPrefsDefaults>().getClientID() } returns "test-client-id"
+        every { anyConstructed<NIDSharedPrefsDefaults>().resetClientID() } returns "test-client-id"
+        every { anyConstructed<NIDSharedPrefsDefaults>().getPlatform() } returns "android"
+        every { anyConstructed<NIDSharedPrefsDefaults>().getSessionID() } returns ""
+
+        mockkConstructor(NIDSessionService::class)
+        every { anyConstructed<NIDSessionService>().resumeCollection() } just runs
+
+        mockkConstructor(LocationService::class)
+        mockkConstructor(NIDCallActivityListener::class)
+
+        // RootHelper is called inside NIDMetaData init; mock it to avoid Build.FINGERPRINT NPE on JVM
+        mockkConstructor(com.neuroid.tracker.utils.RootHelper::class)
+        every { anyConstructed<com.neuroid.tracker.utils.RootHelper>().isProbablyEmulator() } returns false
+        every { anyConstructed<com.neuroid.tracker.utils.RootHelper>().isRooted(any()) } returns false
+
+        // getAppMetaData is a top-level function called in captureApplicationMetaData; mock to avoid packageName NPE
+        mockkStatic(::getAppMetaData)
+        every { getAppMetaData(any(), any(), any()) } returns null
+
+        return mockedApplication
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesNidJobServiceManager() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val instance = NeuroID.getInternalInstance()
+        assertNotNull(instance)
+        assertNotNull(instance?.nidJobServiceManager)
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesSessionService() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertNotNull(NeuroID.getInternalInstance()?.sessionService)
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesMetaData() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertNotNull(NeuroID.getInternalInstance()?.metaData)
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesSharedPrefsDefaults() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertNotNull(NeuroID.getInternalInstance()?.sharedPrefsDefaults)
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesLocationService() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertNotNull(NeuroID.getInternalInstance()?.locationService)
+    }
+
+    @Test
+    fun test_init_withApplication_initialisesNidCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertNotNull(NeuroID.getInternalInstance()?.nidCallActivityListener)
+    }
+
+    @Test
+    fun test_init_withApplication_setsNetworkConnectionType() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        val networkType = NeuroID.getInternalInstance()?.networkConnectionType
+        assertNotNull(networkType)
+        assert(networkType!!.isNotEmpty())
+    }
+
+    @Test
+    fun test_init_withApplication_isConnected_whenNetworkInfoNull() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertEquals(false, NeuroID.getInternalInstance()?.isConnected)
+    }
+
+    @Test
+    fun test_init_withApplication_isConnected_whenNetworkInfoConnected() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        val mockedConnectivityManager = mockedApplication.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val mockedNetworkInfo = mockk<NetworkInfo>(relaxed = true)
+        every { mockedNetworkInfo.isConnectedOrConnecting } returns true
+        every { mockedConnectivityManager.activeNetworkInfo } returns mockedNetworkInfo
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        assertEquals(true, NeuroID.getInternalInstance()?.isConnected)
+    }
+
+    @Test
+    fun test_init_withApplication_isNotAdvancedDevice_doesNotCallResetClientId() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        verify(exactly = 0) {
+            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
+        }
+    }
+
+    @Test
+    fun test_init_withApplication_isAdvancedDevice_callsResetClientId() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", true, "", true, NeuroID.PRODUCTION)
+        ).build()
+
+        verify(atLeast = 1) {
+            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
+        }
+
+        // Explicitly unmock constructors before tearDown's unmockkAll() to avoid
+        // ConcurrentModificationException in MockK 1.12.0 when coroutines are involved
+        unmockkConstructor(
+            NIDJobServiceManager::class,
+            NIDSharedPrefsDefaults::class,
+            NIDSessionService::class,
+            LocationService::class,
+            NIDCallActivityListener::class,
+            com.neuroid.tracker.utils.RootHelper::class,
+        )
+        unmockkStatic(::getSendingService, ::getAppMetaData)
     }
 
     // Class Init Test
