@@ -549,6 +549,7 @@ class NeuroID
             setupListeners()
         }
 
+        @Deprecated("attemptedLogin is deprecated, do not use ")
         override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
             captureEvent(
                 type = LOG,
@@ -677,6 +678,7 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
+        @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed, replaced with`getSessionID`")
         override fun getUserID() = identifierService.getUserID(this)
 
         @Deprecated("Use identify instead, setUserID is being deprecated")
