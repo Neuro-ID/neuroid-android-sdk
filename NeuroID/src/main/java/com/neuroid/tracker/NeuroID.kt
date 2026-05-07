@@ -69,6 +69,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
+import kotlin.Deprecated
+import kotlin.ReplaceWith
 
 class NeuroID
     private constructor(
@@ -613,7 +615,7 @@ class NeuroID
 
         override fun getEnvironment(): String = environment
 
-        override fun getSessionID(): String = sessionID
+        override fun getSessionID(): String = userID
 
         override fun getClientID(): String = clientID
 
@@ -677,10 +679,12 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
-        @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed, replaced with`getSessionID`")
+        @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
+            ReplaceWith("getSessionID()"))
         override fun getUserID() = identifierService.getUserID(this)
 
-        @Deprecated("Use identify instead, setUserID is being deprecated")
+        @Deprecated("setUserID is deprecated, please use `identify` instead.",
+            ReplaceWith("identify(userID)"))
         override fun setUserID(userID: String): Boolean {
             return identifierService.setUserID(this, userID, true)
         }

@@ -1351,7 +1351,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
-        NeuroID.getInternalInstance()?.sessionID = expectedValue
+        NeuroID.getInternalInstance()?.userID = expectedValue
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
