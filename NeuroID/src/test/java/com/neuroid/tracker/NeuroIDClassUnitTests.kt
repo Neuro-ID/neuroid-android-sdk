@@ -32,6 +32,7 @@ import io.mockk.verify
 import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -1356,6 +1357,30 @@ open class NeuroIDClassUnitTests {
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
         assertEquals(expectedValue, value)
+    }
+
+    @Test
+    fun test_getSessionID_returnsEmptyString() {
+        NeuroID.getInternalInstance()?.userID = ""
+
+        val value = NeuroID.getInternalInstance()?.getSessionID()
+
+        assertEquals("", value)
+    }
+
+    @Test
+    fun test_getSessionID_returnsUserID_notSessionID() {
+        // Explicitly verify that getSessionID() returns userID and NOT sessionID
+        // This covers the behavioral change where getSessionID() was updated to return userID
+        val testUserID = "user-id-value"
+        val testSessionID = "session-id-value"
+        NeuroID.getInternalInstance()?.userID = testUserID
+        NeuroID.getInternalInstance()?.sessionID = testSessionID
+
+        val value = NeuroID.getInternalInstance()?.getSessionID()
+
+        assertEquals(testUserID, value)
+        assertNotEquals(testSessionID, value)
     }
 
     //    getClientID
