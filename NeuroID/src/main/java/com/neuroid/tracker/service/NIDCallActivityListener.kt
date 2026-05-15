@@ -16,13 +16,18 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
 import com.neuroid.tracker.utils.NIDLog
+import com.neuroid.tracker.utils.NIDPermissionChecker
 import com.neuroid.tracker.utils.VersionChecker
 
 class NIDCallActivityListener(
     private val neuroID: NeuroID,
     private val versionChecker: VersionChecker,
+    private val permissionChecker: NIDPermissionChecker = NIDPermissionChecker(),
+    private val phoneStateIntentFilter: IntentFilter = IntentFilter("android.intent.action.PHONE_STATE"),
 ) : BroadcastReceiver() {
-    private lateinit var intentFilter: IntentFilter
+    // intentFilter kept for backwards-compat internal use; replaced by phoneStateIntentFilter param
+    @Suppress("unused")
+    private val intentFilter: IntentFilter get() = phoneStateIntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
     private var callStateActive = false
@@ -30,6 +35,11 @@ class NIDCallActivityListener(
     private var phoneStateListener: PhoneStateListener? = null
     // for phones >= API 31 (S)
     private var customTelephonyCallback: CustomTelephonyCallback? = null
+
+    private var lastInactiveTime: Long = 0
+    private var lastActiveTime: Long = 0
+    private var callStartTime: Long = 0
+    private var wasRinging = false
 
     @RequiresApi(Build.VERSION_CODES.S)
     @Synchronized
@@ -46,14 +56,13 @@ class NIDCallActivityListener(
     }
 
     internal fun setCallActivityListener(context: Context) {
-        if (ActivityCompat.checkSelfPermission(
+        if (permissionChecker.checkSelfPermission(
                 context,
                 Manifest.permission.READ_PHONE_STATE,
             ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
-            intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
-            context.registerReceiver(this, intentFilter)
+            context.registerReceiver(this, phoneStateIntentFilter)
         } else {
             NIDLog.d(msg = "Permission to listen to call status not found")
             saveCallInProgressEvent(CallInProgress.UNAUTHORIZED.state)
@@ -75,23 +84,39 @@ class NIDCallActivityListener(
         when (state) {
             CallInProgress.INACTIVE.state -> {
                 callStateActive = false
-                NIDLog.d(msg = "Call inactive")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.INACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "hangup")),
-                )
+                val currentInactiveTime = System.currentTimeMillis()
+                if (currentInactiveTime - lastInactiveTime > 500) {
+                    val duration = if (callStartTime > 0) currentInactiveTime - callStartTime else 0L
+                    val direction = if (wasRinging) "inbound" else "outbound"
+                    NIDLog.d(msg = "Call inactive")
+                    NIDLog.d(msg = "Call duration: $duration ms, direction: $direction")
+                    neuroID.captureEvent(
+                        type = CALL_IN_PROGRESS,
+                        cp = CallInProgress.INACTIVE.event,
+                        attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "$duration", "direction" to direction)),
+                    )
+                    callStartTime = 0
+                    wasRinging = false
+                }
+                lastInactiveTime = currentInactiveTime
             }
             CallInProgress.ACTIVE.state -> {
                 callStateActive = true
-                NIDLog.d(msg = "Call in progress")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.ACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "active")),
-                )
+                val currentActiveTime = System.currentTimeMillis()
+                if (currentActiveTime - lastActiveTime > 500) {
+                    val direction = if (wasRinging) "inbound" else "outbound"
+                    NIDLog.d(msg = "Call in progress, direction: $direction")
+                    callStartTime = currentActiveTime
+                    neuroID.captureEvent(
+                        type = CALL_IN_PROGRESS,
+                        cp = CallInProgress.ACTIVE.event,
+                        attrs = listOf(mapOf("progress" to "active", "direction" to direction)),
+                    )
+                }
+                lastInactiveTime = currentActiveTime
             }
             CallInProgress.RINGING.state -> {
+                wasRinging = true
                 NIDLog.d(msg = "Call Ringing")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
@@ -146,6 +171,7 @@ class NIDCallActivityListener(
 
                         CallInProgress.ACTIVE.state -> {
                             saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+
                         }
 
                         else -> {
