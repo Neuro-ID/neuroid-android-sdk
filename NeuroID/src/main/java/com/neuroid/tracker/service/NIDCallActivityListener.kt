@@ -94,8 +94,8 @@ class NIDCallActivityListener(
             )
             callStartTime = 0
             wasRinging = false
+            lastInactiveTime = currentInactiveTime
         }
-        lastInactiveTime = currentInactiveTime
     }
 
     private fun processActiveState() {
