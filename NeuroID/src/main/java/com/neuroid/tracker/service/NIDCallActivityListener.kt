@@ -11,7 +11,6 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CallInProgress
@@ -87,13 +86,13 @@ class NIDCallActivityListener(
                 val currentInactiveTime = System.currentTimeMillis()
                 if (currentInactiveTime - lastInactiveTime > 500) {
                     val duration = if (callStartTime > 0) currentInactiveTime - callStartTime else 0L
-                    val direction = if (wasRinging) "inbound" else "outbound"
+                    val direction = if (wasRinging) "incoming" else "outgoing"
                     NIDLog.d(msg = "Call inactive")
-                    NIDLog.d(msg = "Call duration: $duration ms, direction: $direction")
+                    NIDLog.d(msg = "Call duration: $duration ms, type: $direction")
                     neuroID.captureEvent(
                         type = CALL_IN_PROGRESS,
                         cp = CallInProgress.INACTIVE.event,
-                        attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "$duration", "direction" to direction)),
+                        attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "$duration", "type" to direction)),
                     )
                     callStartTime = 0
                     wasRinging = false
@@ -104,13 +103,13 @@ class NIDCallActivityListener(
                 callStateActive = true
                 val currentActiveTime = System.currentTimeMillis()
                 if (currentActiveTime - lastActiveTime > 500) {
-                    val direction = if (wasRinging) "inbound" else "outbound"
-                    NIDLog.d(msg = "Call in progress, direction: $direction")
+                    val direction = if (wasRinging) "incoming" else "outgoing"
+                    NIDLog.d(msg = "Call in progress, type: $direction")
                     callStartTime = currentActiveTime
                     neuroID.captureEvent(
                         type = CALL_IN_PROGRESS,
                         cp = CallInProgress.ACTIVE.event,
-                        attrs = listOf(mapOf("progress" to "active", "direction" to direction)),
+                        attrs = listOf(mapOf("progress" to "active", "type" to direction)),
                     )
                 }
                 lastInactiveTime = currentActiveTime

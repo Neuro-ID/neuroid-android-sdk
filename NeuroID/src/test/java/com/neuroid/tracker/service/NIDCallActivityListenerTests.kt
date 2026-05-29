@@ -41,7 +41,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.ACTIVE.state,
             CallInProgress.ACTIVE.event,
             true,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -51,7 +51,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
             true,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -73,7 +73,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.ACTIVE.state,
             CallInProgress.ACTIVE.event,
             false,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -83,7 +83,7 @@ class NIDCallActivityListenerTests {
             CallInProgress.INACTIVE.state,
             CallInProgress.INACTIVE.event,
             false,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -114,7 +114,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "inbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "incoming"))
         )
     }
 
@@ -132,7 +132,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -168,7 +168,7 @@ class NIDCallActivityListenerTests {
             )
         }
         val capturedAttrs = allAttrs.last().first()
-        assertTrue("Expected inbound direction", capturedAttrs["direction"] == "inbound")
+        assertTrue("Expected inbound direction", capturedAttrs["type"] == "incoming")
         assertTrue("Expected hangup progress", capturedAttrs["progress"] == "hangup")
     }
 
@@ -202,7 +202,7 @@ class NIDCallActivityListenerTests {
             )
         }
         val capturedAttrs = allAttrs.last().first()
-        assertTrue("Expected outbound direction", capturedAttrs["direction"] == "outbound")
+        assertTrue("Expected outbound direction", capturedAttrs["type"] == "outgoing")
         assertTrue("Expected hangup progress", capturedAttrs["progress"] == "hangup")
     }
 
@@ -232,13 +232,13 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "inbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "incoming"))
         )
         verifyCaptureEvent(
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -258,7 +258,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -318,7 +318,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -692,7 +692,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -716,7 +716,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -766,7 +766,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -790,7 +790,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -818,7 +818,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -868,7 +868,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
@@ -920,7 +920,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.INACTIVE.event,
-            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "hangup", "duration_ms" to "0", "type" to "outgoing"))
         )
     }
 
@@ -970,7 +970,7 @@ class NIDCallActivityListenerTests {
             mockedNID,
             CALL_IN_PROGRESS,
             cp = CallInProgress.ACTIVE.event,
-            attrs = listOf(mapOf("progress" to "active", "direction" to "outbound"))
+            attrs = listOf(mapOf("progress" to "active", "type" to "outgoing"))
         )
     }
 
