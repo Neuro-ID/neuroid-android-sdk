@@ -153,6 +153,7 @@ interface NeuroIDPublic {
      * This should be called when the user attempts to login. Returns true always. Returns false if
      * exception is thrown during the process.
      */
+    @Deprecated("attemptedLogin is deprecated and will be removed in a future release.")
     fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
 
     /**
@@ -165,6 +166,7 @@ interface NeuroIDPublic {
      * here for you with a user ID that is specified in the optional userID argument. If the
      * SDK is already started, the optional user id is not used and the SDK will not be restarted.
      */
+    @Deprecated("startAppFlow is deprecated and will be removed in a future release.")
     fun startAppFlow(
         siteID: String,
         userID: String? = null,
