@@ -343,7 +343,12 @@ internal fun getMockedSessionService(): NIDSessionService {
     every { mockedSessionService.pauseCollection(any()) } just runs
     every { mockedSessionService.resumeCollection() } just runs
     every { mockedSessionService.createMobileMetadata() } just runs
-    every { mockedSessionService.clearSessionVariables()}
+    every { mockedSessionService.clearSessionVariables() } just runs
+    every { mockedSessionService.stop() } returns true
+    every { mockedSessionService.stopSession() } returns true
+    every { mockedSessionService.start(siteID = any(), completion = any()) } just runs
+    every { mockedSessionService.startSession(any(), any(), any()) } just runs
+    every { mockedSessionService.startAppFlow(any(), any(), any()) } just runs
 
     return mockedSessionService
 }
