@@ -21,7 +21,7 @@ class NIDRNBuilder( val application: Application? = null,
                 advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
                 useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
                 serverEnvironment = options[RNConfigOptions.environment] as String,
-                region = options[RNConfigOptions.region] as String
+                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String)
             ),
         ).build()
 

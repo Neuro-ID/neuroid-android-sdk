@@ -339,7 +339,7 @@ class NeuroID
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
                         nidConfiguration.serverEnvironment,
-                        region = NIDRegion.valueOf(nidConfiguration.region)
+                        region = nidConfiguration.region
                     )
                 setNeuroIDInstance(neuroID)
             }

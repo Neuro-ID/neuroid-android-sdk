@@ -354,7 +354,7 @@ open class NeuroIDClassUnitTests {
                 clientKey = "key_test_fake1234",
                 isAdvancedDevice = false,
                 serverEnvironment = NeuroID.PRODUCTION,
-                region = NIDRegion.usWest.name,
+                region = NIDRegion.usWest,
             )
         ).build()
 
@@ -362,21 +362,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(NIDRegion.usWest, instance?.region)
         assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
         assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun test_init_builderConfig_invalid_region_throws() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration(
-                clientKey = "key_test_fake1234",
-                isAdvancedDevice = false,
-                serverEnvironment = NeuroID.PRODUCTION,
-                region = "invalid-region",
-            )
-        ).build()
     }
 
     @Test

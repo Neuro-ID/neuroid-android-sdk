@@ -6,5 +6,5 @@ data class NIDConfiguration(val clientKey: String,
                             val advancedDeviceKey: String? = null,
                             val useAdvancedDeviceProxy: Boolean = true,
                             val serverEnvironment: String = "production",
-                            val region: String = NIDRegion.usWest.name
+                            val region: NIDRegion = NIDRegion.usWest
 )
