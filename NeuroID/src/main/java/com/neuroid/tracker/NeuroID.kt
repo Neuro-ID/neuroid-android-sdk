@@ -339,7 +339,7 @@ class NeuroID
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
                         nidConfiguration.serverEnvironment,
-                        region = nidConfiguration.region
+                        nidConfiguration.region
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -352,7 +352,7 @@ class NeuroID
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
             val serverEnvironment: String = PRODUCTION,
-            val region: String = "usWest"
+            val region: NIDRegion = NIDRegion.usWest
         ) {
             fun build() {
                 val neuroID =
@@ -363,7 +363,7 @@ class NeuroID
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = true,
                         serverEnvironment,
-                        NIDRegion.valueOf(region)
+                        region
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -601,7 +601,10 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useAdvancedDeviceProxy)
+                captureAdvancedDevice(shouldCapture,
+                    advancedDeviceKey,
+                    useAdvancedDeviceProxy,
+                    region)
             }
         }
 

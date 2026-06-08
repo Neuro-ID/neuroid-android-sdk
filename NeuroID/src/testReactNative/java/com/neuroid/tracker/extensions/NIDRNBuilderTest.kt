@@ -56,16 +56,28 @@ class NIDRNBuilderTest {
     @Test
     fun testRNOption_environment_null_options() {
         val mockApp = mockk<Application>()
-        val options = mockk<ReadableMap>()
-        every {options.hasKey(any())} returns false
-        val t = NIDRNBuilder(mockApp, "dummy_key", options)
-        val mapOptions = t.parseOptions(options)
+        val t = NIDRNBuilder(mockApp, "dummy_key", null)
+        val mapOptions = t.parseOptions(null)
         assertFalse(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean)
         assertEquals(NeuroID.PRODUCTION, mapOptions[RNConfigOptions.environment] as String)
         assertEquals("", mapOptions[RNConfigOptions.advancedDeviceKey] as String)
         assertTrue(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("", mapOptions[RNConfigOptions.rnVersion] as String)
         assertEquals(NIDRegion.usWest.name, mapOptions[RNConfigOptions.region] as String)
+    }
+
+    @Test
+    fun testRNOption_environment_development_option_set() {
+        val mockApp = mockk<Application>()
+        val options = mockk<ReadableMap>()
+        every { options.hasKey(any()) } returns false
+        every { options.hasKey(RNConfigOptions.environment.name) } returns true
+        every { options.getString(RNConfigOptions.environment.name) } returns NeuroID.DEVELOPMENT
+
+        val t = NIDRNBuilder(mockApp, "dummy_key", options)
+        val mapOptions = t.parseOptions(options)
+
+        assertEquals(NeuroID.DEVELOPMENT, mapOptions[RNConfigOptions.environment] as String)
     }
 
     @Test

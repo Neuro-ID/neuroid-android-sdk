@@ -10,5 +10,6 @@ enum class NIDRegion(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
         productionEndpoint = "https://receiver.neuroid.cloud/",
-        productionScriptsEndpoint = "https://scripts.neuro-id.com/")
+        productionScriptsEndpoint = "https://scripts.neuro-id.com/"
+    )
 }

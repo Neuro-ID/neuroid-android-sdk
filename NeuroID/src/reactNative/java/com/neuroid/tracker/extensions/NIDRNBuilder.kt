@@ -75,7 +75,7 @@ class NIDRNBuilder( val application: Application? = null,
                         NeuroID.PRODSCRIPT_DEVCOLLECTION -> environment =
                             NeuroID.PRODSCRIPT_DEVCOLLECTION
 
-                        NeuroID.DEVELOPMENT -> NeuroID.DEVELOPMENT
+                        NeuroID.DEVELOPMENT -> environment = NeuroID.DEVELOPMENT
                         else -> environment = NeuroID.PRODUCTION
                     }
                 }
@@ -89,13 +89,13 @@ class NIDRNBuilder( val application: Application? = null,
                     }
                 }
             }
-            options[RNConfigOptions.environment] = environment
-            options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
-            options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
-            options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
-            options[RNConfigOptions.rnVersion] = rnVersion
-            options[RNConfigOptions.region] = region
         }
+        options[RNConfigOptions.environment] = environment
+        options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
+        options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
+        options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
+        options[RNConfigOptions.rnVersion] = rnVersion
+        options[RNConfigOptions.region] = region
         return options
     }
 }
