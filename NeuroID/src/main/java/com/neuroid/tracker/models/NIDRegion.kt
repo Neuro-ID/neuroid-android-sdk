@@ -1,6 +1,6 @@
 package com.neuroid.tracker.models
 
-enum class NIDRegion(
+internal enum class NIDRegion(
     val fpjsProdDomain: String,
     val fpjsPrimaryDomain: String,
     val productionEndpoint: String,
