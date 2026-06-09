@@ -47,6 +47,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
+import java.util.ConcurrentModificationException
 
 enum class TestLogLevel {
     DEBUG,
@@ -64,6 +65,23 @@ open class NeuroIDClassUnitTests {
     // datastoreMock vars
     private var storedEvents = mutableSetOf<NIDEventModel>()
     private var queuedEvents = mutableSetOf<NIDEventModel>()
+
+    private fun safeUnmockkAll() {
+        var lastConcurrentError: ConcurrentModificationException? = null
+
+        repeat(3) { attempt ->
+            try {
+                unmockkAll()
+                return
+            } catch (e: ConcurrentModificationException) {
+                lastConcurrentError = e
+                // MockK 1.12.0 can race with coroutine callbacks during cleanup; brief backoff reduces flakes.
+                Thread.sleep((attempt + 1) * 25L)
+            }
+        }
+
+        throw lastConcurrentError ?: IllegalStateException("Failed to cleanup MockK state")
+    }
 
     private fun assertLogMessage(
         type: TestLogLevel,
@@ -263,7 +281,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
-        unmockkAll()
+        safeUnmockkAll()
     }
 
     // Function Tests

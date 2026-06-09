@@ -5,12 +5,15 @@ import android.content.ClipboardManager
 import android.text.Editable
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDClassUnitTests
+import com.neuroid.tracker.events.ERROR
 import com.neuroid.tracker.events.INPUT
+import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.PASTE
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Test
 
 class NIDTextWatcherTests : NeuroIDClassUnitTests() {
@@ -110,6 +113,84 @@ class NIDTextWatcherTests : NeuroIDClassUnitTests() {
             PASTE,
             1,
         )
+    }
+
+    @Test
+    fun textWatcher_on_text_changed_clipboardTextNotInSequence_doesNotCapturePaste() {
+        val clipData = mockk<ClipData>()
+        every { clipData.itemCount } returns 1
+        every { clipData.getItemAt(any()).text.toString() } returns "copied text"
+
+        val clipboardManager = mockk<ClipboardManager>()
+        every { clipboardManager.primaryClip } returns clipData
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
+
+        val nidMock = getMockedNeuroID()
+        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(), "test", "myclass", "")
+
+        // pasted text is not present in sequence -> no paste event
+        textWatcher.onTextChanged("existing typed text", 0, 1, 11)
+
+        verifyCaptureEvent(nidMock, PASTE, 0)
+    }
+
+    @Test
+    fun textWatcher_on_text_changed_emptyClipboardText_doesNotCapturePaste() {
+        val clipData = mockk<ClipData>()
+        every { clipData.itemCount } returns 1
+        every { clipData.getItemAt(any()).text.toString() } returns ""
+
+        val clipboardManager = mockk<ClipboardManager>()
+        every { clipboardManager.primaryClip } returns clipData
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
+
+        val nidMock = getMockedNeuroID()
+        val textWatcher = NIDTextWatcher(nidMock, NIDLogWrapper(), "test", "myclass", "")
+
+        textWatcher.onTextChanged("existing text", 0, 1, 0)
+
+        verifyCaptureEvent(nidMock, PASTE, 0)
+    }
+
+    @Test
+    fun textWatcher_on_text_changed_clipboardAccessThrows_capturesLogEvent() {
+        val clipboardManager = mockk<ClipboardManager>()
+        every { clipboardManager.primaryClip } throws RuntimeException("clipboard unavailable")
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
+
+        val logger = mockk<NIDLogWrapper>()
+        every { logger.e(any(), any()) } returns Unit
+
+        val nidMock = getMockedNeuroID()
+        val textWatcher = NIDTextWatcher(nidMock, logger, "test", "myclass", "")
+
+        textWatcher.onTextChanged("existing text", 0, 1, 1)
+
+        verify(exactly = 1) { logger.e("Activity", "clipboard unavailable") }
+        verifyCaptureEvent(nidMock, LOG, 1, level = ERROR, m = "onTextChangeError: clipboard unavailable")
+    }
+
+    @Test
+    fun textWatcher_on_text_changed_clipItemReadThrows_logsInnerError() {
+        val clipData = mockk<ClipData>()
+        every { clipData.itemCount } returns 1
+        every { clipData.getItemAt(any()) } throws RuntimeException("clip item read failed")
+
+        val clipboardManager = mockk<ClipboardManager>()
+        every { clipboardManager.primaryClip } returns clipData
+        NeuroID.getInternalInstance()?.setClipboardManagerInstance(clipboardManager)
+
+        val logger = mockk<NIDLogWrapper>()
+        every { logger.e(any(), any()) } returns Unit
+
+        val nidMock = getMockedNeuroID()
+        val textWatcher = NIDTextWatcher(nidMock, logger, "test", "myclass", "")
+
+        textWatcher.onTextChanged("existing text", 0, 1, 1)
+
+        verify(exactly = 1) { logger.e("Activity", "clip item read failed") }
+        verifyCaptureEvent(nidMock, PASTE, 0)
+        verifyCaptureEvent(nidMock, LOG, 0)
     }
 
     @Test
