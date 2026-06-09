@@ -3,6 +3,7 @@ package com.neuroid.tracker.utils
 import android.text.Editable
 import android.text.TextWatcher
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.events.ERROR
 import com.neuroid.tracker.events.INPUT
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.PASTE
@@ -86,6 +87,7 @@ class NIDTextWatcher(
                 logger.e("Activity", it)
                 neuroID.captureEvent(
                     type = LOG,
+                    level = ERROR,
                     m = "onTextChangeError: $it"
                 )
             }
