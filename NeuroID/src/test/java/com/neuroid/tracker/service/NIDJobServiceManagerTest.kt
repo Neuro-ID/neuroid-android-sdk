@@ -31,12 +31,15 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNotSame
 import org.junit.Test
 import kotlin.time.Duration
 
@@ -97,6 +100,25 @@ class NIDJobServiceManagerTest {
     }
 
     @Test
+    fun testRestart_recreatesSendEventsJob_whenInactive() {
+        val mockedSetup = setupNIDJobServiceManagerMocks()
+        val nidJobServiceManager = mockedSetup.nidJobServiceManager
+
+        nidJobServiceManager.startJob(mockedSetup.mockedApplication, "clientKey")
+
+        val originalSendEventsJob = getPrivateJob(nidJobServiceManager, "sendEventsJob")
+        assertNotNull(originalSendEventsJob)
+        originalSendEventsJob?.cancel()
+
+        nidJobServiceManager.restart()
+
+        val restartedSendEventsJob = getPrivateJob(nidJobServiceManager, "sendEventsJob")
+        assertNotNull(restartedSendEventsJob)
+        assertNotSame(originalSendEventsJob, restartedSendEventsJob)
+        assertEquals(true, restartedSendEventsJob?.isActive)
+    }
+
+    @Test
     fun testSendEvents() =
         runTest(timeout = Duration.parse("120s")) {
             val mockedSetup = setupNIDJobServiceManagerMocks()
@@ -121,6 +143,50 @@ class NIDJobServiceManagerTest {
                 )
             }
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testCreateSendEventsServer_coalescesMultipleNotificationsIntoSingleSend() {
+        val scheduler = TestCoroutineScheduler()
+        val dispatcher = StandardTestDispatcher(scheduler)
+
+        val mockedSetup = setupNIDJobServiceManagerMocks(dispatcher = dispatcher)
+        val nidJobServiceManager = mockedSetup.nidJobServiceManager
+
+        nidJobServiceManager.startJob(mockedSetup.mockedApplication, "clientKey")
+
+        // Queue multiple notifications before the coroutine gets a chance to drain the channel.
+        nidJobServiceManager.sendEvents(forceSendEvents = false)
+        nidJobServiceManager.sendEvents(forceSendEvents = true)
+        scheduler.runCurrent()
+
+        verify(exactly = 1) {
+            mockedSetup.mockedEventSender.sendEvents(any(), any(), any())
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testCreateSendEventsServer_logsAndExitsWhenSenderThrows() {
+        val scheduler = TestCoroutineScheduler()
+        val dispatcher = StandardTestDispatcher(scheduler)
+
+        val mockedSetup = setupNIDJobServiceManagerMocks(dispatcher = dispatcher)
+        val nidJobServiceManager = mockedSetup.nidJobServiceManager
+
+        val throwingEventSender = mockk<NIDSendingService>()
+        every {
+            throwingEventSender.sendEvents(any(), any(), any())
+        } throws RuntimeException("boom")
+
+        nidJobServiceManager.startJob(mockedSetup.mockedApplication, "clientKey")
+        nidJobServiceManager.setTestEventSender(throwingEventSender)
+        nidJobServiceManager.sendEvents(forceSendEvents = true)
+        scheduler.runCurrent()
+
+        verify { mockedSetup.mockedLogger.e("NeuroID", "java.lang.RuntimeException: boom") }
+        verifyCaptureEvent(mockedSetup.mockedNeuroID, LOG, 1, level = ERROR, m = "Send Event Job Exited")
+    }
 
     @After
     fun tearDown() {
@@ -420,6 +486,15 @@ class NIDJobServiceManagerTest {
             mockedNeuroID,
             nidRemoteConfigService,
         )
+    }
+
+    private fun getPrivateJob(
+        target: Any,
+        fieldName: String,
+    ): Job? {
+        val field = target.javaClass.getDeclaredField(fieldName)
+        field.isAccessible = true
+        return field.get(target) as Job?
     }
 
     private fun getMockedDatastoreManager(): NIDDataStoreManager {
