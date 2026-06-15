@@ -6,6 +6,7 @@ import androidx.annotation.VisibleForTesting
 import com.facebook.react.bridge.ReadableMap
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDConfiguration
+import com.neuroid.tracker.models.NIDRegion
 
 class NIDRNBuilder( val application: Application? = null,
                     val clientKey: String = "",
@@ -13,19 +14,23 @@ class NIDRNBuilder( val application: Application? = null,
     fun build() {
         val options = parseOptions(rnOptions)
         Log.d("NIDRNBuilder", "set options: $options")
-        NeuroID.BuilderConfig(application, NIDConfiguration(
-            clientKey = clientKey,
-            isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
-            advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
-            useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
-            serverEnvironment = options[RNConfigOptions.environment] as String)).build()
+        NeuroID.BuilderConfig(
+            application, NIDConfiguration(
+                clientKey = clientKey,
+                isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
+                advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
+                useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
+                serverEnvironment = options[RNConfigOptions.environment] as String,
+                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String)
+            ),
+        ).build()
 
         NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.rnVersion] as String)
     }
 
     /**
      * Returns a guaranteed map of options (environment and isAdvancedDevice) that we can use
-     * to configure NeuroID properly
+     * to configure NeuroID properly.
      */
     @VisibleForTesting
     internal fun parseOptions(rnOptions: ReadableMap?): Map<RNConfigOptions, Any> {
@@ -35,9 +40,10 @@ class NIDRNBuilder( val application: Application? = null,
         var advancedDeviceKey = ""
         var useAdvancedDeviceProxy = true
         var rnVersion = ""
+        var region = NIDRegion.usWest.name
 
         val options = mutableMapOf<RNConfigOptions, Any>()
-        rnOptions?.let {rnOptionsMap ->
+        rnOptions?.let { rnOptionsMap ->
             // set the advanced device key from the advancedDeviceKey option, default empty string
             if (rnOptionsMap.hasKey(RNConfigOptions.advancedDeviceKey.name)) {
                 rnOptionsMap.getString(RNConfigOptions.advancedDeviceKey.name)?.let {
@@ -69,8 +75,17 @@ class NIDRNBuilder( val application: Application? = null,
                         NeuroID.PRODSCRIPT_DEVCOLLECTION -> environment =
                             NeuroID.PRODSCRIPT_DEVCOLLECTION
 
-                        NeuroID.DEVELOPMENT -> NeuroID.DEVELOPMENT
+                        NeuroID.DEVELOPMENT -> environment = NeuroID.DEVELOPMENT
                         else -> environment = NeuroID.PRODUCTION
+                    }
+                }
+            }
+            // add more regions here, default to usWest for now since that's the only region we have
+            if (rnOptionsMap.hasKey(RNConfigOptions.region.name)) {
+                rnOptionsMap.getString(RNConfigOptions.region.name)?.let {
+                    when (it) {
+                        NIDRegion.usWest.name -> region = NIDRegion.usWest.name
+                        else -> region = NIDRegion.usWest.name
                     }
                 }
             }
@@ -80,7 +95,7 @@ class NIDRNBuilder( val application: Application? = null,
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
         options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy
         options[RNConfigOptions.rnVersion] = rnVersion
-
+        options[RNConfigOptions.region] = region
         return options
     }
 }
@@ -90,5 +105,6 @@ enum class RNConfigOptions {
     environment,
     advancedDeviceKey,
     useAdvancedDeviceProxy,
-    rnVersion
+    rnVersion,
+    region
 }

@@ -17,6 +17,7 @@ import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDSessionService
@@ -318,8 +319,8 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
         ).build()
 
-        assertEquals(Constants.productionEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.productionScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
+        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
     }
 
     @Test
@@ -358,7 +359,27 @@ open class NeuroIDClassUnitTests {
         ).build()
 
         assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.productionScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
+        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
+    }
+
+    @Test
+    fun test_init_builderConfig_explicit_region_setsRegionAndProductionEndpoints() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        NeuroID.BuilderConfig(
+            null,
+            NIDConfiguration(
+                clientKey = "key_test_fake1234",
+                isAdvancedDevice = false,
+                serverEnvironment = NeuroID.PRODUCTION,
+                region = NIDRegion.usWest,
+            )
+        ).build()
+
+        val instance = NeuroID.getInternalInstance()
+        assertEquals(NIDRegion.usWest, instance?.region)
+        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
+        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
     }
 
     @Test
