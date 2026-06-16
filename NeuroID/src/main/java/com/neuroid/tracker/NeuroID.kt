@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.fingerprintjs.android.fpjs_pro.Configuration
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
@@ -32,6 +33,7 @@ import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
@@ -79,9 +81,10 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        internal var serverEnvironment: String = PRODUCTION
+        serverEnvironment: String = PRODUCTION,
+        internal var region: NIDRegion = NIDRegion.usWest
 
-    ) : NeuroIDPublic {
+        ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
         private var firstTime = true
@@ -144,7 +147,7 @@ class NeuroID
             when (serverEnvironment) {
                 PRODSCRIPT_DEVCOLLECTION -> {
                     endpoint = Constants.devEndpoint.displayName
-                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                    scriptEndpoint = region.productionScriptsEndpoint
                 }
                 DEVELOPMENT -> {
                     endpoint = Constants.devEndpoint.displayName
@@ -155,8 +158,8 @@ class NeuroID
                     scriptEndpoint = Constants.testScriptEndpoint.displayName
                 }
                 else -> {
-                    endpoint = Constants.productionEndpoint.displayName
-                    scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+                    endpoint = region.productionEndpoint
+                    scriptEndpoint = region.productionScriptsEndpoint
                 }
             }
 
@@ -335,7 +338,8 @@ class NeuroID
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
-                        nidConfiguration.serverEnvironment
+                        nidConfiguration.serverEnvironment,
+                        nidConfiguration.region
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -347,7 +351,8 @@ class NeuroID
             val clientKey: String = "",
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
-            val serverEnvironment: String = PRODUCTION
+            val serverEnvironment: String = PRODUCTION,
+            val region: NIDRegion = NIDRegion.usWest
         ) {
             fun build() {
                 val neuroID =
@@ -357,7 +362,8 @@ class NeuroID
                         isAdvancedDevice,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = true,
-                        serverEnvironment
+                        serverEnvironment,
+                        region
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -399,9 +405,8 @@ class NeuroID
             internal var isConnected = false
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
-
-            internal var endpoint = Constants.productionEndpoint.displayName
-            internal var scriptEndpoint = Constants.productionScriptsEndpoint.displayName
+            internal var endpoint = NIDRegion.usWest.productionEndpoint
+            internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
             private var singleton: NeuroID? = null
 
             @TestOnly
@@ -499,6 +504,13 @@ class NeuroID
         }
 
         @VisibleForTesting
+        /**
+         * testing will always uses usWest testing endpoints regardless of the region
+         * specified in the config since we don't
+         * want to have multiple testing endpoints in our tests.
+         * If we want to add more testing endpoints in the future we can
+         * add a parameter to specify which testing endpoint to use.
+         */
         override fun setTestingNeuroIDDevURL() {
             endpoint = Constants.devEndpoint.displayName
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
@@ -589,7 +601,10 @@ class NeuroID
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture, advancedDeviceKey, useAdvancedDeviceProxy)
+                captureAdvancedDevice(shouldCapture,
+                    advancedDeviceKey,
+                    useAdvancedDeviceProxy,
+                    region)
             }
         }
 

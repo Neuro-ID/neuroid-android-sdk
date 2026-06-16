@@ -11,6 +11,7 @@ import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST_FAILED
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
+import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -47,7 +48,8 @@ internal class AdvancedDeviceIDManager(
     // only for testing purposes, need to create in real time to pass NID Key
     private val fpjsClient: FingerprintJS? = null,
     private val useAdvancedDeviceProxy: Boolean,
-    val nidTime: NIDTime = NIDTime()
+    val nidTime: NIDTime = NIDTime(),
+    private val region: NIDRegion = NIDRegion.usWest
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -114,9 +116,9 @@ internal class AdvancedDeviceIDManager(
 
     internal fun chooseUrl(useAdvancedDeviceProxy: Boolean) =
         if (useAdvancedDeviceProxy) {
-            Constants.fpjsPrimaryDomain.displayName
+            region.fpjsPrimaryDomain
         } else {
-            Constants.fpjsProdDomain.displayName
+            region.fpjsProdDomain
         }
 
     override fun getRemoteID(
@@ -150,7 +152,7 @@ internal class AdvancedDeviceIDManager(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
                             endpointUrl = chooseUrl(useAdvancedDeviceProxy),
-                            fallbackEndpointUrls = arrayListOf(Constants.fpjsProdDomain.displayName)
+                            fallbackEndpointUrls = arrayListOf(region.fpjsProdDomain)
                         ),
                     )
             }

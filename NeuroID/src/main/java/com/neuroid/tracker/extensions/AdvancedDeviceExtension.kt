@@ -3,12 +3,12 @@ package com.neuroid.tracker.extensions
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.getADVNetworkService
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,8 +64,10 @@ fun NeuroIDPublic.startSession(
 }
 
 @Synchronized
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: String?,
-                                  useAdvancedDeviceProxy: Boolean) = runBlocking {
+fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
+                                  advancedDeviceKey: String?,
+                                  useAdvancedDeviceProxy: Boolean,
+                                  region: NIDRegion = NIDRegion.usWest) = runBlocking {
     captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -84,7 +86,8 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean, advancedDeviceKey: Str
                         this.linkedSiteID ?: "",
                         configService,
                         advancedDeviceKey,
-                        useAdvancedDeviceProxy = useAdvancedDeviceProxy
+                        useAdvancedDeviceProxy = useAdvancedDeviceProxy,
+                        region = region
                     )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
             }
