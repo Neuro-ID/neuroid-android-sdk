@@ -86,4 +86,7 @@ enum class CallInProgress(val event: String, val state: Int) {
     INACTIVE("inactive", 0),
     UNAUTHORIZED("unauthorized", 99),
     UNKNOWN("unknown", -1),
+    CONNECTED("connected", 3),
+    DISCONNECTED("disconnected", 4),
+
 }
