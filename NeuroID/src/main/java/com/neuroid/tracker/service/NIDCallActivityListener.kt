@@ -25,7 +25,6 @@ class NIDCallActivityListener(
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
-    private var callStateActive = false
     // for phones < API 31
     private var phoneStateListener: PhoneStateListener? = null
     // for phones >= API 31 (S)
@@ -46,10 +45,15 @@ class NIDCallActivityListener(
     }
 
     internal fun setCallActivityListener(context: Context) {
+        // exit immediately if the listener is already registered
+        if (isReceiverRegistered) {
+            return
+        }
+
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_PHONE_STATE,
-            ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
             intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
@@ -74,7 +78,6 @@ class NIDCallActivityListener(
     fun saveCallInProgressEvent(state: Int) {
         when (state) {
             CallInProgress.DISCONNECTED.state -> {
-                callStateActive = false
                 NIDLog.d(msg = "Call inactive")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
@@ -82,7 +85,6 @@ class NIDCallActivityListener(
                 )
             }
             CallInProgress.CONNECTED.state -> {
-                callStateActive = true
                 NIDLog.d(msg = "Call in progress")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
@@ -99,10 +101,10 @@ class NIDCallActivityListener(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
+
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             NIDLog.d(msg = "SDK >= 31")
             if (customTelephonyCallback == null) {
                 customTelephonyCallback = CustomTelephonyCallback { state ->

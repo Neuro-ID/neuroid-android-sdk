@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
@@ -23,12 +24,43 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.After
 import org.junit.Test
+import java.lang.reflect.Field
 import java.util.concurrent.Executor
 
 class NIDCallActivityListenerTests {
 
+    // NIDCallActivityListener.registerCustomTelephonyCallback now branches on
+    // Build.VERSION.SDK_INT directly. On the JVM that field defaults to 0, so the
+    // API >= 31 (TelephonyCallback) path is unreachable unless we override it.
+    // We use Unsafe (accessed reflectively, since it isn't on the compile classpath)
+    // to set the (non-constant) static field and restore it afterwards.
+    private val originalSdkInt = Build.VERSION.SDK_INT
+
+    private fun setSdkInt(value: Int) {
+        val unsafeClass = Class.forName("sun.misc.Unsafe")
+        val theUnsafe = unsafeClass.getDeclaredField("theUnsafe").apply {
+            isAccessible = true
+        }.get(null)
+        val field = Build.VERSION::class.java.getDeclaredField("SDK_INT")
+        val base = unsafeClass
+            .getMethod("staticFieldBase", Field::class.java)
+            .invoke(theUnsafe, field)
+        val offset = unsafeClass
+            .getMethod("staticFieldOffset", Field::class.java)
+            .invoke(theUnsafe, field) as Long
+        unsafeClass
+            .getMethod(
+                "putInt",
+                Any::class.java,
+                Long::class.javaPrimitiveType,
+                Int::class.javaPrimitiveType,
+            )
+            .invoke(theUnsafe, base, offset, value)
+    }
+
     @After
     fun tearDown() {
+        setSdkInt(originalSdkInt)
         unmockkAll()
     }
 
@@ -48,6 +80,7 @@ class NIDCallActivityListenerTests {
 
     @Test
     fun test_onReceive_calledTwice_onlyRegistersOnce() {
+        setSdkInt(Build.VERSION_CODES.S)
         val mockedNID = getMockedNeuroID()
         val context = mockk<Context>()
         val telephony = mockk<TelephonyManager>()
@@ -278,6 +311,7 @@ class NIDCallActivityListenerTests {
         expectedCp: String?,
         eventExpected: Boolean,
     ) {
+        setSdkInt(Build.VERSION_CODES.S)
         val mockedNID = getMockedNeuroID()
         val context = mockk<Context>()
         val telephony = mockk<TelephonyManager>()
