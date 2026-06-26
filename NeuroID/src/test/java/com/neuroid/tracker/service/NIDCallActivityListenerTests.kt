@@ -162,7 +162,6 @@ class NIDCallActivityListenerTests {
         listener.unregisterCallActivityListener(context)
 
         verify { context.unregisterReceiver(listener) }
-        verify { version.isBuildVersionGreaterThanOrEqualTo31() }
     }
 
     @Test

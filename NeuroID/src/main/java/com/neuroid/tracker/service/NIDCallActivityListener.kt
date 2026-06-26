@@ -70,9 +70,7 @@ class NIDCallActivityListener(
         }
         isReceiverRegistered = false
         phoneStateListener = null
-        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
-            customTelephonyCallback = null
-        }
+        customTelephonyCallback = null
     }
 
     fun saveCallInProgressEvent(state: Int) {
