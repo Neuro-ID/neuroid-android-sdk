@@ -79,7 +79,6 @@ class NIDCallActivityListener(
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.DISCONNECTED.event,
-                    attrs = listOf(mapOf("progress" to "hangup")),
                 )
             }
             CallInProgress.CONNECTED.state -> {
@@ -88,26 +87,13 @@ class NIDCallActivityListener(
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.CONNECTED.event,
-                    attrs = listOf(mapOf("progress" to "active")),
                 )
-            }
-            CallInProgress.RINGING.state -> {
-                NIDLog.d(msg = "Call Ringing")
             }
             CallInProgress.UNAUTHORIZED.state -> {
                 NIDLog.d(msg = "Call status not authorized")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.UNAUTHORIZED.event,
-                    attrs = listOf(mapOf("progress" to "unauthorized")),
-                )
-            }
-            else -> {
-                NIDLog.d(msg = "Call status unknown")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.UNKNOWN.event,
-                    attrs = listOf(mapOf("progress" to "unknown")),
                 )
             }
         }
@@ -121,20 +107,14 @@ class NIDCallActivityListener(
             if (customTelephonyCallback == null) {
                 customTelephonyCallback = CustomTelephonyCallback { state ->
                     when (state) {
-                        CallInProgress.INACTIVE.state -> {
+                        TelephonyManager.CALL_STATE_IDLE -> {
                             saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
                         }
-
-                        CallInProgress.RINGING.state -> {
-                            saveCallInProgressEvent(CallInProgress.RINGING.state)
-                        }
-
-                        CallInProgress.ACTIVE.state -> {
+                        TelephonyManager.CALL_STATE_OFFHOOK -> {
                             saveCallInProgressEvent(CallInProgress.CONNECTED.state)
                         }
-
                         else -> {
-                            saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                            // no op
                         }
                     }
                 }
@@ -157,17 +137,12 @@ class NIDCallActivityListener(
                             TelephonyManager.CALL_STATE_IDLE -> {
                                 saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
                             }
-
-                            TelephonyManager.CALL_STATE_RINGING -> {
-                                saveCallInProgressEvent(CallInProgress.RINGING.state)
-                            }
-
                             // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                             TelephonyManager.CALL_STATE_OFFHOOK -> {
                                 saveCallInProgressEvent(CallInProgress.CONNECTED.state)
                             }
                             else -> {
-                                saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                                // no op
                             }
                         }
                     }
