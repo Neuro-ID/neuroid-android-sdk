@@ -12,6 +12,7 @@ import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDVersion
@@ -527,6 +528,14 @@ open class NeuroIDClassUnitTests {
         mockkStatic(::getAppMetaData)
         every { getAppMetaData(any(), any(), any()) } returns null
 
+        // captureAdvancedDevice is launched on Dispatchers.IO from checkThenCaptureAdvancedDevice when
+        // isAdvancedDevice == true. Left unmocked, that background coroutine instantiates
+        // mocked-constructor classes (e.g. NIDSharedPrefsDefaults) while tearDown's unmockkAll() is
+        // disposing those same constructor mocks, causing a ConcurrentModificationException. Stubbing it
+        // makes the coroutine a no-op so cleanup is deterministic.
+        mockkStatic("com.neuroid.tracker.extensions.AdvancedDeviceExtensionKt")
+        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any(), any()) } returns Unit
+
         return mockedApplication
     }
 
@@ -695,18 +704,6 @@ open class NeuroIDClassUnitTests {
         verify(atLeast = 1) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
         }
-
-        // Explicitly unmock constructors before tearDown's unmockkAll() to avoid
-        // ConcurrentModificationException in MockK 1.12.0 when coroutines are involved
-        unmockkConstructor(
-            NIDJobServiceManager::class,
-            NIDSharedPrefsDefaults::class,
-            NIDSessionService::class,
-            LocationService::class,
-            NIDCallActivityListener::class,
-            com.neuroid.tracker.utils.RootHelper::class,
-        )
-        unmockkStatic(::getSendingService, ::getAppMetaData)
     }
 
     // Class Init Test

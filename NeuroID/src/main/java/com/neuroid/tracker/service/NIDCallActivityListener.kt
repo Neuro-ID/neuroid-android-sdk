@@ -25,7 +25,6 @@ class NIDCallActivityListener(
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
-    private var callStateActive = false
     // for phones < API 31
     private var phoneStateListener: PhoneStateListener? = null
     // for phones >= API 31 (S)
@@ -46,10 +45,15 @@ class NIDCallActivityListener(
     }
 
     internal fun setCallActivityListener(context: Context) {
+        // exit immediately if the listener is already registered
+        if (isReceiverRegistered) {
+            return
+        }
+
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.READ_PHONE_STATE,
-            ) == PackageManager.PERMISSION_GRANTED && !isReceiverRegistered
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             NIDLog.d(msg = "Initializing call activity listener")
             intentFilter = IntentFilter("android.intent.action.PHONE_STATE")
@@ -66,47 +70,23 @@ class NIDCallActivityListener(
         }
         isReceiverRegistered = false
         phoneStateListener = null
-        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
-            customTelephonyCallback = null
-        }
+        customTelephonyCallback = null
     }
 
     fun saveCallInProgressEvent(state: Int) {
         when (state) {
-            CallInProgress.INACTIVE.state -> {
-                callStateActive = false
+            CallInProgress.DISCONNECTED.state -> {
                 NIDLog.d(msg = "Call inactive")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.INACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "hangup")),
+                    cp = CallInProgress.DISCONNECTED.event,
                 )
             }
-            CallInProgress.ACTIVE.state -> {
-                callStateActive = true
+            CallInProgress.CONNECTED.state -> {
                 NIDLog.d(msg = "Call in progress")
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.ACTIVE.event,
-                    attrs = listOf(mapOf("progress" to "active")),
-                )
-            }
-            CallInProgress.RINGING.state -> {
-                NIDLog.d(msg = "Call Ringing")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = "$callStateActive",
-                    attrs =
-                        listOf(
-                            mapOf(
-                                "progress" to
-                                    if (callStateActive) {
-                                        "waiting"
-                                    } else {
-                                        "ringing"
-                                    },
-                            ),
-                        ),
+                    cp = CallInProgress.CONNECTED.event,
                 )
             }
             CallInProgress.UNAUTHORIZED.state -> {
@@ -114,42 +94,27 @@ class NIDCallActivityListener(
                 neuroID.captureEvent(
                     type = CALL_IN_PROGRESS,
                     cp = CallInProgress.UNAUTHORIZED.event,
-                    attrs = listOf(mapOf("progress" to "unauthorized")),
-                )
-            }
-            else -> {
-                NIDLog.d(msg = "Call status unknown")
-                neuroID.captureEvent(
-                    type = CALL_IN_PROGRESS,
-                    cp = CallInProgress.UNKNOWN.event,
-                    attrs = listOf(mapOf("progress" to "unknown")),
                 )
             }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
+
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        if (versionChecker.isBuildVersionGreaterThanOrEqualTo31()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             NIDLog.d(msg = "SDK >= 31")
             if (customTelephonyCallback == null) {
                 customTelephonyCallback = CustomTelephonyCallback { state ->
                     when (state) {
-                        CallInProgress.INACTIVE.state -> {
-                            saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+                        TelephonyManager.CALL_STATE_IDLE -> {
+                            saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
                         }
-
-                        CallInProgress.RINGING.state -> {
-                            saveCallInProgressEvent(CallInProgress.RINGING.state)
+                        TelephonyManager.CALL_STATE_OFFHOOK -> {
+                            saveCallInProgressEvent(CallInProgress.CONNECTED.state)
                         }
-
-                        CallInProgress.ACTIVE.state -> {
-                            saveCallInProgressEvent(CallInProgress.ACTIVE.state)
-                        }
-
                         else -> {
-                            saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                            // no op
                         }
                     }
                 }
@@ -170,19 +135,14 @@ class NIDCallActivityListener(
                     ) {
                         when (state) {
                             TelephonyManager.CALL_STATE_IDLE -> {
-                                saveCallInProgressEvent(CallInProgress.INACTIVE.state)
+                                saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
                             }
-
-                            TelephonyManager.CALL_STATE_RINGING -> {
-                                saveCallInProgressEvent(CallInProgress.RINGING.state)
-                            }
-
                             // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
                             TelephonyManager.CALL_STATE_OFFHOOK -> {
-                                saveCallInProgressEvent(CallInProgress.ACTIVE.state)
+                                saveCallInProgressEvent(CallInProgress.CONNECTED.state)
                             }
                             else -> {
-                                saveCallInProgressEvent(CallInProgress.UNKNOWN.state)
+                                // no op
                             }
                         }
                     }
