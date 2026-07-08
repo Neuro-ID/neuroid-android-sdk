@@ -16,7 +16,7 @@ class NIDRNBuilderTest {
     fun testRNOption_no_options_set() {
         val mockApp = mockk<Application>()
         val options = mockk<ReadableMap>()
-        every {options.hasKey(any())} returns false
+        every { options.hasKey(any()) } returns false
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         assertFalse(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean)
@@ -31,18 +31,18 @@ class NIDRNBuilderTest {
     fun testRNOption_environment_isAdvancedDevice_options_set() {
         val mockApp = mockk<Application>()
         val options = mockk<ReadableMap>()
-        every {options.hasKey(RNConfigOptions.isAdvancedDevice.name)} returns true
-        every {options.hasKey(RNConfigOptions.environment.name)} returns true
-        every {options.hasKey(RNConfigOptions.advancedDeviceKey.name)} returns true
-        every {options.hasKey(RNConfigOptions.useAdvancedDeviceProxy.name)} returns true
-        every {options.hasKey( RNConfigOptions.rnVersion.name)} returns true
-        every {options.hasKey(RNConfigOptions.region.name)} returns true
-        every {options.getBoolean(RNConfigOptions.isAdvancedDevice.name)} returns true
-        every {options.getString(RNConfigOptions.advancedDeviceKey.name)} returns "testkey"
-        every {options.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name)} returns false
-        every {options.getString(RNConfigOptions.environment.name)} returns NeuroID.PRODSCRIPT_DEVCOLLECTION
-        every {options.getString(RNConfigOptions.rnVersion.name)} returns "0.71.0"
-        every {options.getString(RNConfigOptions.region.name)} returns NIDRegion.usWest.name
+        every { options.hasKey(RNConfigOptions.isAdvancedDevice.name) } returns true
+        every { options.hasKey(RNConfigOptions.environment.name) } returns true
+        every { options.hasKey(RNConfigOptions.advancedDeviceKey.name) } returns true
+        every { options.hasKey(RNConfigOptions.useAdvancedDeviceProxy.name) } returns true
+        every { options.hasKey(RNConfigOptions.rnVersion.name) } returns true
+        every { options.hasKey(RNConfigOptions.region.name) } returns true
+        every { options.getBoolean(RNConfigOptions.isAdvancedDevice.name) } returns true
+        every { options.getString(RNConfigOptions.advancedDeviceKey.name) } returns "testkey"
+        every { options.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name) } returns false
+        every { options.getString(RNConfigOptions.environment.name) } returns NeuroID.PRODSCRIPT_DEVCOLLECTION
+        every { options.getString(RNConfigOptions.rnVersion.name) } returns "0.71.0"
+        every { options.getString(RNConfigOptions.region.name) } returns NIDRegion.usWest.name
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         assertTrue(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean)
@@ -94,4 +94,3 @@ class NIDRNBuilderTest {
         assertEquals(NIDRegion.usWest.name, mapOptions[RNConfigOptions.region] as String)
     }
 }
-
