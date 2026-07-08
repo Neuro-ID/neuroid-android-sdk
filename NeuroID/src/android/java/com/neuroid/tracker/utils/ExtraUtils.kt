@@ -10,17 +10,13 @@ internal fun registrationHelpers(r: Runnable) {
     r.run()
 }
 
-fun verifyComponentType(view: View): ComponentValuesResult {
-    return isCommonAndroidComponent(view)
-}
+fun verifyComponentType(view: View): ComponentValuesResult = isCommonAndroidComponent(view)
 
 // run the function immediately in native android
 internal fun handleIdentifyAllViews(r: Runnable) {
     r.run()
 }
 
-internal fun detectViewType(currentView: View?): Int {
-    return detectBasicAndroidViewType(currentView)
-}
+internal fun detectViewType(currentView: View?): Int = detectBasicAndroidViewType(currentView)
 
 internal fun getEtnSenderName(currentView: View?): String = currentView?.javaClass?.simpleName.orEmpty()
