@@ -15,7 +15,7 @@ import com.neuroid.tracker.extensions.getSHA256withSalt
 
 // In RN users call registerPageTargets so we don't
 //    want to run this code and double register
-internal fun registrationHelpers(r: Runnable)  {
+internal fun registrationHelpers(r: Runnable) {
 }
 
 fun isCommonReactNativeComponent(view: View): ComponentValuesResult {
@@ -79,7 +79,7 @@ fun verifyComponentType(view: View): ComponentValuesResult {
 }
 
 // run the function after a 300ms delay in react native
-internal fun handleIdentifyAllViews(r: Runnable)  {
+internal fun handleIdentifyAllViews(r: Runnable) {
     android.os.Handler(Looper.getMainLooper()).postDelayed({
         r.run()
     }, 300)
@@ -107,6 +107,4 @@ internal fun detectViewType(currentView: View?): Int {
     return typeOfView
 }
 
-internal fun getEtnSenderName(currentView: View?): String  {
-    return currentView?.getIdOrTag() ?: "main_view"
-}
+internal fun getEtnSenderName(currentView: View?): String = currentView?.getIdOrTag() ?: "main_view"
