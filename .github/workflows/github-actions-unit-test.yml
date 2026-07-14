@@ -13,6 +13,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      # Kotlin style check
+      - name: ktlint Check
+        run: ./gradlew :NeuroID:ktlintCheck
+
+      # Android Lint (android flavour)
+      - name: Android Lint (android)
+        run: ./gradlew :NeuroID:lintAndroidLibDebug
+
+      # Android Lint (reactNative flavour)
+      - name: Android Lint (reactNative)
+        run: ./gradlew :NeuroID:lintReactNativeLibDebug
+
+      - name: Upload Lint Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: NeuroID/build/reports/lint-results-*.html
+
   buildAllFlavors:
     name: Build All Flavors
     runs-on: ubuntu-latest

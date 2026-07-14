@@ -50,6 +50,16 @@ For support or troubleshooting of the NeuroID Android Mobile SDK please contact 
 
 For a feature request in the NeuroID Android Mobile SDK please contact a NeuroID Customer Support Representative.
 
+### Local development setup
+
+After cloning, install the repo's git hooks so `ktlint` style violations are caught before you push (the same check runs in CI on every PR):
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+This registers a `pre-commit` hook that runs `./gradlew :NeuroID:ktlintCheck` automatically whenever a commit touches `NeuroID/**/*.kt` files.
+
 ## License
 
 The NeuroID Android Mobile SDK is provided under an [MIT License](LICENSE).
