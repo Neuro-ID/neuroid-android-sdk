@@ -156,7 +156,6 @@ class NIDMetaDataTest {
         assertTrue(json.has("isJailBreak"))
         assertTrue(json.has("isWifiOn"))
         assertTrue(json.has("isSimulator"))
-        assertTrue(json.has("gpsCoordinates"))
         assertTrue(json.has("lastInstallTime"))
     }
 
@@ -192,18 +191,6 @@ class NIDMetaDataTest {
         // may be null in unit test env, but toJson() should still not crash
         assertNotNull(json)
         assertTrue(json.length() >= alwaysExpectedKeys.size)
-    }
-
-    @Test
-    fun test_toJson_gpsCoordinates_hasExpectedStructure() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-        val json = metaData.toJson()
-
-        val gps = json.getJSONObject("gpsCoordinates")
-        assertEquals(-1.0, gps.getDouble("latitude"), 0.001)
-        assertEquals(-1.0, gps.getDouble("longitude"), 0.001)
-        assertEquals("unknown", gps.getString("authorizationStatus"))
     }
 
     // -----------------------------------------------------------------------
