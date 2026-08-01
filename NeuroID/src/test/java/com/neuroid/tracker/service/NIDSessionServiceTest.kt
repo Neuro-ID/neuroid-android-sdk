@@ -467,7 +467,6 @@ class NIDSessionServiceTest {
             mockedJobServiceManager.sendEvents(true)
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -510,8 +509,13 @@ class NIDSessionServiceTest {
             mockedJobServiceManager.stopJob()
         }
 
-        // assert resumeCollection job was called
-        verify(exactly = 1) {}
+        // The existing active job should NOT be replaced
+        verify(exactly = 0) {
+            mockedNeuroID.pauseCollectionJob = any()
+        }
+
+        // SDK should be flagged as stopped
+        assert(!NeuroID._isSDKStarted)
     }
 
     /**
@@ -544,7 +548,6 @@ class NIDSessionServiceTest {
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -578,7 +581,6 @@ class NIDSessionServiceTest {
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -611,9 +613,6 @@ class NIDSessionServiceTest {
         verify(exactly = 0) {
             mockedJobServiceManager.startJob(any(), any())
         }
-
-        // assert resumeCollection job was called
-        verify(exactly = 0) {}
     }
 
     /**

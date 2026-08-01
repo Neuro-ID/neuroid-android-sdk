@@ -84,6 +84,7 @@ internal fun getMockedNeuroID(
 
     every { nidMock.checkThenCaptureAdvancedDevice(any(), any()) } just runs
     every { nidMock.captureApplicationMetaData() } just runs
+    every { nidMock.metaData } returns null
 
     every { nidMock.pauseCollectionJob } returns null
     every { nidMock.pauseCollectionJob = any() } just runs
