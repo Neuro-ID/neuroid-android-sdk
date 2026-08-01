@@ -6,8 +6,8 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLEAR_SAMPLE_SITE_ID_MAP
 import com.neuroid.tracker.events.CONFIG_CACHED
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.events.UPDATE_SAMPLE_SITE_ID_MAP
 import com.neuroid.tracker.events.UPDATE_IS_SAMPLED_STATUS
+import com.neuroid.tracker.events.UPDATE_SAMPLE_SITE_ID_MAP
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.utils.NIDLogWrapper
@@ -22,9 +22,15 @@ interface ConfigService {
     val siteIDSampleMap: MutableMap<String, Boolean>
 
     fun retrieveOrRefreshCache(neuroID: NeuroID)
+
     fun clearSiteIDSampleMap(neuroID: NeuroID)
+
     fun isSessionFlowSampled(): Boolean
-    fun updateIsSampledStatus(neuroID: NeuroID, siteID: String?)
+
+    fun updateIsSampledStatus(
+        neuroID: NeuroID,
+        siteID: String?,
+    )
 }
 
 internal class NIDConfigService(
@@ -35,7 +41,7 @@ internal class NIDConfigService(
     private val gson: Gson = GsonBuilder().create(),
     private val randomGenerator: RandomGenerator = RandomGenerator(),
     private val configRetrievalCallback: () -> Unit = {},
-    val nidTime: NIDTime = NIDTime()
+    val nidTime: NIDTime = NIDTime(),
 ) : ConfigService {
     companion object {
         const val DEFAULT_SAMPLE_RATE: Int = 100
@@ -67,7 +73,10 @@ internal class NIDConfigService(
      * This function is broke out from `retrieveConfig` in order to test because our coroutine
      * tests immediately end and do not run the inner function
      */
-    internal fun retrieveConfigCoroutine(neuroID: NeuroID, completion: () -> Unit) {
+    internal fun retrieveConfigCoroutine(
+        neuroID: NeuroID,
+        completion: () -> Unit,
+    ) {
         httpService.getConfig(
             neuroID.clientKey,
             object : NIDResponseCallBack<NIDRemoteConfig> {
@@ -81,7 +90,7 @@ internal class NIDConfigService(
                     cacheSetWithRemote = true
                     cacheCreationTime = nidTime.getCurrentTimeMillis()
                     initSiteIDSampleMap(neuroID, response)
-                    captureConfigEvent(neuroID,response)
+                    captureConfigEvent(neuroID, response)
                     completion()
                 }
 
@@ -119,11 +128,14 @@ internal class NIDConfigService(
         siteIDSampleMap.clear()
         neuroID.captureEvent(
             queuedEvent = true,
-            type = CLEAR_SAMPLE_SITE_ID_MAP
+            type = CLEAR_SAMPLE_SITE_ID_MAP,
         )
     }
 
-    internal fun initSiteIDSampleMap(neuroID: NeuroID, config: NIDRemoteConfig) {
+    internal fun initSiteIDSampleMap(
+        neuroID: NeuroID,
+        config: NIDRemoteConfig,
+    ) {
         for (linkedSiteID in config.linkedSiteOptions.keys) {
             config.linkedSiteOptions[linkedSiteID]?.let {
                 if (it.sampleRate == 0) {
@@ -144,7 +156,7 @@ internal class NIDConfigService(
 
         neuroID.captureEvent(
             queuedEvent = true,
-            type = UPDATE_SAMPLE_SITE_ID_MAP
+            type = UPDATE_SAMPLE_SITE_ID_MAP,
         )
     }
 
@@ -152,9 +164,7 @@ internal class NIDConfigService(
         configCache = newCache
     }
 
-    internal fun expiredCache(): Boolean {
-        return !cacheSetWithRemote
-    }
+    internal fun expiredCache(): Boolean = !cacheSetWithRemote
 
     override fun retrieveOrRefreshCache(neuroID: NeuroID) {
         if (expiredCache()) {
@@ -162,7 +172,10 @@ internal class NIDConfigService(
         }
     }
 
-    fun captureConfigEvent(neuroID: NeuroID, configData: NIDRemoteConfig) {
+    fun captureConfigEvent(
+        neuroID: NeuroID,
+        configData: NIDRemoteConfig,
+    ) {
         try {
             neuroID.captureEvent(
                 type = CONFIG_CACHED,
@@ -180,8 +193,11 @@ internal class NIDConfigService(
     /**
      * given a site id, tell me if we sample events or not. the site ID will be compared
      */
-    override fun updateIsSampledStatus(neuroID: NeuroID, siteID: String?) {
-        isSessionFlowSampled = siteIDSampleMap[siteID]?:true
+    override fun updateIsSampledStatus(
+        neuroID: NeuroID,
+        siteID: String?,
+    ) {
+        isSessionFlowSampled = siteIDSampleMap[siteID] ?: true
         neuroID.captureEvent(
             queuedEvent = true,
             type = UPDATE_IS_SAMPLED_STATUS,

@@ -16,14 +16,12 @@ class NIDSharedPrefsDefaults(
     val uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider(),
     val randomGenerator: RandomGenerator = RandomGenerator(),
     val resourcesProvider: NIDResourcesUtils = NIDResourcesUtils(),
-    val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     private var sharedPref =
         context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
 
-    fun getSessionID(): String {
-        return getString(NID_SID)
-    }
+    fun getSessionID(): String = getString(NID_SID)
 
     fun getNewSessionID(): String {
         val sid = uuidProvider.randomUUID()
@@ -43,16 +41,12 @@ class NIDSharedPrefsDefaults(
         }
     }
 
-    fun resetClientID(): String {
-        return this.getClientID()
-    }
+    fun resetClientID(): String = this.getClientID()
 
     /**
      * Shared device salt used for all strings
      */
-    fun getDeviceSalt(): String {
-        return getString(NID_DEVICE_SALT)
-    }
+    fun getDeviceSalt(): String = getString(NID_DEVICE_SALT)
 
     fun putDeviceSalt(salt: String): String {
         putString(NID_DEVICE_SALT, salt)
@@ -75,7 +69,7 @@ class NIDSharedPrefsDefaults(
     fun getIntermediateID(): String {
         var iid = getString(NID_IID, "")
 
-        return if (iid == "")   {
+        return if (iid == "") {
             iid = getID()
             putString(NID_IID, iid)
             iid
@@ -117,9 +111,7 @@ class NIDSharedPrefsDefaults(
     internal fun getString(
         key: String,
         default: String = "",
-    ): String {
-        return sharedPref?.getString(key, "") ?: default
-    }
+    ): String = sharedPref?.getString(key, "") ?: default
 
     internal fun getDisplayWidth() = resourcesProvider.getDisplayMetricsWidth()
 

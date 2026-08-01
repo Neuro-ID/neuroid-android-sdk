@@ -2,14 +2,14 @@ package com.neuroid.tracker.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
-import java.io.File
 import java.io.InputStreamReader
 
 class RootHelper(
     internal val environmentProvider: NIDEnvironmentProvider = NIDSystemEnvironmentProvider(),
     internal val runtimeProvider: NIDRuntimeProvider = NIDSystemRuntimeProvider(),
     internal val fileCreationUtils: FileCreationUtils = FileCreationUtils(),
-    internal val buildTagUtils: NIDTagUtils = NIDTagUtils()) {
+    internal val buildTagUtils: NIDTagUtils = NIDTagUtils(),
+) {
     internal companion object {
         const val BINARY_SU = "su"
         const val BINARY_BUSYBOX = "busybox"
@@ -99,11 +99,14 @@ class RootHelper(
             )
     }
 
-    fun isRooted(context: Context): Boolean {
-        return detectRootManagementApps(context) || detectPotentiallyDangerousApps(context) ||
-            checkForBinary(BINARY_SU) || detectTestKeys() ||
-            checkForBinary(BINARY_BUSYBOX) || checkSuExists() || checkForMagiskBinary()
-    }
+    fun isRooted(context: Context): Boolean =
+        detectRootManagementApps(context) ||
+            detectPotentiallyDangerousApps(context) ||
+            checkForBinary(BINARY_SU) ||
+            detectTestKeys() ||
+            checkForBinary(BINARY_BUSYBOX) ||
+            checkSuExists() ||
+            checkForMagiskBinary()
 
     internal fun checkForBinary(filename: String): Boolean {
         val pathsArray: List<String> = getPaths()
@@ -204,8 +207,8 @@ class RootHelper(
 
     private fun checkForMagiskBinary() = checkForBinary("magisk")
 
-    fun isProbablyEmulator(): Boolean {
-        return (
+    fun isProbablyEmulator(): Boolean =
+        (
             (
                 buildTagUtils.getFingerprint().startsWith("google/sdk_gphone_") &&
                     buildTagUtils.getFingerprint().endsWith(":user/release-keys") &&
@@ -213,41 +216,41 @@ class RootHelper(
                     buildTagUtils.getProduct().startsWith("sdk_gphone_") &&
                     buildTagUtils.getBrand() == "google" &&
                     buildTagUtils.getModel().startsWith("sdk_gphone_")
-            ) || buildTagUtils.getFingerprint().startsWith("generic") ||
-                    buildTagUtils.getFingerprint().startsWith("unknown") ||
-                    buildTagUtils.getModel().contains("google_sdk") ||
-                    buildTagUtils.getModel().contains("Emulator", true) ||
-                    buildTagUtils.getDevice().contains("Emulator", true) ||
-                    buildTagUtils.getModel().contains("Android SDK built for x86") ||
-                    buildTagUtils.getBoard() == "QC_Reference_Phone" &&
-                    !buildTagUtils.getManufacturer().equals(
+            ) ||
+                buildTagUtils.getFingerprint().startsWith("generic") ||
+                buildTagUtils.getFingerprint().startsWith("unknown") ||
+                buildTagUtils.getModel().contains("google_sdk") ||
+                buildTagUtils.getModel().contains("Emulator", true) ||
+                buildTagUtils.getDevice().contains("Emulator", true) ||
+                buildTagUtils.getModel().contains("Android SDK built for x86") ||
+                buildTagUtils.getBoard() == "QC_Reference_Phone" &&
+                !buildTagUtils.getManufacturer().equals(
                     "Xiaomi",
                     ignoreCase = true,
                 ) ||
-                    buildTagUtils.getBoard().lowercase().contains("nox") ||
+                buildTagUtils.getBoard().lowercase().contains("nox") ||
 
-                    // hardware check for vbox, nox, google
-                    buildTagUtils.getHardware() == "goldfish" ||
-                    buildTagUtils.getHardware() == "vbox86" ||
-                    buildTagUtils.getHardware().lowercase().contains("nox") ||
+                // hardware check for vbox, nox, google
+                buildTagUtils.getHardware() == "goldfish" ||
+                buildTagUtils.getHardware() == "vbox86" ||
+                buildTagUtils.getHardware().lowercase().contains("nox") ||
 
-                    buildTagUtils.getManufacturer().contains("Genymotion") ||
+                buildTagUtils.getManufacturer().contains("Genymotion") ||
 
-                    // pickup on secondary  manufacturer string for genymotion
-                    buildTagUtils.getManufacturer().contains("Genymobile") ||
+                // pickup on secondary  manufacturer string for genymotion
+                buildTagUtils.getManufacturer().contains("Genymobile") ||
 
-                    buildTagUtils.getHost().startsWith("Build") ||
-                    buildTagUtils.getBrand().startsWith("generic") &&
-                    buildTagUtils.getDevice().startsWith("generic") ||
+                buildTagUtils.getHost().startsWith("Build") ||
+                buildTagUtils.getBrand().startsWith("generic") &&
+                buildTagUtils.getDevice().startsWith("generic") ||
 
-                    // products (looking for vbox, nox and any x86 based emulators on win11, mac intel)
-                    buildTagUtils.getProduct() == "google_sdk" ||
-                    buildTagUtils.getProduct() == "sdk_x86" ||
-                    buildTagUtils.getProduct() == "vbox86p" ||
-                    buildTagUtils.getProduct().lowercase().contains("nox") ||
+                // products (looking for vbox, nox and any x86 based emulators on win11, mac intel)
+                buildTagUtils.getProduct() == "google_sdk" ||
+                buildTagUtils.getProduct() == "sdk_x86" ||
+                buildTagUtils.getProduct() == "vbox86p" ||
+                buildTagUtils.getProduct().lowercase().contains("nox") ||
 
                 // sim file check (in case we miss anything above)
                 isEmulatorFilesPresent()
         )
-    }
 }

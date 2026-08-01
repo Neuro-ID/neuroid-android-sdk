@@ -2,14 +2,18 @@ package com.neuroid.tracker.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
-import io.mockk.*
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.unmockkAll
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
 
 class RootHelperTest {
-
     private lateinit var mockContext: Context
     private lateinit var mockPackageManager: PackageManager
     private lateinit var mockEnvironmentProvider: NIDEnvironmentProvider
@@ -41,26 +45,28 @@ class RootHelperTest {
 
         // detectRootManagementApps() true
         // detectPotentiallyDangerousApps() true
-        every {mockEnvironmentProvider.getenv("PATH")} returns "/system/bin:/system/xbin"
-        every {mockPackageManager.getPackageInfo(any<String>(), any<Int>())} throws PackageManager.NameNotFoundException()
-        every {mockContext.packageManager} returns mockPackageManager
-        every {mockPackageManager.getInstalledPackages(0) } returns emptyList()
+        every { mockEnvironmentProvider.getenv("PATH") } returns "/system/bin:/system/xbin"
+        every { mockPackageManager.getPackageInfo(any<String>(), any<Int>()) } throws PackageManager.NameNotFoundException()
+        every { mockContext.packageManager } returns mockPackageManager
+        every { mockPackageManager.getInstalledPackages(0) } returns emptyList()
 
         // checkSuExists() true
         val process = mockk<Process>()
-        every {process.destroy()} just runs
-        every {mockRuntimeProvider.executeCommand(any<Array<String>>())} returns process
-        every {mockedFileUtil.getBufferedReader(any())} returns mockk{
-            every { readLine() } returns "/bin/su, yep its there"
-        }
+        every { process.destroy() } just runs
+        every { mockRuntimeProvider.executeCommand(any<Array<String>>()) } returns process
+        every { mockedFileUtil.getBufferedReader(any()) } returns
+            mockk {
+                every { readLine() } returns "/bin/su, yep its there"
+            }
         // detectTestKeys() true
         every { mockedBuildTagUtils.getBuildTags() } returns "test-keys:gsdgdasgdasg53454rgdfgdf"
 
         // checkForBinary() true
         // checkForMagiskBinary() true
-        every {mockedFileUtil.getFile(any(), any())} returns mockk{
-            every {exists()} returns true
-        }
+        every { mockedFileUtil.getFile(any(), any()) } returns
+            mockk {
+                every { exists() } returns true
+            }
         // when
         val result = rootHelper.isRooted(mockContext)
 
@@ -74,39 +80,41 @@ class RootHelperTest {
 
         // detectRootManagementApps() false
         // detectPotentiallyDangerousApps() false
-        every {mockEnvironmentProvider.getenv("PATH")} returns "/system/bin:/system/xbin"
-        every {mockPackageManager.getPackageInfo(any<String>(), any<Int>())} throws PackageManager.NameNotFoundException()
-        every {mockContext.packageManager} returns mockPackageManager
-        every {mockPackageManager.getInstalledPackages(0) } returns emptyList()
+        every { mockEnvironmentProvider.getenv("PATH") } returns "/system/bin:/system/xbin"
+        every { mockPackageManager.getPackageInfo(any<String>(), any<Int>()) } throws PackageManager.NameNotFoundException()
+        every { mockContext.packageManager } returns mockPackageManager
+        every { mockPackageManager.getInstalledPackages(0) } returns emptyList()
 
         // checkSuExists() false
         val process = mockk<Process>()
-        every {process.destroy()} just runs
-        every {mockRuntimeProvider.executeCommand(any<Array<String>>())} returns process
-        every {mockedFileUtil.getBufferedReader(any())} returns mockk{
-            every { readLine() } returns null
-        }
+        every { process.destroy() } just runs
+        every { mockRuntimeProvider.executeCommand(any<Array<String>>()) } returns process
+        every { mockedFileUtil.getBufferedReader(any()) } returns
+            mockk {
+                every { readLine() } returns null
+            }
 
         // detectTestKeys() false
         every { mockedBuildTagUtils.getBuildTags() } returns "prod-keys"
 
         // checkForBinary() false
         // checkForMagiskBinary() false
-        every {mockedFileUtil.getFile(any(), any())} returns mockk{
-            every {exists()} returns false
-        }
+        every { mockedFileUtil.getFile(any(), any()) } returns
+            mockk {
+                every { exists() } returns false
+            }
 
         // when
         val result = rootHelper.isRooted(mockContext)
 
-        //then
+        // then
         assertFalse(result)
     }
 
     @Test
     fun test_getPaths() {
         // given
-        every {mockEnvironmentProvider.getenv("PATH")} returns "/test/bin:/test/sd/xbin:/gsagsdag/"
+        every { mockEnvironmentProvider.getenv("PATH") } returns "/test/bin:/test/sd/xbin:/gsagsdag/"
 
         // when
         val result = rootHelper.getPaths()
@@ -121,7 +129,7 @@ class RootHelperTest {
     fun test_isAnyPackageFromListInstalled_true() {
         // given
         val packageName = "com.test.package"
-        every {mockPackageManager.getPackageInfo(packageName, 0)} returns mockk()
+        every { mockPackageManager.getPackageInfo(packageName, 0) } returns mockk()
         // when
         val result = rootHelper.isAnyPackageFromListInstalled(mockContext, listOf(packageName))
         // then
@@ -132,22 +140,24 @@ class RootHelperTest {
     fun test_isAnyPackageFromListInstalled_false() {
         // given
         val packageName = "com.test.package"
-        every {mockPackageManager.getPackageInfo(packageName, 0)} throws PackageManager.NameNotFoundException()
+        every { mockPackageManager.getPackageInfo(packageName, 0) } throws PackageManager.NameNotFoundException()
         // when
         val result = rootHelper.isAnyPackageFromListInstalled(mockContext, listOf(packageName))
         // then
         assertFalse(result)
     }
 
-   private fun setupProbablyEmulatorTest(fingerprint: String = "defaultFingerprint",
-                                  manufacturer: String = "defaultManufacturer",
-                                  brand: String = "defaultBrand",
-                                  model: String = "defaultModel",
-                                  device: String = "defaultDevice",
-                                  board: String = "defaultBoard",
-                                  hardware: String = "defaultHardware",
-                                  host: String = "defaultHost",
-                                  product: String = "defaultProduct") {
+    private fun setupProbablyEmulatorTest(
+        fingerprint: String = "defaultFingerprint",
+        manufacturer: String = "defaultManufacturer",
+        brand: String = "defaultBrand",
+        model: String = "defaultModel",
+        device: String = "defaultDevice",
+        board: String = "defaultBoard",
+        hardware: String = "defaultHardware",
+        host: String = "defaultHost",
+        product: String = "defaultProduct",
+    ) {
         every { mockedBuildTagUtils.getFingerprint() } returns fingerprint
         every { mockedBuildTagUtils.getManufacturer() } returns manufacturer
         every { mockedBuildTagUtils.getBrand() } returns brand
@@ -179,7 +189,7 @@ class RootHelperTest {
             product = "sdk_gphone_xx",
             brand = "google",
             model = "sdk_gphone_aa",
-            device = "Emulator"
+            device = "Emulator",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -219,7 +229,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_device_emulator() {
         setupProbablyEmulatorTest(
-            device = "Emulator"
+            device = "Emulator",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -243,7 +253,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_board_nox() {
         setupProbablyEmulatorTest(
-            board = "nox"
+            board = "nox",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -251,7 +261,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_hardware_goldfish() {
         setupProbablyEmulatorTest(
-            hardware = "goldfish"
+            hardware = "goldfish",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -259,7 +269,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_hardware_vbox() {
         setupProbablyEmulatorTest(
-            hardware = "vbox86"
+            hardware = "vbox86",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -267,7 +277,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_product_vbox86p() {
         setupProbablyEmulatorTest(
-            product = "vbox86p"
+            product = "vbox86p",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -275,7 +285,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_hardware_nox() {
         setupProbablyEmulatorTest(
-            hardware = "nox"
+            hardware = "nox",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -283,7 +293,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_product_NOX() {
         setupProbablyEmulatorTest(
-            product = "NOX"
+            product = "NOX",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -291,7 +301,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_product_nox() {
         setupProbablyEmulatorTest(
-            product = "nox"
+            product = "nox",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -299,7 +309,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_manufacturer_gennymotion() {
         setupProbablyEmulatorTest(
-            manufacturer = "Genymotion"
+            manufacturer = "Genymotion",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -307,7 +317,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_manufacturer_genymobile() {
         setupProbablyEmulatorTest(
-            manufacturer = "Genymobile"
+            manufacturer = "Genymobile",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -315,7 +325,7 @@ class RootHelperTest {
     @Test
     fun test_isProbablyEmulator_true_host_build() {
         setupProbablyEmulatorTest(
-            host = "Build"
+            host = "Build",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -324,7 +334,7 @@ class RootHelperTest {
     fun test_isProbablyEmulator_true_brand_generic_device_generic() {
         setupProbablyEmulatorTest(
             brand = "generic",
-            device = "generic"
+            device = "generic",
         )
         assert(rootHelper.isProbablyEmulator())
     }
@@ -365,18 +375,20 @@ class RootHelperTest {
     @Test
     fun isEmulatorFilesPresent() {
         setupProbablyEmulatorTest()
-        every { mockedFileUtil.getFileNoPath(any()) } returns mockk {
-            every { exists() } returns true
-        }
+        every { mockedFileUtil.getFileNoPath(any()) } returns
+            mockk {
+                every { exists() } returns true
+            }
         assert(rootHelper.isProbablyEmulator())
     }
 
     @Test
     fun isEmulatorFilesPresent_no_files_present() {
         setupProbablyEmulatorTest()
-        every { mockedFileUtil.getFileNoPath(any()) } returns mockk {
-            every { exists() } returns false
-        }
+        every { mockedFileUtil.getFileNoPath(any()) } returns
+            mockk {
+                every { exists() } returns false
+            }
         assert(!rootHelper.isProbablyEmulator())
     }
 }

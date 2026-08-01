@@ -30,7 +30,8 @@ fun NeuroIDPublic.start(
             completion(it)
         } else {
             NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
-                shouldCapture = advancedDeviceSignals)
+                shouldCapture = advancedDeviceSignals,
+            )
 
             completion(it)
         }
@@ -56,7 +57,8 @@ fun NeuroIDPublic.startSession(
             completion(it)
         } else {
             NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
-                shouldCapture = advancedDeviceSignals)
+                shouldCapture = advancedDeviceSignals,
+            )
 
             completion(it)
         }
@@ -64,10 +66,12 @@ fun NeuroIDPublic.startSession(
 }
 
 @Synchronized
-fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
-                                  advancedDeviceKey: String?,
-                                  useAdvancedDeviceProxy: Boolean,
-                                  region: NIDRegion = NIDRegion.usWest) = runBlocking {
+fun NeuroID.captureAdvancedDevice(
+    shouldCapture: Boolean,
+    advancedDeviceKey: String?,
+    useAdvancedDeviceProxy: Boolean,
+    region: NIDRegion = NIDRegion.usWest,
+) = runBlocking {
     captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
         NeuroID.getInternalInstance()?.apply {
@@ -80,14 +84,14 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
                         this,
                         getADVNetworkService(
                             NeuroID.endpoint,
-                            logger
+                            logger,
                         ),
                         this.clientID,
                         this.linkedSiteID ?: "",
                         configService,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = useAdvancedDeviceProxy,
-                        region = region
+                        region = region,
                     )
                 getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
             }
@@ -101,20 +105,22 @@ internal fun getADVSignal(
     advancedDeviceIDManagerService: AdvancedDeviceIDManagerService,
     clientKey: String,
     neuroID: NeuroID,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ): Job? {
     var job: Job? = null
     // do this in the background off main but wait for it to complete
     if (neuroID.configService.isSessionFlowSampled()) {
-        job = CoroutineScope(dispatcher).launch {
-            // check for cachedID first
-            if (!advancedDeviceIDManagerService.getCachedID()) {
-                // no cached ID - contact NID & FPJS
-                advancedDeviceIDManagerService.getRemoteID(
-                    clientKey
-                )?.join()
+        job =
+            CoroutineScope(dispatcher).launch {
+                // check for cachedID first
+                if (!advancedDeviceIDManagerService.getCachedID()) {
+                    // no cached ID - contact NID & FPJS
+                    advancedDeviceIDManagerService
+                        .getRemoteID(
+                            clientKey,
+                        )?.join()
+                }
             }
-        }
     }
     return job
 }

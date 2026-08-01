@@ -64,19 +64,19 @@ class NIDTextWatcher(
                             neuroID.captureEvent(
                                 type = PASTE,
                                 tg =
-                                hashMapOf(
-                                    "attr" to getAttrJson(sequence.toString()),
-                                    "et" to "text",
-                                ),
+                                    hashMapOf(
+                                        "attr" to getAttrJson(sequence.toString()),
+                                        "et" to "text",
+                                    ),
                                 tgs = idName,
                                 v = "S~C~~${sequence?.length}",
                                 hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
                                 attrs =
-                                listOf(
-                                    mapOf(
-                                        "clipboardText" to "S~C~~${pastedText.length}",
+                                    listOf(
+                                        mapOf(
+                                            "clipboardText" to "S~C~~${pastedText.length}",
+                                        ),
                                     ),
-                                ),
                             )
                         }
                     }
@@ -88,7 +88,7 @@ class NIDTextWatcher(
                 neuroID.captureEvent(
                     type = LOG,
                     level = ERROR,
-                    m = "onTextChangeError: $it"
+                    m = "onTextChangeError: $it",
                 )
             }
         }

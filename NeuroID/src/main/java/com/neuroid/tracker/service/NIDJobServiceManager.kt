@@ -77,9 +77,7 @@ internal class NIDJobServiceManager(
     }
 
     @Synchronized
-    fun isStopped(): Boolean {
-        return sendCadenceJob?.isActive != true
-    }
+    fun isStopped(): Boolean = sendCadenceJob?.isActive != true
 
     @Synchronized
     fun restart() {
@@ -111,8 +109,8 @@ internal class NIDJobServiceManager(
      *   The function will loop through all the current sendEventNotifications
      *   and collapse them into one request to be sent rather than multiple
      */
-    private fun createSendEventsServer(): Job {
-        return CoroutineScope(dispatcher).launch {
+    private fun createSendEventsServer(): Job =
+        CoroutineScope(dispatcher).launch {
             try {
                 for (notification in sendEventsNotification) {
                     var sendNow = notification
@@ -131,25 +129,23 @@ internal class NIDJobServiceManager(
             neuroID.captureEvent(type = LOG, m = "Send Event Job Exited", level = "ERROR")
             logger.e("NeuroID", "Send Event Job Exited")
         }
-    }
 
     /**
      * Creates a job that notifies the sendEvents channel to send events
      */
-    private fun createSendCadenceServer(): Job {
-        return CoroutineScope(dispatcher).launch {
+    private fun createSendCadenceServer(): Job =
+        CoroutineScope(dispatcher).launch {
             while (userActive && isActive) {
                 delay(configService.configCache.eventQueueFlushInterval * 1000L)
                 sendEventsNotification.send(false)
             }
         }
-    }
 
     /**
      * Create a job that captures the gyro/accel data in an event on a set cadence
      */
-    private fun createGyroCadenceServer(): Job {
-        return CoroutineScope(dispatcher).launch {
+    private fun createGyroCadenceServer(): Job =
+        CoroutineScope(dispatcher).launch {
             while (NeuroID.isSDKStarted && configService.configCache.gyroAccelCadence) {
                 delay(configService.configCache.gyroAccelCadenceTime)
 
@@ -164,7 +160,6 @@ internal class NIDJobServiceManager(
                 )
             }
         }
-    }
 
     /**
      * The timeouts values are defaults from the OKHttp and can be modified as needed. These are
@@ -190,7 +185,11 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
-                            neuroID.captureEvent(type = LOG, level = ERROR, m = "network failure, sendEventsNow() failed retrylimitHit: $message $code")
+                            neuroID.captureEvent(
+                                type = LOG,
+                                level = ERROR,
+                                m = "network failure, sendEventsNow() failed retrylimitHit: $message $code",
+                            )
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },

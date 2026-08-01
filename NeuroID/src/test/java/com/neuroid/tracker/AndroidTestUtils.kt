@@ -9,7 +9,6 @@ import android.content.res.Resources
 import android.location.LocationManager
 import android.view.View
 import android.view.ViewGroup
-import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.NIDResponseCallBack
@@ -36,14 +35,11 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.Job
-import java.util.Calendar
-import kotlin.random.Random
 
 internal fun getMockedNeuroID(
     forceStart: Boolean = false,
@@ -55,7 +51,7 @@ internal fun getMockedNeuroID(
     mockSessionService: NIDSessionService = getMockedSessionService(),
     mockConfigService: ConfigService = getMockedConfigService(),
     mockNIDTime: NIDTime = getMockedTime(),
-    mockedRandomNumberGenerator: RandomGenerator = getMockedRandomNumberGenerator()
+    mockedRandomNumberGenerator: RandomGenerator = getMockedRandomNumberGenerator(),
 ): NeuroID {
     val nidMock = mockk<NeuroID>()
     every { nidMock.dispatcher } returns Dispatchers.Unconfined
@@ -107,7 +103,7 @@ internal fun getMockedNeuroID(
     every { nidMock.validationService } returns getMockedValidationService()
     every { nidMock.httpService } returns getMockedHTTPService()
     every { nidMock.logger } returns getMockedLogger()
-    every { nidMock.randomGenerator} returns mockedRandomNumberGenerator
+    every { nidMock.randomGenerator } returns mockedRandomNumberGenerator
     every { nidMock.nidScreenCaptureService } returns getMockedScreenCaptureService()
 
     every { nidMock.setupListeners() } just runs
@@ -285,15 +281,15 @@ internal fun getMockedTime(value: Long = 0L): NIDTime {
 internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): ConfigService {
     val mockedConfigService = mockk<NIDConfigService>()
     val mockedNeuroID = mockk<NeuroID>()
-    every {mockedNeuroID.clientKey} returns "test1"
-    every {mockedNeuroID.captureEvent(any(), any())} just runs
-    every {mockedConfigService.configCache } returns NIDRemoteConfig()
+    every { mockedNeuroID.clientKey } returns "test1"
+    every { mockedNeuroID.captureEvent(any(), any()) } just runs
+    every { mockedConfigService.configCache } returns NIDRemoteConfig()
     every {
         mockedConfigService.retrieveOrRefreshCache(any())
     } just runs
-    every { mockedConfigService.siteIDSampleMap} returns mutableMapOf("test1" to true, "test2" to false)
+    every { mockedConfigService.siteIDSampleMap } returns mutableMapOf("test1" to true, "test2" to false)
     every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
-    every { mockedConfigService.updateIsSampledStatus(any(), any())} just runs
+    every { mockedConfigService.updateIsSampledStatus(any(), any()) } just runs
     every { mockedConfigService.isSessionFlowSampled() } returns isSessionFlowSampled
     every { mockedConfigService.initSiteIDSampleMap(any(), any()) } just runs
 

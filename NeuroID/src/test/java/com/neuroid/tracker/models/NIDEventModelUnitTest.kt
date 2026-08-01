@@ -1,15 +1,8 @@
 package com.neuroid.tracker.models
 
-import com.google.common.base.Verify.verify
-import com.neuroid.tracker.events.*
-import com.neuroid.tracker.utils.Constants
-import com.neuroid.tracker.utils.Constants.*
-import com.neuroid.tracker.utils.NIDLogWrapper
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
+import com.neuroid.tracker.events.NIDEventModel
+import com.neuroid.tracker.events.NIDSensorModel
+import com.neuroid.tracker.events.NIDTouchModel
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -49,7 +42,7 @@ class NIDEventModelUnitTest {
                 v = "v-a",
                 hv = "hv-a",
                 en = "en-a",
-                etn =  "etn-a",
+                etn = "etn-a",
                 ec = "ec-a",
                 et = "et-a",
                 eid = "eid-a",
@@ -69,7 +62,7 @@ class NIDEventModelUnitTest {
                 siteId = "siteId-a",
                 cid = "cid-a",
                 did = "did-a",
-                iid =  "iid-a",
+                iid = "iid-a",
                 loc = "loc-a",
                 ua = "ua-a",
                 tzo = 420,

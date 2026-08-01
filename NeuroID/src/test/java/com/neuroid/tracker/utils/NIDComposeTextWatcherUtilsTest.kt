@@ -70,21 +70,24 @@ class NIDComposeTextWatcherUtilsTest {
             textWatcher.isPaste(
                 textWatcher.getTextChange("", "zzzz"),
                 "zzzz",
-                0)
+                0,
+            )
         assert(isPaste3)
 
         val isPaste4 =
             textWatcher.isPaste(
                 textWatcher.getTextChange("", ""),
                 "",
-                0)
+                0,
+            )
         assert(!isPaste4)
 
         val isPaste5 =
             textWatcher.isPaste(
                 textWatcher.getTextChange("a", "ab"),
                 "",
-                0)
+                0,
+            )
         assert(!isPaste5)
     }
 }

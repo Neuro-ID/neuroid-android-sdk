@@ -14,9 +14,9 @@ import android.widget.TextView
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.FOCUS
-import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.events.SingleTargetListenerRegister
 import com.neuroid.tracker.events.TouchEventManager
+import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.mockk
@@ -44,14 +44,15 @@ class NIDGlobalEventCallbackTest {
         singleTargetListenerRegister = mockk(relaxed = true)
         // Clear registeredViews before each test
         NeuroID.registeredViews.clear()
-        callback = NIDGlobalEventCallback(
-            windowCallback,
-            eventManager,
-            viewMainContainer,
-            neuroID,
-            logger,
-            singleTargetListenerRegister,
-        )
+        callback =
+            NIDGlobalEventCallback(
+                windowCallback,
+                eventManager,
+                viewMainContainer,
+                neuroID,
+                logger,
+                singleTargetListenerRegister,
+            )
     }
 
     @After
@@ -60,7 +61,10 @@ class NIDGlobalEventCallbackTest {
     }
 
     // Helper to create a mock EditText with contentDescription so getIdOrTag() returns it
-    private fun createMockEditText(idName: String, textValue: String = ""): EditText {
+    private fun createMockEditText(
+        idName: String,
+        textValue: String = "",
+    ): EditText {
         val editText = mockk<EditText>(relaxed = true)
         every { editText.contentDescription } returns idName
         every { editText.text } returns android.text.SpannableStringBuilder(textValue)
@@ -112,7 +116,13 @@ class NIDGlobalEventCallbackTest {
         // Mock registerComponent to invoke the onComplete callback (7 params total with defaults)
         every {
             singleTargetListenerRegister.registerComponent(
-                any(), any(), any(), any(), any(), any(), any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
             )
         } answers {
             // The 7th argument (index 6) is the onComplete callback
@@ -123,7 +133,13 @@ class NIDGlobalEventCallbackTest {
 
         verify {
             singleTargetListenerRegister.registerComponent(
-                eq(neuroID), eq(editText), any(), eq("targetInteractionEvent"), any(), any(), any(),
+                eq(neuroID),
+                eq(editText),
+                any(),
+                eq("targetInteractionEvent"),
+                any(),
+                any(),
+                any(),
             )
         }
         verify { neuroID.captureEvent(type = FOCUS, tgs = "unregisteredId", tg = any()) }

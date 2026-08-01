@@ -120,10 +120,10 @@ class RegistrationIdentificationHelperTest {
                 neuroID,
                 contentView,
                 any(), // guid
-                true,  // registerTarget default
-                true,  // registerListeners default
-                "",    // activityOrFragment default
-                "",    // parent default
+                true, // registerTarget default
+                true, // registerListeners default
+                "", // activityOrFragment default
+                "", // parent default
             )
         }
     }
@@ -149,7 +149,7 @@ class RegistrationIdentificationHelperTest {
                 any(),
                 any(),
                 false, // registerTarget
-                true,  // registerListeners
+                true, // registerListeners
                 "",
                 "",
             )
@@ -176,7 +176,7 @@ class RegistrationIdentificationHelperTest {
                 neuroID,
                 any(),
                 any(),
-                true,  // registerTarget
+                true, // registerTarget
                 false, // registerListeners
                 "",
                 "",
@@ -281,10 +281,11 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
-            contentView,
-            regularCallback,
-        )
+        val (activity, mockWindow, _) =
+            createMockedActivityForWindowListeners(
+                contentView,
+                regularCallback,
+            )
 
         // Get the viewTreeObserver that was set up by the helper
         val mockViewTreeObserver = contentView.viewTreeObserver
@@ -306,10 +307,11 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
         val existingNIDCallback = mockk<NIDGlobalEventCallback>(relaxed = true)
 
-        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
-            contentView,
-            existingNIDCallback,
-        )
+        val (activity, mockWindow, _) =
+            createMockedActivityForWindowListeners(
+                contentView,
+                existingNIDCallback,
+            )
 
         registrationHelper.registerWindowListeners(neuroID, activity)
 
@@ -322,10 +324,11 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
-            contentView,
-            regularCallback,
-        )
+        val (activity, mockWindow, _) =
+            createMockedActivityForWindowListeners(
+                contentView,
+                regularCallback,
+            )
 
         // Capture the callback set on the window
         val callbackSlot = slot<Window.Callback>()
@@ -342,10 +345,11 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
-            contentView,
-            regularCallback,
-        )
+        val (activity, mockWindow, _) =
+            createMockedActivityForWindowListeners(
+                contentView,
+                regularCallback,
+            )
 
         // First call: regular callback → should register
         val callbackSlot = slot<Window.Callback>()

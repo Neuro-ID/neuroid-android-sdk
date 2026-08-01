@@ -29,7 +29,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -52,12 +51,13 @@ class NIDSessionServiceTest {
     )
 
     private fun setNeuroIDInstance() {
-        NeuroID.Builder(
-            null,
-            "key_test_fake1234",
-            false,
-            NeuroID.DEVELOPMENT,
-        ).build()
+        NeuroID
+            .Builder(
+                null,
+                "key_test_fake1234",
+                false,
+                NeuroID.DEVELOPMENT,
+            ).build()
     }
 
     private fun buildMockClasses(): MockedServices {
@@ -107,14 +107,14 @@ class NIDSessionServiceTest {
 
     private fun createSessionServiceInstance(
         mockedNeuroID: NeuroID,
-        configService: ConfigService = getMockedConfigService(
-            isSessionFlowSampled = true,
-        ),
-
+        configService: ConfigService =
+            getMockedConfigService(
+                isSessionFlowSampled = true,
+            ),
         identifierService: NIDIdentifierService = getMockedIdentifierService(),
         validationService: NIDValidationService = getMockedValidationService(),
-    ): NIDSessionService {
-        return NIDSessionService(
+    ): NIDSessionService =
+        NIDSessionService(
             getMockedLogger(),
             mockedNeuroID,
             configService,
@@ -122,7 +122,6 @@ class NIDSessionServiceTest {
             identifierService,
             validationService,
         )
-    }
 
     // SETUP/TAKEDOWN
     @Before
@@ -477,7 +476,7 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedJobServiceManager.sendEvents(true)
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any() , ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
             mockedLocationService.shutdownLocationCoroutine(any())
             mockedNeuroID.getApplicationContext()
@@ -511,7 +510,7 @@ class NIDSessionServiceTest {
         sessionService.pauseCollection(true)
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
         verify(exactly = 0) {
@@ -553,7 +552,7 @@ class NIDSessionServiceTest {
         sessionService.pauseCollection(true)
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
             mockedLocationService.shutdownLocationCoroutine(any())
@@ -589,7 +588,7 @@ class NIDSessionServiceTest {
         sessionService.pauseCollection(true)
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
             mockedLocationService.shutdownLocationCoroutine(any())
@@ -621,7 +620,7 @@ class NIDSessionServiceTest {
         sessionService.resumeCollection()
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
         verify(exactly = 0) {
@@ -684,7 +683,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -732,7 +731,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(),  ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -789,7 +788,7 @@ class NIDSessionServiceTest {
         // assert resumeCollection job was called
         verify(exactly = 1) {
             mockedLocationService.setupLocationCoroutine(any())
-            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts=any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
         NeuroID._isSDKStarted = false
@@ -1056,7 +1055,7 @@ class NIDSessionServiceTest {
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
-                configService = mockedConfigService
+                configService = mockedConfigService,
             )
 
         sessionService.clearSessionVariables()

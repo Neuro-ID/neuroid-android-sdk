@@ -7,7 +7,10 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.TYPE_WIFI
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**

@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import org.junit.Test
 
 class NIDSharedPrefsDefaultsTests {
-
     companion object {
         /**
          * Creates a mock Context with SharedPreferences and optional Editor.
@@ -22,22 +21,23 @@ class NIDSharedPrefsDefaultsTests {
          */
         fun createMockContext(
             sharedPrefsStringValue: String = "gsagdfg",
-            withEditor: Boolean = false
+            withEditor: Boolean = false,
         ): Triple<Context, SharedPreferences, Editor?> {
             val context = mockk<Context>()
             val mockSharedPreferences = mockk<SharedPreferences>()
             every { mockSharedPreferences.getString(any(), any()) } returns sharedPrefsStringValue
             every { context.getSharedPreferences(any(), any()) } returns mockSharedPreferences
 
-            val editor = if (withEditor) {
-                val ed = mockk<Editor>()
-                every { ed.putString(any(), any()) } returns ed
-                every { ed.apply() } just runs
-                every { mockSharedPreferences.edit() } returns ed
-                ed
-            } else {
-                null
-            }
+            val editor =
+                if (withEditor) {
+                    val ed = mockk<Editor>()
+                    every { ed.putString(any(), any()) } returns ed
+                    every { ed.apply() } just runs
+                    every { mockSharedPreferences.edit() } returns ed
+                    ed
+                } else {
+                    null
+                }
 
             return Triple(context, mockSharedPreferences, editor)
         }
@@ -61,14 +61,14 @@ class NIDSharedPrefsDefaultsTests {
          */
         fun createMockRandomGeneratorAndTime(
             randomValue: Double = 10.0,
-            timeMillis: Long = 1000L
+            timeMillis: Long = 1000L,
         ): Pair<com.neuroid.tracker.utils.RandomGenerator, com.neuroid.tracker.utils.NIDTime> {
             val randomGenerator = mockk<com.neuroid.tracker.utils.RandomGenerator>()
             every { randomGenerator.getRandom(any()) } returns randomValue
-            
+
             val nidTime = mockk<com.neuroid.tracker.utils.NIDTime>()
             every { nidTime.getCurrentTimeMillis() } returns timeMillis
-            
+
             return Pair(randomGenerator, nidTime)
         }
 
@@ -76,9 +76,7 @@ class NIDSharedPrefsDefaultsTests {
          * Creates a mock NIDResourcesUtils with configurable behaviors.
          * Use the returned ResourcesMockBuilder to configure specific return values.
          */
-        fun createMockResourcesUtils(): ResourcesMockBuilder {
-            return ResourcesMockBuilder()
-        }
+        fun createMockResourcesUtils(): ResourcesMockBuilder = ResourcesMockBuilder()
 
         /**
          * Builder class for configuring NIDResourcesUtils mock.
@@ -126,8 +124,12 @@ class NIDSharedPrefsDefaultsTests {
     fun getNewSessionID() {
         val (context, mockSharedPreferences, editor) = createMockContext(withEditor = true)
         val uuidProvider = createMockUuidProvider()
-        val t = NIDSharedPrefsDefaults(context, uuidProvider = uuidProvider,
-            dispatcher = Dispatchers.Unconfined)
+        val t =
+            NIDSharedPrefsDefaults(
+                context,
+                uuidProvider = uuidProvider,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getNewSessionID()
         verify {
             uuidProvider.randomUUID()
@@ -140,12 +142,17 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getClientID_no_stored_cid() {
         val uuidProvider = createMockUuidProvider()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context, uuidProvider = uuidProvider,
-            dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                uuidProvider = uuidProvider,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getClientID()
         verify {
             mockSharedPreferences.getString("NID_CID_GUID_KEY", "")
@@ -159,12 +166,17 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getClientID_stored_cid() {
         val uuidProvider = createMockUuidProvider()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "CID",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context, uuidProvider = uuidProvider,
-            dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "CID",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                uuidProvider = uuidProvider,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getClientID()
         verify(exactly = 0) {
             uuidProvider.randomUUID()
@@ -179,8 +191,12 @@ class NIDSharedPrefsDefaultsTests {
     fun getDeviceSalt() {
         val uuidProvider = createMockUuidProvider()
         val (context, mockSharedPreferences, _) = createMockContext(sharedPrefsStringValue = "CID")
-        val t = NIDSharedPrefsDefaults(context = context, uuidProvider = uuidProvider,
-            dispatcher = Dispatchers.Unconfined)
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                uuidProvider = uuidProvider,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getDeviceSalt()
         verify { mockSharedPreferences.getString("NID_DEVICE_SALT", "") }
     }
@@ -200,12 +216,18 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getDeviceID() {
         val (randomGenerator, nidTime) = createMockRandomGeneratorAndTime()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context, randomGenerator = randomGenerator,
-            nidTime = nidTime, dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                randomGenerator = randomGenerator,
+                nidTime = nidTime,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getDeviceID()
         verify {
             mockSharedPreferences.getString("NID_DID_KEY", "")
@@ -220,13 +242,18 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getDeviceID_stored_id() {
         val (randomGenerator, nidTime) = createMockRandomGeneratorAndTime()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "gsagdfg",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context,
-            randomGenerator = randomGenerator, nidTime = nidTime,
-            dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "gsagdfg",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                randomGenerator = randomGenerator,
+                nidTime = nidTime,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getDeviceID()
         verify(exactly = 0) {
             nidTime.getCurrentTimeMillis()
@@ -241,12 +268,18 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getIntermediateID() {
         val (randomGenerator, nidTime) = createMockRandomGeneratorAndTime()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context, randomGenerator = randomGenerator,
-            nidTime = nidTime, dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                randomGenerator = randomGenerator,
+                nidTime = nidTime,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getIntermediateID()
         verify {
             mockSharedPreferences.getString("NID_IID_KEY", "")
@@ -261,12 +294,18 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getIntermediateID_no_id() {
         val (randomGenerator, nidTime) = createMockRandomGeneratorAndTime()
-        val (context, mockSharedPreferences, editor) = createMockContext(
-            sharedPrefsStringValue = "gsagdfg",
-            withEditor = true
-        )
-        val t = NIDSharedPrefsDefaults(context = context, randomGenerator = randomGenerator,
-            nidTime = nidTime, dispatcher = Dispatchers.Unconfined)
+        val (context, mockSharedPreferences, editor) =
+            createMockContext(
+                sharedPrefsStringValue = "gsagdfg",
+                withEditor = true,
+            )
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                randomGenerator = randomGenerator,
+                nidTime = nidTime,
+                dispatcher = Dispatchers.Unconfined,
+            )
         t.getIntermediateID()
         verify(exactly = 0) {
             nidTime.getCurrentTimeMillis()
@@ -281,78 +320,112 @@ class NIDSharedPrefsDefaultsTests {
     @Test
     fun getLocale() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withLocale("en_US")
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withLocale("en_US")
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getLocale() == "en_US")
     }
 
     @Test
     fun getLanguage() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withLanguage("en_US")
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withLanguage("en_US")
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getLanguage() == "en_US")
     }
 
     @Test
     fun getDefaultAgent() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withHttpAgent("http_agent")
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withHttpAgent("http_agent")
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getUserAgent() == "http_agent")
     }
 
     @Test
     fun getTimeZone() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withHttpAgent("http_agent")
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withHttpAgent("http_agent")
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getTimeZone() == 300)
     }
 
     @Test
     fun getPlatform() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withHttpAgent("http_agent")
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withHttpAgent("http_agent")
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getPlatform() == "Android")
     }
 
     @Test
     fun getDisplayWidth() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withDisplayWidth(1000)
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withDisplayWidth(1000)
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getDisplayWidth() == 1000)
     }
 
     @Test
     fun getDisplayHeight() {
         val (context, _, _) = createMockContext()
-        val mockedNIDResourcesUtils = createMockResourcesUtils()
-            .withDisplayHeight(480)
-            .build()
-        val t = NIDSharedPrefsDefaults(context = context,
-            resourcesProvider = mockedNIDResourcesUtils, dispatcher = Dispatchers.Unconfined)
+        val mockedNIDResourcesUtils =
+            createMockResourcesUtils()
+                .withDisplayHeight(480)
+                .build()
+        val t =
+            NIDSharedPrefsDefaults(
+                context = context,
+                resourcesProvider = mockedNIDResourcesUtils,
+                dispatcher = Dispatchers.Unconfined,
+            )
         assert(t.getDisplayHeight() == 480)
     }
-
 }

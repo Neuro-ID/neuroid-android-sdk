@@ -11,7 +11,6 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import com.fingerprintjs.android.fpjs_pro.Configuration
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
@@ -82,9 +81,8 @@ class NeuroID
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
         serverEnvironment: String = PRODUCTION,
-        internal var region: NIDRegion = NIDRegion.usWest
-
-        ) : NeuroIDPublic {
+        internal var region: NIDRegion = NIDRegion.usWest,
+    ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
         private var firstTime = true
@@ -197,7 +195,6 @@ class NeuroID
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
-
             identifierService =
                 NIDIdentifierService(
                     logger,
@@ -285,7 +282,10 @@ class NeuroID
         /**
          * Function to retrieve the current network type (wifi, cell, eth, unknown)
          */
-        internal fun getNetworkType(context: Context, buildVersion: Int = Build.VERSION.SDK_INT): String {
+        internal fun getNetworkType(
+            context: Context,
+            buildVersion: Int = Build.VERSION.SDK_INT,
+        ): String {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (buildVersion >= Build.VERSION_CODES.M) {
                 val activeNetwork = connectivityManager.activeNetwork
@@ -328,7 +328,7 @@ class NeuroID
 
         data class BuilderConfig(
             val application: Application? = null,
-            val nidConfiguration: NIDConfiguration
+            val nidConfiguration: NIDConfiguration,
         ) {
             fun build() {
                 val neuroID =
@@ -339,7 +339,7 @@ class NeuroID
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
                         nidConfiguration.serverEnvironment,
-                        nidConfiguration.region
+                        nidConfiguration.region,
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -352,7 +352,7 @@ class NeuroID
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
             val serverEnvironment: String = PRODUCTION,
-            val region: NIDRegion = NIDRegion.usWest
+            val region: NIDRegion = NIDRegion.usWest,
         ) {
             fun build() {
                 val neuroID =
@@ -363,7 +363,7 @@ class NeuroID
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = true,
                         serverEnvironment,
-                        region
+                        region,
                     )
                 setNeuroIDInstance(neuroID)
             }
@@ -381,7 +381,6 @@ class NeuroID
 
             // Internal accessible property to allow internal get/set
             @Suppress("ktlint:standard:backing-property-naming")
-
             @Volatile
             internal var _isSDKStarted: Boolean = false
 
@@ -426,7 +425,7 @@ class NeuroID
                     singleton?.captureEvent(
                         type = LOG,
                         m = "NeuroID SDK should only be built once.",
-                        level = "ERROR"
+                        level = "ERROR",
                     )
                 }
             }
@@ -598,13 +597,17 @@ class NeuroID
          * Keeping this wrapper around just in case we have to do something similar in the
          * future.
          */
-        internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
-                                                    dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+        internal fun checkThenCaptureAdvancedDevice(
+            shouldCapture: Boolean = isAdvancedDevice,
+            dispatcher: CoroutineDispatcher = Dispatchers.IO,
+        ) {
             CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(shouldCapture,
+                captureAdvancedDevice(
+                    shouldCapture,
                     advancedDeviceKey,
                     useAdvancedDeviceProxy,
-                    region)
+                    region,
+                )
             }
         }
 
@@ -635,9 +638,7 @@ class NeuroID
 
         override fun getClientID(): String = clientID
 
-        internal fun shouldForceStart(): Boolean {
-            return forceStart
-        }
+        internal fun shouldForceStart(): Boolean = forceStart
 
         override fun registerPageTargets(activity: Activity) {
             this.forceStart = true
@@ -653,9 +654,7 @@ class NeuroID
                 completion(it)
             }
 
-        override fun stop(): Boolean {
-            return sessionService.stop()
-        }
+        override fun stop(): Boolean = sessionService.stop()
 
         internal fun resetClientId() {
             application?.let {
@@ -680,9 +679,7 @@ class NeuroID
         }
 
         /** Provide public access to application context for other internal NID functions */
-        internal fun getApplicationContext(): Context? {
-            return this.application?.applicationContext
-        }
+        internal fun getApplicationContext(): Context? = this.application?.applicationContext
 
         fun setIsRN(rnVersion: String) {
             this.isRN = true
@@ -695,25 +692,23 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
-        @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-            ReplaceWith("getSessionID()"))
+        @Deprecated(
+            "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
+            ReplaceWith("getSessionID()"),
+        )
         override fun getUserID() = identifierService.getUserID(this)
 
-        @Deprecated("setUserID is deprecated, please use `identify` instead.",
-            ReplaceWith("identify(userID)"))
-        override fun setUserID(userID: String): Boolean {
-            return identifierService.setUserID(this, userID, true)
-        }
+        @Deprecated(
+            "setUserID is deprecated, please use `identify` instead.",
+            ReplaceWith("identify(userID)"),
+        )
+        override fun setUserID(userID: String): Boolean = identifierService.setUserID(this, userID, true)
 
-        override fun identify(userID: String): Boolean {
-            return identifierService.setUserID(this, userID, true)
-        }
+        override fun identify(userID: String): Boolean = identifierService.setUserID(this, userID, true)
 
         override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 
-        override fun setRegisteredUserID(registeredUserID: String): Boolean {
-            return identifierService.setRegisteredUserID(this, registeredUserID)
-        }
+        override fun setRegisteredUserID(registeredUserID: String): Boolean = identifierService.setRegisteredUserID(this, registeredUserID)
 
         // new Session Commands
         override fun startSession(
@@ -733,9 +728,7 @@ class NeuroID
             sessionService.resumeCollection()
         }
 
-        override fun stopSession(): Boolean {
-            return sessionService.stopSession()
-        }
+        override fun stopSession(): Boolean = sessionService.stopSession()
 
         /**
          * ported from the iOS implementation
@@ -784,9 +777,11 @@ class NeuroID
 
         internal fun captureApplicationMetaData() {
             getApplicationContext()?.let {
-                val appInfo = getAppMetaData(
-                    it,
-                    rnVersion)
+                val appInfo =
+                    getAppMetaData(
+                        it,
+                        rnVersion,
+                    )
                 captureEvent(
                     queuedEvent = !isSDKStarted,
                     p = sharedPrefsDefaults.getPlatform(),
@@ -808,6 +803,7 @@ class NeuroID
        This function will verify that events should be saved to the datastore prior to making an event object
        Additionally it will send all events in the queue if the type is a special type (see end of function)
      */
+        @Suppress("ktlint:standard:function-signature")
         internal fun captureEvent(
             queuedEvent: Boolean = false,
             type: String,
@@ -950,7 +946,7 @@ class NeuroID
                     cp,
                     l,
                     scr,
-                    synthetic
+                    synthetic,
                 )
 
             if (queuedEvent) {

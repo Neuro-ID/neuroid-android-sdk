@@ -160,29 +160,33 @@ class ActivityCallbacks(
                         type = SCREEN_CAPTURE,
                     )
                 }
-            }, listenerRecording = object: NIDScreenCaptureService.ScreenRecordingListener {
-                override fun onScreenRecorded(isRecording: Boolean) {
-                    if(isRecording) {
-                        neuroID.captureEvent(
-                            type = SCREEN_RECORDING,
-                            attrs = listOf(
-                                mapOf(
-                                    "status" to "active",
-                                ),
-                            ),
-                        )
-                    } else {
-                        neuroID.captureEvent(
-                            type = SCREEN_RECORDING,
-                            attrs = listOf(
-                                mapOf(
-                                    "status" to "inactive",
-                                ),
-                            ),
-                        )
-                    }
-                }
             },
+            listenerRecording =
+                object : NIDScreenCaptureService.ScreenRecordingListener {
+                    override fun onScreenRecorded(isRecording: Boolean) {
+                        if (isRecording) {
+                            neuroID.captureEvent(
+                                type = SCREEN_RECORDING,
+                                attrs =
+                                    listOf(
+                                        mapOf(
+                                            "status" to "active",
+                                        ),
+                                    ),
+                            )
+                        } else {
+                            neuroID.captureEvent(
+                                type = SCREEN_RECORDING,
+                                attrs =
+                                    listOf(
+                                        mapOf(
+                                            "status" to "inactive",
+                                        ),
+                                    ),
+                            )
+                        }
+                    }
+                },
         )
 
         // depending on RN or Android run the following code

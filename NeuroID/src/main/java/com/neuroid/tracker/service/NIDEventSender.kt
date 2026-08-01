@@ -36,8 +36,9 @@ interface NIDSendingService {
 class NIDEventSender(
     private var httpService: HttpService,
     private val context: Context,
-    private val nidTime: NIDTime = NIDTime()
-) : NIDSendingService, RetrySender() {
+    private val nidTime: NIDTime = NIDTime(),
+) : RetrySender(),
+    NIDSendingService {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 
@@ -133,7 +134,7 @@ class NIDEventSender(
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
-                "packetNumber" to packetNumber
+                "packetNumber" to packetNumber,
             )
 
         NIDLog.d(

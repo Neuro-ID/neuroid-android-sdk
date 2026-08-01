@@ -19,9 +19,7 @@ object NIDSensorHelper {
 
     private var sensorActive = false
 
-    fun isSensorActive(): Boolean {
-        return sensorActive
-    }
+    fun isSensorActive(): Boolean = sensorActive
 
     fun initSensorHelper(
         context: Context,
@@ -92,8 +90,8 @@ object NIDSensorHelper {
         nSensors: NIDSensors,
         fvGyro: NIDSensorData,
         fvAccel: NIDSensorData,
-    ): NIDSensorGenListener {
-        return NIDSensorGenListener {
+    ): NIDSensorGenListener =
+        NIDSensorGenListener {
             when (it.type) {
                 Sensor.TYPE_GYROSCOPE -> {
                     nSensors.gyroscopeData =
@@ -123,7 +121,6 @@ object NIDSensorHelper {
                 }
             }
         }
-    }
 
     fun getAccelerometerInfo() =
         NIDSensorModel(

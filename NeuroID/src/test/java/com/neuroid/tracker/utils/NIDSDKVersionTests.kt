@@ -6,12 +6,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class NIDSDKVersionTests {
-
     @Test
     fun testSDKVersion_isRNtrue_isAdvancedDevicefalse() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
-        every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        every {buildConfigWrapper.getFlavor()} returns "reactNativeLib"
+        every { buildConfigWrapper.getBuildVersion() } returns "yyyyyyy"
+        every { buildConfigWrapper.getFlavor() } returns "reactNativeLib"
         val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-rn-yyyyyyy")
     }
@@ -19,8 +18,8 @@ class NIDSDKVersionTests {
     @Test
     fun testSDKVersion_isRNfalse_isAdvancedDevicefalse() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
-        every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        every {buildConfigWrapper.getFlavor()} returns "androidLib"
+        every { buildConfigWrapper.getBuildVersion() } returns "yyyyyyy"
+        every { buildConfigWrapper.getFlavor() } returns "androidLib"
         val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-yyyyyyy")
     }
@@ -28,8 +27,8 @@ class NIDSDKVersionTests {
     @Test
     fun testSDKVersion_isRNfalse_isAdvancedDevicetrue() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
-        every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        every {buildConfigWrapper.getFlavor()} returns "androidAdvancedDeviceLib"
+        every { buildConfigWrapper.getBuildVersion() } returns "yyyyyyy"
+        every { buildConfigWrapper.getFlavor() } returns "androidAdvancedDeviceLib"
         val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-adv-yyyyyyy")
     }
@@ -37,8 +36,8 @@ class NIDSDKVersionTests {
     @Test
     fun testSDKVersion_isRNtrue_isAdvancedDevicetrue() {
         val buildConfigWrapper = mockk<NIDBuildConfigWrapper>()
-        every {buildConfigWrapper.getBuildVersion()} returns "yyyyyyy"
-        every {buildConfigWrapper.getFlavor()} returns "reactNativeAdvancedDeviceLib"
+        every { buildConfigWrapper.getBuildVersion() } returns "yyyyyyy"
+        every { buildConfigWrapper.getFlavor() } returns "reactNativeAdvancedDeviceLib"
         val version = NIDVersion.getSDKVersion(buildConfigWrapper)
         assert(version == "5.android-rn-adv-yyyyyyy")
     }

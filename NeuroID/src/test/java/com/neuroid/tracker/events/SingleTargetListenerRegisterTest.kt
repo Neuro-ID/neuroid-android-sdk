@@ -56,13 +56,14 @@ class SingleTargetListenerRegisterTest {
         every { view.context } returns mockk(relaxed = true)
 
         // Call method
-        val result = singleTargetRegister.createAtrrList(
-            view,
-            guid,
-            idName,
-            activityOrFragment,
-            parent
-        )
+        val result =
+            singleTargetRegister.createAtrrList(
+                view,
+                guid,
+                idName,
+                activityOrFragment,
+                parent,
+            )
 
         // Verify list has 5 elements
         assertEquals(5, result.size)
@@ -101,13 +102,14 @@ class SingleTargetListenerRegisterTest {
         every { view.context } returns mockk(relaxed = true)
 
         // Call method with empty optional parameters
-        val result = singleTargetRegister.createAtrrList(
-            view,
-            guid,
-            idName,
-            activityOrFragment = "",
-            parent = ""
-        )
+        val result =
+            singleTargetRegister.createAtrrList(
+                view,
+                guid,
+                idName,
+                activityOrFragment = "",
+                parent = "",
+            )
 
         // Verify list still has 5 elements
         assertEquals(5, result.size)
@@ -127,9 +129,10 @@ class SingleTargetListenerRegisterTest {
         val et = "button"
         val v = "Submit"
         val simpleName = "Button"
-        val attrJson = listOf(
-            mapOf("n" to "guid", "v" to "test-guid")
-        )
+        val attrJson =
+            listOf(
+                mapOf("n" to "guid", "v" to "test-guid"),
+            )
 
         // Set static values
         NeuroID.screenActivityName = "MainActivity"
@@ -148,7 +151,7 @@ class SingleTargetListenerRegisterTest {
             v = v,
             simpleName = simpleName,
             attrJson = attrJson,
-            onComplete = onComplete
+            onComplete = onComplete,
         )
 
         // Verify captureEvent was called
@@ -242,7 +245,7 @@ class SingleTargetListenerRegisterTest {
             et = et,
             v = v,
             simpleName = simpleName,
-            attrJson = attrJson
+            attrJson = attrJson,
         )
 
         // Verify captureEvent was called with fragment in URL
@@ -291,7 +294,7 @@ class SingleTargetListenerRegisterTest {
                 p = any(),
                 dnt = any(),
                 tch = any(),
-                url = match { it.contains("/ProfileFragment/")},
+                url = match { it.contains("/ProfileFragment/") },
                 ns = any(),
                 jsl = any(),
                 jsv = any(),
@@ -360,8 +363,8 @@ class SingleTargetListenerRegisterTest {
         singleTargetRegister.registerListeners(neuroID, editText)
         singleTargetRegister.registerListeners(neuroID, autoCompleteTextView)
         singleTargetRegister.registerListeners(neuroID, spinner)
-        singleTargetRegister.registerListeners(neuroID,absSpinner)
-        singleTargetRegister.registerListeners(neuroID,radioGroup)
+        singleTargetRegister.registerListeners(neuroID, absSpinner)
+        singleTargetRegister.registerListeners(neuroID, radioGroup)
 
         // Verify logger was called for EditText
         verify { logger.d("NID-Activity", match { it.contains("EditText Listener") }) }

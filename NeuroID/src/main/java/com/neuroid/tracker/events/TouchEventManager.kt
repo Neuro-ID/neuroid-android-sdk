@@ -3,7 +3,14 @@ package com.neuroid.tracker.events
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.RatingBar
+import android.widget.SeekBar
+import android.widget.Spinner
+import android.widget.ToggleButton
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
@@ -20,12 +27,12 @@ class TouchEventManager(
     private val viewParent: ViewGroup,
     internal val neuroID: NeuroID,
     internal val logger: NIDLogWrapper,
-    private val nidTime: NIDTime = NIDTime()
+    private val nidTime: NIDTime = NIDTime(),
 ) {
     internal var lastView: View? = null
     private var lastViewName = ""
     private var lastTypeOfView = 0
-    internal var lastTouchMoveIntervalStart = 0L //milliseconds
+    internal var lastTouchMoveIntervalStart = 0L // milliseconds
     internal var missCounter = 0
     internal var hitCounter = 0
 
@@ -126,7 +133,7 @@ class TouchEventManager(
                     touches = listOf(NIDTouchModel(0f, it.x, it.y)),
                     v = v,
                     attrs = attrJSON,
-                    m = if (eventType == TOUCH_END) "events_logged=$hitCounter events_not_logged=$missCounter" else ""
+                    m = if (eventType == TOUCH_END) "events_logged=$hitCounter events_not_logged=$missCounter" else "",
                 )
             }
 
@@ -137,11 +144,11 @@ class TouchEventManager(
     fun shouldRecordMoveEvent(): Boolean {
         val timeDiff = (nidTime.getCurrentTimeMillis() - lastTouchMoveIntervalStart)
         if (timeDiff <= LAST_TOUCH_MOVE_WAIT_INTERVAL) {
-            missCounter ++
+            missCounter++
             return false
         } else {
             lastTouchMoveIntervalStart = nidTime.getCurrentTimeMillis()
-            hitCounter ++
+            hitCounter++
             return true
         }
     }
@@ -351,4 +358,8 @@ internal fun detectBasicAndroidViewType(currentView: View?): Int {
     return typeOfView
 }
 
-internal data class MotionEventValues(val a: Float?, val precision: Float?, val raw: Float?)
+internal data class MotionEventValues(
+    val a: Float?,
+    val precision: Float?,
+    val raw: Float?,
+)

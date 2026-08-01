@@ -68,7 +68,10 @@ class RegistrationIdentificationHelper(
         }
     }
 
-    fun registerWindowListeners(neuroID: NeuroID, activity: Activity) {
+    fun registerWindowListeners(
+        neuroID: NeuroID,
+        activity: Activity,
+    ) {
         val viewMainContainer =
             activity.window.decorView.findViewById<View>(
                 android.R.id.content,
@@ -224,7 +227,10 @@ class SingleTargetListenerRegister(
     val additionalListeners: AdditionalListeners,
     private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
-    fun registerListeners(neuroID: NeuroID, view: View) {
+    fun registerListeners(
+        neuroID: NeuroID,
+        view: View,
+    ) {
         val idName = view.getIdOrTag()
         val simpleClassName = view.javaClass.simpleName
 
@@ -468,14 +474,16 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val logger: NIDLogWrapper) {
+class AdditionalListeners(
+    val logger: NIDLogWrapper,
+) {
     internal fun addSelectOnSelect(
         neuroID: NeuroID,
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
         simpleClassName: String,
-    ): AdapterView.OnItemSelectedListener {
-        return object : AdapterView.OnItemSelectedListener {
+    ): AdapterView.OnItemSelectedListener =
+        object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 adapter: AdapterView<*>?,
                 viewList: View?,
@@ -500,14 +508,13 @@ class AdditionalListeners(val logger: NIDLogWrapper) {
                 lastSelectListener?.onNothingSelected(p0)
             }
         }
-    }
 
     internal fun addSelectOnClickListener(
         neuroID: NeuroID,
         idName: String,
         lastClickListener: AdapterView.OnItemClickListener?,
-    ): AdapterView.OnItemClickListener {
-        return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+    ): AdapterView.OnItemClickListener =
+        AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
             neuroID.captureEvent(
@@ -521,7 +528,6 @@ class AdditionalListeners(val logger: NIDLogWrapper) {
                 v = "$position",
             )
         }
-    }
 
     @RequiresApi(Build.VERSION_CODES.M)
     internal fun addExtraActionMenuListener(
@@ -539,8 +545,8 @@ class AdditionalListeners(val logger: NIDLogWrapper) {
         }
     }
 
-    internal fun addOnHierarchyChangeListener(): ViewGroup.OnHierarchyChangeListener {
-        return object : ViewGroup.OnHierarchyChangeListener {
+    internal fun addOnHierarchyChangeListener(): ViewGroup.OnHierarchyChangeListener =
+        object : ViewGroup.OnHierarchyChangeListener {
             override fun onChildViewAdded(
                 parent: View?,
                 child: View?,
@@ -566,5 +572,4 @@ class AdditionalListeners(val logger: NIDLogWrapper) {
                 )
             }
         }
-    }
 }

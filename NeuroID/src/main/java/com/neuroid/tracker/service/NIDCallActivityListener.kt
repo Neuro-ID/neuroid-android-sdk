@@ -25,8 +25,10 @@ class NIDCallActivityListener(
     private lateinit var intentFilter: IntentFilter
     lateinit var intent: Intent
     private var isReceiverRegistered = false
+
     // for phones < API 31
     private var phoneStateListener: PhoneStateListener? = null
+
     // for phones >= API 31 (S)
     private var customTelephonyCallback: CustomTelephonyCallback? = null
 
@@ -99,25 +101,25 @@ class NIDCallActivityListener(
         }
     }
 
-
     private fun registerCustomTelephonyCallback(context: Context) {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             NIDLog.d(msg = "SDK >= 31")
             if (customTelephonyCallback == null) {
-                customTelephonyCallback = CustomTelephonyCallback { state ->
-                    when (state) {
-                        TelephonyManager.CALL_STATE_IDLE -> {
-                            saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
-                        }
-                        TelephonyManager.CALL_STATE_OFFHOOK -> {
-                            saveCallInProgressEvent(CallInProgress.CONNECTED.state)
-                        }
-                        else -> {
-                            // no op
+                customTelephonyCallback =
+                    CustomTelephonyCallback { state ->
+                        when (state) {
+                            TelephonyManager.CALL_STATE_IDLE -> {
+                                saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
+                            }
+                            TelephonyManager.CALL_STATE_OFFHOOK -> {
+                                saveCallInProgressEvent(CallInProgress.CONNECTED.state)
+                            }
+                            else -> {
+                                // no op
+                            }
                         }
                     }
-                }
             }
             customTelephonyCallback?.let {
                 telephony.registerTelephonyCallback(
@@ -128,25 +130,26 @@ class NIDCallActivityListener(
         } else {
             NIDLog.d(msg = "SDK < 31")
             if (phoneStateListener == null) {
-                phoneStateListener = object: PhoneStateListener() {
-                    override fun onCallStateChanged(
-                        state: Int,
-                        phoneNumber: String?,
-                    ) {
-                        when (state) {
-                            TelephonyManager.CALL_STATE_IDLE -> {
-                                saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
-                            }
-                            // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
-                            TelephonyManager.CALL_STATE_OFFHOOK -> {
-                                saveCallInProgressEvent(CallInProgress.CONNECTED.state)
-                            }
-                            else -> {
-                                // no op
+                phoneStateListener =
+                    object : PhoneStateListener() {
+                        override fun onCallStateChanged(
+                            state: Int,
+                            phoneNumber: String?,
+                        ) {
+                            when (state) {
+                                TelephonyManager.CALL_STATE_IDLE -> {
+                                    saveCallInProgressEvent(CallInProgress.DISCONNECTED.state)
+                                }
+                                // At least one call exists that is dialing, active, or on hold, and no calls are ringing or waiting.
+                                TelephonyManager.CALL_STATE_OFFHOOK -> {
+                                    saveCallInProgressEvent(CallInProgress.CONNECTED.state)
+                                }
+                                else -> {
+                                    // no op
+                                }
                             }
                         }
                     }
-                }
             }
             phoneStateListener?.let {
                 telephony.listen(
@@ -159,8 +162,9 @@ class NIDCallActivityListener(
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-internal class CustomTelephonyCallback(callBack: CallBack) :
-    TelephonyCallback(),
+internal class CustomTelephonyCallback(
+    callBack: CallBack,
+) : TelephonyCallback(),
     TelephonyCallback.CallStateListener {
     private val mCallBack: CallBack
 

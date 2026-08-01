@@ -18,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 
 class VersionCheckerTest {
-
     private lateinit var mockSdkVersionProvider: NIDSdkVersionProvider
 
     @Before
@@ -122,13 +121,14 @@ class VersionCheckerTest {
         every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.O
 
         val appInfo = ApplicationInfo()
-        val packageInfo = PackageInfo().apply {
-            versionName = "1.5.0"
-            packageName = "com.test.legacy"
-            @Suppress("DEPRECATION")
-            versionCode = 7
-            applicationInfo = appInfo
-        }
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = "1.5.0"
+                packageName = "com.test.legacy"
+                @Suppress("DEPRECATION")
+                versionCode = 7
+                applicationInfo = appInfo
+            }
 
         val context = createMockedContext("com.test.legacy", packageInfo, minSdkVersion = 21)
 
@@ -150,12 +150,13 @@ class VersionCheckerTest {
         every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.P
 
         val appInfo = ApplicationInfo()
-        val packageInfo = PackageInfo().apply {
-            versionName = null
-            packageName = "com.test.app"
-            longVersionCode = 1L
-            applicationInfo = appInfo
-        }
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = null
+                packageName = "com.test.app"
+                longVersionCode = 1L
+                applicationInfo = appInfo
+            }
 
         val context = createMockedContext("com.test.app", packageInfo)
 
@@ -169,12 +170,13 @@ class VersionCheckerTest {
     fun test_getAppMetaData_withNullApplicationInfo_usesEmptyString() {
         every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.P
 
-        val packageInfo = PackageInfo().apply {
-            versionName = "1.0"
-            packageName = "com.test.app"
-            longVersionCode = 1L
-            applicationInfo = null // name will be null
-        }
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = "1.0"
+                packageName = "com.test.app"
+                longVersionCode = 1L
+                applicationInfo = null // name will be null
+            }
 
         val context = createMockedContext("com.test.app", packageInfo)
 
@@ -189,12 +191,13 @@ class VersionCheckerTest {
         every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.P
 
         val appInfo = ApplicationInfo().apply { name = "MyApp" }
-        val packageInfo = PackageInfo().apply {
-            versionName = "1.0"
-            packageName = "com.test.app"
-            longVersionCode = 1L
-            applicationInfo = appInfo
-        }
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = "1.0"
+                packageName = "com.test.app"
+                longVersionCode = 1L
+                applicationInfo = appInfo
+            }
 
         val context = createMockedContext("com.test.app", packageInfo)
 
@@ -213,12 +216,13 @@ class VersionCheckerTest {
         every { mockSdkVersionProvider.getSdkInt() } returns Build.VERSION_CODES.P
 
         val appInfo = ApplicationInfo()
-        val packageInfo = PackageInfo().apply {
-            versionName = "3.0.0"
-            packageName = "com.neuroid.tracker"
-            longVersionCode = 100L
-            applicationInfo = appInfo
-        }
+        val packageInfo =
+            PackageInfo().apply {
+                versionName = "3.0.0"
+                packageName = "com.neuroid.tracker"
+                longVersionCode = 100L
+                applicationInfo = appInfo
+            }
 
         val context = createMockedContext("com.neuroid.tracker", packageInfo)
 
@@ -250,5 +254,3 @@ class VersionCheckerTest {
         assertNull(result)
     }
 }
-
-

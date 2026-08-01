@@ -4,15 +4,14 @@ import com.neuroid.tracker.utils.NIDSingletonIDs
 import java.security.MessageDigest
 
 fun String.getSHA256(): String {
-    return if (this.isBlank()) {
-        ""
-    } else {
-        val bytes = this.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-
-        digest.fold("") { str, it -> str + "%02x".format(it) }
+    if (this.isBlank()) {
+        return ""
     }
+    val bytes = this.toByteArray()
+    val md = MessageDigest.getInstance("SHA-256")
+    val digest = md.digest(bytes)
+
+    return digest.fold("") { str, it -> str + "%02x".format(it) }
 }
 
 fun String.getSHA256withSalt(): String {

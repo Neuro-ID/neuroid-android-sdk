@@ -23,17 +23,20 @@ import kotlinx.coroutines.launch
  * the location to a passed in NIDLocation instance. If multiple providers are found, choose
  * one using the PROVIDER_MAP. Highest number is the most desired (most accurate) provider.
  */
-class LocationService(private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
+class LocationService(
+    private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils(),
+) {
     private var nidLocation: NIDLocation? = null
     private var isStarted = false
     private var locationScope: CoroutineScope? = null
 
     @SuppressLint("MissingPermission")
-    private val locationListener = LocationListenerCompat { location ->
-        nidLocation?.longitude = location.longitude
-        nidLocation?.latitude = location.latitude
-        nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
-    }
+    private val locationListener =
+        LocationListenerCompat { location ->
+            nidLocation?.longitude = location.longitude
+            nidLocation?.latitude = location.latitude
+            nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
+        }
 
     /**
      * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a

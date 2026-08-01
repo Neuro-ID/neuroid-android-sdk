@@ -24,4 +24,4 @@ class LocationPermissionUtils {
                 coarseResult != PackageManager.PERMISSION_GRANTED
         )
     }
-} 
+}

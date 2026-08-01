@@ -39,11 +39,11 @@ class TouchEventManagerTest {
         assert(!tem.shouldRecordMoveEvent())
         assert(tem.hitCounter == 0)
         assert(tem.missCounter == 1)
-        every {mockedTime.getCurrentTimeMillis() } returns 51
+        every { mockedTime.getCurrentTimeMillis() } returns 51
         assert(tem.shouldRecordMoveEvent())
         assert(tem.hitCounter == 1)
         assert(tem.missCounter == 1)
-        every {mockedTime.getCurrentTimeMillis() } returns 100
+        every { mockedTime.getCurrentTimeMillis() } returns 100
         assert(!tem.shouldRecordMoveEvent())
         assert(tem.hitCounter == 1)
         assert(tem.missCounter == 2)
@@ -53,19 +53,20 @@ class TouchEventManagerTest {
     fun testDetectCurrentView_EditText() {
         val mockChildView = mockk<EditText>()
         val mockEditable = mockk<Editable>()
-        every {mockEditable.length} returns 10
-        every {mockChildView.contentDescription} returns "EditText"
-        every {mockChildView.text} returns mockEditable
-        every {mockChildView.id} returns 12345
+        every { mockEditable.length } returns 10
+        every { mockChildView.contentDescription } returns "EditText"
+        every { mockChildView.text } returns mockEditable
+        every { mockChildView.id } returns 12345
         testDetectView(
             mockChildView,
-            type="TOUCH_START",
+            type = "TOUCH_START",
             tg = hashMapOf("tgs" to "EditText", "sender" to "EditText", "etn" to "EditText"),
             tgs = "EditText",
-            touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
+            touches = listOf(NIDTouchModel(tid = 0.0F, x = 1.0F, y = 1.0F)),
             m = "",
             v = "S~C~~10",
-            actionType = MotionEvent.ACTION_DOWN)
+            actionType = MotionEvent.ACTION_DOWN,
+        )
     }
 
     @Test
@@ -73,20 +74,21 @@ class TouchEventManagerTest {
         val mockChildView = mockk<RadioButton>()
         val mockViewParent1 = mockk<RadioGroup>()
         val mockViewParent2 = mockk<RadioGroup>()
-        every {mockChildView.parent} returns mockViewParent2
-        every {mockViewParent2.parent} returns mockViewParent1
-        every {mockViewParent1.contentDescription} returns "RadioButton"
-        every {mockViewParent2.contentDescription} returns "RadioButton"
-        every {mockChildView.contentDescription} returns "RadioButton"
+        every { mockChildView.parent } returns mockViewParent2
+        every { mockViewParent2.parent } returns mockViewParent1
+        every { mockViewParent1.contentDescription } returns "RadioButton"
+        every { mockViewParent2.contentDescription } returns "RadioButton"
+        every { mockChildView.contentDescription } returns "RadioButton"
         testDetectView(
             mockChildView,
-            type="TOUCH_END",
+            type = "TOUCH_END",
             tg = hashMapOf("tgs" to "RadioButton", "sender" to "RadioButton", "etn" to "RadioButton"),
             tgs = "RadioButton",
-            touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
+            touches = listOf(NIDTouchModel(tid = 0.0F, x = 1.0F, y = 1.0F)),
             m = "events_logged=0 events_not_logged=0",
             v = "",
-            actionType = MotionEvent.ACTION_UP)
+            actionType = MotionEvent.ACTION_UP,
+        )
     }
 
     @Test
@@ -94,43 +96,51 @@ class TouchEventManagerTest {
         val mockChildView = mockk<RadioButton>()
         val mockViewParent1 = mockk<RadioGroup>()
         val mockViewParent2 = mockk<RadioGroup>()
-        every {mockChildView.parent} returns mockViewParent2
-        every {mockViewParent2.parent} returns mockViewParent1
-        every {mockViewParent1.contentDescription} returns "content_description"
-        every {mockViewParent2.contentDescription} returns "content_description"
-        every {mockChildView.contentDescription} returns "content_description"
+        every { mockChildView.parent } returns mockViewParent2
+        every { mockViewParent2.parent } returns mockViewParent1
+        every { mockViewParent1.contentDescription } returns "content_description"
+        every { mockViewParent2.contentDescription } returns "content_description"
+        every { mockChildView.contentDescription } returns "content_description"
         testDetectView(
             mockChildView,
-            type="TOUCH_MOVE",
+            type = "TOUCH_MOVE",
             tg = hashMapOf("tgs" to "content_description", "sender" to "content_description", "etn" to "content_description"),
             tgs = "content_description",
-            touches = listOf(NIDTouchModel(tid=0.0F, x=1.0F, y=1.0F)),
+            touches = listOf(NIDTouchModel(tid = 0.0F, x = 1.0F, y = 1.0F)),
             m = "",
             v = "",
-            actionType = MotionEvent.ACTION_MOVE)
+            actionType = MotionEvent.ACTION_MOVE,
+        )
     }
 
-    private fun testDetectView(currentView: View, type: String,
-                       tg: HashMap<String, Any>?, tgs: String?, touches: List<NIDTouchModel>?,
-                       m: String?, v: String?, actionType: Int) {
+    private fun testDetectView(
+        currentView: View,
+        type: String,
+        tg: HashMap<String, Any>?,
+        tgs: String?,
+        touches: List<NIDTouchModel>?,
+        m: String?,
+        v: String?,
+        actionType: Int,
+    ) {
         val mockNID = getMockedNeuroID()
         val mockViewGroup = mockk<ViewGroup>()
         val mockChildView = currentView
 
-        every {mockChildView.isLongClickable} returns true
-        every {mockChildView.x } returns 10F
-        every {mockChildView.y } returns 20F
-        every { mockChildView.getLocationInWindow(any())} answers {
+        every { mockChildView.isLongClickable } returns true
+        every { mockChildView.x } returns 10F
+        every { mockChildView.y } returns 20F
+        every { mockChildView.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
         }
-        every {mockChildView.width} returns 100
-        every {mockChildView.height} returns 100
+        every { mockChildView.width } returns 100
+        every { mockChildView.height } returns 100
 
         every { mockViewGroup.childCount } returns 1
         every { mockViewGroup.getChildAt(0) } returns mockChildView
-        every { mockViewGroup.getLocationInWindow(any())} answers {
+        every { mockViewGroup.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
@@ -161,23 +171,131 @@ class TouchEventManagerTest {
         if (actionType == MotionEvent.ACTION_MOVE) {
             verify(exactly = 0) {
                 mockNID.captureEvent(
-                    any(), type, any(), any(), tg, tgs, touches, any(), any(), any(),
-                    v, any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), m, any(), any(), any(), any(), any(), any(), any()
+                    any(),
+                    type,
+                    any(),
+                    any(),
+                    tg,
+                    tgs,
+                    touches,
+                    any(),
+                    any(),
+                    any(),
+                    v,
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    m,
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
                 )
             }
         } else {
             verify(exactly = 1) {
                 mockNID.captureEvent(
-                    any(), type, any(), any(), tg, tgs, touches, any(), any(), any(),
-                    v, any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                    any(), any(), m, any(), any(), any(), any(), any(), any(), any()
+                    any(),
+                    type,
+                    any(),
+                    any(),
+                    tg,
+                    tgs,
+                    touches,
+                    any(),
+                    any(),
+                    any(),
+                    v,
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    m,
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
                 )
             }
         }
@@ -192,7 +310,7 @@ class TouchEventManagerTest {
         every { mockedTime.getCurrentTimeMillis() } returns 50
         val tem = TouchEventManager(mockedViewGroup, mockNID, mockedLogger, mockedTime)
         val view = mockk<View>()
-        every {view.contentDescription} returns "content_description"
+        every { view.contentDescription } returns "content_description"
         tem.detectChangesOnView(view, 100L, MotionEvent.ACTION_UP)
         assert(tem.lastView == null)
         tem.detectChangesOnView(view, 100L, MotionEvent.ACTION_DOWN)
@@ -204,17 +322,17 @@ class TouchEventManagerTest {
         val mockNID = getMockedNeuroID()
         val mockViewGroup = mockk<ViewGroup>()
         val mockChildView = mockk<Spinner>()
-        every { mockChildView.getLocationInWindow(any())} answers {
+        every { mockChildView.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
         }
-        every {mockChildView.width} returns 100
-        every {mockChildView.height} returns 100
+        every { mockChildView.width } returns 100
+        every { mockChildView.height } returns 100
 
         every { mockViewGroup.childCount } returns 1
         every { mockViewGroup.getChildAt(0) } returns mockChildView
-        every { mockViewGroup.getLocationInWindow(any())} answers {
+        every { mockViewGroup.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
@@ -236,17 +354,17 @@ class TouchEventManagerTest {
         val mockNID = getMockedNeuroID()
         val mockViewGroup = mockk<ViewGroup>()
         val mockChildView = mockk<View>()
-        every { mockChildView.getLocationInWindow(any())} answers {
+        every { mockChildView.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
         }
-        every {mockChildView.width} returns 100
-        every {mockChildView.height} returns 100
+        every { mockChildView.width } returns 100
+        every { mockChildView.height } returns 100
 
         every { mockViewGroup.childCount } returns 1
         every { mockViewGroup.getChildAt(0) } returns mockChildView
-        every { mockViewGroup.getLocationInWindow(any())} answers {
+        every { mockViewGroup.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
@@ -271,17 +389,17 @@ class TouchEventManagerTest {
         val mockNID = getMockedNeuroID()
         val mockViewGroup = mockk<ViewGroup>()
         val mockChildView = mockk<Spinner>()
-        every { mockChildView.getLocationInWindow(any())} answers {
+        every { mockChildView.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 1 // x coordinate
             location[1] = 1 // y coordinate
         }
-        every {mockChildView.width} returns 100
-        every {mockChildView.height} returns 100
+        every { mockChildView.width } returns 100
+        every { mockChildView.height } returns 100
 
         every { mockViewGroup.childCount } returns 1
         every { mockViewGroup.getChildAt(0) } returns mockChildView
-        every { mockViewGroup.getLocationInWindow(any())} answers {
+        every { mockViewGroup.getLocationInWindow(any()) } answers {
             val location = it.invocation.args[0] as IntArray
             location[0] = 10 // x coordinate
             location[1] = 20 // y coordinate
@@ -307,26 +425,28 @@ class TouchEventManagerTest {
         every { motionEvent.size } returns 1F
         every { motionEvent.pressure } returns 1F
         val motionEventValues = tem.generateMotionEventValues(motionEvent)
-        assert(motionEventValues.toString() == "{pointerCount=1, pointers={0={mPropId=0, " +
+        assert(
+            motionEventValues.toString() == "{pointerCount=1, pointers={0={mPropId=0, " +
                 "mPropToolType=0, historicalX=[1.0], historicalY=[1.0]}}, yValues={y=1.0, " +
                 "yP=1.0, yR=1.0, yCalc=1.0}, xValues={x=1.0, xP=1.0, xR=1.0, xCalc=1.0}, " +
-                "pressure=1.0, hSize=1, size=1.0}")
+                "pressure=1.0, hSize=1, size=1.0}",
+        )
     }
 
     @Test
     fun testDetectBasicAndroidViewType() {
-        assert(detectBasicAndroidViewType( mockk<EditText>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<CheckBox>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<RadioButton>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<ToggleButton>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<Switch>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<SwitchCompat>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<ImageButton>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<SeekBar>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<Spinner>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<RatingBar>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<RadioGroup>()) == 1)
-        assert(detectBasicAndroidViewType( mockk<Button>()) == 2)
-        assert(detectBasicAndroidViewType( mockk<View>()) == 0)
+        assert(detectBasicAndroidViewType(mockk<EditText>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<CheckBox>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<RadioButton>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<ToggleButton>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<Switch>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<SwitchCompat>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<ImageButton>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<SeekBar>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<Spinner>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<RatingBar>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<RadioGroup>()) == 1)
+        assert(detectBasicAndroidViewType(mockk<Button>()) == 2)
+        assert(detectBasicAndroidViewType(mockk<View>()) == 0)
     }
 }
