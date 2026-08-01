@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.IntentFilter
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -38,7 +37,6 @@ import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.HttpService
-import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
@@ -123,7 +121,6 @@ class NeuroID
         internal lateinit var sessionService: NIDSessionService
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
-        internal lateinit var locationService: LocationService
         internal lateinit var nidTime: NIDTime
         internal lateinit var sharedPrefsDefaults: NIDSharedPrefsDefaults
 
@@ -234,7 +231,6 @@ class NeuroID
                         validationService,
                     )
 
-                locationService = LocationService()
                 metaData =
                     NIDMetaData(
                         it.applicationContext,
@@ -539,12 +535,6 @@ class NeuroID
                     nidCallActivityListener.setCallActivityListener(it)
                 } else {
                     nidCallActivityListener.unregisterCallActivityListener(it)
-                }
-
-                if (configService.configCache.geoLocation) {
-                    locationService.setupLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
-                } else {
-                    locationService.shutdownLocationCoroutine(it.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
                 }
 
                 // This will restart the collection job (config has a interval option) and

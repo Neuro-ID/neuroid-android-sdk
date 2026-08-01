@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import com.neuroid.tracker.callbacks.ActivityCallbacks
@@ -488,13 +487,11 @@ open class NeuroIDClassUnitTests {
         every { mockedConnectivityManager.getNetworkCapabilities(any()) } returns null
 
         every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
-        every { mockedContext.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
 
         val mockedApplication = mockk<Application>()
         every { mockedApplication.applicationContext } returns mockedContext
         every { mockedApplication.getSharedPreferences(any(), any()) } returns mockedSharedPreferences
         every { mockedApplication.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
-        every { mockedApplication.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
         every { mockedApplication.registerReceiver(any(), any<IntentFilter>()) } returns null
         every { mockedApplication.registerActivityLifecycleCallbacks(any()) } just runs
 
@@ -515,7 +512,6 @@ open class NeuroIDClassUnitTests {
         mockkConstructor(NIDSessionService::class)
         every { anyConstructed<NIDSessionService>().resumeCollection() } just runs
 
-        mockkConstructor(LocationService::class)
         mockkConstructor(NIDCallActivityListener::class)
 
         // RootHelper is called inside NIDMetaData init; mock it to avoid Build.FINGERPRINT NPE on JVM
@@ -594,20 +590,6 @@ open class NeuroIDClassUnitTests {
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sharedPrefsDefaults)
-    }
-
-    @Test
-    fun test_init_withApplication_initialisesLocationService() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        assertNotNull(NeuroID.getInternalInstance()?.locationService)
     }
 
     @Test

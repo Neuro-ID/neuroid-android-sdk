@@ -5,12 +5,10 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.telephony.TelephonyManager
 import android.util.DisplayMetrics
-import com.neuroid.tracker.service.LocationService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
@@ -471,74 +469,6 @@ class NIDMetaDataTest {
         val json = metaData.toJson()
 
         assertFalse(json.getBoolean("isSimulator"))
-    }
-
-    // -----------------------------------------------------------------------
-    // getLastKnownLocation
-    // -----------------------------------------------------------------------
-
-    @Test
-    fun test_getLastKnownLocation_delegatesToLocationService() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        val locationManager = mockk<LocationManager>()
-        every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-
-        val locationService = mockk<LocationService>(relaxed = true)
-
-        metaData.getLastKnownLocation(context, isLocationAllowed = true, locationService = locationService)
-
-        verify {
-            locationService.getLastKnownLocation(
-                context,
-                any(),
-                locationManager = locationManager,
-                isLocationAllowed = true,
-            )
-        }
-    }
-
-    @Test
-    fun test_getLastKnownLocation_whenLocationServiceNull_doesNotCrash() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        // Should not throw when locationService is null
-        metaData.getLastKnownLocation(context, isLocationAllowed = true, locationService = null)
-    }
-
-    @Test
-    fun test_getLastKnownLocation_passesIsLocationAllowedFalse() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        val locationManager = mockk<LocationManager>()
-        every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-
-        val locationService = mockk<LocationService>(relaxed = true)
-
-        metaData.getLastKnownLocation(context, isLocationAllowed = false, locationService = locationService)
-
-        verify {
-            locationService.getLastKnownLocation(
-                context,
-                any(),
-                locationManager = locationManager,
-                isLocationAllowed = false,
-            )
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Companion constants
-    // -----------------------------------------------------------------------
-
-    @Test
-    fun test_companionConstants_haveExpectedValues() {
-        assertEquals("denied", NIDMetaData.LOCATION_DENIED)
-        assertEquals("unknown", NIDMetaData.LOCATION_UNKNOWN)
-        assertEquals("authorized", NIDMetaData.LOCATION_AUTHORIZED_ALWAYS)
     }
 
     // -----------------------------------------------------------------------

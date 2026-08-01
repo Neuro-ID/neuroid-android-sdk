@@ -1,13 +1,11 @@
 package com.sample.neuroid.us
 
-import android.location.LocationListener
 import com.google.gson.GsonBuilder
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import com.sample.neuroid.us.utils.CoroutineScopeAdapter
-import com.sample.neuroid.us.utils.LocationListenerCreator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -128,7 +126,6 @@ abstract class MockServerTest {
                 var req = server.takeRequest()
                 val body = req.body.readUtf8()
                 val gson = GsonBuilder()
-                    .registerTypeAdapter(LocationListener::class.java, LocationListenerCreator())
                     .registerTypeAdapter(CoroutineScope::class.java, CoroutineScopeAdapter())
                     .create()
                 val reader = gson.newJsonReader(StringReader(body))

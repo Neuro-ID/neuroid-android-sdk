@@ -25,12 +25,9 @@ import kotlin.time.Duration
 @ExperimentalCoroutinesApi
 class TextUnitTest: MockServerTest() {
 
-    // take care of the phone and location permissions dialogs.
+    // take care of the phone permission dialog
     @get:Rule
-    val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.READ_PHONE_STATE)
+    val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE)
 
     @get:Rule
     var activityRule: ActivityScenarioRule<MainActivity> =

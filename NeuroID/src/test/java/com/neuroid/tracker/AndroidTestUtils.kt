@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.location.LocationManager
 import android.view.View
 import android.view.ViewGroup
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
@@ -16,7 +15,6 @@ import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.HttpService
-import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
@@ -46,7 +44,6 @@ internal fun getMockedNeuroID(
     shouldMockApplication: Boolean = false,
     mockDataStore: NIDDataStoreManager = getMockedDataStore(),
     mockJobServiceManager: NIDJobServiceManager = getMockedNIDJobServiceManager(),
-    mockLocationService: LocationService = getMockedLocationService(),
     mockCallActivityListener: NIDCallActivityListener = getMockedCallActivityListener(),
     mockSessionService: NIDSessionService = getMockedSessionService(),
     mockConfigService: ConfigService = getMockedConfigService(),
@@ -85,8 +82,6 @@ internal fun getMockedNeuroID(
     every { nidMock.forceStart } returns forceStart
     every { nidMock.shouldForceStart() } returns forceStart
 
-    every { nidMock.metaData?.getLastKnownLocation(any(), any(), any()) } returns Unit
-
     every { nidMock.checkThenCaptureAdvancedDevice(any(), any()) } just runs
     every { nidMock.captureApplicationMetaData() } just runs
 
@@ -95,7 +90,6 @@ internal fun getMockedNeuroID(
 
     every { nidMock.dataStore } returns mockDataStore
     every { nidMock.nidJobServiceManager } returns mockJobServiceManager
-    every { nidMock.locationService } returns mockLocationService
     every { nidMock.nidCallActivityListener } returns mockCallActivityListener
     every { nidMock.sessionService } returns mockSessionService
     every { nidMock.configService } returns mockConfigService
@@ -204,8 +198,6 @@ internal fun getMockedApplication(): Application {
         mockedContext
     }
 
-    every { mockedApplication.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
-
     every { mockedApplication.getSharedPreferences(any(), any()) } returns mockedSharedPreferences
 
     return mockedApplication
@@ -294,15 +286,6 @@ internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): Confi
     every { mockedConfigService.initSiteIDSampleMap(any(), any()) } just runs
 
     return mockedConfigService
-}
-
-internal fun getMockedLocationService(): LocationService {
-    val mockedLocationService = mockk<LocationService>()
-
-    every { mockedLocationService.setupLocationCoroutine(any()) } just runs
-    every { mockedLocationService.shutdownLocationCoroutine(any()) } just runs
-
-    return mockedLocationService
 }
 
 internal fun getMockedSharedPreferenceDefaults(): NIDSharedPrefsDefaults {

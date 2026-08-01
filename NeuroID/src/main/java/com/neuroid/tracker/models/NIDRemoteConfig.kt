@@ -10,8 +10,6 @@ data class NIDRemoteConfig(
     val eventQueueFlushInterval: Long = 5,
     @SerializedName(value = "event_queue_flush_size")
     val eventQueueFlushSize: Int = 1999,
-    @SerializedName(value = "geo_location")
-    val geoLocation: Boolean = false,
     @SerializedName(value = "gyro_accel_cadence")
     val gyroAccelCadence: Boolean = false,
     @SerializedName(value = "gyro_accel_cadence_time")
