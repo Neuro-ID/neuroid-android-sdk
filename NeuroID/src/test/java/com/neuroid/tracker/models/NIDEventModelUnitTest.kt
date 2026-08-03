@@ -1,8 +1,5 @@
 package com.neuroid.tracker.models
 
-import com.neuroid.tracker.events.NIDEventModel
-import com.neuroid.tracker.events.NIDSensorModel
-import com.neuroid.tracker.events.NIDTouchModel
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
