@@ -16,18 +16,17 @@ class NIDRNBuilder(
     fun build() {
         val options = parseOptions(rnOptions)
         Log.d("NIDRNBuilder", "set options: $options")
-        NeuroID
-            .BuilderConfig(
-                application,
-                NIDConfiguration(
-                    clientKey = clientKey,
-                    isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
-                    advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
-                    useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
-                    serverEnvironment = options[RNConfigOptions.environment] as String,
-                    region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
-                ),
-            ).build()
+        NeuroID.BuilderConfig(
+            application,
+            NIDConfiguration(
+                clientKey = clientKey,
+                isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
+                advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
+                useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
+                serverEnvironment = options[RNConfigOptions.environment] as String,
+                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
+            ),
+        ).build()
 
         NeuroID.getInternalInstance()?.setIsRN(options[RNConfigOptions.rnVersion] as String)
     }

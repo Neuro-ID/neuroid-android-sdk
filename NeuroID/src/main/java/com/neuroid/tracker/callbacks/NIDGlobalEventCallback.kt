@@ -104,9 +104,13 @@ class NIDGlobalEventCallback(
     }
 
     // WindowCallback
-    override fun dispatchKeyEvent(keyEvent: KeyEvent?): Boolean = windowCallback.dispatchKeyEvent(keyEvent)
+    override fun dispatchKeyEvent(keyEvent: KeyEvent?): Boolean {
+        return windowCallback.dispatchKeyEvent(keyEvent)
+    }
 
-    override fun dispatchKeyShortcutEvent(keyEvent: KeyEvent?): Boolean = windowCallback.dispatchKeyShortcutEvent(keyEvent)
+    override fun dispatchKeyShortcutEvent(keyEvent: KeyEvent?): Boolean {
+        return windowCallback.dispatchKeyShortcutEvent(keyEvent)
+    }
 
     override fun dispatchTouchEvent(motionEvent: MotionEvent?): Boolean {
         eventManager.detectView(motionEvent, System.currentTimeMillis())
@@ -120,65 +124,98 @@ class NIDGlobalEventCallback(
         return windowCallback.dispatchTouchEvent(motionEvent)
     }
 
-    override fun dispatchTrackballEvent(motionEvent: MotionEvent?): Boolean = windowCallback.dispatchTrackballEvent(motionEvent)
+    override fun dispatchTrackballEvent(motionEvent: MotionEvent?): Boolean {
+        return windowCallback.dispatchTrackballEvent(motionEvent)
+    }
 
-    override fun dispatchGenericMotionEvent(motionEvent: MotionEvent?): Boolean = windowCallback.dispatchGenericMotionEvent(motionEvent)
+    override fun dispatchGenericMotionEvent(motionEvent: MotionEvent?): Boolean {
+        return windowCallback.dispatchGenericMotionEvent(motionEvent)
+    }
 
-    override fun dispatchPopulateAccessibilityEvent(accessibilityEvent: AccessibilityEvent?): Boolean =
-        windowCallback.dispatchPopulateAccessibilityEvent(accessibilityEvent)
+    override fun dispatchPopulateAccessibilityEvent(accessibilityEvent: AccessibilityEvent?): Boolean {
+        return windowCallback.dispatchPopulateAccessibilityEvent(accessibilityEvent)
+    }
 
-    override fun onCreatePanelView(p0: Int): View? = windowCallback.onCreatePanelView(p0)
+    override fun onCreatePanelView(p0: Int): View? {
+        return windowCallback.onCreatePanelView(p0)
+    }
 
     override fun onCreatePanelMenu(
         p0: Int,
         menu: Menu,
-    ): Boolean = windowCallback.onCreatePanelMenu(p0, menu)
+    ): Boolean {
+        return windowCallback.onCreatePanelMenu(p0, menu)
+    }
 
     override fun onPreparePanel(
         p0: Int,
         view: View?,
         menu: Menu,
-    ): Boolean = windowCallback.onPreparePanel(p0, view, menu)
+    ): Boolean {
+        return windowCallback.onPreparePanel(p0, view, menu)
+    }
 
     override fun onMenuOpened(
         p0: Int,
         menu: Menu,
-    ): Boolean = windowCallback.onMenuOpened(p0, menu)
+    ): Boolean {
+        return windowCallback.onMenuOpened(p0, menu)
+    }
 
     override fun onMenuItemSelected(
         p0: Int,
         menuItem: MenuItem,
-    ): Boolean = windowCallback.onMenuItemSelected(p0, menuItem)
+    ): Boolean {
+        return windowCallback.onMenuItemSelected(p0, menuItem)
+    }
 
-    override fun onWindowAttributesChanged(layoutParams: WindowManager.LayoutParams?) =
-        windowCallback.onWindowAttributesChanged(layoutParams)
+    override fun onWindowAttributesChanged(layoutParams: WindowManager.LayoutParams?) {
+        return windowCallback.onWindowAttributesChanged(layoutParams)
+    }
 
-    override fun onContentChanged() = windowCallback.onContentChanged()
+    override fun onContentChanged() {
+        return windowCallback.onContentChanged()
+    }
 
-    override fun onWindowFocusChanged(p0: Boolean) = windowCallback.onWindowFocusChanged(p0)
+    override fun onWindowFocusChanged(p0: Boolean) {
+        return windowCallback.onWindowFocusChanged(p0)
+    }
 
-    override fun onAttachedToWindow() = windowCallback.onAttachedToWindow()
+    override fun onAttachedToWindow() {
+        return windowCallback.onAttachedToWindow()
+    }
 
-    override fun onDetachedFromWindow() = windowCallback.onDetachedFromWindow()
+    override fun onDetachedFromWindow() {
+        return windowCallback.onDetachedFromWindow()
+    }
 
     override fun onPanelClosed(
         p0: Int,
         menu: Menu,
-    ) = windowCallback.onPanelClosed(p0, menu)
+    ) {
+        return windowCallback.onPanelClosed(p0, menu)
+    }
 
-    override fun onSearchRequested(): Boolean = windowCallback.onSearchRequested()
+    override fun onSearchRequested(): Boolean {
+        return windowCallback.onSearchRequested()
+    }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    override fun onSearchRequested(searchEvent: SearchEvent?): Boolean = windowCallback.onSearchRequested(searchEvent)
+    override fun onSearchRequested(searchEvent: SearchEvent?): Boolean {
+        return windowCallback.onSearchRequested(searchEvent)
+    }
 
-    override fun onWindowStartingActionMode(actionMode: ActionMode.Callback?): ActionMode? =
-        windowCallback.onWindowStartingActionMode(actionMode)
+    override fun onWindowStartingActionMode(actionMode: ActionMode.Callback?): ActionMode? {
+        return windowCallback.onWindowStartingActionMode(actionMode)
+    }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onWindowStartingActionMode(
         p0: ActionMode.Callback?,
         p1: Int,
-    ): ActionMode? = windowCallback.onWindowStartingActionMode(p0, p1)
+    ): ActionMode? {
+        return windowCallback.onWindowStartingActionMode(p0, p1)
+    }
 
     override fun onActionModeStarted(p0: ActionMode?) {
 //        val menu = p0?.menu

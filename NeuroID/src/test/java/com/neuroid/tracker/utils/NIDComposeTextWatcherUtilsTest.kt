@@ -50,44 +50,39 @@ class NIDComposeTextWatcherUtilsTest {
     fun testIsPaste() {
         val neuroID = mockk<NeuroID>()
         val textWatcher = NIDComposeTextWatcherUtils(neuroID)
-        val isPaste =
-            textWatcher.isPaste(
-                textWatcher.getTextChange("gasdgasdgasd", "gasdgasdgasdzzzz"),
-                "zzzz",
-                0,
-            )
+        val isPaste = textWatcher.isPaste(
+            textWatcher.getTextChange("gasdgasdgasd", "gasdgasdgasdzzzz"),
+            "zzzz",
+            0,
+        )
         assert(isPaste)
 
-        val isPaste2 =
-            textWatcher.isPaste(
-                textWatcher.getTextChange("gasdgasdgasd", "gasdgasdgasdzzzzzzzz"),
-                "zzzz",
-                "zzzz".hashCode(),
-            )
+        val isPaste2 = textWatcher.isPaste(
+            textWatcher.getTextChange("gasdgasdgasd", "gasdgasdgasdzzzzzzzz"),
+            "zzzz",
+            "zzzz".hashCode(),
+        )
         assert(!isPaste2)
 
-        val isPaste3 =
-            textWatcher.isPaste(
-                textWatcher.getTextChange("", "zzzz"),
-                "zzzz",
-                0,
-            )
+        val isPaste3 = textWatcher.isPaste(
+            textWatcher.getTextChange("", "zzzz"),
+            "zzzz",
+            0,
+        )
         assert(isPaste3)
 
-        val isPaste4 =
-            textWatcher.isPaste(
-                textWatcher.getTextChange("", ""),
-                "",
-                0,
-            )
+        val isPaste4 = textWatcher.isPaste(
+            textWatcher.getTextChange("", ""),
+            "",
+            0,
+        )
         assert(!isPaste4)
 
-        val isPaste5 =
-            textWatcher.isPaste(
-                textWatcher.getTextChange("a", "ab"),
-                "",
-                0,
-            )
+        val isPaste5 = textWatcher.isPaste(
+            textWatcher.getTextChange("a", "ab"),
+            "",
+            0,
+        )
         assert(!isPaste5)
     }
 }

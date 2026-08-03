@@ -29,9 +29,7 @@ fun NeuroIDPublic.start(
         if (!it) {
             completion(it)
         } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
-                shouldCapture = advancedDeviceSignals,
-            )
+            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
 
             completion(it)
         }
@@ -110,17 +108,13 @@ internal fun getADVSignal(
     var job: Job? = null
     // do this in the background off main but wait for it to complete
     if (neuroID.configService.isSessionFlowSampled()) {
-        job =
-            CoroutineScope(dispatcher).launch {
-                // check for cachedID first
-                if (!advancedDeviceIDManagerService.getCachedID()) {
-                    // no cached ID - contact NID & FPJS
-                    advancedDeviceIDManagerService
-                        .getRemoteID(
-                            clientKey,
-                        )?.join()
-                }
+        job = CoroutineScope(dispatcher).launch {
+            // check for cachedID first
+            if (!advancedDeviceIDManagerService.getCachedID()) {
+                // no cached ID - contact NID & FPJS
+                advancedDeviceIDManagerService.getRemoteID(clientKey)?.join()
             }
+        }
     }
     return job
 }

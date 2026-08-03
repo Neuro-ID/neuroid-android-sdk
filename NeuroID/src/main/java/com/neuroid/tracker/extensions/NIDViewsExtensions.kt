@@ -45,8 +45,8 @@ fun View.getParentsOfView(
     layers: Int,
     view: View,
     log: NIDLogWrapper,
-): String =
-    if (view.parent is View) {
+): String {
+    return if (view.parent is View) {
         val childView = view.parent as View
         if (layers == 3 || childView.id == android.R.id.content) {
             ""
@@ -57,6 +57,7 @@ fun View.getParentsOfView(
         log.e(msg = "instance ${view.parent?.javaClass?.name} is not a view!")
         "not_a_view"
     }
+}
 
 fun View.getParentActivity(): String? {
     var context: Context? = this.context
@@ -112,8 +113,8 @@ private fun findFragment(
     return null
 }
 
-private fun buildFragAncestry(fragment: Fragment): List<String> =
-    mutableListOf<String>(
+private fun buildFragAncestry(fragment: Fragment): List<String> {
+    return mutableListOf<String>(
         fragment::class.java.name,
     ) +
         if (fragment.parentFragment != null) {
@@ -121,3 +122,4 @@ private fun buildFragAncestry(fragment: Fragment): List<String> =
         } else {
             mutableListOf<String>()
         }
+}

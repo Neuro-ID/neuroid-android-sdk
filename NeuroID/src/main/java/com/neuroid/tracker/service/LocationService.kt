@@ -31,12 +31,11 @@ class LocationService(
     private var locationScope: CoroutineScope? = null
 
     @SuppressLint("MissingPermission")
-    private val locationListener =
-        LocationListenerCompat { location ->
-            nidLocation?.longitude = location.longitude
-            nidLocation?.latitude = location.latitude
-            nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
-        }
+    private val locationListener = LocationListenerCompat { location ->
+        nidLocation?.longitude = location.longitude
+        nidLocation?.latitude = location.latitude
+        nidLocation?.authorizationStatus = NIDMetaData.LOCATION_AUTHORIZED_ALWAYS
+    }
 
     /**
      * this will setup a new coroutine for use in requestLocation(). requestLocation() requries a

@@ -281,11 +281,10 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) =
-            createMockedActivityForWindowListeners(
-                contentView,
-                regularCallback,
-            )
+        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
+            contentView,
+            regularCallback,
+        )
 
         // Get the viewTreeObserver that was set up by the helper
         val mockViewTreeObserver = contentView.viewTreeObserver
@@ -307,11 +306,10 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
         val existingNIDCallback = mockk<NIDGlobalEventCallback>(relaxed = true)
 
-        val (activity, mockWindow, _) =
-            createMockedActivityForWindowListeners(
-                contentView,
-                existingNIDCallback,
-            )
+        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
+            contentView,
+            existingNIDCallback,
+        )
 
         registrationHelper.registerWindowListeners(neuroID, activity)
 
@@ -324,11 +322,10 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) =
-            createMockedActivityForWindowListeners(
-                contentView,
-                regularCallback,
-            )
+        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
+            contentView,
+            regularCallback,
+        )
 
         // Capture the callback set on the window
         val callbackSlot = slot<Window.Callback>()
@@ -345,11 +342,10 @@ class RegistrationIdentificationHelperTest {
         val contentView = mockk<ViewGroup>(relaxed = true)
 
         val regularCallback = mockk<Window.Callback>(relaxed = true)
-        val (activity, mockWindow, _) =
-            createMockedActivityForWindowListeners(
-                contentView,
-                regularCallback,
-            )
+        val (activity, mockWindow, _) = createMockedActivityForWindowListeners(
+            contentView,
+            regularCallback,
+        )
 
         // First call: regular callback → should register
         val callbackSlot = slot<Window.Callback>()

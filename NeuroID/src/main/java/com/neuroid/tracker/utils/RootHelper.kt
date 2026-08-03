@@ -99,14 +99,15 @@ class RootHelper(
             )
     }
 
-    fun isRooted(context: Context): Boolean =
-        detectRootManagementApps(context) ||
+    fun isRooted(context: Context): Boolean {
+        return detectRootManagementApps(context) ||
             detectPotentiallyDangerousApps(context) ||
             checkForBinary(BINARY_SU) ||
             detectTestKeys() ||
             checkForBinary(BINARY_BUSYBOX) ||
             checkSuExists() ||
             checkForMagiskBinary()
+    }
 
     internal fun checkForBinary(filename: String): Boolean {
         val pathsArray: List<String> = getPaths()
@@ -207,8 +208,8 @@ class RootHelper(
 
     private fun checkForMagiskBinary() = checkForBinary("magisk")
 
-    fun isProbablyEmulator(): Boolean =
-        (
+    fun isProbablyEmulator(): Boolean {
+        return (
             (
                 buildTagUtils.getFingerprint().startsWith("google/sdk_gphone_") &&
                     buildTagUtils.getFingerprint().endsWith(":user/release-keys") &&
@@ -253,4 +254,5 @@ class RootHelper(
                 // sim file check (in case we miss anything above)
                 isEmulatorFilesPresent()
         )
+    }
 }

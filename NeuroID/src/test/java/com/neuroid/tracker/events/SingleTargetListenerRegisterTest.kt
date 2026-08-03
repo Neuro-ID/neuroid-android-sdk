@@ -56,14 +56,13 @@ class SingleTargetListenerRegisterTest {
         every { view.context } returns mockk(relaxed = true)
 
         // Call method
-        val result =
-            singleTargetRegister.createAtrrList(
-                view,
-                guid,
-                idName,
-                activityOrFragment,
-                parent,
-            )
+        val result = singleTargetRegister.createAtrrList(
+            view,
+            guid,
+            idName,
+            activityOrFragment,
+            parent,
+        )
 
         // Verify list has 5 elements
         assertEquals(5, result.size)
@@ -102,14 +101,13 @@ class SingleTargetListenerRegisterTest {
         every { view.context } returns mockk(relaxed = true)
 
         // Call method with empty optional parameters
-        val result =
-            singleTargetRegister.createAtrrList(
-                view,
-                guid,
-                idName,
-                activityOrFragment = "",
-                parent = "",
-            )
+        val result = singleTargetRegister.createAtrrList(
+            view,
+            guid,
+            idName,
+            activityOrFragment = "",
+            parent = "",
+        )
 
         // Verify list still has 5 elements
         assertEquals(5, result.size)
@@ -129,10 +127,9 @@ class SingleTargetListenerRegisterTest {
         val et = "button"
         val v = "Submit"
         val simpleName = "Button"
-        val attrJson =
-            listOf(
-                mapOf("n" to "guid", "v" to "test-guid"),
-            )
+        val attrJson = listOf(
+            mapOf("n" to "guid", "v" to "test-guid"),
+        )
 
         // Set static values
         NeuroID.screenActivityName = "MainActivity"

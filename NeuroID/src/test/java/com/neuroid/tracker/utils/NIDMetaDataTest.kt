@@ -173,19 +173,18 @@ class NIDMetaDataTest {
         val json = metaData.toJson()
 
         // Keys that are always present regardless of Build.* being null
-        val alwaysExpectedKeys =
-            listOf(
-                "displayResolution",
-                "osVersion",
-                "carrier",
-                "totalMemory",
-                "batteryLevel",
-                "isJailBreak",
-                "isWifiOn",
-                "isSimulator",
-                "gpsCoordinates",
-                "lastInstallTime",
-            )
+        val alwaysExpectedKeys = listOf(
+            "displayResolution",
+            "osVersion",
+            "carrier",
+            "totalMemory",
+            "batteryLevel",
+            "isJailBreak",
+            "isWifiOn",
+            "isSimulator",
+            "gpsCoordinates",
+            "lastInstallTime",
+        )
 
         alwaysExpectedKeys.forEach { key ->
             assertTrue("Missing key: $key", json.has(key))

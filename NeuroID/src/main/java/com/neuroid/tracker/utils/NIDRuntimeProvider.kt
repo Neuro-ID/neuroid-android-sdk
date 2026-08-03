@@ -15,11 +15,12 @@ class NIDSystemRuntimeProvider : NIDRuntimeProvider {
 
     override fun executeCommand(command: Array<String>): Process = Runtime.getRuntime().exec(command)
 
-    override fun executeShellCommand(command: Array<String>): BufferedReader? =
-        try {
+    override fun executeShellCommand(command: Array<String>): BufferedReader? {
+        return try {
             val process = Runtime.getRuntime().exec(command)
             BufferedReader(java.io.InputStreamReader(process.inputStream))
         } catch (e: Exception) {
             null
         }
+    }
 }

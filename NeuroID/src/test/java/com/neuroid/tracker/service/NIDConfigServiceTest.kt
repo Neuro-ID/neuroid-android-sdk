@@ -130,14 +130,13 @@ class NIDConfigServiceTest {
                 200,
                 remoteConfig,
             )
-        configService =
-            NIDConfigService(
-                dispatcher,
-                logger,
-                httpService,
-                validationService,
-                nidTime = nidTime,
-            )
+        configService = NIDConfigService(
+            dispatcher,
+            logger,
+            httpService,
+            validationService,
+            nidTime = nidTime,
+        )
         var completionRun = false
         configService.retrieveConfigCoroutine(neuroID) {
             completionRun = true
@@ -162,18 +161,16 @@ class NIDConfigServiceTest {
         mockkStatic(Calendar::class)
         every { Calendar.getInstance() } returns calendar
 
-        val remoteConfig =
-            NIDRemoteConfig(
-                linkedSiteOptions =
-                    hashMapOf(
-                        "form_testa123" to NIDLinkedSiteOption(10),
-                        "form_testa124" to NIDLinkedSiteOption(50),
-                        "form_testa125" to NIDLinkedSiteOption(0),
-                        "form_testa126" to NIDLinkedSiteOption(100),
-                    ),
-                siteID = "form_zappa345",
-                sampleRate = 40,
-            )
+        val remoteConfig = NIDRemoteConfig(
+            linkedSiteOptions = hashMapOf(
+                "form_testa123" to NIDLinkedSiteOption(10),
+                "form_testa124" to NIDLinkedSiteOption(50),
+                "form_testa125" to NIDLinkedSiteOption(0),
+                "form_testa126" to NIDLinkedSiteOption(100),
+            ),
+            siteID = "form_zappa345",
+            sampleRate = 40,
+        )
         val randomGenerator = mockk<RandomGenerator>()
 
         httpService =

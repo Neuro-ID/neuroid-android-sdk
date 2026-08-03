@@ -18,8 +18,8 @@ fun getAppMetaData(
     context: Context,
     rnVersion: String,
     sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
-): ApplicationMetaData? =
-    try {
+): ApplicationMetaData? {
+    return try {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
         val versionCode =
@@ -41,3 +41,4 @@ fun getAppMetaData(
         e.printStackTrace()
         null
     }
+}

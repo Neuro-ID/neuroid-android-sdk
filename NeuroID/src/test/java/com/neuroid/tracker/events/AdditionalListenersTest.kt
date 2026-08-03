@@ -41,13 +41,12 @@ class AdditionalListenersTest {
         val view = mockk<View>()
 
         // Create listener
-        val listener =
-            additionalListeners.addSelectOnSelect(
-                neuroID,
-                idName,
-                lastSelectListener,
-                simpleClassName,
-            )
+        val listener = additionalListeners.addSelectOnSelect(
+            neuroID,
+            idName,
+            lastSelectListener,
+            simpleClassName,
+        )
 
         // Trigger onItemSelected
         listener.onItemSelected(adapter, view, position, 0L)
@@ -64,12 +63,11 @@ class AdditionalListenersTest {
                 type = SELECT_CHANGE,
                 ts = any(),
                 attrs = any(),
-                tg =
-                    match {
-                        it["etn"] == simpleClassName &&
-                            it["tgs"] == idName &&
-                            it["sender"] == simpleClassName
-                    },
+                tg = match {
+                    it["etn"] == simpleClassName &&
+                        it["tgs"] == idName &&
+                        it["sender"] == simpleClassName
+                },
                 tgs = idName,
                 touches = any(),
                 key = any(),
@@ -137,13 +135,12 @@ class AdditionalListenersTest {
         val adapter = mockk<AdapterView<*>>()
 
         // Create listener
-        val listener =
-            additionalListeners.addSelectOnSelect(
-                neuroID,
-                idName,
-                lastSelectListener,
-                simpleClassName,
-            )
+        val listener = additionalListeners.addSelectOnSelect(
+            neuroID,
+            idName,
+            lastSelectListener,
+            simpleClassName,
+        )
 
         // Trigger onNothingSelected
         listener.onNothingSelected(adapter)
@@ -229,13 +226,12 @@ class AdditionalListenersTest {
         val view = mockk<View>()
 
         // Create listener with null lastSelectListener
-        val listener =
-            additionalListeners.addSelectOnSelect(
-                neuroID,
-                idName,
-                null,
-                simpleClassName,
-            )
+        val listener = additionalListeners.addSelectOnSelect(
+            neuroID,
+            idName,
+            null,
+            simpleClassName,
+        )
 
         // Trigger onItemSelected (should not crash)
         listener.onItemSelected(adapter, view, position, 0L)
@@ -317,12 +313,11 @@ class AdditionalListenersTest {
         val view = mockk<View>()
 
         // Create listener
-        val listener =
-            additionalListeners.addSelectOnClickListener(
-                neuroID,
-                idName,
-                lastClickListener,
-            )
+        val listener = additionalListeners.addSelectOnClickListener(
+            neuroID,
+            idName,
+            lastClickListener,
+        )
 
         // Trigger onItemClick
         listener.onItemClick(adapter, view, position, 0L)
@@ -339,11 +334,10 @@ class AdditionalListenersTest {
                 type = SELECT_CHANGE,
                 ts = any(),
                 attrs = any(),
-                tg =
-                    match {
-                        it["etn"] == "INPUT" &&
-                            it["et"] == "text"
-                    },
+                tg = match {
+                    it["etn"] == "INPUT" &&
+                        it["et"] == "text"
+                },
                 tgs = idName,
                 touches = any(),
                 key = any(),
@@ -411,12 +405,11 @@ class AdditionalListenersTest {
         val view = mockk<View>()
 
         // Create listener with null lastClickListener
-        val listener =
-            additionalListeners.addSelectOnClickListener(
-                neuroID,
-                idName,
-                null,
-            )
+        val listener = additionalListeners.addSelectOnClickListener(
+            neuroID,
+            idName,
+            null,
+        )
 
         // Trigger onItemClick (should not crash)
         listener.onItemClick(adapter, view, position, 0L)

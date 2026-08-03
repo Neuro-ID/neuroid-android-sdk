@@ -63,20 +63,18 @@ class NIDTextWatcher(
                         if (pastedText.isNotEmpty()) {
                             neuroID.captureEvent(
                                 type = PASTE,
-                                tg =
-                                    hashMapOf(
-                                        "attr" to getAttrJson(sequence.toString()),
-                                        "et" to "text",
-                                    ),
+                                tg = hashMapOf(
+                                    "attr" to getAttrJson(sequence.toString()),
+                                    "et" to "text",
+                                ),
                                 tgs = idName,
                                 v = "S~C~~${sequence?.length}",
                                 hv = sequence?.toString()?.getSHA256withSalt()?.take(8),
-                                attrs =
-                                    listOf(
-                                        mapOf(
-                                            "clipboardText" to "S~C~~${pastedText.length}",
-                                        ),
+                                attrs = listOf(
+                                    mapOf(
+                                        "clipboardText" to "S~C~~${pastedText.length}",
                                     ),
+                                ),
                             )
                         }
                     }

@@ -51,13 +51,12 @@ class NIDSessionServiceTest {
     )
 
     private fun setNeuroIDInstance() {
-        NeuroID
-            .Builder(
-                null,
-                "key_test_fake1234",
-                false,
-                NeuroID.DEVELOPMENT,
-            ).build()
+        NeuroID.Builder(
+            null,
+            "key_test_fake1234",
+            false,
+            NeuroID.DEVELOPMENT,
+        ).build()
     }
 
     private fun buildMockClasses(): MockedServices {
@@ -107,14 +106,13 @@ class NIDSessionServiceTest {
 
     private fun createSessionServiceInstance(
         mockedNeuroID: NeuroID,
-        configService: ConfigService =
-            getMockedConfigService(
-                isSessionFlowSampled = true,
-            ),
+        configService: ConfigService = getMockedConfigService(
+            isSessionFlowSampled = true,
+        ),
         identifierService: NIDIdentifierService = getMockedIdentifierService(),
         validationService: NIDValidationService = getMockedValidationService(),
-    ): NIDSessionService =
-        NIDSessionService(
+    ): NIDSessionService {
+        return NIDSessionService(
             getMockedLogger(),
             mockedNeuroID,
             configService,
@@ -122,6 +120,7 @@ class NIDSessionServiceTest {
             identifierService,
             validationService,
         )
+    }
 
     // SETUP/TAKEDOWN
     @Before
@@ -1052,11 +1051,10 @@ class NIDSessionServiceTest {
         val mockedConfigService = mockk<ConfigService>()
         every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
 
-        val sessionService =
-            createSessionServiceInstance(
-                mockedNeuroID,
-                configService = mockedConfigService,
-            )
+        val sessionService = createSessionServiceInstance(
+            mockedNeuroID,
+            configService = mockedConfigService,
+        )
 
         sessionService.clearSessionVariables()
 
