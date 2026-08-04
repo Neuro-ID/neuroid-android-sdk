@@ -13,7 +13,6 @@ import com.neuroid.tracker.getMockedConfigService
 import com.neuroid.tracker.getMockedDataStore
 import com.neuroid.tracker.getMockedIdentifierService
 import com.neuroid.tracker.getMockedJob
-import com.neuroid.tracker.getMockedLocationService
 import com.neuroid.tracker.getMockedLogger
 import com.neuroid.tracker.getMockedNIDJobServiceManager
 import com.neuroid.tracker.getMockedNeuroID
@@ -43,7 +42,6 @@ class NIDSessionServiceTest {
         val mockedNeuroID: NeuroID,
         val mockedJobServiceManager: NIDJobServiceManager,
         val mockedDataStore: NIDDataStoreManager,
-        val mockedLocationService: LocationService,
         val mockedCallListener: NIDCallActivityListener,
         val mockedConfigService: ConfigService,
         val mockedValidationService: NIDValidationService,
@@ -62,7 +60,6 @@ class NIDSessionServiceTest {
     private fun buildMockClasses(): MockedServices {
         val mockedDataStore = getMockedDataStore()
         val mockedJobServiceManager = getMockedNIDJobServiceManager()
-        val mockedLocationService = getMockedLocationService()
         val mockedCallListener = getMockedCallActivityListener()
 
         val mockedNeuroID =
@@ -70,7 +67,6 @@ class NIDSessionServiceTest {
                 shouldMockApplication = true,
                 mockDataStore = mockedDataStore,
                 mockJobServiceManager = mockedJobServiceManager,
-                mockLocationService = mockedLocationService,
                 mockCallActivityListener = mockedCallListener,
             )
 
@@ -84,7 +80,6 @@ class NIDSessionServiceTest {
 
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
-        every { mockedConfigService.configCache.geoLocation } returns true
         every { mockedConfigService.configCache.callInProgress } returns true
         every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
         every { mockedConfigService.retrieveOrRefreshCache(any()) } just runs
@@ -96,7 +91,6 @@ class NIDSessionServiceTest {
             mockedNeuroID,
             mockedJobServiceManager,
             mockedDataStore,
-            mockedLocationService,
             mockedCallListener,
             mockedConfigService,
             mockedValidationService,
@@ -144,7 +138,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_captureSessionOrMetaDataEvent() {
         val mockedNeuroID = getMockedNeuroID(shouldMockApplication = true)
-        every { mockedNeuroID.metaData?.getLastKnownLocation(any(), any(), any()) } returns Unit
 
         val sessionService =
             createSessionServiceInstance(mockedNeuroID)
@@ -161,7 +154,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_createMobileMetadata() {
         val mockedNeuroID = getMockedNeuroID(shouldMockApplication = true)
-        every { mockedNeuroID.metaData?.getLastKnownLocation(any(), any(), any()) } returns Unit
 
         val sessionService =
             createSessionServiceInstance(mockedNeuroID)
@@ -178,7 +170,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_createSession() {
         val mockedNeuroID = getMockedNeuroID(shouldMockApplication = true)
-        every { mockedNeuroID.metaData?.getLastKnownLocation(any(), any(), any()) } returns Unit
 
         val sessionService =
             createSessionServiceInstance(mockedNeuroID)
@@ -460,7 +451,6 @@ class NIDSessionServiceTest {
     fun test_pauseCollection_noJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -477,8 +467,6 @@ class NIDSessionServiceTest {
             mockedJobServiceManager.sendEvents(true)
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.stopJob()
-            mockedLocationService.shutdownLocationCoroutine(any())
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -489,7 +477,6 @@ class NIDSessionServiceTest {
     fun test_pauseCollection_existingJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -509,7 +496,12 @@ class NIDSessionServiceTest {
         sessionService.pauseCollection(true)
 
         verify(exactly = 1) {
-            mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
+            mockedNeuroID.captureEvent(
+                any(),
+                type = PAUSE_EVENT_CAPTURE,
+                ts = any(),
+                ct = "SDK_EVENT",
+            )
         }
 
         verify(exactly = 0) {
@@ -517,10 +509,13 @@ class NIDSessionServiceTest {
             mockedJobServiceManager.stopJob()
         }
 
-        // assert resumeCollection job was called
-        verify(exactly = 1) {
-            mockedLocationService.shutdownLocationCoroutine(any())
+        // The existing active job should NOT be replaced
+        verify(exactly = 0) {
+            mockedNeuroID.pauseCollectionJob = any()
         }
+
+        // SDK should be flagged as stopped
+        assert(!NeuroID._isSDKStarted)
     }
 
     /**
@@ -531,7 +526,6 @@ class NIDSessionServiceTest {
     fun test_pauseCollection_cancelledJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -554,8 +548,6 @@ class NIDSessionServiceTest {
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
-            mockedLocationService.shutdownLocationCoroutine(any())
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -567,7 +559,6 @@ class NIDSessionServiceTest {
     fun test_pauseCollection_completedJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -590,8 +581,6 @@ class NIDSessionServiceTest {
             mockedNeuroID.captureEvent(any(), type = PAUSE_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
             mockedJobServiceManager.sendEvents(true)
             mockedJobServiceManager.stopJob()
-            mockedLocationService.shutdownLocationCoroutine(any())
-            mockedNeuroID.getApplicationContext()
         }
     }
 
@@ -604,7 +593,6 @@ class NIDSessionServiceTest {
     fun test_resumeCollection_notStarted() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -625,21 +613,15 @@ class NIDSessionServiceTest {
         verify(exactly = 0) {
             mockedJobServiceManager.startJob(any(), any())
         }
-
-        // assert resumeCollection job was called
-        verify(exactly = 0) {
-            mockedLocationService.setupLocationCoroutine(any())
-        }
     }
 
     /**
-     * Test if there is no pauseJob, then resume and setup location
+     * Test if there is no pauseJob, then resume
      */
     @Test
     fun test_resumeCollection_existingJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -651,10 +633,7 @@ class NIDSessionServiceTest {
         // Mock isSetup as false to trigger startJob path
         every { mockedJobServiceManager.isSetup } returns false
 
-        // need to mock config and return true for location service since this is now
-        // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
-        every { mockedConfigService.configCache.geoLocation } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -681,7 +660,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
@@ -689,7 +667,7 @@ class NIDSessionServiceTest {
     }
 
     /**
-     * Test if there is no pauseJob, then resume and setup location
+     * Test if there is no pauseJob, then resume
      *
      * NOTE: This tests that the NIDJobServiceManager was NOT called because of how mocking
      *       Coroutine jobs works (specifically the `invokeOnCompletion` piece)
@@ -698,7 +676,6 @@ class NIDSessionServiceTest {
     fun test_resumeCollection_noExistingJob() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -710,10 +687,7 @@ class NIDSessionServiceTest {
                 isCompleted = false,
             )
 
-        // need to mock config and return true for location service since this is now
-        // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
-        every { mockedConfigService.configCache.geoLocation } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -729,7 +703,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
@@ -744,7 +717,6 @@ class NIDSessionServiceTest {
     fun test_resumeCollection_isSetupTrue() {
         val mockedServices = buildMockClasses()
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
-        val mockedLocationService = mockedServices.mockedLocationService
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
@@ -756,10 +728,7 @@ class NIDSessionServiceTest {
         // Mock isSetup as true to trigger restart path
         every { mockedJobServiceManager.isSetup } returns true
 
-        // need to mock config and return true for location service since this is now
-        // set false by default
         val mockedConfigService = mockk<NIDConfigService>()
-        every { mockedConfigService.configCache.geoLocation } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -786,7 +755,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
@@ -925,7 +893,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_stopSession() {
         val mockedServices = buildMockClasses()
-        val mockedLocationService = mockedServices.mockedLocationService
         val mockedCallActivityListener = mockedServices.mockedCallListener
 
         val mockedNeuroID = mockedServices.mockedNeuroID
@@ -955,9 +922,6 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedCallActivityListener.unregisterCallActivityListener(any())
-
-            // happens in the pauseCollection
-            mockedLocationService.shutdownLocationCoroutine(any())
         }
     }
 
@@ -972,7 +936,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_stop() {
         val mockedServices = buildMockClasses()
-        val mockedLocationService = mockedServices.mockedLocationService
         val mockedCallActivityListener = mockedServices.mockedCallListener
 
         val mockedNeuroID = mockedServices.mockedNeuroID
@@ -1005,9 +968,6 @@ class NIDSessionServiceTest {
             mockedNeuroID.linkedSiteID = ""
 
             mockedCallActivityListener.unregisterCallActivityListener(any())
-
-            // happens in the pauseCollection
-            mockedLocationService.shutdownLocationCoroutine(any())
         }
     }
 

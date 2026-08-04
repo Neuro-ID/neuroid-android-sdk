@@ -1,7 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.content.Context
-import android.location.LocationManager
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -173,10 +171,6 @@ internal class NIDSessionService(
                     neuroID.nidJobServiceManager?.stopJob()
                 }
         }
-
-        neuroID.locationService.shutdownLocationCoroutine(
-            neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-        )
     }
 
     @Synchronized
@@ -201,12 +195,6 @@ internal class NIDSessionService(
             resumeCollectionCompletion(currentGeneration)
         } else {
             neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion(currentGeneration) }
-        }
-
-        if (configService.configCache.geoLocation) {
-            neuroID.locationService.setupLocationCoroutine(
-                neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-            )
         }
     }
 
@@ -386,12 +374,6 @@ internal class NIDSessionService(
         attrs: List<Map<String, Any>>? = null,
     ) {
         neuroID.application?.let {
-            neuroID.metaData?.getLastKnownLocation(
-                it,
-                configService.configCache.geoLocation,
-                neuroID.locationService,
-            )
-
             neuroID.captureEvent(
                 type = type,
                 f = neuroID.clientKey,

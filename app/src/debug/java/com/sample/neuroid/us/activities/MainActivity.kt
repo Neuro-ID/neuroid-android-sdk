@@ -62,11 +62,6 @@ class MainActivity : AppCompatActivity() {
 
         val permissions = mutableListOf<String>()
 
-        if (!isLocationPermissionGiven()) {
-            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-
         if (!isCallActivityPermissionGiven()){
             permissions.add(Manifest.permission.READ_PHONE_STATE)
         }
@@ -74,14 +69,6 @@ class MainActivity : AppCompatActivity() {
         if (permissions.isNotEmpty()) {
             requestPermissions(permissions.toTypedArray(), REQUEST_CODE)
         }
-    }
-
-    private fun isLocationPermissionGiven(): Boolean {
-        val coarse = ActivityCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val fine = ActivityCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        return coarse && fine
     }
 
     private fun isCallActivityPermissionGiven(): Boolean {
@@ -97,17 +84,6 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode) {
             REQUEST_CODE -> {
-                if (isLocationPermissionGiven()) {
-                    Log.d(
-                        "main_activity",
-                        "location grantResults ok"
-                    )
-                } else {
-                    Log.d(
-                        "main_activity",
-                        "location grantResults denied"
-                    )
-                }
                 if (isCallActivityPermissionGiven()) {
                     NIDLog.d(msg = "call activity permission granted")
                 } else {

@@ -40,11 +40,7 @@ class LoginSignupTestRunner {
 
     // Grant the required permissions for the test
     @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.READ_PHONE_STATE
-    )
+    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.READ_PHONE_STATE)
 
     @get:Rule
     val composeTestRule = createComposeRule()

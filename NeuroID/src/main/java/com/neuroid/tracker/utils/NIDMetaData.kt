@@ -4,13 +4,10 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.BATTERY_SERVICE
-import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Build
 import android.telephony.TelephonyManager
-import com.neuroid.tracker.models.NIDLocation
-import com.neuroid.tracker.service.LocationService
 import org.json.JSONObject
 
 class NIDMetaData(
@@ -31,7 +28,6 @@ class NIDMetaData(
     private val isJailBreak: Boolean
     private var isWifiOn: Boolean?
     private val isSimulator: Boolean
-    private val gpsCoordinates: NIDLocation = NIDLocation(-1.0, -1.0, LOCATION_UNKNOWN)
     private val lastInstallTime = context.packageManager?.getPackageInfo(context.packageName, 0)?.firstInstallTime ?: -1
 
     init {
@@ -92,19 +88,6 @@ class NIDMetaData(
         }
     }
 
-    internal fun getLastKnownLocation(
-        context: Context,
-        isLocationAllowed: Boolean,
-        locationService: LocationService?,
-    ) {
-        locationService?.getLastKnownLocation(
-            context,
-            gpsCoordinates,
-            locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-            isLocationAllowed = isLocationAllowed,
-        )
-    }
-
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("brand", brand)
@@ -121,16 +104,9 @@ class NIDMetaData(
         jsonObject.put("isJailBreak", isJailBreak)
         jsonObject.put("isWifiOn", isWifiOn)
         jsonObject.put("isSimulator", isSimulator)
-        jsonObject.put("gpsCoordinates", gpsCoordinates.toJson())
         jsonObject.put("lastInstallTime", lastInstallTime)
         return jsonObject
     }
 
     override fun toString(): String = toJson().toString()
-
-    companion object {
-        const val LOCATION_DENIED = "denied"
-        const val LOCATION_UNKNOWN = "unknown"
-        const val LOCATION_AUTHORIZED_ALWAYS = "authorized"
-    }
 }
