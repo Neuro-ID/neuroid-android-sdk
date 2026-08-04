@@ -1,6 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.content.Context
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
