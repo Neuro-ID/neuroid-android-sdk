@@ -178,7 +178,6 @@ class NIDMetaDataTest {
             "isJailBreak",
             "isWifiOn",
             "isSimulator",
-            "gpsCoordinates",
             "lastInstallTime",
         )
 
