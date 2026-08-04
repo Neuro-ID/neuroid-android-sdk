@@ -45,7 +45,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             lastSelectListener,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onItemSelected
@@ -65,8 +65,8 @@ class AdditionalListenersTest {
                 attrs = any(),
                 tg = match {
                     it["etn"] == simpleClassName &&
-                    it["tgs"] == idName &&
-                    it["sender"] == simpleClassName
+                        it["tgs"] == idName &&
+                        it["sender"] == simpleClassName
                 },
                 tgs = idName,
                 touches = any(),
@@ -139,7 +139,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             lastSelectListener,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onNothingSelected
@@ -230,7 +230,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             null,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onItemSelected (should not crash)
@@ -316,7 +316,7 @@ class AdditionalListenersTest {
         val listener = additionalListeners.addSelectOnClickListener(
             neuroID,
             idName,
-            lastClickListener
+            lastClickListener,
         )
 
         // Trigger onItemClick
@@ -336,7 +336,7 @@ class AdditionalListenersTest {
                 attrs = any(),
                 tg = match {
                     it["etn"] == "INPUT" &&
-                    it["et"] == "text"
+                        it["et"] == "text"
                 },
                 tgs = idName,
                 touches = any(),
@@ -408,7 +408,7 @@ class AdditionalListenersTest {
         val listener = additionalListeners.addSelectOnClickListener(
             neuroID,
             idName,
-            null
+            null,
         )
 
         // Trigger onItemClick (should not crash)
@@ -514,4 +514,3 @@ class AdditionalListenersTest {
         }
     }
 }
-

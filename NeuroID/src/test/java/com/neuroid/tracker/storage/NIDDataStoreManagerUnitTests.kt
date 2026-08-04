@@ -163,7 +163,7 @@ class NIDDataStoreManagerUnitTests {
     @Test
     fun isFullBuffer_isFull() {
         val nidTime = mockk<NIDTime>()
-        every {nidTime.getCurrentTimeMillis()} returns 472389534534
+        every { nidTime.getCurrentTimeMillis() } returns 472389534534
         val dataStore = mockDataStore()
         for (i in 0..5000) {
             dataStore.saveEvent(NIDEventModel(ts = nidTime.getCurrentTimeMillis(), type = INPUT))
@@ -176,15 +176,15 @@ class NIDDataStoreManagerUnitTests {
         val serviceConfig = mockk<ConfigService>()
         every { serviceConfig.configCache } returns NIDRemoteConfig()
         val logger = mockk<NIDLogWrapper>()
-        every {logger.d(any(), any())} just runs
+        every { logger.d(any(), any()) } just runs
         val dataStore = NIDDataStoreManagerImp(logger, serviceConfig)
         val raceConditionedEventList = mockk<MutableList<NIDEventModel>>()
-        every {raceConditionedEventList.size} returns 0
-        every {raceConditionedEventList.isEmpty()} returns false
-        every {raceConditionedEventList.last()} throws NoSuchElementException("list is empty fool!")
-        every {raceConditionedEventList.add(any())} returns true
+        every { raceConditionedEventList.size } returns 0
+        every { raceConditionedEventList.isEmpty() } returns false
+        every { raceConditionedEventList.last() } throws NoSuchElementException("list is empty fool!")
+        every { raceConditionedEventList.add(any()) } returns true
         dataStore.eventsList = raceConditionedEventList
         assert(!dataStore.isFullBuffer())
-        verify{logger.d(any(), "possible emptying before calling eventsList.last() after empty check occurred list is empty fool!")}
+        verify { logger.d(any(), "possible emptying before calling eventsList.last() after empty check occurred list is empty fool!") }
     }
 }

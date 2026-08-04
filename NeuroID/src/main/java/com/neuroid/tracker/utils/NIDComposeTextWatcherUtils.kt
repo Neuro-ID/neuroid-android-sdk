@@ -2,7 +2,9 @@ package com.neuroid.tracker.utils
 
 import com.neuroid.tracker.NeuroID
 
-class NIDComposeTextWatcherUtils(val neuroID: NeuroID) {
+class NIDComposeTextWatcherUtils(
+    val neuroID: NeuroID,
+) {
     fun isPaste(
         changeText: TextChange,
         clipboardContent: String,
@@ -40,5 +42,9 @@ class NIDComposeTextWatcherUtils(val neuroID: NeuroID) {
         return TextChange(start, count, changedText)
     }
 
-    data class TextChange(val start: Int, val count: Int, val changedText: String)
+    data class TextChange(
+        val start: Int,
+        val count: Int,
+        val changedText: String,
+    )
 }

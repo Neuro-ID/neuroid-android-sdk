@@ -23,7 +23,9 @@ import kotlinx.coroutines.launch
  * the location to a passed in NIDLocation instance. If multiple providers are found, choose
  * one using the PROVIDER_MAP. Highest number is the most desired (most accurate) provider.
  */
-class LocationService(private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils()) {
+class LocationService(
+    private val locationPermissionUtils: LocationPermissionUtils = LocationPermissionUtils(),
+) {
     private var nidLocation: NIDLocation? = null
     private var isStarted = false
     private var locationScope: CoroutineScope? = null

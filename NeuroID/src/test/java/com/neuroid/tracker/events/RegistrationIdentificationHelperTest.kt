@@ -120,10 +120,10 @@ class RegistrationIdentificationHelperTest {
                 neuroID,
                 contentView,
                 any(), // guid
-                true,  // registerTarget default
-                true,  // registerListeners default
-                "",    // activityOrFragment default
-                "",    // parent default
+                true, // registerTarget default
+                true, // registerListeners default
+                "", // activityOrFragment default
+                "", // parent default
             )
         }
     }
@@ -149,7 +149,7 @@ class RegistrationIdentificationHelperTest {
                 any(),
                 any(),
                 false, // registerTarget
-                true,  // registerListeners
+                true, // registerListeners
                 "",
                 "",
             )
@@ -176,7 +176,7 @@ class RegistrationIdentificationHelperTest {
                 neuroID,
                 any(),
                 any(),
-                true,  // registerTarget
+                true, // registerTarget
                 false, // registerListeners
                 "",
                 "",

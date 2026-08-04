@@ -16,5 +16,4 @@ class NIDEnvironmentProviderTest {
         val javaHome = envProvider.getProperty("java.home")
         assert(!javaHome.isNullOrEmpty())
     }
-
 }

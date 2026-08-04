@@ -26,7 +26,6 @@ import org.junit.Before
 import org.junit.Test
 
 class NIDMetaDataTest {
-
     @Before
     fun setup() {
         // Mock RootHelper constructor so that Build.* null values don't cause NPEs
@@ -175,9 +174,16 @@ class NIDMetaDataTest {
 
         // Keys that are always present regardless of Build.* being null
         val alwaysExpectedKeys = listOf(
-            "displayResolution", "osVersion",
-            "carrier", "totalMemory", "batteryLevel", "isJailBreak",
-            "isWifiOn", "isSimulator", "gpsCoordinates", "lastInstallTime",
+            "displayResolution",
+            "osVersion",
+            "carrier",
+            "totalMemory",
+            "batteryLevel",
+            "isJailBreak",
+            "isWifiOn",
+            "isSimulator",
+            "gpsCoordinates",
+            "lastInstallTime",
         )
 
         alwaysExpectedKeys.forEach { key ->
@@ -552,8 +558,3 @@ class NIDMetaDataTest {
         assertTrue(osVersion.toInt() >= 0)
     }
 }
-
-
-
-
-

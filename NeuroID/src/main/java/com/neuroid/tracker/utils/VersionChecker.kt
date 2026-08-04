@@ -11,14 +11,14 @@ class VersionChecker(
     /**
      * Returns Boolean to indicate if device build version is >= 31
      */
-    fun isBuildVersionGreaterThanOrEqualTo31(): Boolean {
-        return sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.S
-    }
+    fun isBuildVersionGreaterThanOrEqualTo31(): Boolean = sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.S
 }
 
-fun getAppMetaData(context: Context,
-                   rnVersion: String,
-                   sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider()): ApplicationMetaData? {
+fun getAppMetaData(
+    context: Context,
+    rnVersion: String,
+    sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
+): ApplicationMetaData? {
     return try {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
@@ -30,10 +30,10 @@ fun getAppMetaData(context: Context,
             }
 
         ApplicationMetaData(
-            versionName = packageInfo.versionName?:"",
+            versionName = packageInfo.versionName ?: "",
             versionNumber = versionCode,
             packageName = packageInfo.packageName,
-            applicationName = packageInfo.applicationInfo?.name?:"",
+            applicationName = packageInfo.applicationInfo?.name ?: "",
             rnVersion = rnVersion,
             minOSVersion = context.applicationInfo.minSdkVersion,
         )

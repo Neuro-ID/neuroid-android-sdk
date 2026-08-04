@@ -12,11 +12,11 @@ data class ApplicationMetaData(
         return listOf(
             mapOf(
                 "n" to "rnVersion",
-                "v" to rnVersion
+                "v" to rnVersion,
             ),
             mapOf(
                 "n" to "minOSVersion",
-                "v" to minOSVersion
+                "v" to minOSVersion,
             ),
             mapOf(
                 "n" to "versionName",

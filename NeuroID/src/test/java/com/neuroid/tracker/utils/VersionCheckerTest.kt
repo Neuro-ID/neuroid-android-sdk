@@ -18,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 
 class VersionCheckerTest {
-
     private lateinit var mockSdkVersionProvider: NIDSdkVersionProvider
 
     @Before
@@ -250,5 +249,3 @@ class VersionCheckerTest {
         assertNull(result)
     }
 }
-
-

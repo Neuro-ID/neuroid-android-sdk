@@ -19,9 +19,7 @@ object NIDSensorHelper {
 
     private var sensorActive = false
 
-    fun isSensorActive(): Boolean {
-        return sensorActive
-    }
+    fun isSensorActive(): Boolean = sensorActive
 
     fun initSensorHelper(
         context: Context,

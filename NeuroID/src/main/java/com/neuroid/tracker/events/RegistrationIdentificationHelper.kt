@@ -68,7 +68,10 @@ class RegistrationIdentificationHelper(
         }
     }
 
-    fun registerWindowListeners(neuroID: NeuroID, activity: Activity) {
+    fun registerWindowListeners(
+        neuroID: NeuroID,
+        activity: Activity,
+    ) {
         val viewMainContainer =
             activity.window.decorView.findViewById<View>(
                 android.R.id.content,
@@ -224,7 +227,10 @@ class SingleTargetListenerRegister(
     val additionalListeners: AdditionalListeners,
     private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
-    fun registerListeners(neuroID: NeuroID, view: View) {
+    fun registerListeners(
+        neuroID: NeuroID,
+        view: View,
+    ) {
         val idName = view.getIdOrTag()
         val simpleClassName = view.javaClass.simpleName
 
@@ -468,7 +474,9 @@ class SingleTargetListenerRegister(
     }
 }
 
-class AdditionalListeners(val logger: NIDLogWrapper) {
+class AdditionalListeners(
+    val logger: NIDLogWrapper,
+) {
     internal fun addSelectOnSelect(
         neuroID: NeuroID,
         idName: String,
