@@ -13,6 +13,7 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSingletonIDs
+import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -411,7 +412,7 @@ internal class NIDSessionService(
                 dnt = false,
                 url = "",
                 ns = "nid",
-                jsv = NeuroID.getInstance()?.getSDKVersion(),
+                jsv = NIDVersion.getSDKVersion(),
                 sw = sharedPreferenceDefaults.getDisplayWidth().toFloat(),
                 sh = sharedPreferenceDefaults.getDisplayHeight().toFloat(),
                 metadata = neuroID.metaData,
