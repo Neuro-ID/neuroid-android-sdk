@@ -660,7 +660,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
@@ -704,7 +703,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
@@ -757,7 +755,6 @@ class NIDSessionServiceTest {
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
-            mockedLocationService.setupLocationCoroutine(any())
             mockedNeuroID.captureEvent(any(), type = RESUME_EVENT_CAPTURE, ts = any(), ct = "SDK_EVENT")
         }
 
