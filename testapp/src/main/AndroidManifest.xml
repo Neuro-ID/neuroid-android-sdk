@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".ApplicationMain"
@@ -33,6 +34,14 @@
         <activity android:name="com.neuroid.example.SignUp"/>
         <activity android:name="com.neuroid.example.SendMoney"/>
         <activity android:name="com.neuroid.example.PersonalInformationTwo"/>
+
+        <receiver
+            android:name=".SimulatedPushReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.neuroid.example.SIMULATE_PUSH" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
