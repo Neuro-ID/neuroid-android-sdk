@@ -377,11 +377,7 @@ internal class NIDSessionService(
             neuroID.captureEvent(
                 type = type,
                 f = neuroID.clientKey,
-                sid = neuroID.sessionID,
-                lsid = "null",
                 cid = neuroID.clientID,
-                did = sharedPreferenceDefaults.getDeviceID(),
-                iid = sharedPreferenceDefaults.getIntermediateID(),
                 loc = sharedPreferenceDefaults.getLocale(),
                 ua = sharedPreferenceDefaults.getUserAgent(),
                 tzo = sharedPreferenceDefaults.getTimeZone(),

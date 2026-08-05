@@ -117,22 +117,9 @@
         "siteId": {
           "type": "null"
         },
-        "sid": {
-          "type": "string",
-          "format": "uuid"
-        },
         "cid": {
           "type": "string",
           "format": "uuid"
-        },
-        "did": {
-          "type": "string"
-        },
-        "iid": {
-          "type": "string"
-        },
-        "lsid": {
-          "type": "null"
         },
         "loc": {
           "type": "string"

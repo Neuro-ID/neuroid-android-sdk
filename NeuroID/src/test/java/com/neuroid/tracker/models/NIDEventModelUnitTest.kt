@@ -54,12 +54,8 @@ class NIDEventModelUnitTest {
                 sh = 2f,
                 f = "f-a",
                 rts = "rts-a",
-                lsid = null,
-                sid = "sid-a",
                 siteId = "siteId-a",
                 cid = "cid-a",
-                did = "did-a",
-                iid = "iid-a",
                 loc = "loc-a",
                 ua = "ua-a",
                 tzo = 420,
@@ -120,11 +116,8 @@ class NIDEventModelUnitTest {
         assertEquals(2.0, json.getDouble("sh"), 0.001)
         assertEquals("f-a", json.getString("f"))
         assertEquals("rts-a", json.getString("rts"))
-        assertEquals("sid-a", json.getString("sid"))
         assertEquals("siteId-a", json.getString("siteId"))
         assertEquals("cid-a", json.getString("cid"))
-        assertEquals("did-a", json.getString("did"))
-        assertEquals("iid-a", json.getString("iid"))
         assertEquals("loc-a", json.getString("loc"))
         assertEquals("ua-a", json.getString("ua"))
         assertEquals(420, json.getInt("tzo"))

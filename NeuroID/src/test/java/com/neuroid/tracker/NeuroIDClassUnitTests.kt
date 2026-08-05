@@ -767,10 +767,6 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any(),
             )
         } just runs
         every { mockedLogger.e(any(), any()) } just runs
@@ -818,12 +814,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -870,14 +862,6 @@ open class NeuroIDClassUnitTests {
         every { firstNeuroID.setupCallbacks() } just runs
         every {
             firstNeuroID.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any(),
@@ -980,12 +964,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -1040,10 +1020,6 @@ open class NeuroIDClassUnitTests {
         every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
         every {
             mockedNeuroID.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any(),
