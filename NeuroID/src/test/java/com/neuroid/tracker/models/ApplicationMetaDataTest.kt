@@ -6,14 +6,15 @@ import org.junit.Test
 class ApplicationMetaDataTest {
     @Test
     fun test_toList_containsNewParameters() {
-        val metaData = ApplicationMetaData(
-            versionName = "1.2.3",
-            versionNumber = 123,
-            packageName = "com.example.app",
-            applicationName = "ExampleApp",
-            rnVersion = "0.72.0",
-            minOSVersion = 21,
-        )
+        val metaData =
+            ApplicationMetaData(
+                versionName = "1.2.3",
+                versionNumber = 123,
+                packageName = "com.example.app",
+                applicationName = "ExampleApp",
+                rnVersion = "0.72.0",
+                minOSVersion = 21,
+            )
         val list = metaData.toList()
         val map = list.associate { it["n"] to it["v"] }
         assertEquals("0.72.0", map["rnVersion"])
@@ -26,16 +27,16 @@ class ApplicationMetaDataTest {
 
     @Test
     fun test_toList_defaults() {
-        val metaData = ApplicationMetaData(
-            versionName = "2.0.0",
-            versionNumber = 200,
-            packageName = "com.test.default",
-            applicationName = "TestDefault"
-        )
+        val metaData =
+            ApplicationMetaData(
+                versionName = "2.0.0",
+                versionNumber = 200,
+                packageName = "com.test.default",
+                applicationName = "TestDefault",
+            )
         val list = metaData.toList()
         val map = list.associate { it["n"] to it["v"] }
         assertEquals("", map["rnVersion"])
         assertEquals(-1, map["minOSVersion"])
     }
 }
-

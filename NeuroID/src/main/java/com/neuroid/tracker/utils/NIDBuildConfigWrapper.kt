@@ -6,15 +6,9 @@ import com.neuroid.tracker.BuildConfig
  *  required for testing, cannot mockkStatic BuildConfig.
  */
 class NIDBuildConfigWrapper {
-    fun getBuildVersion(): String {
-        return BuildConfig.VERSION_NAME
-    }
+    fun getBuildVersion(): String = BuildConfig.VERSION_NAME
 
-    fun getGitHash(): String {
-        return BuildConfig.GIT_HASH
-    }
+    fun getGitHash(): String = BuildConfig.GIT_HASH
 
-    fun getFlavor(): String {
-        return BuildConfig.FLAVOR
-    }
+    fun getFlavor(): String = BuildConfig.FLAVOR
 }

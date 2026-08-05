@@ -43,7 +43,10 @@ internal class NIDIdentifierService(
         return SessionIDOriginResult(origin, originCode, idValue, idType)
     }
 
-    internal fun sendOriginEvent(neuroID: NeuroID, originResult: SessionIDOriginResult) {
+    internal fun sendOriginEvent(
+        neuroID: NeuroID,
+        originResult: SessionIDOriginResult,
+    ) {
         // sending these as individual items.
         neuroID.captureEvent(
             queuedEvent = !NeuroID.isSDKStarted,
@@ -142,7 +145,10 @@ internal class NIDIdentifierService(
 
     fun getRegisteredUserID(neuroID: NeuroID) = neuroID.registeredUserID
 
-    fun setRegisteredUserID(neuroID: NeuroID, registeredUserID: String): Boolean {
+    fun setRegisteredUserID(
+        neuroID: NeuroID,
+        registeredUserID: String,
+    ): Boolean {
         if (neuroID.registeredUserID.isNotEmpty() && registeredUserID != neuroID.registeredUserID) {
             neuroID.captureEvent(
                 type = LOG,

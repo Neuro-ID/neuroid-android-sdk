@@ -160,9 +160,10 @@ class ActivityCallbacks(
                         type = SCREEN_CAPTURE,
                     )
                 }
-            }, listenerRecording = object: NIDScreenCaptureService.ScreenRecordingListener {
+            },
+            listenerRecording = object : NIDScreenCaptureService.ScreenRecordingListener {
                 override fun onScreenRecorded(isRecording: Boolean) {
-                    if(isRecording) {
+                    if (isRecording) {
                         neuroID.captureEvent(
                             type = SCREEN_RECORDING,
                             attrs = listOf(

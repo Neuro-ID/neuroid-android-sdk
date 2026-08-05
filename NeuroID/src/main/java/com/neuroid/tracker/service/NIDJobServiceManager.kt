@@ -77,9 +77,7 @@ internal class NIDJobServiceManager(
     }
 
     @Synchronized
-    fun isStopped(): Boolean {
-        return sendCadenceJob?.isActive != true
-    }
+    fun isStopped(): Boolean = sendCadenceJob?.isActive != true
 
     @Synchronized
     fun restart() {
@@ -190,7 +188,11 @@ internal class NIDJobServiceManager(
                             message: String,
                             isRetry: Boolean,
                         ) {
-                            neuroID.captureEvent(type = LOG, level = ERROR, m = "network failure, sendEventsNow() failed retrylimitHit: $message $code")
+                            neuroID.captureEvent(
+                                type = LOG,
+                                level = ERROR,
+                                m = "network failure, sendEventsNow() failed retrylimitHit: $message $code",
+                            )
                             logger.e(msg = "network failure, sendEventsNow() failed retrylimitHit: ${!isRetry} $message")
                         }
                     },

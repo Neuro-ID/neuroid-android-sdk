@@ -5,9 +5,10 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import com.neuroid.tracker.utils.NIDLogWrapper
 
-class NIDSensorGenListener(val logger: NIDLogWrapper = NIDLogWrapper(),
-                           val callback: (data: AxisData) -> Unit) :
-    SensorEventListener {
+class NIDSensorGenListener(
+    val logger: NIDLogWrapper = NIDLogWrapper(),
+    val callback: (data: AxisData) -> Unit,
+) : SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
             var axisX = -1F
@@ -47,4 +48,9 @@ class NIDSensorGenListener(val logger: NIDLogWrapper = NIDLogWrapper(),
     }
 }
 
-class AxisData(val type: Int, val axisX: Float, val axisY: Float, val axisZ: Float)
+class AxisData(
+    val type: Int,
+    val axisX: Float,
+    val axisY: Float,
+    val axisZ: Float,
+)

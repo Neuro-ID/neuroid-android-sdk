@@ -10,8 +10,8 @@ fun Activity.getGUID(): String {
 
 internal fun generateUniqueHexID(
     requireNIDPrefix: Boolean = false,
-    uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider()): String {
-
+    uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider(),
+): String {
     // use random UUID to ensure uniqueness amongst devices,
     var nidPrefix = ""
     if (requireNIDPrefix) {

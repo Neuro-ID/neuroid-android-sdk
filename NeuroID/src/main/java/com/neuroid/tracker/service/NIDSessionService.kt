@@ -1,7 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.content.Context
-import android.location.LocationManager
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -13,6 +11,7 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSingletonIDs
+import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -172,10 +171,6 @@ internal class NIDSessionService(
                     neuroID.nidJobServiceManager?.stopJob()
                 }
         }
-
-        neuroID.locationService.shutdownLocationCoroutine(
-            neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-        )
     }
 
     @Synchronized
@@ -200,12 +195,6 @@ internal class NIDSessionService(
             resumeCollectionCompletion(currentGeneration)
         } else {
             neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion(currentGeneration) }
-        }
-
-        if (configService.configCache.geoLocation) {
-            neuroID.locationService.setupLocationCoroutine(
-                neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-            )
         }
     }
 
@@ -385,12 +374,6 @@ internal class NIDSessionService(
         attrs: List<Map<String, Any>>? = null,
     ) {
         neuroID.application?.let {
-            neuroID.metaData?.getLastKnownLocation(
-                it,
-                configService.configCache.geoLocation,
-                neuroID.locationService,
-            )
-
             neuroID.captureEvent(
                 type = type,
                 f = neuroID.clientKey,
@@ -411,7 +394,7 @@ internal class NIDSessionService(
                 dnt = false,
                 url = "",
                 ns = "nid",
-                jsv = NeuroID.getInstance()?.getSDKVersion(),
+                jsv = NIDVersion.getSDKVersion(),
                 sw = sharedPreferenceDefaults.getDisplayWidth().toFloat(),
                 sh = sharedPreferenceDefaults.getDisplayHeight().toFloat(),
                 metadata = neuroID.metaData,

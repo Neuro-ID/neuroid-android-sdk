@@ -249,7 +249,10 @@ class SensorHelperTests {
         )
     }
 
-    fun testSensorHelper(expected: FloatArray, actual: FloatArray ) {
+    fun testSensorHelper(
+        expected: FloatArray,
+        actual: FloatArray,
+    ) {
         val expectedValueArray = expected
 
         // prepare the accelerometer event (reflection)

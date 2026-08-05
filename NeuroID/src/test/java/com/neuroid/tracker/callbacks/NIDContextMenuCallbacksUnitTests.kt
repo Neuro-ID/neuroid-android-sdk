@@ -16,7 +16,7 @@ internal class NIDContextMenuCallbacksUnitTests {
     //          the NIDTextContextMenuCallbacks and NIDLongPressContextMenuCallbacks classes
     //          and we couldn't create an instance of the underlying abstract NIDContextMenuCallBacks
     @Test
-    fun test_saveEvent()  {
+    fun test_saveEvent() {
         val mocks = getCallbackMocks()
         val callbackClass =
             NIDTextContextMenuCallbacks(

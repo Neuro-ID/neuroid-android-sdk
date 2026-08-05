@@ -5,17 +5,14 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.telephony.TelephonyManager
 import android.util.DisplayMetrics
-import com.neuroid.tracker.service.LocationService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.unmockkAll
-import io.mockk.verify
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -26,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 
 class NIDMetaDataTest {
-
     @Before
     fun setup() {
         // Mock RootHelper constructor so that Build.* null values don't cause NPEs
@@ -159,7 +155,6 @@ class NIDMetaDataTest {
         assertTrue(json.has("isJailBreak"))
         assertTrue(json.has("isWifiOn"))
         assertTrue(json.has("isSimulator"))
-        assertTrue(json.has("gpsCoordinates"))
         assertTrue(json.has("lastInstallTime"))
     }
 
@@ -175,9 +170,15 @@ class NIDMetaDataTest {
 
         // Keys that are always present regardless of Build.* being null
         val alwaysExpectedKeys = listOf(
-            "displayResolution", "osVersion",
-            "carrier", "totalMemory", "batteryLevel", "isJailBreak",
-            "isWifiOn", "isSimulator", "gpsCoordinates", "lastInstallTime",
+            "displayResolution",
+            "osVersion",
+            "carrier",
+            "totalMemory",
+            "batteryLevel",
+            "isJailBreak",
+            "isWifiOn",
+            "isSimulator",
+            "lastInstallTime",
         )
 
         alwaysExpectedKeys.forEach { key ->
@@ -188,18 +189,6 @@ class NIDMetaDataTest {
         // may be null in unit test env, but toJson() should still not crash
         assertNotNull(json)
         assertTrue(json.length() >= alwaysExpectedKeys.size)
-    }
-
-    @Test
-    fun test_toJson_gpsCoordinates_hasExpectedStructure() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-        val json = metaData.toJson()
-
-        val gps = json.getJSONObject("gpsCoordinates")
-        assertEquals(-1.0, gps.getDouble("latitude"), 0.001)
-        assertEquals(-1.0, gps.getDouble("longitude"), 0.001)
-        assertEquals("unknown", gps.getString("authorizationStatus"))
     }
 
     // -----------------------------------------------------------------------
@@ -468,74 +457,6 @@ class NIDMetaDataTest {
     }
 
     // -----------------------------------------------------------------------
-    // getLastKnownLocation
-    // -----------------------------------------------------------------------
-
-    @Test
-    fun test_getLastKnownLocation_delegatesToLocationService() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        val locationManager = mockk<LocationManager>()
-        every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-
-        val locationService = mockk<LocationService>(relaxed = true)
-
-        metaData.getLastKnownLocation(context, isLocationAllowed = true, locationService = locationService)
-
-        verify {
-            locationService.getLastKnownLocation(
-                context,
-                any(),
-                locationManager = locationManager,
-                isLocationAllowed = true,
-            )
-        }
-    }
-
-    @Test
-    fun test_getLastKnownLocation_whenLocationServiceNull_doesNotCrash() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        // Should not throw when locationService is null
-        metaData.getLastKnownLocation(context, isLocationAllowed = true, locationService = null)
-    }
-
-    @Test
-    fun test_getLastKnownLocation_passesIsLocationAllowedFalse() {
-        val context = createMockedContext()
-        val metaData = NIDMetaData(context)
-
-        val locationManager = mockk<LocationManager>()
-        every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-
-        val locationService = mockk<LocationService>(relaxed = true)
-
-        metaData.getLastKnownLocation(context, isLocationAllowed = false, locationService = locationService)
-
-        verify {
-            locationService.getLastKnownLocation(
-                context,
-                any(),
-                locationManager = locationManager,
-                isLocationAllowed = false,
-            )
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Companion constants
-    // -----------------------------------------------------------------------
-
-    @Test
-    fun test_companionConstants_haveExpectedValues() {
-        assertEquals("denied", NIDMetaData.LOCATION_DENIED)
-        assertEquals("unknown", NIDMetaData.LOCATION_UNKNOWN)
-        assertEquals("authorized", NIDMetaData.LOCATION_AUTHORIZED_ALWAYS)
-    }
-
-    // -----------------------------------------------------------------------
     // Default sdkVersionProvider
     // -----------------------------------------------------------------------
 
@@ -552,8 +473,3 @@ class NIDMetaDataTest {
         assertTrue(osVersion.toInt() >= 0)
     }
 }
-
-
-
-
-

@@ -61,7 +61,7 @@ class SingleTargetListenerRegisterTest {
             guid,
             idName,
             activityOrFragment,
-            parent
+            parent,
         )
 
         // Verify list has 5 elements
@@ -106,7 +106,7 @@ class SingleTargetListenerRegisterTest {
             guid,
             idName,
             activityOrFragment = "",
-            parent = ""
+            parent = "",
         )
 
         // Verify list still has 5 elements
@@ -128,7 +128,7 @@ class SingleTargetListenerRegisterTest {
         val v = "Submit"
         val simpleName = "Button"
         val attrJson = listOf(
-            mapOf("n" to "guid", "v" to "test-guid")
+            mapOf("n" to "guid", "v" to "test-guid"),
         )
 
         // Set static values
@@ -148,7 +148,7 @@ class SingleTargetListenerRegisterTest {
             v = v,
             simpleName = simpleName,
             attrJson = attrJson,
-            onComplete = onComplete
+            onComplete = onComplete,
         )
 
         // Verify captureEvent was called
@@ -242,7 +242,7 @@ class SingleTargetListenerRegisterTest {
             et = et,
             v = v,
             simpleName = simpleName,
-            attrJson = attrJson
+            attrJson = attrJson,
         )
 
         // Verify captureEvent was called with fragment in URL
@@ -291,7 +291,7 @@ class SingleTargetListenerRegisterTest {
                 p = any(),
                 dnt = any(),
                 tch = any(),
-                url = match { it.contains("/ProfileFragment/")},
+                url = match { it.contains("/ProfileFragment/") },
                 ns = any(),
                 jsl = any(),
                 jsv = any(),
@@ -360,8 +360,8 @@ class SingleTargetListenerRegisterTest {
         singleTargetRegister.registerListeners(neuroID, editText)
         singleTargetRegister.registerListeners(neuroID, autoCompleteTextView)
         singleTargetRegister.registerListeners(neuroID, spinner)
-        singleTargetRegister.registerListeners(neuroID,absSpinner)
-        singleTargetRegister.registerListeners(neuroID,radioGroup)
+        singleTargetRegister.registerListeners(neuroID, absSpinner)
+        singleTargetRegister.registerListeners(neuroID, radioGroup)
 
         // Verify logger was called for EditText
         verify { logger.d("NID-Activity", match { it.contains("EditText Listener") }) }

@@ -8,20 +8,23 @@ import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDRegion
 
-class NIDRNBuilder( val application: Application? = null,
-                    val clientKey: String = "",
-                    private val rnOptions: ReadableMap? = null) {
+class NIDRNBuilder(
+    val application: Application? = null,
+    val clientKey: String = "",
+    private val rnOptions: ReadableMap? = null,
+) {
     fun build() {
         val options = parseOptions(rnOptions)
         Log.d("NIDRNBuilder", "set options: $options")
         NeuroID.BuilderConfig(
-            application, NIDConfiguration(
+            application,
+            NIDConfiguration(
                 clientKey = clientKey,
                 isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
                 advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
                 useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
                 serverEnvironment = options[RNConfigOptions.environment] as String,
-                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String)
+                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
             ),
         ).build()
 
@@ -72,8 +75,9 @@ class NIDRNBuilder( val application: Application? = null,
             if (rnOptionsMap.hasKey(RNConfigOptions.environment.name)) {
                 rnOptionsMap.getString(RNConfigOptions.environment.name)?.let {
                     when (it) {
-                        NeuroID.PRODSCRIPT_DEVCOLLECTION -> environment =
-                            NeuroID.PRODSCRIPT_DEVCOLLECTION
+                        NeuroID.PRODSCRIPT_DEVCOLLECTION ->
+                            environment =
+                                NeuroID.PRODSCRIPT_DEVCOLLECTION
 
                         NeuroID.DEVELOPMENT -> environment = NeuroID.DEVELOPMENT
                         else -> environment = NeuroID.PRODUCTION
@@ -100,11 +104,12 @@ class NIDRNBuilder( val application: Application? = null,
     }
 }
 
+@Suppress("ktlint:standard:enum-entry-name-case")
 enum class RNConfigOptions {
     isAdvancedDevice,
     environment,
     advancedDeviceKey,
     useAdvancedDeviceProxy,
     rnVersion,
-    region
+    region,
 }

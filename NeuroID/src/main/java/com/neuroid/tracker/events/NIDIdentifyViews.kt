@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package com.neuroid.tracker.events
 
 import android.view.View
