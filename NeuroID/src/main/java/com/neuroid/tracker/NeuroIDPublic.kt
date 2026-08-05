@@ -30,29 +30,6 @@ interface NeuroIDPublic {
     fun setTestingNeuroIDDevURL()
 
     /**
-     * Set a user id.
-     */
-    @Deprecated(
-        "setUserID is deprecated, please use `identify` instead.",
-        ReplaceWith("identify(userID)"),
-    )
-    fun setUserID(userID: String): Boolean
-
-    /**
-     * Set a user id.
-     */
-    fun identify(userID: String): Boolean
-
-    /**
-     * Return the currently set user id.
-     */
-    @Deprecated(
-        "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-        ReplaceWith("getSessionID()"),
-    )
-    fun getUserID(): String
-
-    /**
      * Return the currently set registered user id.
      */
     fun getRegisteredUserID(): String
@@ -94,6 +71,29 @@ interface NeuroIDPublic {
      * get the currently set session id
      */
     fun getSessionID(): String
+
+    /**
+     * Return the currently set user id.
+     */
+    @Deprecated(
+        "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
+        ReplaceWith("getSessionID()"),
+    )
+    fun getUserID(): String
+
+    /**
+     * Set a user id.
+     */
+    fun identify(userID: String): Boolean
+
+    /**
+     * Set a user id.
+     */
+    @Deprecated(
+        "setUserID is deprecated, please use `identify` instead.",
+        ReplaceWith("identify(userID)"),
+    )
+    fun setUserID(userID: String): Boolean
 
     /**
      * Start the SDK, start a new session and use the userID as the sessionID. Return true if

@@ -624,8 +624,6 @@ class NeuroID
 
         override fun getEnvironment(): String = environment
 
-        override fun getSessionID(): String = userID
-
         override fun getClientID(): String = clientID
 
         internal fun shouldForceStart(): Boolean = forceStart
@@ -681,6 +679,8 @@ class NeuroID
         }
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
+    
+        override fun getSessionID(): String = userID
 
         @Deprecated(
             "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
@@ -688,13 +688,13 @@ class NeuroID
         )
         override fun getUserID() = identifierService.getUserID(this)
 
+        override fun identify(userID: String): Boolean = identifierService.setUserID(this, userID, true)
+
         @Deprecated(
             "setUserID is deprecated, please use `identify` instead.",
             ReplaceWith("identify(userID)"),
         )
         override fun setUserID(userID: String): Boolean = identifierService.setUserID(this, userID, true)
-
-        override fun identify(userID: String): Boolean = identifierService.setUserID(this, userID, true)
 
         override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 
