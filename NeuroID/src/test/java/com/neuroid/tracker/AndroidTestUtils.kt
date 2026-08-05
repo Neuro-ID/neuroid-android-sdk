@@ -382,7 +382,7 @@ internal fun getMockedValidationService(): NIDValidationService {
     } returns false
 
     every {
-        mockedNIDValidationService.validateUserID(any())
+        mockedNIDValidationService.isValidIdentityId(any())
     } returns false
 
     every {

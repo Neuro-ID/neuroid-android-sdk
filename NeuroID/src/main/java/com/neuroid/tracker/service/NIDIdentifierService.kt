@@ -84,7 +84,7 @@ internal class NIDIdentifierService(
         userGenerated: Boolean = true,
     ): Boolean {
         try {
-            val validID = validationService.validateUserID(genericUserID)
+            val validID = validationService.isValidIdentityId(genericUserID)
             val originRes =
                 getOriginResult(
                     genericUserID,
