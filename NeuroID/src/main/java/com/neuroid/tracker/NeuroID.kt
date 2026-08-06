@@ -696,15 +696,15 @@ class NeuroID
             "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
             ReplaceWith("getIdentityId()"),
         )
-        override fun getUserID() = identifierService.getUserID() ?: ""
+        override fun getUserID() = identifierService.getIdentityId() ?: ""
 
-        override fun identify(userID: String): Boolean = identifierService.setUserID(this, userID, true)
+        override fun identify(userID: String): Boolean = identifierService.setIdentityId(this, userID, true)
 
         @Deprecated(
             "setUserID is deprecated, please use `identify` instead.",
             ReplaceWith("identify(userID)"),
         )
-        override fun setUserID(userID: String): Boolean = identifierService.setUserID(this, userID, true)
+        override fun setUserID(userID: String): Boolean = identifierService.setIdentityId(this, userID, true)
 
         override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 

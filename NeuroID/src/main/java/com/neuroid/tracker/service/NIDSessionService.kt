@@ -137,7 +137,7 @@ internal class NIDSessionService(
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID(true)
-        if (!identifierService.setUserID(neuroID, finalSessionID, sessionID != null)) {
+        if (!identifierService.setIdentityId(neuroID, finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }
@@ -325,7 +325,7 @@ internal class NIDSessionService(
                 completion(
                     SessionStartResult(
                         true,
-                        neuroID.getUserID(),
+                        neuroID.getIdentityId(),
                     ),
                 )
             } else {
@@ -345,7 +345,7 @@ internal class NIDSessionService(
                         completion(
                             SessionStartResult(
                                 it,
-                                neuroID.getUserID(),
+                                neuroID.getIdentityId(),
                             ),
                         )
                     }

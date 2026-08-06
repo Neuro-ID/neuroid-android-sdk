@@ -303,20 +303,20 @@ class NIDIdentifierServiceTest {
         }
     }
 
-    //    getUserID
+    //    getIdentityId
     @Test
-    fun test_getUserID() {
+    fun test_getIdentityId() {
         stateStore.setIdentityId(goodUID)
 
-        assert(identifierService.getUserID() == goodUID)
+        assert(identifierService.getIdentityId() == goodUID)
     }
 
-    //    setUserID
+    //    setIdentityId
     @Test
     fun test_setUserId_not_empty() {
         every { validationService.isValidIdentityId(any()) } returns true
 
-        val result = identifierService.setUserID(neuroID, goodUID, false)
+        val result = identifierService.setIdentityId(neuroID, goodUID, false)
 
         Assert.assertTrue(result)
 

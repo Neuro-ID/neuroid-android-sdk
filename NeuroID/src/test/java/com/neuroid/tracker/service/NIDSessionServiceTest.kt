@@ -361,7 +361,7 @@ class NIDSessionServiceTest {
             mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
-        every { mockedIdentifierService.setUserID(any(), any(), true) } returns false
+        every { mockedIdentifierService.setIdentityId(any(), any(), true) } returns false
 
         val stateStore = StateStore().also { it.setIdentityId("fakeID") }
         val sessionService =
@@ -410,10 +410,10 @@ class NIDSessionServiceTest {
             mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
-        every { mockedNeuroID.getUserID() } returns "fakeID2"
+        every { mockedNeuroID.getIdentityId() } returns "fakeID2"
 
         val stateStore = StateStore().also { it.setIdentityId("fakeID") }
-        every { mockedIdentifierService.setUserID(any(), any(), true) } answers {
+        every { mockedIdentifierService.setIdentityId(any(), any(), true) } answers {
             stateStore.setIdentityId(secondArg())
             true
         }
@@ -1132,7 +1132,7 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns "GoodUID"
+        every { mockedNeuroID.getIdentityId() } returns "GoodUID"
         NeuroID._isSDKStarted = true
 
         val sessionService =
@@ -1184,7 +1184,7 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns "GoodUID"
+        every { mockedNeuroID.getIdentityId() } returns "GoodUID"
         NeuroID._isSDKStarted = false
 
         val sessionService =
@@ -1242,8 +1242,8 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns userID
-        every { mockedIdentifierService.setUserID(any(), userID, true) } returns true
+        every { mockedNeuroID.getIdentityId() } returns userID
+        every { mockedIdentifierService.setIdentityId(any(), userID, true) } returns true
 
         NeuroID._isSDKStarted = false
 
@@ -1269,7 +1269,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedNeuroID.addLinkedSiteID(testSiteID)
 
-            mockedIdentifierService.setUserID(any(), userID, any())
+            mockedIdentifierService.setIdentityId(any(), userID, any())
 
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 

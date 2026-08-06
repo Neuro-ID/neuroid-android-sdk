@@ -121,9 +121,9 @@ internal class NIDIdentifierService(
         }
     }
 
-    fun getUserID() = stateStore.getIdentityId()
+    fun getIdentityId() = stateStore.getIdentityId()
 
-    fun setUserID(
+    fun setIdentityId(
         neuroID: NeuroID,
         userId: String,
         userGenerated: Boolean,
