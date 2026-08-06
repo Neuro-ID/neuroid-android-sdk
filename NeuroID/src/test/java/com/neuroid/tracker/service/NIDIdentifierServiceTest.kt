@@ -54,7 +54,7 @@ class NIDIdentifierServiceTest {
     @After
     fun teardown() {
         neuroID.registeredUserID = ""
-        stateStore.setIdentityId("")
+        stateStore.setIdentityId(null)
         unmockkAll()
     }
 

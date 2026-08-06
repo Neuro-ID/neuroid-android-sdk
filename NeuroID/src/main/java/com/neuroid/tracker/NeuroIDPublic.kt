@@ -68,8 +68,17 @@ interface NeuroIDPublic {
     fun getEnvironment(): String
 
     /**
+     * Gets the currently set Identity ID
+     */
+    fun getIdentityId(): String
+
+    /**
      * get the currently set session id
      */
+    @Deprecated(
+        "getSessionID is deprecated",
+        ReplaceWith("getIdentityId()"),
+    )
     fun getSessionID(): String
 
     /**
@@ -77,7 +86,7 @@ interface NeuroIDPublic {
      */
     @Deprecated(
         "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-        ReplaceWith("getSessionID()"),
+        ReplaceWith("getIdentityId()"),
     )
     fun getUserID(): String
 

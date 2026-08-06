@@ -917,7 +917,7 @@ class NIDSessionServiceTest {
         }
 
         // make sure clearSessionVars was called
-        assert(stateStore.getIdentityId() == "")
+        assert(stateStore.getIdentityId().isNullOrEmpty())
 
         verify(exactly = 1) {
             mockedCallActivityListener.unregisterCallActivityListener(any())
@@ -1019,7 +1019,7 @@ class NIDSessionServiceTest {
 
         sessionService.clearSessionVariables()
 
-        assert(stateStore.getIdentityId() == "")
+        assert(stateStore.getIdentityId().isNullOrEmpty())
         verify {
             mockedNeuroID.registeredUserID = ""
             mockedNeuroID.linkedSiteID = ""

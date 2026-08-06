@@ -4,7 +4,7 @@ internal class StateStore {
 
     private var identityId: String? = null
 
-    fun getIdentityId(): String = identityId ?: ""
+    fun getIdentityId(): String? = identityId
 
     fun setIdentityId(value: String?) {
         identityId = value

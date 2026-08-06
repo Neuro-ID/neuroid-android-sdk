@@ -132,7 +132,7 @@ internal class NIDSessionService(
             return
         }
 
-        if (stateStore.getIdentityId() != "" || NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId() != null || NeuroID.isSDKStarted) {
             stopSession()
         }
 
@@ -173,7 +173,7 @@ internal class NIDSessionService(
     fun resumeCollection() {
         neuroID.captureEvent(queuedEvent = true, type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
-        if (stateStore.getIdentityId().isEmpty() && !NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId().isNullOrEmpty() && !NeuroID.isSDKStarted) {
             return
         }
 

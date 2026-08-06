@@ -78,7 +78,7 @@ internal class NIDNetworkListener(
                     neuroID.sessionService.pauseCollection(false)
                 }
         } else {
-            if (!neuroID.isStopped() || stateStore.getIdentityId().isEmpty()) {
+            if (!neuroID.isStopped() || stateStore.getIdentityId().isNullOrEmpty()) {
                 return
             }
             haveNetworkJob =
