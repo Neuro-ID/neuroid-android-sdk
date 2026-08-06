@@ -409,7 +409,7 @@ class NIDSessionServiceTest {
 
         every { mockedNeuroID.userID } returns "fakeID"
         every { mockedNeuroID.getUserID() } returns "fakeID2"
-        every { mockedIdentifierService.setUserID(any(), any(), false) } returns true
+        every { mockedIdentifierService.setUserID(any(), any(), true) } returns true
 
         val sessionService =
             createSessionServiceInstance(
@@ -423,18 +423,14 @@ class NIDSessionServiceTest {
 
         sessionService.startSession(
             siteID = testSiteID,
+            sessionID = "updatedID"
         ) {
             isStarted = it.started
             newID = it.sessionID
         }
 
         assert(isStarted == true)
-        assert(newID == "fakeID2")
-
-        // assert variables were called to clear (stopSession)
-        verify(exactly = 1) {
-            mockedNeuroID.userID = ""
-        }
+        assert(newID == "updatedID")
 
         // assert resumeCollection job was called
         verify(exactly = 1) {

@@ -37,7 +37,6 @@ internal class NIDSessionService(
         neuroID.timestamp = System.currentTimeMillis()
 
         neuroID.application?.let {
-            neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
             configService.updateIsSampledStatus(neuroID, neuroID.linkedSiteID)
@@ -148,10 +147,6 @@ internal class NIDSessionService(
                 resumeCollection()
             },
         ) {
-            // we need to set finalSessionID with the set random user id
-            // if a sessionID was not passed in
-            finalSessionID = neuroID.getUserID()
-
             completion(SessionStartResult(true, finalSessionID))
         }
     }

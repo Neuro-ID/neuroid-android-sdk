@@ -84,7 +84,6 @@ class NeuroID
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
         private var firstTime = true
-        internal var sessionID = ""
         internal var clientID = ""
         internal var userID = ""
 

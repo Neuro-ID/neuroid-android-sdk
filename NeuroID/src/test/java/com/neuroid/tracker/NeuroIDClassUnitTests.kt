@@ -1753,21 +1753,6 @@ open class NeuroIDClassUnitTests {
         assertEquals("", value)
     }
 
-    @Test
-    fun test_getSessionID_returnsUserID_notSessionID() {
-        // Explicitly verify that getSessionID() returns userID and NOT sessionID
-        // This covers the behavioral change where getSessionID() was updated to return userID
-        val testUserID = "user-id-value"
-        val testSessionID = "session-id-value"
-        NeuroID.getInternalInstance()?.userID = testUserID
-        NeuroID.getInternalInstance()?.sessionID = testSessionID
-
-        val value = NeuroID.getInternalInstance()?.getSessionID()
-
-        assertEquals(testUserID, value)
-        assertNotEquals(testSessionID, value)
-    }
-
     //    getClientID
     @Test
     fun testGetClientID() {
