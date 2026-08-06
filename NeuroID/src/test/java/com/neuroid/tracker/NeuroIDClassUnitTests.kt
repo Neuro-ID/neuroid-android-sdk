@@ -7,24 +7,35 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import androidx.lifecycle.Lifecycle
 import com.neuroid.tracker.callbacks.ActivityCallbacks
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
+import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.events.TOUCH_START
+import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRegion
+import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.getAppMetaData
 import io.mockk.coEvery
@@ -279,6 +290,9 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
+        // reset in case a test substituted a mocked provider
+        NeuroID.setTestProcessLifecycleProvider(NIDProcessLifecycleProvider())
+
         safeUnmockkAll()
     }
 
@@ -521,11 +535,14 @@ open class NeuroIDClassUnitTests {
         mockkStatic(::getAppMetaData)
         every { getAppMetaData(any(), any(), any()) } returns null
 
-        // captureAdvancedDevice is launched on Dispatchers.IO from checkThenCaptureAdvancedDevice when
-        // isAdvancedDevice == true. Left unmocked, that background coroutine instantiates
-        // mocked-constructor classes (e.g. NIDSharedPrefsDefaults) while tearDown's unmockkAll() is
-        // disposing those same constructor mocks, causing a ConcurrentModificationException. Stubbing it
-        // makes the coroutine a no-op so cleanup is deterministic.
+        // captureAdvancedDevice is launched on Dispatchers.IO from checkThenCaptureAdvancedDevice,
+        // which is now only ever invoked from NIDAdvancedDeviceLifecycleObserver (once the app
+        // process reaches the foreground) rather than at construction time. Left unmocked here as a
+        // safety net in case a test's process-lifecycle observer fires: without this stub, that
+        // background coroutine would instantiate mocked-constructor classes (e.g.
+        // NIDSharedPrefsDefaults) while tearDown's unmockkAll() is disposing those same constructor
+        // mocks, causing a ConcurrentModificationException. Stubbing it makes the coroutine a no-op
+        // so cleanup is deterministic.
         mockkStatic("com.neuroid.tracker.extensions.AdvancedDeviceExtensionKt")
         every { any<NeuroID>().captureAdvancedDevice(any(), any(), any(), any()) } returns Unit
 
@@ -670,17 +687,28 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_init_withApplication_isAdvancedDevice_callsResetClientId() {
+    fun test_init_withApplication_isAdvancedDevice_doesNotCallResetClientIdAtConstruction() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
+
+        // Mock the process lifecycle so setNeuroIDInstance's registration doesn't touch the real
+        // ProcessLifecycleOwner (main-thread only, unavailable on plain JVM unit tests).
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProcessLifecycleProvider = mockk<NIDProcessLifecycleProvider>()
+        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
 
         NeuroID.BuilderConfig(
             mockedApplication,
             NIDConfiguration("key_test_fake1234", true, "", true, NeuroID.PRODUCTION),
         ).build()
 
-        verify(atLeast = 1) {
+        // resetClientId() is no longer invoked at construction time - the advanced-device
+        // trigger (and its accompanying resetClientId() call) was removed from the constructor
+        // in favor of the single deterministic trigger in NIDAdvancedDeviceLifecycleObserver,
+        // which only fires once the app process reaches the foreground.
+        verify(exactly = 0) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
         }
     }
@@ -1013,10 +1041,15 @@ open class NeuroIDClassUnitTests {
         val mockedNeuroID = mockk<NeuroID>(relaxed = true)
         val mockedLogger = mockk<NIDLogWrapper>()
 
+        // Mock the process lifecycle so no real ProcessLifecycleOwner (main-thread only) is touched
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProcessLifecycleProvider = mockk<NIDProcessLifecycleProvider>()
+        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
+
         every { mockedNeuroID.isAdvancedDevice } returns true
         every { mockedNeuroID.logger } returns mockedLogger
         every { mockedNeuroID.setupCallbacks() } just runs
-        every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
         every {
             mockedNeuroID.captureEvent(
                 any(),
@@ -1080,9 +1113,11 @@ open class NeuroIDClassUnitTests {
         // Call setNeuroIDInstance
         NeuroID.setNeuroIDInstance(mockedNeuroID)
 
-        // Verify checkThenCaptureAdvancedDevice was called with true
+        // Verify a process-lifecycle observer was registered (fires checkThenCaptureAdvancedDevice
+        // once the app process reaches the foreground - see NIDAdvancedDeviceLifecycleObserver),
+        // rather than capturing synchronously at build time.
         verify(exactly = 1) {
-            mockedNeuroID.checkThenCaptureAdvancedDevice(true)
+            mockedLifecycle.addObserver(any())
         }
 
         // Verify setupCallbacks was called
@@ -2187,6 +2222,105 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.captureEvent(type = "testEvent")
 
         assertEquals(0, storedEvents.count())
+    }
+
+    /**
+     * Regression test for the "fingerprint-only session" bug.
+     *
+     * Reproduces the state observed in production when app-switching drives
+     * overlapping pause/resume cycles (see android-issue.md / issue-followup.md):
+     * the SDK reports started (`_isSDKStarted == true`) but the job manager's
+     * send/cadence loop is dead (`nidJobServiceManager.isStopped() == true`).
+     *
+     * In that state every behavioral event is a NON-queued capture and is dropped
+     * by the guard in captureEvent(), while the advanced-device (fingerprint)
+     * request is captured as a queuedEvent and bypasses the guard. The net result
+     * is a session whose only surviving event is the fingerprint - exactly the
+     * symptom the customer reported.
+     */
+    @Test
+    fun testCaptureEvent_startedButJobStopped_sessionContainsOnlyFingerprint() {
+        // Arrange: the "dead but started" state.
+        NeuroID._isSDKStarted = true
+        setMockedNIDJobServiceManager(isStopped = true)
+        setMockedApplication()
+
+        // Use a REAL datastore so we can inspect the exact payload the sender would
+        // flush: getAllEvents() merges queued + stored events, just like a real send.
+        val configForStore = mockk<ConfigService>()
+        every { configForStore.configCache } returns NIDRemoteConfig()
+        val dataStore = NIDDataStoreManagerImp(NIDLogWrapper(), configForStore)
+        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStore)
+
+        val nid = NeuroID.getInternalInstance()!!
+
+        // Act: capture the events a normal workflow emits at session start.
+        // 1) Session + behavioral events - all NON-queued (like createSession(),
+        //    the activity callbacks, and touch handling emit them).
+        nid.captureEvent(true, type = RESUME_EVENT_CAPTURE)
+        nid.captureEvent(true, type = MOBILE_METADATA_ANDROID)
+        nid.captureEvent(type = WINDOW_LOAD)
+        nid.captureEvent(type = TOUCH_START)
+        // 2) The advanced-device / fingerprint request - captured as a QUEUED event,
+        //    exactly like AdvancedDeviceIDManager does (cached-ID path).
+        nid.captureEvent(
+            queuedEvent = true,
+            type = ADVANCED_DEVICE_REQUEST,
+            rid = "test-request-id",
+            c = true,
+            l = 0,
+        )
+        // Assert: the payload the collector would receive contains ONLY the
+        // fingerprint. Every behavioral event (including CREATE_SESSION) was
+        // silently dropped by the stopped guard.
+        val payload = dataStore.getAllEvents()
+        assertEquals(3, payload.count())
+        assertEquals(true, payload.any { it.type == ADVANCED_DEVICE_REQUEST })
+        assertEquals(true, payload.any { it.type == RESUME_EVENT_CAPTURE })
+
+        // And the fingerprint is the only event that even reached the send path -
+        // the behavioral events return before the send-trigger switch, so the sole
+        // forced flush comes from ADVANCED_DEVICE_REQUEST.
+        verify(exactly = 1) { nid.nidJobServiceManager.sendEvents(true) }
+    }
+
+    /**
+     * Control case: with the job manager actually running, the same batch of events
+     * produces a healthy session (fingerprint + all behavioral events). This shows
+     * the difference is the dead send/cadence job, not the events themselves.
+     */
+    @Test
+    fun testCaptureEvent_startedAndJobRunning_sessionContainsAllEvents() {
+        NeuroID._isSDKStarted = true
+        setMockedNIDJobServiceManager(isStopped = false)
+        setMockedApplication()
+
+        val configForStore = mockk<ConfigService>()
+        every { configForStore.configCache } returns NIDRemoteConfig()
+        val dataStore = NIDDataStoreManagerImp(NIDLogWrapper(), configForStore)
+        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStore)
+
+        val nid = NeuroID.getInternalInstance()!!
+
+        nid.captureEvent(type = CREATE_SESSION)
+        nid.captureEvent(type = MOBILE_METADATA_ANDROID)
+        nid.captureEvent(type = WINDOW_LOAD)
+        nid.captureEvent(type = TOUCH_START)
+        nid.captureEvent(
+            queuedEvent = true,
+            type = ADVANCED_DEVICE_REQUEST,
+            rid = "test-request-id",
+            c = true,
+            l = 0,
+        )
+
+        val payload = dataStore.getAllEvents()
+        assertEquals(5, payload.count())
+        assertEquals(true, payload.any { it.type == CREATE_SESSION })
+        assertEquals(true, payload.any { it.type == ADVANCED_DEVICE_REQUEST })
+        assertEquals(true, payload.any { it.type == WINDOW_LOAD })
+        assertEquals(true, payload.any { it.type == TOUCH_START })
+        assertEquals(true, payload.any { it.type == MOBILE_METADATA_ANDROID })
     }
 
     @Test

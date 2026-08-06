@@ -26,13 +26,7 @@ fun NeuroIDPublic.start(
     completion: (Boolean) -> Unit = {},
 ) {
     start {
-        if (!it) {
-            completion(it)
-        } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
-
-            completion(it)
-        }
+        completion(it)
     }
 }
 
@@ -51,15 +45,7 @@ fun NeuroIDPublic.startSession(
     startSession(
         sessionID,
     ) {
-        if (!it.started) {
-            completion(it)
-        } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
-                shouldCapture = advancedDeviceSignals,
-            )
-
-            completion(it)
-        }
+        completion(it)
     }
 }
 

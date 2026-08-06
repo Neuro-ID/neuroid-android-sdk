@@ -11,6 +11,7 @@ import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
+import com.neuroid.tracker.callbacks.NIDAdvancedDeviceLifecycleObserver
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
@@ -55,6 +56,7 @@ import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
+import com.neuroid.tracker.utils.NIDProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
@@ -218,10 +220,6 @@ class NeuroID
                 )
 
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
-                if (isAdvancedDevice) {
-                    resetClientId()
-                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
-                }
 
                 sessionService =
                     NIDSessionService(
@@ -408,6 +406,16 @@ class NeuroID
             internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
             private var singleton: NeuroID? = null
 
+            // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
+            // of hitting ProcessLifecycleOwner's real main-thread requirement.
+            @Volatile
+            internal var processLifecycleProvider: NIDProcessLifecycleProvider = NIDProcessLifecycleProvider()
+
+            @TestOnly
+            internal fun setTestProcessLifecycleProvider(provider: NIDProcessLifecycleProvider) {
+                processLifecycleProvider = provider
+            }
+
             @TestOnly
             internal fun setSingletonNull() {
                 singleton = null
@@ -416,10 +424,17 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    if (neuroID.isAdvancedDevice) {
-                        neuroID.checkThenCaptureAdvancedDevice(true)
-                    }
                     singleton?.setupCallbacks()
+
+                    // Trigger advanced-device (FPJS) capture exactly once, the first time the
+                    // host app's process reaches the foreground (see NIDAdvancedDeviceLifecycleObserver).
+                    // This intentionally does NOT fire during headless process wake-ups (e.g. a
+                    // BroadcastReceiver-triggered push cold start) where no Activity is ever started.
+                    if (neuroID.isAdvancedDevice) {
+                        processLifecycleProvider.getProcessLifecycle().addObserver(
+                            NIDAdvancedDeviceLifecycleObserver(neuroID),
+                        )
+                    }
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -590,6 +605,12 @@ class NeuroID
          *
          * Keeping this wrapper around just in case we have to do something similar in the
          * future.
+         *
+         * Ensure that NIDAdvancedDeviceLifecycleObserver is registered to the process
+         * lifecycle so that this is only called once when the app first comes to the foreground.
+         * This avoids unnecessary FPJS calls during headless operations
+         * (e.g. a BroadcastReceiver-triggered push cold start) where no Activity
+         * is ever created.
          */
         internal fun checkThenCaptureAdvancedDevice(
             shouldCapture: Boolean = isAdvancedDevice,
