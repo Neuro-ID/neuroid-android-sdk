@@ -275,7 +275,7 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
         assertEquals("Expected Log Warning Count is Greater than 0", 0, warningCount)
 
-        NeuroID.getInternalInstance()?.state?.setUserID("")
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
@@ -1736,7 +1736,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
-        NeuroID.getInternalInstance()?.state?.setUserID(expectedValue)
+        NeuroID.getInternalInstance()?.state?.setIdentityId(expectedValue)
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
@@ -1745,7 +1745,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun test_getSessionID_returnsEmptyString() {
-        NeuroID.getInternalInstance()?.state?.setUserID("")
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 

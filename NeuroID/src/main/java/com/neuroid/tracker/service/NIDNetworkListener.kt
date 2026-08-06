@@ -31,7 +31,7 @@ import kotlin.coroutines.CoroutineContext
  * running, it will take no action if event collection is not running, it will wait 10 seconds and
  * resume event collection
  */
-class NIDNetworkListener(
+internal class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
     private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
@@ -78,7 +78,7 @@ class NIDNetworkListener(
                     neuroID.sessionService.pauseCollection(false)
                 }
         } else {
-            if (!neuroID.isStopped() || stateStore.getUserID().isEmpty()) {
+            if (!neuroID.isStopped() || stateStore.getIdentityId().isEmpty()) {
                 return
             }
             haveNetworkJob =

@@ -54,7 +54,7 @@ class NIDIdentifierServiceTest {
     @After
     fun teardown() {
         neuroID.registeredUserID = ""
-        stateStore.setUserID("")
+        stateStore.setIdentityId("")
         unmockkAll()
     }
 
@@ -306,7 +306,7 @@ class NIDIdentifierServiceTest {
     //    getUserID
     @Test
     fun test_getUserID() {
-        stateStore.setUserID(goodUID)
+        stateStore.setIdentityId(goodUID)
 
         assert(identifierService.getUserID() == goodUID)
     }
@@ -320,7 +320,7 @@ class NIDIdentifierServiceTest {
 
         Assert.assertTrue(result)
 
-        assert(stateStore.getUserID() == goodUID)
+        assert(stateStore.getIdentityId() == goodUID)
 
         verifyCaptureEvent(
             neuroID,

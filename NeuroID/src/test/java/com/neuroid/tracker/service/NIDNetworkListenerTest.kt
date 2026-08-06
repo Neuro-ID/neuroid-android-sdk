@@ -276,7 +276,7 @@ class NIDNetworkListenerTest {
         every { neuroID.isConnected } returns isConnectedOrConnecting
         every { neuroID.isStopped() } returns isStopped
 
-        val stateStore = StateStore().also { it.setUserID(userId) }
+        val stateStore = StateStore().also { it.setIdentityId(userId) }
 
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType

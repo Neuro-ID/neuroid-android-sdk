@@ -684,7 +684,7 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
-        override fun getSessionID(): String = state.getUserID()
+        override fun getSessionID(): String = state.getIdentityId()
 
         @Deprecated(
             "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
