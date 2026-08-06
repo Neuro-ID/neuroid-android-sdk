@@ -16,6 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 internal class NIDIdentifierService(
     val logger: NIDLogWrapper,
     val validationService: NIDValidationService,
+    val stateStore: StateStore,
 ) {
     internal fun getOriginResult(
         idValue: String,
@@ -120,7 +121,7 @@ internal class NIDIdentifierService(
         }
     }
 
-    fun getUserID(neuroID: NeuroID) = neuroID.userID
+    fun getUserID() = stateStore.getUserID()
 
     fun setUserID(
         neuroID: NeuroID,
@@ -139,7 +140,7 @@ internal class NIDIdentifierService(
             return false
         }
 
-        neuroID.userID = userId
+        stateStore.setUserID(userId)
         return true
     }
 

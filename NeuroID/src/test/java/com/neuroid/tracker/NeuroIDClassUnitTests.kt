@@ -275,7 +275,7 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
         assertEquals("Expected Log Warning Count is Greater than 0", 0, warningCount)
 
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setUserID("")
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
@@ -1328,13 +1328,13 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
         // Mock getUserID to return test user ID
-        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+        every { mockedIdentifierService.getUserID() } returns testUserID
 
         val result = NeuroID.getInstance()?.getUserID()
 
         // Verify identifierService.getUserID was called
         verify(exactly = 1) {
-            mockedIdentifierService.getUserID(any())
+            mockedIdentifierService.getUserID()
         }
 
         // Verify result matches
@@ -1347,7 +1347,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
         // Mock getUserID to return empty string
-        every { mockedIdentifierService.getUserID(any()) } returns ""
+        every { mockedIdentifierService.getUserID() } returns ""
 
         val result = NeuroID.getInstance()?.getUserID()
 
@@ -1736,7 +1736,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
-        NeuroID.getInternalInstance()?.userID = expectedValue
+        NeuroID.getInternalInstance()?.state?.setUserID(expectedValue)
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
@@ -1745,7 +1745,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun test_getSessionID_returnsEmptyString() {
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setUserID("")
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 

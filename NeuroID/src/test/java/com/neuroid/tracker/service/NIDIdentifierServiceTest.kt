@@ -29,6 +29,7 @@ class NIDIdentifierServiceTest {
     private lateinit var neuroID: NeuroID
     private lateinit var identifierService: NIDIdentifierService
     private lateinit var validationService: NIDValidationService
+    private lateinit var stateStore: StateStore
 
     private val goodUID = "good_UID"
     private val badUID = "bad UID @#!"
@@ -38,11 +39,13 @@ class NIDIdentifierServiceTest {
         logger = getMockedLogger()
         neuroID = getMockedNeuroID()
         validationService = getMockedValidationService()
+        stateStore = StateStore()
 
         identifierService =
             NIDIdentifierService(
                 logger = logger,
                 validationService,
+                stateStore,
             )
 
         NeuroID._isSDKStarted = false
@@ -51,7 +54,7 @@ class NIDIdentifierServiceTest {
     @After
     fun teardown() {
         neuroID.registeredUserID = ""
-        neuroID.userID = ""
+        stateStore.setUserID("")
         unmockkAll()
     }
 
@@ -303,9 +306,9 @@ class NIDIdentifierServiceTest {
     //    getUserID
     @Test
     fun test_getUserID() {
-        every { neuroID.userID } returns goodUID
+        stateStore.setUserID(goodUID)
 
-        assert(identifierService.getUserID(neuroID) == goodUID)
+        assert(identifierService.getUserID() == goodUID)
     }
 
     //    setUserID
@@ -317,9 +320,7 @@ class NIDIdentifierServiceTest {
 
         Assert.assertTrue(result)
 
-        verify(exactly = 1) {
-            neuroID.userID = goodUID
-        }
+        assert(stateStore.getUserID() == goodUID)
 
         verifyCaptureEvent(
             neuroID,

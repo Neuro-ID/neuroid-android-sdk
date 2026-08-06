@@ -26,6 +26,7 @@ internal class NIDSessionService(
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
     private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
+    private val stateStore: StateStore,
 ) {
     // Tracks the number of pauseCollection calls to detect stale resumeCollectionCompletion callbacks.
     // When resumeCollection registers an invokeOnCompletion callback, it captures the current
@@ -131,7 +132,7 @@ internal class NIDSessionService(
             return
         }
 
-        if (neuroID.userID != "" || NeuroID.isSDKStarted) {
+        if (stateStore.getUserID() != "" || NeuroID.isSDKStarted) {
             stopSession()
         }
 
@@ -172,7 +173,7 @@ internal class NIDSessionService(
     fun resumeCollection() {
         neuroID.captureEvent(queuedEvent = true, type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
-        if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
+        if (stateStore.getUserID().isEmpty() && !NeuroID.isSDKStarted) {
             return
         }
 
@@ -256,7 +257,7 @@ internal class NIDSessionService(
     }
 
     fun clearSessionVariables() {
-        neuroID.userID = ""
+        stateStore.setUserID("")
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
         configService.clearSiteIDSampleMap(neuroID)

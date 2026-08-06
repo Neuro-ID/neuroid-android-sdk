@@ -35,6 +35,7 @@ class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
     private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
+    private val stateStore: StateStore,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
     private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE,
 ) : BroadcastReceiver() {
@@ -77,7 +78,7 @@ class NIDNetworkListener(
                     neuroID.sessionService.pauseCollection(false)
                 }
         } else {
-            if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
+            if (!neuroID.isStopped() || stateStore.getUserID().isEmpty()) {
                 return
             }
             haveNetworkJob =

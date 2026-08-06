@@ -46,6 +46,7 @@ import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
+import com.neuroid.tracker.service.StateStore
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
@@ -85,7 +86,6 @@ class NeuroID
 
         private var firstTime = true
         internal var clientID = ""
-        internal var userID = ""
 
         internal var linkedSiteID: String? = null
         internal var packetNumber: Int = 0
@@ -103,6 +103,7 @@ class NeuroID
         internal var rnVersion = ""
 
         // Dependency Injections
+        internal var state: StateStore
         internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
         internal var randomGenerator = RandomGenerator()
         internal var logger: NIDLogWrapper = NIDLogWrapper()
@@ -173,6 +174,7 @@ class NeuroID
 
                 tabID = "$rndmId-${generateUniqueHexID()}"
             }
+            state = StateStore()
 
             // We have to have two different retrofit instances because it requires a
             // `base_url` to work off of and our Collection and Config endpoints are
@@ -195,6 +197,7 @@ class NeuroID
                 NIDIdentifierService(
                     logger,
                     validationService,
+                    state,
                 )
 
             application?.let {
@@ -228,6 +231,7 @@ class NeuroID
                         sharedPrefsDefaults,
                         identifierService,
                         validationService,
+                        state,
                     )
 
                 metaData =
@@ -259,6 +263,7 @@ class NeuroID
                         connectivityManager,
                         this,
                         Dispatchers.IO,
+                        state,
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
@@ -679,13 +684,13 @@ class NeuroID
 
         override fun getSDKVersion() = NIDVersion.getSDKVersion()
 
-        override fun getSessionID(): String = userID
+        override fun getSessionID(): String = state.getUserID()
 
         @Deprecated(
             "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
             ReplaceWith("getSessionID()"),
         )
-        override fun getUserID() = identifierService.getUserID(this)
+        override fun getUserID() = identifierService.getUserID()
 
         override fun identify(userID: String): Boolean = identifierService.setUserID(this, userID, true)
 

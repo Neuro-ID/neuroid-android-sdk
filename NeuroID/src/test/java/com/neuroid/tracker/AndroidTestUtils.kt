@@ -63,9 +63,6 @@ internal fun getMockedNeuroID(
     every { nidMock.clientID } returns ""
     every { nidMock.clientID = any() } just runs
 
-    every { nidMock.userID } returns ""
-    every { nidMock.userID = any() } just runs
-
     every { nidMock.registeredUserID } returns ""
     every { nidMock.registeredUserID = any() } just runs
 
