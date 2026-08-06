@@ -23,4 +23,3 @@ class NIDAdvancedDeviceLifecycleObserverUnitTests {
         verify(exactly = 1) { neuroID.checkThenCaptureAdvancedDevice() }
     }
 }
-

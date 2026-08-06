@@ -12,6 +12,3 @@ class NIDProcessLifecycleProviderUnitTests {
         assertEquals(ProcessLifecycleOwner.get().lifecycle, provider.getProcessLifecycle())
     }
 }
-
-
-
