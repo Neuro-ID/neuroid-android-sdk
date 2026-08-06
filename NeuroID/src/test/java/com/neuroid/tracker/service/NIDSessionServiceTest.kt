@@ -423,7 +423,7 @@ class NIDSessionServiceTest {
 
         sessionService.startSession(
             siteID = testSiteID,
-            sessionID = "updatedID"
+            sessionID = "updatedID",
         ) {
             isStarted = it.started
             newID = it.sessionID
