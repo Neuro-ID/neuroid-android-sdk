@@ -105,6 +105,7 @@ class NIDSessionServiceTest {
         ),
         identifierService: NIDIdentifierService = getMockedIdentifierService(),
         validationService: NIDValidationService = getMockedValidationService(),
+        stateStore: StateStore = StateStore(),
     ): NIDSessionService {
         return NIDSessionService(
             getMockedLogger(),
@@ -113,6 +114,7 @@ class NIDSessionServiceTest {
             getMockedSharedPreferenceDefaults(),
             identifierService,
             validationService,
+            stateStore,
         )
     }
 
@@ -359,12 +361,13 @@ class NIDSessionServiceTest {
             mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
-        every { mockedNeuroID.userID } returns "fakeID"
-        every { mockedIdentifierService.setUserID(any(), any(), true) } returns false
+        every { mockedIdentifierService.setIdentityId(any(), any(), true) } returns false
 
+        val stateStore = StateStore().also { it.setIdentityId("fakeID") }
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                stateStore = stateStore,
             )
 
         var isStarted: Boolean? = null
@@ -407,15 +410,19 @@ class NIDSessionServiceTest {
             mockedValidationService.verifyClientKeyExists(any())
         } returns true
 
-        every { mockedNeuroID.userID } returns "fakeID"
-        every { mockedNeuroID.getUserID() } returns "fakeID2"
-        every { mockedIdentifierService.setUserID(any(), any(), false) } returns true
+        every { mockedNeuroID.getIdentityId() } returns "fakeID2"
 
+        val stateStore = StateStore().also { it.setIdentityId("fakeID") }
+        every { mockedIdentifierService.setIdentityId(any(), any(), true) } answers {
+            stateStore.setIdentityId(secondArg())
+            true
+        }
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
                 identifierService = mockedIdentifierService,
                 validationService = mockedValidationService,
+                stateStore = stateStore,
             )
 
         var isStarted: Boolean? = null
@@ -423,18 +430,14 @@ class NIDSessionServiceTest {
 
         sessionService.startSession(
             siteID = testSiteID,
+            sessionID = "updatedID",
         ) {
             isStarted = it.started
             newID = it.sessionID
         }
 
         assert(isStarted == true)
-        assert(newID == "fakeID2")
-
-        // assert variables were called to clear (stopSession)
-        verify(exactly = 1) {
-            mockedNeuroID.userID = ""
-        }
+        assert(newID == "updatedID")
 
         // assert resumeCollection job was called
         verify(exactly = 1) {
@@ -596,7 +599,6 @@ class NIDSessionServiceTest {
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
-        every { mockedNeuroID.userID } returns ""
         every { mockedNeuroID.pauseCollectionJob } returns null
 
         val sessionService =
@@ -626,7 +628,6 @@ class NIDSessionServiceTest {
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         NeuroID._isSDKStarted = true
-        every { mockedNeuroID.userID } returns "ID"
 
         every { mockedNeuroID.pauseCollectionJob } returns null
 
@@ -680,7 +681,6 @@ class NIDSessionServiceTest {
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         NeuroID._isSDKStarted = true
-        every { mockedNeuroID.userID } returns "ID"
 
         every { mockedNeuroID.pauseCollectionJob } returns
             getMockedJob(
@@ -721,7 +721,6 @@ class NIDSessionServiceTest {
         val mockedNeuroID = mockedServices.mockedNeuroID
 
         NeuroID._isSDKStarted = true
-        every { mockedNeuroID.userID } returns "ID"
 
         every { mockedNeuroID.pauseCollectionJob } returns null
 
@@ -897,9 +896,11 @@ class NIDSessionServiceTest {
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
+        val stateStore = StateStore().also { it.setIdentityId("someID") }
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                stateStore = stateStore,
             )
 
         val stopped = sessionService.stopSession()
@@ -916,9 +917,7 @@ class NIDSessionServiceTest {
         }
 
         // make sure clearSessionVars was called
-        verify(exactly = 1) {
-            mockedNeuroID.userID = ""
-        }
+        assert(stateStore.getIdentityId().isNullOrEmpty())
 
         verify(exactly = 1) {
             mockedCallActivityListener.unregisterCallActivityListener(any())
@@ -940,9 +939,11 @@ class NIDSessionServiceTest {
 
         val mockedNeuroID = mockedServices.mockedNeuroID
 
+        val stateStore = StateStore().also { it.setIdentityId("someID") }
         val sessionService =
             createSessionServiceInstance(
                 mockedNeuroID,
+                stateStore = stateStore,
             )
 
         val stopped = sessionService.stop()
@@ -960,9 +961,7 @@ class NIDSessionServiceTest {
         }
 
         // make sure clearSessionVars was NOT called
-        verify(exactly = 0) {
-            mockedNeuroID.userID = ""
-        }
+        assert(stateStore.getIdentityId() == "someID")
 
         verify(exactly = 1) {
             mockedNeuroID.linkedSiteID = ""
@@ -1011,15 +1010,17 @@ class NIDSessionServiceTest {
         val mockedConfigService = mockk<ConfigService>()
         every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
 
+        val stateStore = StateStore().also { it.setIdentityId("someID") }
         val sessionService = createSessionServiceInstance(
             mockedNeuroID,
             configService = mockedConfigService,
+            stateStore = stateStore,
         )
 
         sessionService.clearSessionVariables()
 
+        assert(stateStore.getIdentityId().isNullOrEmpty())
         verify {
-            mockedNeuroID.userID = ""
             mockedNeuroID.registeredUserID = ""
             mockedNeuroID.linkedSiteID = ""
             mockedConfigService.clearSiteIDSampleMap(any())
@@ -1131,7 +1132,7 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns "GoodUID"
+        every { mockedNeuroID.getIdentityId() } returns "GoodUID"
         NeuroID._isSDKStarted = true
 
         val sessionService =
@@ -1183,7 +1184,7 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns "GoodUID"
+        every { mockedNeuroID.getIdentityId() } returns "GoodUID"
         NeuroID._isSDKStarted = false
 
         val sessionService =
@@ -1241,8 +1242,8 @@ class NIDSessionServiceTest {
 
         every { mockedValidationService.verifyClientKeyExists(any()) } returns true
         every { mockedValidationService.validateSiteID(testSiteID) } returns true
-        every { mockedNeuroID.getUserID() } returns userID
-        every { mockedIdentifierService.setUserID(any(), userID, true) } returns true
+        every { mockedNeuroID.getIdentityId() } returns userID
+        every { mockedIdentifierService.setIdentityId(any(), userID, true) } returns true
 
         NeuroID._isSDKStarted = false
 
@@ -1268,7 +1269,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedNeuroID.addLinkedSiteID(testSiteID)
 
-            mockedIdentifierService.setUserID(any(), userID, any())
+            mockedIdentifierService.setIdentityId(any(), userID, any())
 
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 

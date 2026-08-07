@@ -86,17 +86,17 @@ class NIDValidationServiceTest {
         Assert.assertEquals(false, value)
     }
 
-    //    validateUserId
+    //    isValidIdentityId
     @Test
-    fun test_validateUserID_valid() {
-        val value = validationService.validateUserID("goodUserId")
+    fun test_isValidIdentityId_valid() {
+        val value = validationService.isValidIdentityId("goodUserId")
 
         Assert.assertEquals(true, value)
     }
 
     @Test
-    fun test_validateUserID_invalid() {
-        val value = validationService.validateUserID("bad userID")
+    fun test_isValidIdentityId_invalid() {
+        val value = validationService.isValidIdentityId("bad userID")
 
         Assert.assertEquals(false, value)
     }

@@ -96,12 +96,7 @@ class NIDEventSender(
     override fun getRequestPayloadJSON(events: List<NIDEventModel>): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
-        val userID: String? =
-            if (NeuroID.getInstance()?.getUserID() != null) {
-                NeuroID.getInstance()?.getUserID()
-            } else {
-                null
-            }
+        val userID: String? = NeuroID.getInstance()?.getIdentityId()
         val registeredUserID: String? =
             if (NeuroID.getInstance()?.getRegisteredUserID() != null) {
                 NeuroID.getInstance()?.getRegisteredUserID()

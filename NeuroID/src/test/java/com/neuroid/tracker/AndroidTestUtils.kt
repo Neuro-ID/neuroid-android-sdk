@@ -60,14 +60,8 @@ internal fun getMockedNeuroID(
     every { nidMock.clientKey } returns ""
     every { nidMock.clientKey = any() } just runs
 
-    every { nidMock.sessionID } returns ""
-    every { nidMock.sessionID = any() } just runs
-
     every { nidMock.clientID } returns ""
     every { nidMock.clientID = any() } just runs
-
-    every { nidMock.userID } returns ""
-    every { nidMock.userID = any() } just runs
 
     every { nidMock.registeredUserID } returns ""
     every { nidMock.registeredUserID = any() } just runs
@@ -137,12 +131,8 @@ internal fun getMockedNeuroID(
             sw = any(),
             sh = any(),
             f = any(),
-            lsid = any(),
-            sid = any(),
             siteId = any(),
             cid = any(),
-            did = any(),
-            iid = any(),
             loc = any(),
             ua = any(),
             tzo = any(),
@@ -386,7 +376,7 @@ internal fun getMockedValidationService(): NIDValidationService {
     } returns false
 
     every {
-        mockedNIDValidationService.validateUserID(any())
+        mockedNIDValidationService.isValidIdentityId(any())
     } returns false
 
     every {
@@ -471,12 +461,8 @@ internal fun verifyCaptureEvent(
     sw: Float? = null,
     sh: Float? = null,
     f: String? = null,
-    lsid: String? = null,
-    sid: String? = null,
     siteId: String? = null,
     cid: String? = null,
-    did: String? = null,
-    iid: String? = null,
     loc: String? = null,
     ua: String? = null,
     tzo: Int? = null,
@@ -534,12 +520,8 @@ internal fun verifyCaptureEvent(
             sw = sw ?: any(),
             sh = sh ?: any(),
             f = f ?: any(),
-            lsid = lsid ?: any(),
-            sid = sid ?: any(),
             siteId = siteId ?: any(),
             cid = cid ?: any(),
-            did = did ?: any(),
-            iid = iid ?: any(),
             loc = loc ?: any(),
             ua = ua ?: any(),
             tzo = tzo ?: any(),
