@@ -24,7 +24,7 @@ import kotlinx.coroutines.runBlocking
 
 @Deprecated(
     "Use start(completion) instead",
-    ReplaceWith("start(completion)")
+    ReplaceWith("start(completion)"),
 )
 fun NeuroIDPublic.start(
     advancedDeviceSignals: Boolean,
@@ -50,7 +50,7 @@ fun NeuroIDPublic.start(
  */
 @Deprecated(
     "Use startSession(sessionID, completion) instead",
-    ReplaceWith("startSession(sessionID, completion)")
+    ReplaceWith("startSession(sessionID, completion)"),
 )
 fun NeuroIDPublic.startSession(
     sessionID: String? = null,
