@@ -35,7 +35,7 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.NIDProcessLifecycleProvider
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.getAppMetaData
 import io.mockk.coEvery
@@ -268,6 +268,15 @@ open class NeuroIDClassUnitTests {
 
     @Before
     fun setUp() {
+        // Mock the process lifecycle so setNeuroIDInstance's registration in
+        // setNeuroIDInstanceBuilderConfig() below doesn't touch the real ProcessLifecycleOwner
+        // (main-thread only, unavailable on plain JVM unit tests). Individual tests may replace
+        // this with their own mocked provider afterwards if they need specific behavior.
+        val defaultMockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val defaultMockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { defaultMockedProcessLifecycleProvider.getProcessLifecycle() } returns defaultMockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(defaultMockedProcessLifecycleProvider)
+
         // setup instance and logging, use new BuilderConfig
         setNeuroIDInstanceBuilderConfig()
         NeuroID.getInternalInstance()?.application = null
@@ -291,7 +300,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
         // reset in case a test substituted a mocked provider
-        NeuroID.setTestProcessLifecycleProvider(NIDProcessLifecycleProvider())
+        NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
 
         safeUnmockkAll()
     }
@@ -695,7 +704,7 @@ open class NeuroIDClassUnitTests {
         // Mock the process lifecycle so setNeuroIDInstance's registration doesn't touch the real
         // ProcessLifecycleOwner (main-thread only, unavailable on plain JVM unit tests).
         val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
-        val mockedProcessLifecycleProvider = mockk<NIDProcessLifecycleProvider>()
+        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
         every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
         NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
 
@@ -1043,7 +1052,7 @@ open class NeuroIDClassUnitTests {
 
         // Mock the process lifecycle so no real ProcessLifecycleOwner (main-thread only) is touched
         val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
-        val mockedProcessLifecycleProvider = mockk<NIDProcessLifecycleProvider>()
+        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
         every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
         NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
 
@@ -2496,6 +2505,13 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.getInternalInstance()?.application = mockApplication
         // Don't set rnVersion - should use default empty string
+
+        // Mock the process lifecycle so setNeuroIDInstance's registration doesn't touch the real
+        // ProcessLifecycleOwner (main-thread only, unavailable on plain JVM unit tests).
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
 
         // Call captureApplicationMetaData
         val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()

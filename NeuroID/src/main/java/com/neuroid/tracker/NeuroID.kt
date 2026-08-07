@@ -11,7 +11,7 @@ import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
-import com.neuroid.tracker.callbacks.NIDAdvancedDeviceLifecycleObserver
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
@@ -56,7 +56,7 @@ import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
-import com.neuroid.tracker.utils.NIDProcessLifecycleProvider
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
@@ -237,6 +237,7 @@ class NeuroID
                         it.applicationContext,
                     )
 
+
                 captureApplicationMetaData()
 
                 captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
@@ -409,10 +410,10 @@ class NeuroID
             // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
             // of hitting ProcessLifecycleOwner's real main-thread requirement.
             @Volatile
-            internal var processLifecycleProvider: NIDProcessLifecycleProvider = NIDProcessLifecycleProvider()
+            internal var processLifecycleProvider: ProcessLifecycleProvider = ProcessLifecycleProvider()
 
             @TestOnly
-            internal fun setTestProcessLifecycleProvider(provider: NIDProcessLifecycleProvider) {
+            internal fun setTestProcessLifecycleProvider(provider: ProcessLifecycleProvider) {
                 processLifecycleProvider = provider
             }
 
@@ -426,15 +427,10 @@ class NeuroID
                     singleton = neuroID
                     singleton?.setupCallbacks()
 
-                    // Trigger advanced-device (FPJS) capture exactly once, the first time the
-                    // host app's process reaches the foreground (see NIDAdvancedDeviceLifecycleObserver).
-                    // This intentionally does NOT fire during headless process wake-ups (e.g. a
-                    // BroadcastReceiver-triggered push cold start) where no Activity is ever started.
-                    if (neuroID.isAdvancedDevice) {
-                        processLifecycleProvider.getProcessLifecycle().addObserver(
-                            NIDAdvancedDeviceLifecycleObserver(neuroID),
-                        )
-                    }
+                    processLifecycleProvider.getProcessLifecycle().addObserver(
+                        ProcessDeviceLifecycleObserver(neuroID),
+                    )
+
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -598,20 +594,6 @@ class NeuroID
             return true
         }
 
-        /**
-         * Execute the captureAdvancedDevice() method, removed the reflection code since this is
-         * no longer needed. Just call the captureAdvancedDevice() extension method directly
-         * since we moved the FPJS library permanently into the SDK.
-         *
-         * Keeping this wrapper around just in case we have to do something similar in the
-         * future.
-         *
-         * Ensure that NIDAdvancedDeviceLifecycleObserver is registered to the process
-         * lifecycle so that this is only called once when the app first comes to the foreground.
-         * This avoids unnecessary FPJS calls during headless operations
-         * (e.g. a BroadcastReceiver-triggered push cold start) where no Activity
-         * is ever created.
-         */
         internal fun checkThenCaptureAdvancedDevice(
             shouldCapture: Boolean = isAdvancedDevice,
             dispatcher: CoroutineDispatcher = Dispatchers.IO,

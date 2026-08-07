@@ -14,9 +14,24 @@ class NIDAdvancedDeviceLifecycleObserverUnitTests {
     fun `onStart triggers checkThenCaptureAdvancedDevice on the NeuroID instance`() {
         val neuroID = mockk<NeuroID>()
         every { neuroID.checkThenCaptureAdvancedDevice() } just runs
+        every { neuroID.resetClientId() } just runs
 
         val owner = mockk<LifecycleOwner>()
-        val observer = NIDAdvancedDeviceLifecycleObserver(neuroID)
+        val observer = ProcessDeviceLifecycleObserver(neuroID)
+
+        observer.onStart(owner)
+
+        verify(exactly = 1) { neuroID.checkThenCaptureAdvancedDevice() }
+    }
+
+    @Test
+    fun `onStart triggers checkThenCaptureAdvancedDevice on the NeuroID instance isAdvancedDevice false`() {
+        val neuroID = mockk<NeuroID>()
+        every { neuroID.checkThenCaptureAdvancedDevice() } just runs
+        every { neuroID.resetClientId() } just runs
+
+        val owner = mockk<LifecycleOwner>()
+        val observer = ProcessDeviceLifecycleObserver(neuroID)
 
         observer.onStart(owner)
 

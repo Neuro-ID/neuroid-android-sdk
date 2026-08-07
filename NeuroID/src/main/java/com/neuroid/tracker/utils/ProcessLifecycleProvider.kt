@@ -10,6 +10,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
  * wrapper - never call `ProcessLifecycleOwner.get()` directly - so tests can substitute a fake
  * `Lifecycle` instead.
  */
-internal open class NIDProcessLifecycleProvider {
+internal open class ProcessLifecycleProvider {
     open fun getProcessLifecycle(): Lifecycle = ProcessLifecycleOwner.get().lifecycle
 }

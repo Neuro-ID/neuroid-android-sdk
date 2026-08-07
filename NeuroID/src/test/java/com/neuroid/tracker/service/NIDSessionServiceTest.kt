@@ -1,5 +1,6 @@
 package com.neuroid.tracker.service
 
+import androidx.lifecycle.Lifecycle
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -21,6 +22,7 @@ import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
 import io.mockk.just
@@ -58,6 +60,7 @@ class NIDSessionServiceTest {
     }
 
     private fun buildMockClasses(): MockedServices {
+        
         val mockedDataStore = getMockedDataStore()
         val mockedJobServiceManager = getMockedNIDJobServiceManager()
         val mockedCallListener = getMockedCallActivityListener()
@@ -125,6 +128,14 @@ class NIDSessionServiceTest {
         // fail test when NeuroID is built.
         NeuroID.setSingletonNull()
 
+        // Mock the process lifecycle so setNeuroIDInstance's registration in setNeuroIDInstance()
+        // below doesn't touch the real ProcessLifecycleOwner (main-thread only, unavailable on
+        // plain JVM unit tests).
+        val defaultMockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val defaultMockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { defaultMockedProcessLifecycleProvider.getProcessLifecycle() } returns defaultMockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(defaultMockedProcessLifecycleProvider)
+
         // setup instance and logging
         setNeuroIDInstance()
 
@@ -133,6 +144,8 @@ class NIDSessionServiceTest {
 
     @After
     fun tearDown() {
+        // reset in case a test substituted a mocked provider
+        NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
         unmockkAll()
     }
 
