@@ -85,7 +85,7 @@ class NIDEventSender(
         }
 
         val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
-
+        NeuroID.outboundPayloadObserver?.invoke(data)
         httpService.sendEvents(
             requestBody,
             key,
