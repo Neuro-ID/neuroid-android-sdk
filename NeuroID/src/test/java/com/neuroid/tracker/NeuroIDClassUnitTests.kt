@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.LOG
@@ -43,6 +44,9 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -291,6 +295,41 @@ open class NeuroIDClassUnitTests {
     //    setNIDJobServiceManager - Used for mocking
 
     //   setTestURL
+
+    @Test
+    fun test_outboundPayloadObserver_assignmentAndInvocation() {
+        var invoked = false
+
+        NeuroID.outboundPayloadObserver = { _ ->
+            invoked = true
+        }
+
+        NeuroID.outboundPayloadObserver?.invoke("{}")
+
+        assertTrue(invoked)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_fpjsClientOverride_assignment() {
+        val mockedClient = mockk<FingerprintJS>()
+
+        NeuroID.fpjsClientOverride = mockedClient
+
+        assertSame(mockedClient, NeuroID.fpjsClientOverride)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_clearTestObservers_resetsCompanionOverrides() {
+        NeuroID.fpjsClientOverride = mockk()
+        NeuroID.outboundPayloadObserver = { _ -> }
+
+        NeuroID.clearTestObservers()
+
+        assertNull(NeuroID.fpjsClientOverride)
+        assertNull(NeuroID.outboundPayloadObserver)
+    }
 
     @Test
     fun test_ConfigOld() {
