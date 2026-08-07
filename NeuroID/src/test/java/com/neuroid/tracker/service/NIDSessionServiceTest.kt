@@ -60,7 +60,6 @@ class NIDSessionServiceTest {
     }
 
     private fun buildMockClasses(): MockedServices {
-        
         val mockedDataStore = getMockedDataStore()
         val mockedJobServiceManager = getMockedNIDJobServiceManager()
         val mockedCallListener = getMockedCallActivityListener()

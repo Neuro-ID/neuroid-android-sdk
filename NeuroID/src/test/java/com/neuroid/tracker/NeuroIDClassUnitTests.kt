@@ -35,8 +35,8 @@ import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.getAppMetaData
 import io.mockk.coEvery
 import io.mockk.every
