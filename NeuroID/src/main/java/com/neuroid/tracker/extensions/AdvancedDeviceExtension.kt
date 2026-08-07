@@ -22,6 +22,11 @@ import kotlinx.coroutines.runBlocking
  * enable/disable the advanced signal collection. Return true to indicate that the SDK is started.
  * Return false if not started.
  */
+
+@Deprecated(
+    "Use start(completion) instead",
+    ReplaceWith("start(completion)"),
+)
 fun NeuroIDPublic.start(
     advancedDeviceSignals: Boolean,
     completion: (Boolean) -> Unit = {},
@@ -44,6 +49,10 @@ fun NeuroIDPublic.start(
  * indicating the started state of the SDK. Takes in a boolean to
  * enable/disable the advanced signal collection.
  */
+@Deprecated(
+    "Use startSession(sessionID, completion) instead",
+    ReplaceWith("startSession(sessionID, completion)"),
+)
 fun NeuroIDPublic.startSession(
     sessionID: String? = null,
     advancedDeviceSignals: Boolean,
