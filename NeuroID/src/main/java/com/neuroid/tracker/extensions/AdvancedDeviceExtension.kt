@@ -1,6 +1,7 @@
 package com.neuroid.tracker.extensions
 
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroID.Companion.fpjsClientOverride
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.NIDRegion
@@ -88,6 +89,7 @@ fun NeuroID.captureAdvancedDevice(
                         this.linkedSiteID ?: "",
                         configService,
                         advancedDeviceKey,
+                        fpjsClientOverride,
                         useAdvancedDeviceProxy = useAdvancedDeviceProxy,
                         region = region,
                     )

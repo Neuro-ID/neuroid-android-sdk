@@ -9,7 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import com.fingerprintjs.android.fpjs_pro.Error
 
-class NIDTestRunnerInstrumentation  : AndroidJUnitRunner() {
+class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
     private val gson = Gson()
 
     private fun getMockedFPJSClient(
@@ -37,7 +37,7 @@ class NIDTestRunnerInstrumentation  : AndroidJUnitRunner() {
         return mockedFPJSClient
     }
     override fun onCreate(arguments: Bundle) {
-        NIDTestRunner.clearRecorders()
+        NIDTestInstrumentation.clearRecorders()
         NeuroID.testFpjsClient = getMockedFPJSClient("test-visitor-id", null, null)
         NeuroID.testOutboundPayloadObserver = { payload ->
             runCatching {
@@ -46,7 +46,7 @@ class NIDTestRunnerInstrumentation  : AndroidJUnitRunner() {
                 MockServerHolder.attemptedRecorder.addEvent(eventModel)
             }
         }
-        val thread = Thread { NIDTestRunner.start() }
+        val thread = Thread { NIDTestInstrumentation.start() }
         thread.start()
         thread.join()
         super.onCreate(arguments)
@@ -54,7 +54,7 @@ class NIDTestRunnerInstrumentation  : AndroidJUnitRunner() {
 
     override fun finish(resultCode: Int, results: Bundle) {
         NeuroID.clearTestObservers()
-        NIDTestRunner.shutdown()
+        NIDTestInstrumentation.shutdown()
         super.finish(resultCode, results)
     }
 }

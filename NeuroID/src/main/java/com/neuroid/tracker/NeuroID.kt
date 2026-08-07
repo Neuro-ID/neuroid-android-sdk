@@ -12,6 +12,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -408,7 +409,12 @@ class NeuroID
             internal fun setSingletonNull() {
                 singleton = null
             }
-
+            @TestOnly
+            var fpjsClientOverride: FingerprintJS? = null
+            @TestOnly
+            var outboundPayloadObserver: ((String) -> Unit)? = null
+            @TestOnly
+            fun clearTestObservers() { outboundPayloadObserver = null; fpjsClientOverride = null }
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID

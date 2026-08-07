@@ -2,7 +2,7 @@ package com.neuroid.example
 
 import okhttp3.mockwebserver.MockWebServer
 
-object NIDTestRunner {
+object NIDTestInstrumentation {
     val server = MockWebServer()
     val recorder = EventRecorder()
     val attemptedRecorder = EventRecorder()
