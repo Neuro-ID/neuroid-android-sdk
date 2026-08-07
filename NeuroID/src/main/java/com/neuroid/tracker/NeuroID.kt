@@ -516,7 +516,7 @@ class NeuroID
                 )
 
                 nidJobServiceManager.setTestEventSender(
-                    NIDEventSender(httpService, it)
+                    NIDEventSender(httpService, it),
                 )
             }
         }
