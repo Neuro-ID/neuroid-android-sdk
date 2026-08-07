@@ -1364,7 +1364,31 @@ open class NeuroIDClassUnitTests {
         assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
     }
 
-    // getIdentityId() Tests
+    // checkThenCaptureAdvancedDevice() Tests
+    @Test
+    fun test_checkThenCaptureAdvancedDevice_resetsClientId() {
+        setMockedNIDJobServiceManager(false)
+        setMockedDataStore()
+
+        val mockedApplication = getMockedApplication()
+        NeuroID.getInternalInstance()?.application = mockedApplication
+
+        val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
+        every { mockNIDSharedPrefsDefaults.resetClientID() } returns "new-client-id-999"
+        NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
+
+        // shouldCapture = false so we don't need to mock the downstream advanced-device network
+        // call; we only care that the client ID reset happens (synchronously, before the
+        // advanced-device capture is launched).
+        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = false)
+
+        verify(exactly = 1) {
+            mockNIDSharedPrefsDefaults.resetClientID()
+        }
+        assertEquals("new-client-id-999", NeuroID.getInternalInstance()?.clientID)
+    }
+
+    // getUserID() Tests
     @Test
     fun test_getIdentityId_returnsUserID() {
         val testUserID = "test-user-456"

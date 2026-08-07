@@ -5,8 +5,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.neuroid.tracker.NeuroID
 
 /**
- * Triggers the advanced-device capture exactly once, the first time the host
- * application's process actually reaches the foreground.
+ * Triggers a client ID reset and the advanced-device capture exactly once, the first time the
+ * host application's process actually reaches the foreground.
  *
  * This is registered against [androidx.lifecycle.ProcessLifecycleOwner], **not** a per-Activity
  * `Application.ActivityLifecycleCallbacks`. `ProcessLifecycleOwner`'s `onStart` only fires when

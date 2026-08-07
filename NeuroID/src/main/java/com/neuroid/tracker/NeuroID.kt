@@ -11,8 +11,8 @@ import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.neuroid.tracker.callbacks.ActivityCallbacks
-import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -56,10 +56,10 @@ import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
-import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
@@ -236,7 +236,6 @@ class NeuroID
                     NIDMetaData(
                         it.applicationContext,
                     )
-
 
                 captureApplicationMetaData()
 
@@ -430,7 +429,6 @@ class NeuroID
                     processLifecycleProvider.getProcessLifecycle().addObserver(
                         ProcessDeviceLifecycleObserver(neuroID),
                     )
-
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -598,6 +596,8 @@ class NeuroID
             shouldCapture: Boolean = isAdvancedDevice,
             dispatcher: CoroutineDispatcher = Dispatchers.IO,
         ) {
+            resetClientId()
+
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
                     shouldCapture,
