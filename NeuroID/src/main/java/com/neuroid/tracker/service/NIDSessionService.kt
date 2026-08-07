@@ -26,6 +26,7 @@ internal class NIDSessionService(
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
     private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
+    private val stateStore: StateStore,
 ) {
     // Tracks the number of pauseCollection calls to detect stale resumeCollectionCompletion callbacks.
     // When resumeCollection registers an invokeOnCompletion callback, it captures the current
@@ -37,7 +38,6 @@ internal class NIDSessionService(
         neuroID.timestamp = System.currentTimeMillis()
 
         neuroID.application?.let {
-            neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
             configService.updateIsSampledStatus(neuroID, neuroID.linkedSiteID)
@@ -132,12 +132,12 @@ internal class NIDSessionService(
             return
         }
 
-        if (neuroID.userID != "" || NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId() != null || NeuroID.isSDKStarted) {
             stopSession()
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID(true)
-        if (!identifierService.setUserID(neuroID, finalSessionID, sessionID != null)) {
+        if (!identifierService.setIdentityId(neuroID, finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }
@@ -148,10 +148,6 @@ internal class NIDSessionService(
                 resumeCollection()
             },
         ) {
-            // we need to set finalSessionID with the set random user id
-            // if a sessionID was not passed in
-            finalSessionID = neuroID.getUserID()
-
             completion(SessionStartResult(true, finalSessionID))
         }
     }
@@ -177,7 +173,7 @@ internal class NIDSessionService(
     fun resumeCollection() {
         neuroID.captureEvent(queuedEvent = true, type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
-        if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId().isNullOrEmpty() && !NeuroID.isSDKStarted) {
             return
         }
 
@@ -261,7 +257,7 @@ internal class NIDSessionService(
     }
 
     fun clearSessionVariables() {
-        neuroID.userID = ""
+        stateStore.setIdentityId(null)
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
         configService.clearSiteIDSampleMap(neuroID)
@@ -329,7 +325,7 @@ internal class NIDSessionService(
                 completion(
                     SessionStartResult(
                         true,
-                        neuroID.getUserID(),
+                        neuroID.getIdentityId(),
                     ),
                 )
             } else {
@@ -349,7 +345,7 @@ internal class NIDSessionService(
                         completion(
                             SessionStartResult(
                                 it,
-                                neuroID.getUserID(),
+                                neuroID.getIdentityId(),
                             ),
                         )
                     }
@@ -377,11 +373,7 @@ internal class NIDSessionService(
             neuroID.captureEvent(
                 type = type,
                 f = neuroID.clientKey,
-                sid = neuroID.sessionID,
-                lsid = "null",
                 cid = neuroID.clientID,
-                did = sharedPreferenceDefaults.getDeviceID(),
-                iid = sharedPreferenceDefaults.getIntermediateID(),
                 loc = sharedPreferenceDefaults.getLocale(),
                 ua = sharedPreferenceDefaults.getUserAgent(),
                 tzo = sharedPreferenceDefaults.getTimeZone(),

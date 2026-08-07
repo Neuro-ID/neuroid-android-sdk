@@ -41,7 +41,6 @@ import io.mockk.verify
 import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
@@ -276,7 +275,7 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
         assertEquals("Expected Log Warning Count is Greater than 0", 0, warningCount)
 
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
@@ -767,10 +766,6 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any(),
             )
         } just runs
         every { mockedLogger.e(any(), any()) } just runs
@@ -818,12 +813,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -870,14 +861,6 @@ open class NeuroIDClassUnitTests {
         every { firstNeuroID.setupCallbacks() } just runs
         every {
             firstNeuroID.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any(),
@@ -980,12 +963,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -1040,10 +1019,6 @@ open class NeuroIDClassUnitTests {
         every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
         every {
             mockedNeuroID.captureEvent(
-                any(),
-                any(),
-                any(),
-                any(),
                 any(),
                 any(),
                 any(),
@@ -1345,21 +1320,21 @@ open class NeuroIDClassUnitTests {
         assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
     }
 
-    // getUserID() Tests
+    // getIdentityId() Tests
     @Test
-    fun test_getUserID_returnsUserID() {
+    fun test_getIdentityId_returnsUserID() {
         val testUserID = "test-user-456"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock getUserID to return test user ID
-        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+        // Mock getIdentityId to return test user ID
+        every { mockedIdentifierService.getIdentityId() } returns testUserID
 
         val result = NeuroID.getInstance()?.getUserID()
 
-        // Verify identifierService.getUserID was called
+        // Verify identifierService.getIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.getUserID(any())
+            mockedIdentifierService.getIdentityId()
         }
 
         // Verify result matches
@@ -1367,12 +1342,12 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_getUserID_returnsEmptyString() {
+    fun test_getIdentityId_returnsEmptyString() {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock getUserID to return empty string
-        every { mockedIdentifierService.getUserID(any()) } returns ""
+        // Mock getIdentityId to return empty string
+        every { mockedIdentifierService.getIdentityId() } returns ""
 
         val result = NeuroID.getInstance()?.getUserID()
 
@@ -1380,21 +1355,21 @@ open class NeuroIDClassUnitTests {
         assertEquals("", result)
     }
 
-    // setUserID() Tests
+    // setIdentityId() Tests
     @Test
     fun test_identify_success() {
         val testUserID = "valid-user-id-789"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return true
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+        // Mock setIdentityId to return true
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns true
 
         val result = NeuroID.getInstance()?.identify(testUserID)
 
-        // Verify identifierService.setUserID was called with correct parameters
+        // Verify identifierService.setIdentityId was called with correct parameters
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), testUserID, true)
+            mockedIdentifierService.setIdentityId(any(), testUserID, true)
         }
 
         // Verify result is true
@@ -1407,14 +1382,14 @@ open class NeuroIDClassUnitTests {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false (validation failed)
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false (validation failed)
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.identify(invalidUserID)
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+            mockedIdentifierService.setIdentityId(any(), invalidUserID, true)
         }
 
         // Verify result is false
@@ -1426,35 +1401,35 @@ open class NeuroIDClassUnitTests {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false for empty string
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false for empty string
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.identify("")
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), "", true)
+            mockedIdentifierService.setIdentityId(any(), "", true)
         }
 
         // Verify result is false
         assertEquals(false, result)
     }
 
-    // setUserID() Tests
+    // setIdentityId() Tests
     @Test
-    fun test_setUserID_success() {
+    fun test_setIdentityId_success() {
         val testUserID = "valid-user-id-789"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return true
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+        // Mock setIdentityId to return true
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns true
 
         val result = NeuroID.getInstance()?.setUserID(testUserID)
 
-        // Verify identifierService.setUserID was called with correct parameters
+        // Verify identifierService.setIdentityId was called with correct parameters
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), testUserID, true)
+            mockedIdentifierService.setIdentityId(any(), testUserID, true)
         }
 
         // Verify result is true
@@ -1462,19 +1437,19 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_setUserID_failure() {
+    fun test_setIdentityId_failure() {
         val invalidUserID = "invalid id"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false (validation failed)
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false (validation failed)
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.setUserID(invalidUserID)
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+            mockedIdentifierService.setIdentityId(any(), invalidUserID, true)
         }
 
         // Verify result is false
@@ -1482,18 +1457,18 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_setUserID_emptyString() {
+    fun test_setIdentityId_emptyString() {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false for empty string
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false for empty string
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.setUserID("")
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), "", true)
+            mockedIdentifierService.setIdentityId(any(), "", true)
         }
 
         // Verify result is false
@@ -1761,7 +1736,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
-        NeuroID.getInternalInstance()?.userID = expectedValue
+        NeuroID.getInternalInstance()?.state?.setIdentityId(expectedValue)
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
@@ -1770,26 +1745,11 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun test_getSessionID_returnsEmptyString() {
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
         assertEquals("", value)
-    }
-
-    @Test
-    fun test_getSessionID_returnsUserID_notSessionID() {
-        // Explicitly verify that getSessionID() returns userID and NOT sessionID
-        // This covers the behavioral change where getSessionID() was updated to return userID
-        val testUserID = "user-id-value"
-        val testSessionID = "session-id-value"
-        NeuroID.getInternalInstance()?.userID = testUserID
-        NeuroID.getInternalInstance()?.sessionID = testSessionID
-
-        val value = NeuroID.getInternalInstance()?.getSessionID()
-
-        assertEquals(testUserID, value)
-        assertNotEquals(testSessionID, value)
     }
 
     //    getClientID

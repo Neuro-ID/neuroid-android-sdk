@@ -67,12 +67,8 @@ data class NIDEventModel(
     val sw: Float? = null,
     val sh: Float? = null,
     val f: String? = null,
-    val lsid: String? = null,
-    val sid: String? = null,
     val siteId: String? = null,
     val cid: String? = null,
-    val did: String? = null,
-    val iid: String? = null,
     val loc: String? = null,
     val ua: String? = null,
     val tzo: Int? = null,
@@ -138,18 +134,8 @@ data class NIDEventModel(
             sh?.let { jsonObject.put("sh", it) }
             f?.let { jsonObject.put("f", it) }
             rts?.let { jsonObject.put("rts", it) }
-            lsid?.let {
-                if (it == "null") {
-                    jsonObject.put("lsid", null)
-                } else {
-                    jsonObject.put("lsid", it)
-                }
-            }
-            sid?.let { jsonObject.put("sid", it) }
             siteId?.let { jsonObject.put("siteId", it) }
             cid?.let { jsonObject.put("cid", it) }
-            did?.let { jsonObject.put("did", it) }
-            iid?.let { jsonObject.put("iid", it) }
             loc?.let { jsonObject.put("loc", it) }
             ua?.let { jsonObject.put("ua", it) }
             tzo?.let { jsonObject.put("tzo", it) }

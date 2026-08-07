@@ -35,15 +35,9 @@ class NIDValidationService(
         return valid
     }
 
-    fun validateUserID(userID: String): Boolean {
+    fun isValidIdentityId(userID: String): Boolean {
         val regex = "^[a-zA-Z0-9-_.]{3,100}$"
-
-        if (!userID.matches(regex.toRegex())) {
-            logger.e(msg = "Invalid UserID")
-            return false
-        }
-
-        return true
+        return userID.matches(regex.toRegex())
     }
 
     fun scrubIdentifier(identifier: String): String {
