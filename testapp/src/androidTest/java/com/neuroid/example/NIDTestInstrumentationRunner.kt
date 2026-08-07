@@ -38,12 +38,12 @@ class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
     }
     override fun onCreate(arguments: Bundle) {
         NIDTestInstrumentation.clearRecorders()
-        NeuroID.testFpjsClient = getMockedFPJSClient("test-visitor-id", null, null)
-        NeuroID.testOutboundPayloadObserver = { payload ->
+        NeuroID.fpjsClientOverride = getMockedFPJSClient("test-visitor-id", null, null)
+        NeuroID.outboundPayloadObserver = { payload ->
             runCatching {
                 gson.fromJson(payload, EventModel::class.java)
             }.getOrNull()?.let { eventModel ->
-                MockServerHolder.attemptedRecorder.addEvent(eventModel)
+                NIDTestInstrumentation.attemptedRecorder.addEvent(eventModel)
             }
         }
         val thread = Thread { NIDTestInstrumentation.start() }
