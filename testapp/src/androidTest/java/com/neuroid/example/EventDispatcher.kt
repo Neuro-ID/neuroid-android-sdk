@@ -66,5 +66,6 @@ class EventDispatcher(private val eventRecorder: EventRecorder): Dispatcher() {
                 .setBody("""{"requestId":"mock-rid","visitorId":"mock-vid","confidence":{"score":0.99}}""")
 
             else -> MockResponse().setResponseCode(404).setBody("")
+        }
     }
 }
