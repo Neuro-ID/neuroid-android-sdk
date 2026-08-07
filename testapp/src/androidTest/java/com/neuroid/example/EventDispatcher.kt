@@ -45,14 +45,26 @@ class EventDispatcher(private val eventRecorder: EventRecorder): Dispatcher() {
             "}"
 
     override fun dispatch(request: RecordedRequest): MockResponse {
-        return if (request.requestUrl.toString().contains("/mobile/")) {
-            MockResponse().setResponseCode(200).setBody(remoteConfigResponse)
-        } else {
-            val gson = Gson()
-            val eventModel = gson.fromJson(BufferedReader(InputStreamReader(request.body.inputStream())),
-                EventModel::class.java)
-            eventRecorder.addEvent(eventModel)
-            MockResponse().setResponseCode(200).setBody(collectorResponse)
-        }
+        val url = request.requestUrl?.toString() ?: ""
+        return when {
+            url.contains("/mobile/") ->
+                MockResponse().setResponseCode(200).setBody(remoteConfigResponse)
+
+            url.contains("/c/") -> {
+                val eventModel = Gson().fromJson(
+                    BufferedReader(InputStreamReader(request.body.inputStream())),
+                    EventModel::class.java
+                ) ?: return MockResponse().setResponseCode(200).setBody(collectorResponse)
+                eventRecorder.addEvent(eventModel)
+                MockResponse().setResponseCode(200).setBody(collectorResponse)
+            }
+
+            url.contains("/a") -> MockResponse().setResponseCode(200)
+                .setBody("""{"status":"OK","key":"bW9jay1mcGpzLWtleQ=="}""")
+
+            url.contains("/fpjs") || url.contains("/visitor") -> MockResponse().setResponseCode(200)
+                .setBody("""{"requestId":"mock-rid","visitorId":"mock-vid","confidence":{"score":0.99}}""")
+
+            else -> MockResponse().setResponseCode(404).setBody("")
     }
 }
