@@ -356,7 +356,6 @@ class NIDJobServiceManagerTest {
             nidJobServiceManager.startJob(mockedSetup.mockedApplication, "clientKey")
             nidJobServiceManager.sendEvents(forceSendEvents = true)
 
-            verify { mockedSetup.mockedNeuroID.incrementPacketNumber() }
             verify { mockedSetup.mockedLogger.d(any(), any()) }
         }
 
@@ -459,7 +458,7 @@ class NIDJobServiceManagerTest {
         val logger = getMockedLogger()
         val mockedEventSender = getMockEventSender()
         val mockedNeuroID = getMockedNeuroID()
-        every { mockedNeuroID.incrementPacketNumber() } just runs
+        every { mockedEventSender.incrementPacketNumber() } just runs
 
         val nidRemoteConfigService = getMockedConfigService()
         every { nidRemoteConfigService.configCache } returns

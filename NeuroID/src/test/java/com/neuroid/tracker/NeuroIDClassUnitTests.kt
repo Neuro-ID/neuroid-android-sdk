@@ -27,9 +27,9 @@ import com.neuroid.tracker.models.NIDRemoteConfig
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDSessionService
-import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -555,8 +555,7 @@ open class NeuroIDClassUnitTests {
         every { mockedApplication.registerReceiver(any(), any<IntentFilter>()) } returns null
         every { mockedApplication.registerActivityLifecycleCallbacks(any()) } just runs
 
-        mockkStatic(::getSendingService)
-        every { getSendingService(any(), any()) } returns mockk(relaxed = true)
+        mockkConstructor(NIDEventSender::class)
 
         mockkConstructor(NIDJobServiceManager::class)
         every { anyConstructed<NIDJobServiceManager>().startJob(any(), any()) } just runs
@@ -2395,16 +2394,6 @@ open class NeuroIDClassUnitTests {
         assertWarningCount(1)
 
         NeuroID.getInternalInstance()?.lowMemory = false
-    }
-
-    @Test
-    fun testIncrementPacketNumber() {
-        NeuroID.getInternalInstance()?.let {
-            val before = it.packetNumber
-            it.incrementPacketNumber()
-            val after = it.packetNumber
-            assert(after - before == 1)
-        }
     }
 
     @Test
