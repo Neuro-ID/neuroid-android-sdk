@@ -3,6 +3,7 @@ package com.neuroid.tracker.callbacks
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.neuroid.tracker.NeuroID
@@ -50,6 +51,7 @@ class ActivityCallbacks(
         savedInstanceState: Bundle?,
     ) {
         logger.d(msg = "onActivityCreated")
+        Log.d("Activity Callbacks", "onActivityCreated")
     }
 
     override fun onActivityStarted(activity: Activity) {

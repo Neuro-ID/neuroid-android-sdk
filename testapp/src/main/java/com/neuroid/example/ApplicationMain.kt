@@ -1,8 +1,11 @@
 package com.neuroid.example
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDConfiguration
+import com.neuroid.tracker.models.NIDRegion
 
 class ApplicationMain : Application() {
     companion object {
@@ -31,7 +34,8 @@ class ApplicationMain : Application() {
                 true,
                 null,
                 false,
-                NeuroID.TEST)
+                NeuroID.TEST,
+                NIDRegion.TEST)
 //            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
 //            isAdvancedDevice = true,
 //            serverEnvironment = NeuroID.TEST

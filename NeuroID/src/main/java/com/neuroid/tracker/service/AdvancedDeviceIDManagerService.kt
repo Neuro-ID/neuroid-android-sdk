@@ -79,6 +79,7 @@ internal class AdvancedDeviceIDManager(
             msg =
                 "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}",
         )
+        println("KURT CAPTURE CACHED")
         neuroID.captureEvent(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
@@ -176,6 +177,7 @@ internal class AdvancedDeviceIDManager(
                         )
 
                         val stopTime = nidTime.getCurrentTimeMillis()
+                        println("KURT CAPTURE UNCACHED")
                         neuroID.captureEvent(
                             queuedEvent = true,
                             type = ADVANCED_DEVICE_REQUEST,

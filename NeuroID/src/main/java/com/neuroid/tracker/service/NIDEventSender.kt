@@ -73,7 +73,6 @@ class NIDEventSender(
                 // nothing to send
                 return
             }
-
             data = getRequestPayloadJSON(events)
 
             NIDLog.d("Payload", msg = "payload size: ${data.length} bytes")
@@ -83,7 +82,7 @@ class NIDEventSender(
         }
 
         val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
-
+        NeuroID.testOutboundPayloadObserver?.invoke(data)
         httpService.sendEvents(
             requestBody,
             key,

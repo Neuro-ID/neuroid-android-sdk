@@ -1,6 +1,8 @@
 package com.neuroid.tracker.extensions
 
+import android.annotation.SuppressLint
 import com.neuroid.tracker.NeuroID
+import com.neuroid.tracker.NeuroID.Companion.testFpjsClient
 import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.NIDRegion
@@ -63,6 +65,7 @@ fun NeuroIDPublic.startSession(
     }
 }
 
+@SuppressLint("VisibleForTests")
 @Synchronized
 fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
                                   advancedDeviceKey: String?,
@@ -70,6 +73,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
                                   region: NIDRegion = NIDRegion.usWest) = runBlocking {
     captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
     if (shouldCapture) {
+        println("KURT CAPTURE")
         NeuroID.getInternalInstance()?.apply {
             getApplicationContext()?.let { context ->
                 val advancedDeviceIDManagerService =
@@ -86,6 +90,7 @@ fun NeuroID.captureAdvancedDevice(shouldCapture: Boolean,
                         this.linkedSiteID ?: "",
                         configService,
                         advancedDeviceKey,
+                        testFpjsClient, //Probably not the right way to do this
                         useAdvancedDeviceProxy = useAdvancedDeviceProxy,
                         region = region
                     )

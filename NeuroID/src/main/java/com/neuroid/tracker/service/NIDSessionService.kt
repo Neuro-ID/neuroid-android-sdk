@@ -19,7 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicInteger
-
+import com.neuroid.tracker.extensions.captureAdvancedDevice
 internal class NIDSessionService(
     val logger: NIDLogWrapper,
     val neuroID: NeuroID,
@@ -69,6 +69,12 @@ internal class NIDSessionService(
         NeuroID._isSDKStarted = true
 
         CoroutineScope(neuroID.dispatcher).launch {
+            // neuroID.captureAdvancedDevice(
+            //     neuroID.isAdvancedDevice,
+            //     neuroID.advancedDeviceKey,
+            //     neuroID.useAdvancedDeviceProxy,
+            //     neuroID.region
+            // )
             createSession()
         }
 

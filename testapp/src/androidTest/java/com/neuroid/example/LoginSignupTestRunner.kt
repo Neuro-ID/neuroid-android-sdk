@@ -24,10 +24,11 @@ import com.neuroid.tracker.storage.getTestingDataStoreInstance
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import okhttp3.mockwebserver.MockWebServer
 import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.AfterClass
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -74,24 +75,37 @@ class LoginSignupTestRunner {
         }
     }
 
-    var mockWebServer: MockWebServer? = null
     var eventRecorder: EventRecorder? = null
+    var attemptedRecorder: EventRecorder? = null
 
     @Before
     fun setup() {
-        mockWebServer = MockWebServer()
-        eventRecorder = EventRecorder()
-        mockWebServer?.let {mockWebServer ->
-            mockWebServer.start(8000)
-            eventRecorder?.let { eventRecorder ->
-                mockWebServer.dispatcher = EventDispatcher(eventRecorder)
-            }
-        }
+        MockServerHolder.clearRecorders()
+        eventRecorder = MockServerHolder.recorder
+        attemptedRecorder = MockServerHolder.attemptedRecorder
     }
 
     @After
     fun teardown() {
-        mockWebServer?.shutdown()
+        MockServerHolder.clearRecorders()
+    }
+
+    private fun assertAttemptedVsReceived(flowName: String) {
+        assertNotNull("$flowName: attemptedRecorder was null", attemptedRecorder)
+        assertNotNull("$flowName: eventRecorder was null", eventRecorder)
+
+        val comparison = attemptedRecorder!!.compareTo(eventRecorder!!)
+        assertTrue(
+            "$flowName: Attempted vs received mismatch. " +
+                "payloads(expected=${comparison.payloadCountExpected}, actual=${comparison.payloadCountActual}), " +
+                "missingTypes=${comparison.missingEventTypes}, " +
+                "extraTypes=${comparison.extraEventTypes}, " +
+                "missingSessionType=${comparison.missingBySessionAndType}, " +
+                "extraSessionType=${comparison.extraBySessionAndType}, " +
+                "attemptedCounts=${comparison.expectedTypeCounts}, " +
+                "receivedCounts=${comparison.actualTypeCounts}",
+            comparison.isMatch()
+        )
     }
 
     fun setClipboardText(text: String?) {
@@ -148,6 +162,9 @@ class LoginSignupTestRunner {
 
     @Test
     fun runLogin() = runTest(UnconfinedTestDispatcher()) {
+        eventRecorder?.clear()
+        attemptedRecorder?.clear()
+
         val job = launch {
             //setup session and registered user id
             ApplicationMain.registeredSessionId = RepeatedTestRunner.currentId
@@ -284,12 +301,17 @@ class LoginSignupTestRunner {
         }
         job.join()
 
+        assertAttemptedVsReceived("runLogin")
+
         // verify event count
         eventRecorder?.verifyEventList(loginEventCount, eventCountVariance)
     }
 
     @Test
     fun runSignup() = runTest(UnconfinedTestDispatcher()) {
+        eventRecorder?.clear()
+        attemptedRecorder?.clear()
+
         val job = launch {
             //setup session and registered user id
             ApplicationMain.registeredSessionId = RepeatedTestRunner.currentId
@@ -438,6 +460,8 @@ class LoginSignupTestRunner {
             Thread.sleep(endSleep)
         }
         job.join()
+
+        assertAttemptedVsReceived("runSignup")
 
         // verify event count
         eventRecorder?.verifyEventList(signupEventCount, eventCountVariance)

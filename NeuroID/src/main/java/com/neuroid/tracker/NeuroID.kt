@@ -12,6 +12,7 @@ import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.Configuration
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.compose.JetpackComposeImpl
@@ -73,6 +74,12 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
 import kotlin.ReplaceWith
+import android.os.Looper
+import android.util.Log
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.neuroid.tracker.service.AppLifecycleTracker
 
 class NeuroID
     private constructor(
@@ -95,6 +102,9 @@ class NeuroID
         internal var linkedSiteID: String? = null
         internal var packetNumber: Int = 0
         internal var tabID: String
+
+        var launchReason = "background"
+        var initTime: Long = 0
 
         internal var registeredUserID = ""
         internal var timestamp: Long = 0L
@@ -126,6 +136,7 @@ class NeuroID
         internal lateinit var nidJobServiceManager: NIDJobServiceManager
         internal lateinit var nidCallActivityListener: NIDCallActivityListener
         internal lateinit var locationService: LocationService
+
         internal lateinit var nidTime: NIDTime
         internal lateinit var sharedPrefsDefaults: NIDSharedPrefsDefaults
 
@@ -133,8 +144,10 @@ class NeuroID
         internal var networkConnectionType = "unknown"
 
         internal var lowMemory: Boolean = false
+
         internal var isConnected = false
 
+        internal var lifecycleTracker: AppLifecycleTracker
         // Jetpack Compose Tracking Class/vars
         override val compose =
             JetpackComposeImpl(
@@ -144,6 +157,10 @@ class NeuroID
 
         init {
             nidTime = NIDTime()
+            initTime = nidTime.getCurrentTimeMillis()
+            lifecycleTracker = AppLifecycleTracker()
+            ProcessLifecycleOwner.get().lifecycle.addObserver(lifecycleTracker)
+
             when (serverEnvironment) {
                 PRODSCRIPT_DEVCOLLECTION -> {
                     endpoint = Constants.devEndpoint.displayName
@@ -222,10 +239,6 @@ class NeuroID
                 )
 
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
-                if (isAdvancedDevice) {
-                    resetClientId()
-                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
-                }
 
                 sessionService =
                     NIDSessionService(
@@ -271,6 +284,11 @@ class NeuroID
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
                 configService.retrieveOrRefreshCache(this)
+                if (isAdvancedDevice) {
+                    println("KURT INIT")
+                    resetClientId()
+                    //checkThenCaptureAdvancedDevice(isAdvancedDevice)
+                }
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
@@ -413,13 +431,18 @@ class NeuroID
             internal fun setSingletonNull() {
                 singleton = null
             }
+            @TestOnly
+            var testFpjsClient: FingerprintJS? = null
+            @TestOnly
+            var testOutboundPayloadObserver: ((String) -> Unit)? = null
+            @TestOnly
+            fun clearTestObservers() { testOutboundPayloadObserver = null; testFpjsClient = null }
+            @TestOnly
+            fun getInstanceForTesting(): NeuroID? = singleton
 
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    if (neuroID.isAdvancedDevice) {
-                        neuroID.checkThenCaptureAdvancedDevice(true)
-                    }
                     singleton?.setupCallbacks()
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
@@ -600,6 +623,8 @@ class NeuroID
          */
         internal fun checkThenCaptureAdvancedDevice(shouldCapture: Boolean = isAdvancedDevice,
                                                     dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+            println("KURT CheckThen")
+
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(shouldCapture,
                     advancedDeviceKey,
