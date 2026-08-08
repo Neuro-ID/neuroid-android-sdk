@@ -13,4 +13,10 @@ enum class NIDRegion(
         productionEndpoint = "https://receiver.neuroid.cloud/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
+    TEST(
+        fpjsProdDomain = "http://127.0.0.1:8000",
+        fpjsPrimaryDomain = "http://127.0.0.1:8000",
+        productionEndpoint = "http://127.0.0.1:8000/",
+        productionScriptsEndpoint = "http://127.0.0.1:8000/",
+    ),
 }

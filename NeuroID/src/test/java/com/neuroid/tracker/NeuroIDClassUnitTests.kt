@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import androidx.lifecycle.Lifecycle
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -53,6 +54,9 @@ import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -313,6 +317,41 @@ open class NeuroIDClassUnitTests {
     //    setNIDJobServiceManager - Used for mocking
 
     //   setTestURL
+
+    @Test
+    fun test_outboundPayloadObserver_assignmentAndInvocation() {
+        var invoked = false
+
+        NeuroID.outboundPayloadObserver = { _ ->
+            invoked = true
+        }
+
+        NeuroID.outboundPayloadObserver?.invoke("{}")
+
+        assertTrue(invoked)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_fpjsClientOverride_assignment() {
+        val mockedClient = mockk<FingerprintJS>()
+
+        NeuroID.fpjsClientOverride = mockedClient
+
+        assertSame(mockedClient, NeuroID.fpjsClientOverride)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_clearTestObservers_resetsCompanionOverrides() {
+        NeuroID.fpjsClientOverride = mockk()
+        NeuroID.outboundPayloadObserver = { _ -> }
+
+        NeuroID.clearTestObservers()
+
+        assertNull(NeuroID.fpjsClientOverride)
+        assertNull(NeuroID.outboundPayloadObserver)
+    }
 
     @Test
     fun test_ConfigOld() {
@@ -690,34 +729,7 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
-        verify(exactly = 0) {
-            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
-        }
-    }
-
-    @Test
-    fun test_init_withApplication_isAdvancedDevice_doesNotCallResetClientIdAtConstruction() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        // Mock the process lifecycle so setNeuroIDInstance's registration doesn't touch the real
-        // ProcessLifecycleOwner (main-thread only, unavailable on plain JVM unit tests).
-        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
-        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
-        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
-        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", true, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        // resetClientId() is no longer invoked at construction time - the advanced-device
-        // trigger (and its accompanying resetClientId() call) was removed from the constructor
-        // in favor of the single deterministic trigger in NIDAdvancedDeviceLifecycleObserver,
-        // which only fires once the app process reaches the foreground.
-        verify(exactly = 0) {
+        verify(exactly = 1) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
         }
     }
@@ -1362,30 +1374,6 @@ open class NeuroIDClassUnitTests {
 
         // Verify clientID was NOT changed
         assertEquals(originalClientID, NeuroID.getInternalInstance()?.clientID)
-    }
-
-    // checkThenCaptureAdvancedDevice() Tests
-    @Test
-    fun test_checkThenCaptureAdvancedDevice_resetsClientId() {
-        setMockedNIDJobServiceManager(false)
-        setMockedDataStore()
-
-        val mockedApplication = getMockedApplication()
-        NeuroID.getInternalInstance()?.application = mockedApplication
-
-        val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
-        every { mockNIDSharedPrefsDefaults.resetClientID() } returns "new-client-id-999"
-        NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
-
-        // shouldCapture = false so we don't need to mock the downstream advanced-device network
-        // call; we only care that the client ID reset happens (synchronously, before the
-        // advanced-device capture is launched).
-        NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = false)
-
-        verify(exactly = 1) {
-            mockNIDSharedPrefsDefaults.resetClientID()
-        }
-        assertEquals("new-client-id-999", NeuroID.getInternalInstance()?.clientID)
     }
 
     // getUserID() Tests

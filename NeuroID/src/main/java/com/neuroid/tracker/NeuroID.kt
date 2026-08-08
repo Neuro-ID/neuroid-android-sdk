@@ -10,6 +10,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
@@ -221,6 +222,8 @@ class NeuroID
 
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
 
+                resetClientId()
+
                 sessionService =
                     NIDSessionService(
                         logger,
@@ -421,6 +424,18 @@ class NeuroID
                 singleton = null
             }
 
+            @TestOnly
+            var fpjsClientOverride: FingerprintJS? = null
+
+            @TestOnly
+            var outboundPayloadObserver: ((String) -> Unit)? = null
+
+            @TestOnly
+            fun clearTestObservers() {
+                outboundPayloadObserver = null
+                fpjsClientOverride = null
+            }
+
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
@@ -596,8 +611,6 @@ class NeuroID
             shouldCapture: Boolean = isAdvancedDevice,
             dispatcher: CoroutineDispatcher = Dispatchers.IO,
         ) {
-            resetClientId()
-
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
                     shouldCapture,

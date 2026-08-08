@@ -3,6 +3,7 @@ package com.neuroid.example
 import android.app.Application
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDConfiguration
+import com.neuroid.tracker.models.NIDRegion
 
 class ApplicationMain : Application() {
     companion object {
@@ -26,15 +27,11 @@ class ApplicationMain : Application() {
         super.onCreate()
         NeuroID.BuilderConfig(
             this,
-            NIDConfiguration(
-                "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-                true,
-                null,
-                false,
-                NeuroID.TEST)
-//            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-//            isAdvancedDevice = true,
-//            serverEnvironment = NeuroID.TEST
+            NIDConfiguration("key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+                advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
+                useAdvancedDeviceProxy = true, isAdvancedDevice = true,
+                serverEnvironment = NeuroID.TEST,
+                region = NIDRegion.TEST)
         ).build()
     }
 

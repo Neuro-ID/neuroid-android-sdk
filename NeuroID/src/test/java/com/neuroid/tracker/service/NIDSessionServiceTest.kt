@@ -256,6 +256,7 @@ class NIDSessionServiceTest {
 
         verify(exactly = 1) {
             mockedDataStore.saveAndClearAllQueuedEvents()
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
         }
     }
 
