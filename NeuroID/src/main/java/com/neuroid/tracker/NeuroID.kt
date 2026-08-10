@@ -41,6 +41,7 @@ import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.HttpService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
+import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
@@ -49,7 +50,6 @@ import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
 import com.neuroid.tracker.service.StateStore
-import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -91,7 +91,6 @@ class NeuroID
         internal var clientID = ""
 
         internal var linkedSiteID: String? = null
-        internal var packetNumber: Int = 0
         internal var tabID: String
 
         internal var registeredUserID = ""
@@ -208,7 +207,7 @@ class NeuroID
                     NIDJobServiceManager(
                         this,
                         dataStore,
-                        getSendingService(
+                        NIDEventSender(
                             httpService,
                             it,
                         ),
@@ -274,10 +273,6 @@ class NeuroID
             registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
-        }
-
-        fun incrementPacketNumber() {
-            packetNumber += 1
         }
 
         /**
@@ -509,19 +504,18 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        NIDHttpService(
-                            collectionEndpoint = endpoint,
-                            configEndpoint = scriptEndpoint,
-                            logger = logger,
-                            // We can't use the config value because it hasn't been called.
-                            // Might have to recreate once config is retrieved
-                            collectionTimeout = 10,
-                            configTimeout = 10,
-                        ),
-                        it,
-                    ),
+                val httpService = NIDHttpService(
+                    collectionEndpoint = endpoint,
+                    configEndpoint = scriptEndpoint,
+                    logger = logger,
+                    // We can't use the config value because it hasn't been called.
+                    // Might have to recreate once config is retrieved
+                    collectionTimeout = 10,
+                    configTimeout = 10,
+                )
+
+                nidJobServiceManager.setTestEventSender(
+                    NIDEventSender(httpService, it),
                 )
             }
         }
@@ -539,21 +533,17 @@ class NeuroID
             scriptEndpoint = Constants.devScriptsEndpoint.displayName
 
             application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        httpService =
-                            NIDHttpService(
-                                collectionEndpoint = endpoint,
-                                configEndpoint = scriptEndpoint,
-                                logger = logger,
-                                // We can't use the config value because it hasn't been called.
-                                // Might have to recreate once config is retrieved
-                                collectionTimeout = 10,
-                                configTimeout = 10,
-                            ),
-                        it,
-                    ),
+                val httpService = NIDHttpService(
+                    collectionEndpoint = endpoint,
+                    configEndpoint = scriptEndpoint,
+                    logger = logger,
+                    // We can't use the config value because it hasn't been called.
+                    // Might have to recreate once config is retrieved
+                    collectionTimeout = 10,
+                    configTimeout = 10,
                 )
+                val eventSender = NIDEventSender(httpService = httpService, it)
+                nidJobServiceManager.setTestEventSender(eventSender)
             }
         }
 

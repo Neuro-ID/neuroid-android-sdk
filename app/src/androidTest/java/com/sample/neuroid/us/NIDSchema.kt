@@ -4,8 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.neuroid.tracker.models.NIDEventModel
+import com.neuroid.tracker.service.NIDEventSender
 import com.neuroid.tracker.service.NIDHttpService
-import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import org.everit.json.schema.Validator
 import org.everit.json.schema.event.*
@@ -153,7 +153,7 @@ class NIDSchema {
         context: Context,
         listEvents: List<NIDEventModel>,
     ): String {
-        return getSendingService(
+        return NIDEventSender(
             NIDHttpService(
                 collectionEndpoint = "",
                 configEndpoint = "",

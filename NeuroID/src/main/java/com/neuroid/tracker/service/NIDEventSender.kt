@@ -25,6 +25,8 @@ interface NIDSendingService {
 
 // Request Prep Functions
     fun getRequestPayloadJSON(events: List<NIDEventModel>): String
+
+    fun incrementPacketNumber()
 }
 
 /**
@@ -42,6 +44,7 @@ class NIDEventSender(
     NIDSendingService {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
+    internal var packetNumber: Int = 0
 
     init {
         initializeStaticPayload()
@@ -85,6 +88,8 @@ class NIDEventSender(
         }
 
         val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
+
+        incrementPacketNumber()
         NeuroID.outboundPayloadObserver?.invoke(data)
         httpService.sendEvents(
             requestBody,
@@ -111,7 +116,6 @@ class NIDEventSender(
             } else {
                 NeuroID.rndmId
             }
-        val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber ?: 0
 
         val jsonBody =
             mapOf(
@@ -155,13 +159,8 @@ class NIDEventSender(
         val gson: Gson = GsonBuilder().create()
         return gson.toJson(jsonBody)
     }
-}
 
-fun getSendingService(
-    httpService: HttpService,
-    context: Context,
-): NIDSendingService =
-    NIDEventSender(
-        httpService,
-        context,
-    )
+    override fun incrementPacketNumber() {
+        packetNumber += 1
+    }
+}

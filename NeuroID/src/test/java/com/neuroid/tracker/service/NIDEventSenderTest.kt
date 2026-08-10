@@ -211,6 +211,23 @@ class NIDEventSenderTest {
         }
     }
 
+    @Test
+    fun testIncrementPacketNumber() {
+        val mockedAPIService =
+            getMockedHTTPsService(
+                true,
+                200,
+                "",
+            )
+
+        val eventSender = NIDEventSender(mockedAPIService, getMockedApplication())
+
+        val before = eventSender.packetNumber
+        eventSender.incrementPacketNumber()
+        val after = eventSender.packetNumber
+        assert(after - before == 1)
+    }
+
     /*
     Helper Mocking Functions
      */
