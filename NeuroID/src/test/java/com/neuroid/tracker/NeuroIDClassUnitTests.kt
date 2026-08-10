@@ -303,6 +303,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
+        // Reset companion-object endpoint statics so tests that call setTestURL /
+        // setTestingNeuroIDDevURL don't pollute subsequent tests.
+        NeuroID.endpoint = NIDRegion.usWest.productionEndpoint
+        NeuroID.scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
+
         // reset in case a test substituted a mocked provider
         NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
 
