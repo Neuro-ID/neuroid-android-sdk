@@ -82,7 +82,6 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        serverEnvironment: String = PRODUCTION,
         internal var region: NIDRegion = NIDRegion.usWest,
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -142,24 +141,6 @@ class NeuroID
 
         init {
             nidTime = NIDTime()
-            when (serverEnvironment) {
-                PRODSCRIPT_DEVCOLLECTION -> {
-                    endpoint = Constants.devEndpoint.displayName
-                    scriptEndpoint = region.productionScriptsEndpoint
-                }
-                DEVELOPMENT -> {
-                    endpoint = Constants.devEndpoint.displayName
-                    scriptEndpoint = Constants.devScriptsEndpoint.displayName
-                }
-                TEST -> {
-                    endpoint = Constants.testScriptEndpoint.displayName
-                    scriptEndpoint = Constants.testScriptEndpoint.displayName
-                }
-                else -> {
-                    endpoint = region.productionEndpoint
-                    scriptEndpoint = region.productionScriptsEndpoint
-                }
-            }
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
@@ -339,7 +320,6 @@ class NeuroID
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
-                        nidConfiguration.serverEnvironment,
                         nidConfiguration.region,
                     )
                 setNeuroIDInstance(neuroID)
@@ -363,7 +343,6 @@ class NeuroID
                         isAdvancedDevice,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = true,
-                        serverEnvironment,
                         region,
                     )
                 setNeuroIDInstance(neuroID)

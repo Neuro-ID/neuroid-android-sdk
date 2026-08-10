@@ -370,58 +370,6 @@ open class NeuroIDClassUnitTests {
     // The init block runs inside the private constructor, exercised via BuilderConfig.build()
 
     @Test
-    fun test_init_serverEnvironment_production_setsProductionEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_development_setsDevEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.DEVELOPMENT),
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_test_setsTestEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.TEST),
-        ).build()
-
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_prodScriptDevCollection_setsMixedEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODSCRIPT_DEVCOLLECTION),
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
     fun test_init_builderConfig_explicit_region_setsRegionAndProductionEndpoints() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
@@ -430,7 +378,6 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration(
                 clientKey = "key_test_fake1234",
                 isAdvancedDevice = false,
-                serverEnvironment = NeuroID.PRODUCTION,
                 region = NIDRegion.usWest,
             ),
         ).build()

@@ -40,13 +40,11 @@ class NIDRNBuilderTest {
         every { options.getBoolean(RNConfigOptions.isAdvancedDevice.name) } returns true
         every { options.getString(RNConfigOptions.advancedDeviceKey.name) } returns "testkey"
         every { options.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name) } returns false
-        every { options.getString(RNConfigOptions.environment.name) } returns NeuroID.PRODSCRIPT_DEVCOLLECTION
         every { options.getString(RNConfigOptions.rnVersion.name) } returns "0.71.0"
         every { options.getString(RNConfigOptions.region.name) } returns NIDRegion.usWest.name
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         assertTrue(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean)
-        assertEquals(NeuroID.PRODSCRIPT_DEVCOLLECTION, mapOptions[RNConfigOptions.environment] as String)
         assertEquals("testkey", mapOptions[RNConfigOptions.advancedDeviceKey] as String)
         assertFalse(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("0.71.0", mapOptions[RNConfigOptions.rnVersion] as String)
@@ -64,20 +62,6 @@ class NIDRNBuilderTest {
         assertTrue(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("", mapOptions[RNConfigOptions.rnVersion] as String)
         assertEquals(NIDRegion.usWest.name, mapOptions[RNConfigOptions.region] as String)
-    }
-
-    @Test
-    fun testRNOption_environment_development_option_set() {
-        val mockApp = mockk<Application>()
-        val options = mockk<ReadableMap>()
-        every { options.hasKey(any()) } returns false
-        every { options.hasKey(RNConfigOptions.environment.name) } returns true
-        every { options.getString(RNConfigOptions.environment.name) } returns NeuroID.DEVELOPMENT
-
-        val t = NIDRNBuilder(mockApp, "dummy_key", options)
-        val mapOptions = t.parseOptions(options)
-
-        assertEquals(NeuroID.DEVELOPMENT, mapOptions[RNConfigOptions.environment] as String)
     }
 
     @Test

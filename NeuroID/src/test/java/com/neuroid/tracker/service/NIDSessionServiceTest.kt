@@ -55,7 +55,6 @@ class NIDSessionServiceTest {
             null,
             "key_test_fake1234",
             false,
-            NeuroID.DEVELOPMENT,
         ).build()
     }
 
