@@ -15,6 +15,7 @@ class ProcessDeviceLifecycleObserverTests {
         val neuroID = mockk<NeuroID>()
         every { neuroID.checkThenCaptureAdvancedDevice() } just runs
         every { neuroID.resetClientId() } just runs
+        every { neuroID.isAdvancedDevice } returns true
 
         val owner = mockk<LifecycleOwner>()
         val observer = ProcessDeviceLifecycleObserver(neuroID)

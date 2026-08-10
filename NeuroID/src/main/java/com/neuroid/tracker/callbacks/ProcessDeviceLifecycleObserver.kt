@@ -18,6 +18,8 @@ internal class ProcessDeviceLifecycleObserver(
     private val neuroID: NeuroID,
 ) : DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
-        neuroID.checkThenCaptureAdvancedDevice()
+        if (neuroID.isAdvancedDevice) {
+            neuroID.checkThenCaptureAdvancedDevice()
+        }
     }
 }
