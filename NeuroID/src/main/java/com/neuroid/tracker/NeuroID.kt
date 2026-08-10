@@ -484,25 +484,25 @@ class NeuroID
 
         @VisibleForTesting
         override fun setTestURL(newEndpoint: String) {
-            endpoint = newEndpoint
-            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-
-            application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        NIDHttpService(
-                            collectionEndpoint = endpoint,
-                            configEndpoint = scriptEndpoint,
-                            logger = logger,
-                            // We can't use the config value because it hasn't been called.
-                            // Might have to recreate once config is retrieved
-                            collectionTimeout = 10,
-                            configTimeout = 10,
-                        ),
-                        it,
-                    ),
-                )
-            }
+//            endpoint = newEndpoint
+//            scriptEndpoint = Constants.devScriptsEndpoint.displayName
+//
+//            application?.let {
+//                nidJobServiceManager?.setTestEventSender(
+//                    getSendingService(
+//                        NIDHttpService(
+//                            collectionEndpoint = endpoint,
+//                            configEndpoint = scriptEndpoint,
+//                            logger = logger,
+//                            // We can't use the config value because it hasn't been called.
+//                            // Might have to recreate once config is retrieved
+//                            collectionTimeout = 10,
+//                            configTimeout = 10,
+//                        ),
+//                        it,
+//                    ),
+//                )
+//            }
         }
 
         @VisibleForTesting

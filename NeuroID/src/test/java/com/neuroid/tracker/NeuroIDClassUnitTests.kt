@@ -303,8 +303,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
-        // Reset companion-object endpoint statics so tests that call setTestURL /
-        // setTestingNeuroIDDevURL don't pollute subsequent tests.
+        // Reset companion-object endpoint statics so tests that call setTestingNeuroIDDevURL don't pollute subsequent tests
         NeuroID.endpoint = NIDRegion.usWest.productionEndpoint
         NeuroID.scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
 
@@ -320,8 +319,6 @@ open class NeuroIDClassUnitTests {
     //    setDataStoreInstance - Used for mocking
     //    setNIDActivityCallbackInstance - Used for mocking
     //    setNIDJobServiceManager - Used for mocking
-
-    //   setTestURL
 
     @Test
     fun test_outboundPayloadObserver_assignmentAndInvocation() {
@@ -1602,67 +1599,6 @@ open class NeuroIDClassUnitTests {
         // Verify both calls succeeded
         assertEquals(true, firstResult)
         assertEquals(true, secondResult)
-    }
-
-    @Test
-    fun testSetTestURL() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked application with SharedPreferences
-        val mockedApplication = getMockedApplication()
-        NeuroID.getInternalInstance()?.application = mockedApplication
-
-        // Setup mocked job service manager with setTestEventSender
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was called on the job service manager
-        verify(exactly = 1) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
-    }
-
-    @Test
-    fun testSetTestURL_withoutApplication() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked job service manager
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Ensure application is null
-        NeuroID.getInternalInstance()?.application = null
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was NOT called since application is null
-        verify(exactly = 0) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
     }
 
     //   setTestingNeuroIDDevURL

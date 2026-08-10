@@ -2,7 +2,6 @@ package com.neuroid.tracker.extensions
 
 import android.app.Application
 import com.facebook.react.bridge.ReadableMap
-import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.models.NIDRegion
 import io.mockk.every
 import io.mockk.mockk
