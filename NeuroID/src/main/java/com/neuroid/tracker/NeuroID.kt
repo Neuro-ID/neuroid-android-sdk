@@ -53,7 +53,6 @@ import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
@@ -384,8 +383,7 @@ class NeuroID
             internal var isConnected = false
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
-//            internal var endpoint = NIDRegion.usWest.productionEndpoint
-//            internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
+
             private var singleton: NeuroID? = null
 
             // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
@@ -484,56 +482,12 @@ class NeuroID
 
         @VisibleForTesting
         override fun setTestURL(newEndpoint: String) {
-//            endpoint = newEndpoint
-//            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-//
-//            application?.let {
-//                nidJobServiceManager?.setTestEventSender(
-//                    getSendingService(
-//                        NIDHttpService(
-//                            collectionEndpoint = endpoint,
-//                            configEndpoint = scriptEndpoint,
-//                            logger = logger,
-//                            // We can't use the config value because it hasn't been called.
-//                            // Might have to recreate once config is retrieved
-//                            collectionTimeout = 10,
-//                            configTimeout = 10,
-//                        ),
-//                        it,
-//                    ),
-//                )
-//            }
+            // Deprecated
         }
 
         @VisibleForTesting
-        /**
-         * testing will always uses usWest testing endpoints regardless of the region
-         * specified in the config since we don't
-         * want to have multiple testing endpoints in our tests.
-         * If we want to add more testing endpoints in the future we can
-         * add a parameter to specify which testing endpoint to use.
-         */
         override fun setTestingNeuroIDDevURL() {
-//            endpoint = Constants.devEndpoint.displayName
-//            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-//
-//            application?.let {
-//                nidJobServiceManager?.setTestEventSender(
-//                    getSendingService(
-//                        httpService =
-//                            NIDHttpService(
-//                                collectionEndpoint = region.productionEndpoint,
-//                                configEndpoint = region.productionScriptsEndpoint,
-//                                logger = logger,
-//                                // We can't use the config value because it hasn't been called.
-//                                // Might have to recreate once config is retrieved
-//                                collectionTimeout = 10,
-//                                configTimeout = 10,
-//                            ),
-//                        it,
-//                    ),
-//                )
-//            }
+            // Deprecated
         }
 
         internal fun setupListeners() {
