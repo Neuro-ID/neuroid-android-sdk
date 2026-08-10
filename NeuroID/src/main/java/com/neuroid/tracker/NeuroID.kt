@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -59,6 +60,7 @@ import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
@@ -219,10 +221,8 @@ class NeuroID
                 )
 
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
-                if (isAdvancedDevice) {
-                    resetClientId()
-                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
-                }
+
+                resetClientId()
 
                 sessionService =
                     NIDSessionService(
@@ -409,6 +409,16 @@ class NeuroID
             internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
             private var singleton: NeuroID? = null
 
+            // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
+            // of hitting ProcessLifecycleOwner's real main-thread requirement.
+            @Volatile
+            internal var processLifecycleProvider: ProcessLifecycleProvider = ProcessLifecycleProvider()
+
+            @TestOnly
+            internal fun setTestProcessLifecycleProvider(provider: ProcessLifecycleProvider) {
+                processLifecycleProvider = provider
+            }
+
             @TestOnly
             internal fun setSingletonNull() {
                 singleton = null
@@ -429,10 +439,11 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    if (neuroID.isAdvancedDevice) {
-                        neuroID.checkThenCaptureAdvancedDevice(true)
-                    }
                     singleton?.setupCallbacks()
+
+                    processLifecycleProvider.getProcessLifecycle().addObserver(
+                        ProcessDeviceLifecycleObserver(neuroID),
+                    )
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -596,21 +607,9 @@ class NeuroID
             return true
         }
 
-        /**
-         * Execute the captureAdvancedDevice() method, removed the reflection code since this is
-         * no longer needed. Just call the captureAdvancedDevice() extension method directly
-         * since we moved the FPJS library permanently into the SDK.
-         *
-         * Keeping this wrapper around just in case we have to do something similar in the
-         * future.
-         */
-        internal fun checkThenCaptureAdvancedDevice(
-            shouldCapture: Boolean = isAdvancedDevice,
-            dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        ) {
+        internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
-                    shouldCapture,
                     advancedDeviceKey,
                     useAdvancedDeviceProxy,
                     region,
