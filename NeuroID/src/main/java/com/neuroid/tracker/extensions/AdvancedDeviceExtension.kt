@@ -61,37 +61,37 @@ fun NeuroIDPublic.startSession(
 
 @Synchronized
 fun NeuroID.captureAdvancedDevice(
-    shouldCapture: Boolean,
     advancedDeviceKey: String?,
     useAdvancedDeviceProxy: Boolean,
     region: NIDRegion = NIDRegion.usWest,
 ) = runBlocking {
-    captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
-    if (shouldCapture) {
-        NeuroID.getInternalInstance()?.apply {
-            getApplicationContext()?.let { context ->
-                val advancedDeviceIDManagerService =
-                    AdvancedDeviceIDManager(
-                        context,
+    captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
+    NeuroID.getInternalInstance()?.apply {
+        getApplicationContext()?.let { context ->
+            val advancedDeviceIDManagerService =
+                AdvancedDeviceIDManager(
+                    context,
+                    logger,
+                    NIDSharedPrefsDefaults(context),
+                    this,
+                    getADVNetworkService(
+                        NeuroID.endpoint,
                         logger,
-                        NIDSharedPrefsDefaults(context),
-                        this,
-                        getADVNetworkService(
-                            NeuroID.endpoint,
-                            logger,
-                        ),
-                        this.clientID,
-                        this.linkedSiteID ?: "",
-                        configService,
-                        advancedDeviceKey,
-                        fpjsClientOverride,
-                        useAdvancedDeviceProxy = useAdvancedDeviceProxy,
-                        region = region,
-                    )
-                getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
-            }
+                    ),
+                    this.clientID,
+                    this.linkedSiteID ?: "",
+                    configService,
+                    advancedDeviceKey,
+                    fpjsClientOverride,
+                    useAdvancedDeviceProxy = useAdvancedDeviceProxy,
+                    region = region,
+                )
+            getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
         }
     }
+
+    // runBlocking returns the value of its last expression, adding an explicit Unit at the end of the runBlocking block anchors the return type to Unit unconditionally
+    Unit
 }
 
 internal fun getADVSignal(

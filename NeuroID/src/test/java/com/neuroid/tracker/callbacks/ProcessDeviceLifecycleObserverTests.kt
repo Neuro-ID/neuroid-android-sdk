@@ -9,7 +9,7 @@ import io.mockk.runs
 import io.mockk.verify
 import org.junit.Test
 
-class NIDAdvancedDeviceLifecycleObserverUnitTests {
+class ProcessDeviceLifecycleObserverTests {
     @Test
     fun `onStart triggers checkThenCaptureAdvancedDevice on the NeuroID instance`() {
         val neuroID = mockk<NeuroID>()

@@ -592,7 +592,7 @@ open class NeuroIDClassUnitTests {
         // mocks, causing a ConcurrentModificationException. Stubbing it makes the coroutine a no-op
         // so cleanup is deterministic.
         mockkStatic("com.neuroid.tracker.extensions.AdvancedDeviceExtensionKt")
-        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any(), any()) } returns Unit
+        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any()) } returns Unit
 
         return mockedApplication
     }

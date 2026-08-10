@@ -607,13 +607,9 @@ class NeuroID
             return true
         }
 
-        internal fun checkThenCaptureAdvancedDevice(
-            shouldCapture: Boolean = isAdvancedDevice,
-            dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        ) {
+        internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
-                    shouldCapture,
                     advancedDeviceKey,
                     useAdvancedDeviceProxy,
                     region,

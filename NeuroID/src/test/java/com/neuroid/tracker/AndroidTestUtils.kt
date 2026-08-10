@@ -76,7 +76,7 @@ internal fun getMockedNeuroID(
     every { nidMock.forceStart } returns forceStart
     every { nidMock.shouldForceStart() } returns forceStart
 
-    every { nidMock.checkThenCaptureAdvancedDevice(any(), any()) } just runs
+    every { nidMock.checkThenCaptureAdvancedDevice(any()) } just runs
     every { nidMock.captureApplicationMetaData() } just runs
     every { nidMock.metaData } returns null
 
