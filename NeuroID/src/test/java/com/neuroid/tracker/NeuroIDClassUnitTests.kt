@@ -303,10 +303,6 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
 
-        // Reset companion-object endpoint statics so tests that call setTestingNeuroIDDevURL don't pollute subsequent tests
-        NeuroID.endpoint = NIDRegion.usWest.productionEndpoint
-        NeuroID.scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
-
         // reset in case a test substituted a mocked provider
         NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
 
@@ -386,8 +382,6 @@ open class NeuroIDClassUnitTests {
 
         val instance = NeuroID.getInternalInstance()
         assertEquals(NIDRegion.usWest, instance?.region)
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
     }
 
     @Test
@@ -1599,14 +1593,6 @@ open class NeuroIDClassUnitTests {
         // Verify both calls succeeded
         assertEquals(true, firstResult)
         assertEquals(true, secondResult)
-    }
-
-    //   setTestingNeuroIDDevURL
-    @Test
-    fun testSetTestingNeuroIDDevURL() {
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
-
-        assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
     }
 
     //    setScreenName

@@ -165,8 +165,8 @@ class NeuroID
             // different
             httpService =
                 NIDHttpService(
-                    collectionEndpoint = endpoint,
-                    configEndpoint = scriptEndpoint,
+                    collectionEndpoint = region.productionEndpoint,
+                    configEndpoint = region.productionScriptsEndpoint,
                     logger = logger,
                     // We can't use the config value because it hasn't been called.
                     // Might have to recreate once config is retrieved
@@ -384,8 +384,8 @@ class NeuroID
             internal var isConnected = false
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
-            internal var endpoint = NIDRegion.usWest.productionEndpoint
-            internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
+//            internal var endpoint = NIDRegion.usWest.productionEndpoint
+//            internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
             private var singleton: NeuroID? = null
 
             // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
@@ -514,26 +514,26 @@ class NeuroID
          * add a parameter to specify which testing endpoint to use.
          */
         override fun setTestingNeuroIDDevURL() {
-            endpoint = Constants.devEndpoint.displayName
-            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-
-            application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        httpService =
-                            NIDHttpService(
-                                collectionEndpoint = endpoint,
-                                configEndpoint = scriptEndpoint,
-                                logger = logger,
-                                // We can't use the config value because it hasn't been called.
-                                // Might have to recreate once config is retrieved
-                                collectionTimeout = 10,
-                                configTimeout = 10,
-                            ),
-                        it,
-                    ),
-                )
-            }
+//            endpoint = Constants.devEndpoint.displayName
+//            scriptEndpoint = Constants.devScriptsEndpoint.displayName
+//
+//            application?.let {
+//                nidJobServiceManager?.setTestEventSender(
+//                    getSendingService(
+//                        httpService =
+//                            NIDHttpService(
+//                                collectionEndpoint = region.productionEndpoint,
+//                                configEndpoint = region.productionScriptsEndpoint,
+//                                logger = logger,
+//                                // We can't use the config value because it hasn't been called.
+//                                // Might have to recreate once config is retrieved
+//                                collectionTimeout = 10,
+//                                configTimeout = 10,
+//                            ),
+//                        it,
+//                    ),
+//                )
+//            }
         }
 
         internal fun setupListeners() {
