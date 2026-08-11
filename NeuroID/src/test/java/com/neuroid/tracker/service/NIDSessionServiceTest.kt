@@ -256,7 +256,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedDataStore.saveAndClearAllQueuedEvents()
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
     }
 
@@ -1164,7 +1164,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice()
             mockedNeuroID.addLinkedSiteID(testSiteID)
         }
 
@@ -1218,7 +1218,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice()
             mockedNeuroID.addLinkedSiteID(testSiteID)
 
             mockedJobServiceManager.startJob(any(), any())
@@ -1284,7 +1284,7 @@ class NIDSessionServiceTest {
 
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice()
         }
 
         verifyCaptureEvent(

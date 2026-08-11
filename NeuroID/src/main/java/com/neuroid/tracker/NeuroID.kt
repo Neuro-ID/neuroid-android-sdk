@@ -182,7 +182,7 @@ class NeuroID
 
             val advNetworkService = NIDAdvancedDeviceNetworkService(
                 getRetroFitInstance(
-                    endpoint,
+                    region.productionEndpoint,
                     logger,
                     NIDAdvancedDeviceApiService::class.java,
                     NIDAdvancedDeviceNetworkService.TIMEOUT,
@@ -572,7 +572,7 @@ class NeuroID
             return true
         }
 
-        internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
+        internal fun checkThenCaptureAdvancedDevice() {
             captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
             if (configService.isSessionFlowSampled()) {
                 deviceNetworkService?.captureAdvancedDevice(clientKey)
