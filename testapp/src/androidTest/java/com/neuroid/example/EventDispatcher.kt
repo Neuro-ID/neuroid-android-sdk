@@ -1,6 +1,7 @@
 package com.neuroid.example
 
 import com.google.gson.Gson
+import com.neuroid.tracker.models.EventBundle
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -53,7 +54,7 @@ class EventDispatcher(private val eventRecorder: EventRecorder): Dispatcher() {
             url.contains("/c/") -> {
                 val eventModel = Gson().fromJson(
                     BufferedReader(InputStreamReader(request.body.inputStream())),
-                    EventModel::class.java
+                    EventBundle::class.java
                 ) ?: return MockResponse().setResponseCode(200).setBody(collectorResponse)
                 eventRecorder.addEvent(eventModel)
                 MockResponse().setResponseCode(200).setBody(collectorResponse)

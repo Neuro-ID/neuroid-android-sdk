@@ -8,6 +8,7 @@ import com.neuroid.tracker.NeuroID
 import io.mockk.every
 import io.mockk.mockk
 import com.fingerprintjs.android.fpjs_pro.Error
+import com.neuroid.tracker.models.EventBundle
 
 class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
     private val gson = Gson()
@@ -41,7 +42,7 @@ class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
         NeuroID.fpjsClientOverride = getMockedFPJSClient("test-visitor-id", null, null)
         NeuroID.outboundPayloadObserver = { payload ->
             runCatching {
-                gson.fromJson(payload, EventModel::class.java)
+                gson.fromJson(payload, EventBundle::class.java)
             }.getOrNull()?.let { eventModel ->
                 NIDTestInstrumentation.attemptedRecorder.addEvent(eventModel)
             }

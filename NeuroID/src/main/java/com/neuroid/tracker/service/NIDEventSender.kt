@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.ANDROID_URI
 import com.neuroid.tracker.events.OUT_OF_MEMORY
+import com.neuroid.tracker.models.EventBundle
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
@@ -113,38 +114,36 @@ class NIDEventSender(
             }
         val packetNumber: Int = NeuroID.getInternalInstance()?.packetNumber ?: 0
 
-        val jsonBody =
-            mapOf(
-                "siteId" to NeuroID.siteID,
-                "userId" to userID,
-                "clientId" to sharedDefaults.getClientID(),
-                "identityId" to userID,
-                "registeredUserId" to registeredUserID,
-                "pageTag" to NeuroID.screenActivityName,
-                "pageId" to NeuroID.rndmId,
-                "tabId" to tabID,
-                "responseId" to generateUniqueHexID(),
-                "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
-                "jsVersion" to "5.0.0",
-                "sdkVersion" to NIDVersion.getSDKVersion(),
-                "environment" to NeuroID.environment,
-                "jsonEvents" to events,
-                "linkedSiteId" to linkedSiteID,
-                "packetNumber" to packetNumber,
-            )
+        val bundle = EventBundle(
+            siteId = NeuroID.siteID,
+            userId = userID,
+            clientId = sharedDefaults.getClientID(),
+            identityId = userID,
+            registeredUserId = registeredUserID,
+            pageTag = NeuroID.screenActivityName,
+            pageId = NeuroID.rndmId,
+            tabId = tabID,
+            responseId = generateUniqueHexID(),
+            url = "$ANDROID_URI${NeuroID.screenActivityName}",
+            sdkVersion = NIDVersion.getSDKVersion(),
+            environment = NeuroID.environment,
+            jsonEvents = events,
+            linkedSiteId = linkedSiteID,
+            packetNumber = packetNumber,
+        )
 
         NIDLog.d(
             "Payload:",
             msg =
                 """
                 Payload Summary
-                ClientID: ${jsonBody["clientId"]}
-                UserID: ${jsonBody["userId"]}
-                RegisteredUserID: ${jsonBody["registeredUserId"]}
-                LinkedSiteID: ${jsonBody["linkedSiteId"]}
-                TabID: ${jsonBody["tabId"]}
-                Packet Number: ${jsonBody["packetNumber"]}
-                SDK Version: ${jsonBody["sdkVersion"]}
+                ClientID: ${bundle.clientId}
+                UserID: ${bundle.userId}
+                RegisteredUserID: ${bundle.registeredUserId}
+                LinkedSiteID: ${bundle.linkedSiteId}
+                TabID: ${bundle.tabId}
+                Packet Number: ${bundle.packetNumber}
+                SDK Version: ${bundle.sdkVersion}
                 Screen Name: ${NeuroID.screenName}
                 Event Count: ${events.size}
                 """.trimIndent(),
@@ -153,7 +152,7 @@ class NIDEventSender(
         // using this JSON library (already included) does not escape /
         NIDLog.i(msg = "NID logging events (${events.count()}) as linkedSiteID: $linkedSiteID")
         val gson: Gson = GsonBuilder().create()
-        return gson.toJson(jsonBody)
+        return gson.toJson(bundle)
     }
 }
 

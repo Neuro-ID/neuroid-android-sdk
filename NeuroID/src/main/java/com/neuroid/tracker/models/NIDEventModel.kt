@@ -233,6 +233,25 @@ data class NIDEventModel(
     }
 }
 
+data class EventBundle(
+    val siteId: String? = null,
+    val userId: String? = null,
+    val clientId: String? = null,
+    val identityId: String? = null,
+    val registeredUserId: String? = null,
+    val pageTag: String? = null,
+    val pageId: String? = null,
+    val tabId: String? = null,
+    val responseId: String? = null,
+    val url: String? = null,
+    val jsVersion: String = "5.0.0",
+    val sdkVersion: String? = null,
+    val environment: String? = null,
+    val jsonEvents: List<NIDEventModel> = emptyList(),
+    val linkedSiteId: String? = null,
+    val packetNumber: Int = -1,
+)
+
 data class NIDSensorModel(
     val x: Float?,
     val y: Float?,
