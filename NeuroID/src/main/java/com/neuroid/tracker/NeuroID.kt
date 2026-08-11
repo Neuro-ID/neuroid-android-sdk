@@ -574,7 +574,10 @@ class NeuroID
 
         internal fun checkThenCaptureAdvancedDevice() {
             captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
-            deviceNetworkService?.captureAdvancedDevice(clientKey)
+            // If we are not sampling this session, we should not capture the adv device signals
+            if (configService.isSessionFlowSampled()) {
+                deviceNetworkService?.captureAdvancedDevice(clientKey)
+            }
         }
 
         override fun setScreenName(screen: String): Boolean {
