@@ -7,7 +7,6 @@ import android.content.res.Resources
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun View?.getIdOrTag(): String {
     return if (this == null) {

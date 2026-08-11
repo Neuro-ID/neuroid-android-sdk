@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.text.get
 
 interface AdvancedDeviceIDManagerService {
     fun getCachedID(): Boolean
@@ -84,11 +85,6 @@ internal class AdvancedDeviceIDManager(
             return false
         }
 
-        // Capture valid cached ID
-        logger.d(
-            msg =
-                "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}",
-        )
         neuroID.captureEvent(
             queuedEvent = true,
             type = ADVANCED_DEVICE_REQUEST,
@@ -140,15 +136,12 @@ internal class AdvancedDeviceIDManager(
         // if not, get it from server
         var fpjsRetrievedKey = ""
         if (advancedDeviceKey.isNullOrEmpty()) {
-            val keyFunctionResponse = getAdvancedDeviceKey(clientKey)
+            val apiKey = getAdvancedDeviceKey(clientKey)
             // if server gotten FPJS key is null or empty exit immediately
-            if (keyFunctionResponse == null) {
+            apiKey?.let {
+                fpjsRetrievedKey = it.key
+            } ?: run {
                 return null
-            } else {
-                // set the key for use later if successfully gotten from server.
-                keyFunctionResponse?.let {
-                    fpjsRetrievedKey = keyFunctionResponse.key
-                }
             }
         }
 
@@ -175,7 +168,7 @@ internal class AdvancedDeviceIDManager(
                 var jobErrorMessage = ""
                 for (retryCount in 1..maxRetryCount) {
                     // we want to see the latency from FPJS on each request
-                    val startTime = nidTime.getCurrentTimeMillis()
+                    val startTime = System.currentTimeMillis()
                     // returns a Bool - success, String - key OR error message
                     val requestResponse = getVisitorId(fpjsClient)
                     // If Success - capture ID and cache, end loop
@@ -185,12 +178,12 @@ internal class AdvancedDeviceIDManager(
                                 "Generating Request ID for Advanced Device Signals: ${requestResponse.second}",
                         )
 
-                        val stopTime = nidTime.getCurrentTimeMillis()
+                        val stopTime = System.currentTimeMillis()
                         neuroID.captureEvent(
                             queuedEvent = true,
                             type = ADVANCED_DEVICE_REQUEST,
                             rid = requestResponse.second,
-                            ts = nidTime.getCurrentTimeMillis(),
+                            ts = System.currentTimeMillis(),
                             c = false,
                             // time start to end time
                             l = stopTime - startTime,

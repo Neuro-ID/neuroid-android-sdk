@@ -574,9 +574,7 @@ class NeuroID
 
         internal fun checkThenCaptureAdvancedDevice() {
             captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
-            if (configService.isSessionFlowSampled()) {
-                deviceNetworkService?.captureAdvancedDevice(clientKey)
-            }
+            deviceNetworkService?.captureAdvancedDevice(clientKey)
         }
 
         override fun setScreenName(screen: String): Boolean {
