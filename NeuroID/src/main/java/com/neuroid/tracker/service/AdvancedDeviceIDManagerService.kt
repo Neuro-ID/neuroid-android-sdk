@@ -31,6 +31,8 @@ interface AdvancedDeviceIDManagerService {
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         delay: Long = 5000L,
     ): Job?
+
+    fun captureAdvancedDevice(clientKey: String)
 }
 
 internal class AdvancedDeviceIDManager(
@@ -52,6 +54,16 @@ internal class AdvancedDeviceIDManager(
     companion object {
         internal val NID_RID = "NID_RID_KEY"
         internal val defaultCacheValue = "{\"key\":\"NO_KEY\", \"exp\":0}"
+    }
+
+    override fun captureAdvancedDevice(clientKey: String) {
+        // check for cachedID first
+        if (getCachedID()) {
+            return
+        }
+
+        // no cached ID - contact NID & FPJS
+        getRemoteID(clientKey)
     }
 
     override fun getCachedID(): Boolean {

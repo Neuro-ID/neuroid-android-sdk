@@ -120,17 +120,3 @@ class NIDAdvancedDeviceNetworkService(
         }
     }
 }
-
-fun getADVNetworkService(
-    endpoint: String,
-    logger: NIDLogWrapper,
-): ADVNetworkService =
-    NIDAdvancedDeviceNetworkService(
-        getRetroFitInstance(
-            endpoint,
-            logger,
-            NIDAdvancedDeviceApiService::class.java,
-            NIDAdvancedDeviceNetworkService.TIMEOUT,
-        ),
-        logger,
-    )
