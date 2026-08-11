@@ -75,7 +75,7 @@ fun NeuroID.captureAdvancedDevice(
                     NIDSharedPrefsDefaults(context),
                     this,
                     getADVNetworkService(
-                        NeuroID.endpoint,
+                        region.productionEndpoint,
                         logger,
                     ),
                     this.clientID,

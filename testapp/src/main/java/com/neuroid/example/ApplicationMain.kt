@@ -32,11 +32,13 @@ class ApplicationMain : Application() {
 
         NeuroID.BuilderConfig(
             this,
-            NIDConfiguration("key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+            NIDConfiguration(
+                "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+                isAdvancedDevice = true,
                 advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
-                useAdvancedDeviceProxy = true, isAdvancedDevice = true,
-                serverEnvironment = NeuroID.TEST,
-                region = NIDRegion.TEST)
+                useAdvancedDeviceProxy = true,
+                region = NIDRegion.TEST
+            )
         ).build()
     }
 

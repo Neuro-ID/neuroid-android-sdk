@@ -33,7 +33,6 @@ import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDVersion
@@ -316,8 +315,6 @@ open class NeuroIDClassUnitTests {
     //    setNIDActivityCallbackInstance - Used for mocking
     //    setNIDJobServiceManager - Used for mocking
 
-    //   setTestURL
-
     @Test
     fun test_outboundPayloadObserver_assignmentAndInvocation() {
         var invoked = false
@@ -370,58 +367,6 @@ open class NeuroIDClassUnitTests {
     // The init block runs inside the private constructor, exercised via BuilderConfig.build()
 
     @Test
-    fun test_init_serverEnvironment_production_setsProductionEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_development_setsDevEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.DEVELOPMENT),
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_test_setsTestEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.TEST),
-        ).build()
-
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_prodScriptDevCollection_setsMixedEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODSCRIPT_DEVCOLLECTION),
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
     fun test_init_builderConfig_explicit_region_setsRegionAndProductionEndpoints() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
@@ -430,15 +375,12 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration(
                 clientKey = "key_test_fake1234",
                 isAdvancedDevice = false,
-                serverEnvironment = NeuroID.PRODUCTION,
                 region = NIDRegion.usWest,
             ),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertEquals(NIDRegion.usWest, instance?.region)
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
     }
 
     @Test
@@ -1650,75 +1592,6 @@ open class NeuroIDClassUnitTests {
         // Verify both calls succeeded
         assertEquals(true, firstResult)
         assertEquals(true, secondResult)
-    }
-
-    @Test
-    fun testSetTestURL() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked application with SharedPreferences
-        val mockedApplication = getMockedApplication()
-        NeuroID.getInternalInstance()?.application = mockedApplication
-
-        // Setup mocked job service manager with setTestEventSender
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was called on the job service manager
-        verify(exactly = 1) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
-    }
-
-    @Test
-    fun testSetTestURL_withoutApplication() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked job service manager
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Ensure application is null
-        NeuroID.getInternalInstance()?.application = null
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was NOT called since application is null
-        verify(exactly = 0) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
-    }
-
-    //   setTestingNeuroIDDevURL
-    @Test
-    fun testSetTestingNeuroIDDevURL() {
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
-
-        assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
     }
 
     //    setScreenName
