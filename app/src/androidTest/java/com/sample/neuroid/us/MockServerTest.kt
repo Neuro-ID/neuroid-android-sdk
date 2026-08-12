@@ -28,11 +28,8 @@ abstract class MockServerTest {
 
     @Before
     fun stopSendEventsToServer() = runTest(timeout = Duration.parse("120s")) {
-        // set dev to scripts and collection endpoint
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
         server.start()
         val url = server.url("/c/").toString()
-        NeuroID.getInstance()?.setTestURL(url)
         server.enqueue(MockResponse().setBody("").setResponseCode(200))
 
         NeuroID.getInstance()?.isStopped()?.let {

@@ -30,8 +30,10 @@ class MyApplicationDemo : MultiDexApplication() {
                 .build(),
         )
 
-        NeuroID.Builder(this, "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-            isAdvancedDevice = true, serverEnvironment = NeuroID.PRODSCRIPT_DEVCOLLECTION
+        NeuroID.Builder(
+            this,
+            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+            isAdvancedDevice = true,
         ).build()
         // NeuroID.getInstance()?.start()
         NeuroID.getInstance()?.startAppFlow("form_parks912", null)
