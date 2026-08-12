@@ -2552,7 +2552,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_withSessionID_completionInvokedWithSuccess() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "session-abc")
+        val expectedResult = SessionStartResult(started = true, identityId = "session-abc")
         every { mockedSessionService.startSession(null, "session-abc", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2571,7 +2571,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_withNullSessionID_completionInvoked() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "generated-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "generated-id")
         every { mockedSessionService.startSession(null, null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2590,7 +2590,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_failure_completionInvokedWithFalse() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        val expectedResult = SessionStartResult(started = false, identityId = "")
         every { mockedSessionService.startSession(null, any(), any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2610,7 +2610,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_withUserID_completionInvokedWithSuccess() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-1")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-session-1")
         every { mockedSessionService.startAppFlow("site-123", "user-abc", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2629,7 +2629,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_withNullUserID_completionInvoked() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-2")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-session-2")
         every { mockedSessionService.startAppFlow("site-xyz", null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2648,7 +2648,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_failure_completionInvokedWithFalse() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        val expectedResult = SessionStartResult(started = false, identityId = "")
         every { mockedSessionService.startAppFlow(any(), any(), any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2686,7 +2686,7 @@ open class NeuroIDClassUnitTests {
     fun test_startSession_noArgs_defaultCompletion() {
         // Exercises: startSession() — both sessionID and completion use defaults
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "auto-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "auto-id")
         every { mockedSessionService.startSession(null, null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2703,7 +2703,7 @@ open class NeuroIDClassUnitTests {
     fun test_startSession_withSessionID_defaultCompletion() {
         // Exercises: startSession(sessionID = "id") — completion uses default {}
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "given-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "given-id")
         every { mockedSessionService.startSession(null, "given-id", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2740,7 +2740,7 @@ open class NeuroIDClassUnitTests {
     fun test_startAppFlow_withSiteIDOnly_defaultCompletion() {
         // Exercises: startAppFlow(siteID = "site") — userID and completion use defaults
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-default")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-default")
         every { mockedSessionService.startAppFlow("site-default", null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
