@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
@@ -78,7 +79,6 @@ class LoginSignupTestRunner {
 
     @Before
     fun setup() {
-        NIDTestInstrumentation.clearRecorders()
         eventRecorder = NIDTestInstrumentation.recorder
         attemptedRecorder = NIDTestInstrumentation.attemptedRecorder
     }
@@ -162,7 +162,7 @@ class LoginSignupTestRunner {
     fun runLogin() = runTest(UnconfinedTestDispatcher()) {
         eventRecorder?.clear()
         attemptedRecorder?.clear()
-
+        //Thread.sleep(10000)
         val job = launch {
             //setup session and registered user id
             ApplicationMain.registeredSessionId = RepeatedTestRunner.currentId
@@ -293,7 +293,8 @@ class LoginSignupTestRunner {
                 .perform(SetSeekBarProgress(50))
             Espresso.onView(ViewMatchers.withId(R.id.submit_button))
                 .perform(ViewActions.click())
-
+            Log.d("KURT", "${eventRecorder!!.eventTypeCounts()}")
+            assertTrue("ADV EVENT RECEIVED", eventRecorder!!.hasReceivedEventType("ADVANCED_DEVICE_REQUEST"))
             // allow time for the SDK to dump the event queue before terminating (1 minute)
             Thread.sleep(endSleep)
         }
@@ -303,12 +304,13 @@ class LoginSignupTestRunner {
 
         // verify event count
         eventRecorder?.verifyEventList(loginEventCount, eventCountVariance)
+
     }
 
     @Test
     fun runSignup() = runTest(UnconfinedTestDispatcher()) {
-        eventRecorder?.clear()
-        attemptedRecorder?.clear()
+//        eventRecorder?.clear()
+//        attemptedRecorder?.clear()
 
         val job = launch {
             //setup session and registered user id
