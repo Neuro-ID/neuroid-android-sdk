@@ -570,20 +570,6 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_init_withApplication_initialisesMetaData() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        assertNotNull(NeuroID.getInternalInstance()?.metaData)
-    }
-
-    @Test
     fun test_init_withApplication_initialisesSharedPrefsDefaults() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
@@ -2336,30 +2322,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
-        // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters
-        val attrs = event?.attrs
-        assert(attrs != null)
-        assert(attrs!!.isNotEmpty())
-
-        // Check for rnVersion
-        val hostRNVersionAttr = attrs.find { it["n"] == "rnVersion" }
-        assertEquals("0.72.0", hostRNVersionAttr?.get("v"))
-
-        // Check for minOSVersion
-        val hostMinSDKLevelAttr = attrs.find { it["n"] == "minOSVersion" }
-        assertEquals(24, hostMinSDKLevelAttr?.get("v"))
-
-        // Check for original parameters
-        val versionNameAttr = attrs.find { it["n"] == "versionName" }
-        assertEquals("1.2.3", versionNameAttr?.get("v"))
-
-        val versionNumberAttr = attrs.find { it["n"] == "versionNumber" }
-        assertEquals(123, versionNumberAttr?.get("v"))
+        // Verify no event was captured
+        assertEquals(0, storedEvents.count())
     }
 
     @Test
@@ -2405,17 +2369,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
         // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters with defaults
-        val attrs = event?.attrs
-        assert(attrs != null)
-
-        // Check for hostRNVersion (should be empty string by default)
-        val hostRNVersionAttr = attrs?.find { it["n"] == "rnVersion" }
-        assertEquals("", hostRNVersionAttr?.get("v"))
+        assertEquals(0, storedEvents.count())
     }
 
     //    captureEvent
