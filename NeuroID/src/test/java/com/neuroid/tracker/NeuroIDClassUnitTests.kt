@@ -11,7 +11,6 @@ import androidx.lifecycle.Lifecycle
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
-import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
