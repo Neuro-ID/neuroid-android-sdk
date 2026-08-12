@@ -34,7 +34,6 @@ import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
@@ -180,7 +179,7 @@ data class NIDEventModel(
     override fun compareTo(other: NIDEventModel): Int = ts.compareTo(other.ts)
 
     internal fun log() {
-        NIDLog.d(Constants.debugEventTag.displayName, "") {
+        NIDLog.d("Event", "") {
             var contextString: String? = ""
             when (this.type) {
                 PAUSE_EVENT_CAPTURE -> contextString = ""

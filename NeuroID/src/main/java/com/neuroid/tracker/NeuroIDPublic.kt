@@ -21,12 +21,14 @@ interface NeuroIDPublic {
      * set to the mock collection endpoint. The remote config endpoint will be updated to point to
      * the dev remote config endpoint.
      */
+    @Deprecated("setTestURL is deprecated")
     fun setTestURL(newEndpoint: String)
 
     /**
      * Set a dev testing URL for testing.
      */
     @VisibleForTesting
+    @Deprecated("setTestingNeuroIDDevURL is deprecated")
     fun setTestingNeuroIDDevURL()
 
     /**
