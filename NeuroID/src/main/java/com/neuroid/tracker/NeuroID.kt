@@ -408,11 +408,13 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    singleton?.setupCallbacks()
-
-                    processLifecycleProvider.getProcessLifecycle().addObserver(
-                        ProcessDeviceLifecycleObserver(neuroID),
-                    )
+                    // to fix another issue with the lifecycle observer not being called on the main thread in ReactNative usage
+                    CoroutineScope(Dispatchers.Main).launch {
+                        singleton?.setupCallbacks()
+                        processLifecycleProvider.getProcessLifecycle().addObserver(
+                            ProcessDeviceLifecycleObserver(neuroID),
+                        )
+                    }
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
