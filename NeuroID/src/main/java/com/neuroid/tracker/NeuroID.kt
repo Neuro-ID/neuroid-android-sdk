@@ -44,6 +44,7 @@ import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
 import com.neuroid.tracker.service.NIDIdentifierService
 import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.service.NIDNetworkListener
 import com.neuroid.tracker.service.NIDScreenCaptureService
 import com.neuroid.tracker.service.NIDSessionService
 import com.neuroid.tracker.service.NIDValidationService
@@ -140,7 +141,6 @@ class NeuroID
             )
 
         init {
-            val startTime = System.currentTimeMillis()
             nidTime = NIDTime()
             when (serverEnvironment) {
                 PRODSCRIPT_DEVCOLLECTION -> {
@@ -163,7 +163,6 @@ class NeuroID
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
-                captureEvent(queuedEvent = true, type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
                 tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
@@ -178,7 +177,6 @@ class NeuroID
                 tabID = "$rndmId-${generateUniqueHexID()}"
             }
             state = StateStore()
-            logger.i("kurt_test", "NeuroID.init() client key check: ${System.currentTimeMillis() - startTime}")
 
             // We have to have two different retrofit instances because it requires a
             // `base_url` to work off of and our Collection and Config endpoints are
@@ -193,13 +191,10 @@ class NeuroID
                     collectionTimeout = 10,
                     configTimeout = 10,
                 )
-            logger.i("kurt_test", "NeuroID.init() NIDHttpService: ${System.currentTimeMillis() - startTime}")
 
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
-            logger.i("kurt_test", "NeuroID.init() NIDConfigService: ${System.currentTimeMillis() - startTime}")
 
             dataStore = NIDDataStoreManagerImp(logger, configService)
-            logger.i("kurt_test", "NeuroID.init() NIDDataStoreManagerImp: ${System.currentTimeMillis() - startTime}")
 
             identifierService =
                 NIDIdentifierService(
@@ -207,11 +202,27 @@ class NeuroID
                     validationService,
                     state,
                 )
-            logger.i("kurt_test", "NeuroID.init() NIDIdentifierService: ${System.currentTimeMillis() - startTime}")
 
             application?.let {
+                nidJobServiceManager =
+                    NIDJobServiceManager(
+                        this,
+                        dataStore,
+                        getSendingService(
+                            httpService,
+                            it,
+                        ),
+                        logger,
+                        configService,
+                    )
+                nidJobServiceManager.startJob(
+                    it,
+                    clientKey,
+                )
+
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
-                logger.i("kurt_test", "NeuroID.init() NIDSharedPrefsDefaults: ${System.currentTimeMillis() - startTime}")
+
+                resetClientId()
 
                 sessionService =
                     NIDSessionService(
@@ -223,10 +234,8 @@ class NeuroID
                         validationService,
                         state,
                     )
-                logger.i("kurt_test", "NeuroID.init() NIDSharedPrefsDefaults: ${System.currentTimeMillis() - startTime}")
 
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
-                logger.i("kurt_test", "NeuroID.init() NIDCallActivityListener: ${System.currentTimeMillis() - startTime}")
 
                 // get connectivity info on startup
                 // register network listener here. >=API24 will not receive if registered
@@ -240,17 +249,23 @@ class NeuroID
                     isConnected = isConnectingOrConnected
                 }
                 networkConnectionType = this.getNetworkType(it)
-                logger.i("kurt_test", "NeuroID.init() ConnectivityManager: ${System.currentTimeMillis() - startTime}")
+
+                application?.registerReceiver(
+                    NIDNetworkListener(
+                        connectivityManager,
+                        this,
+                        Dispatchers.IO,
+                        state,
+                    ),
+                    IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
+                )
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
-            logger.i("kurt_test", "NeuroID.init() RegistrationIdentificationHelper: ${System.currentTimeMillis() - startTime}")
 
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
-            logger.i("kurt_test", "NeuroID.init() ActivityCallbacks: ${System.currentTimeMillis() - startTime}")
 
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
-            logger.i("kurt_test", "NeuroID.init() NIDComposeTextWatcherUtils (end): ${System.currentTimeMillis() - startTime}")
         }
 
         fun incrementPacketNumber() {
