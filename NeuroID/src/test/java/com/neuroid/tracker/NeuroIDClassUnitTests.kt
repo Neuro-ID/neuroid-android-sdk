@@ -661,6 +661,77 @@ open class NeuroIDClassUnitTests {
         }
     }
 
+    // setupListeners Tests
+
+    @Test
+    fun test_setupListeners_noApplicationContext_doesNothing() {
+        // application is null by default from setUp(), so getApplicationContext() returns null
+        // and setupListeners() should return early without touching lateinit dependencies.
+        NeuroID.getInternalInstance()?.setupListeners()
+    }
+
+    @Test
+    fun test_setupListeners_callInProgress_registersCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+        ).build()
+
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = true)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
+    @Test
+    fun test_setupListeners_noCallInProgress_unregistersCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+        ).build()
+
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = false)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
     // Class Init Test
     @Test
     fun test_configure_tab_id() {
