@@ -80,9 +80,11 @@ const val ORIGIN_CODE_NID = "200"
 const val ORIGIN_CODE_CUSTOMER = "201"
 
 // Telephony Manager Call State Values https://developer.android.com/reference/android/telephony/TelephonyManager#CALL_STATE_IDLE
-enum class CallInProgress(val event: String, val state: Int) {
+enum class CallInProgress(
+    val event: String,
+    val state: Int,
+) {
     UNAUTHORIZED("unauthorized", 99),
     CONNECTED("connected", 3),
     DISCONNECTED("disconnected", 4),
-
 }

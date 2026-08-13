@@ -1,10 +1,9 @@
 package com.neuroid.example
 
+import com.neuroid.tracker.models.NIDEventModel
+
 data class EventModel(val linkedSiteId: String = "",
                       val siteId: String = "",
                       val clientId: String = "",
-                      val userId: String = "", 
-                      val jsonEvents: List<JsonEventModel>)
-
-data class JsonEventModel(val ts: String = "",
-                          val type: String = "")
+                      val identityId: String? = null,
+                      val jsonEvents: List<NIDEventModel>)

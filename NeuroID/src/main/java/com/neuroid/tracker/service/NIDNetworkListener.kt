@@ -7,7 +7,10 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.TYPE_WIFI
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.NETWORK_STATE
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -28,10 +31,11 @@ import kotlin.coroutines.CoroutineContext
  * running, it will take no action if event collection is not running, it will wait 10 seconds and
  * resume event collection
  */
-class NIDNetworkListener(
+internal class NIDNetworkListener(
     private val connectivityManager: ConnectivityManager,
     private val neuroID: NeuroID,
     private val dispatcher: CoroutineContext,
+    private val stateStore: StateStore,
     private val sleepIntervalResume: Long = SLEEP_INTERVAL_RESUME,
     private val sleepIntervalPause: Long = SLEEP_INTERVAL_PAUSE,
 ) : BroadcastReceiver() {
@@ -74,7 +78,7 @@ class NIDNetworkListener(
                     neuroID.sessionService.pauseCollection(false)
                 }
         } else {
-            if (!neuroID.isStopped() || neuroID.userID.isEmpty()) {
+            if (!neuroID.isStopped() || stateStore.getIdentityId().isNullOrEmpty()) {
                 return
             }
             haveNetworkJob =

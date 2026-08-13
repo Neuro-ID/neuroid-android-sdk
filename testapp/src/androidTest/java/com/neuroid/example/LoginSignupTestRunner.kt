@@ -42,8 +42,6 @@ class LoginSignupTestRunner {
     // Grant the required permissions for the test
     @get:Rule
     val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.READ_PHONE_STATE
     )
 
@@ -80,14 +78,14 @@ class LoginSignupTestRunner {
 
     @Before
     fun setup() {
-        MockServerHolder.clearRecorders()
-        eventRecorder = MockServerHolder.recorder
-        attemptedRecorder = MockServerHolder.attemptedRecorder
+        NIDTestInstrumentation.clearRecorders()
+        eventRecorder = NIDTestInstrumentation.recorder
+        attemptedRecorder = NIDTestInstrumentation.attemptedRecorder
     }
 
     @After
     fun teardown() {
-        MockServerHolder.clearRecorders()
+        NIDTestInstrumentation.clearRecorders()
     }
 
     private fun assertAttemptedVsReceived(flowName: String) {
@@ -97,13 +95,13 @@ class LoginSignupTestRunner {
         val comparison = attemptedRecorder!!.compareTo(eventRecorder!!)
         assertTrue(
             "$flowName: Attempted vs received mismatch. " +
-                "payloads(expected=${comparison.payloadCountExpected}, actual=${comparison.payloadCountActual}), " +
-                "missingTypes=${comparison.missingEventTypes}, " +
-                "extraTypes=${comparison.extraEventTypes}, " +
-                "missingSessionType=${comparison.missingBySessionAndType}, " +
-                "extraSessionType=${comparison.extraBySessionAndType}, " +
-                "attemptedCounts=${comparison.expectedTypeCounts}, " +
-                "receivedCounts=${comparison.actualTypeCounts}",
+                    "payloads(expected=${comparison.payloadCountExpected}, actual=${comparison.payloadCountActual}), " +
+                    "missingTypes=${comparison.missingEventTypes}, " +
+                    "extraTypes=${comparison.extraEventTypes}, " +
+                    "missingSessionType=${comparison.missingBySessionAndType}, " +
+                    "extraSessionType=${comparison.extraBySessionAndType}, " +
+                    "attemptedCounts=${comparison.expectedTypeCounts}, " +
+                    "receivedCounts=${comparison.actualTypeCounts}",
             comparison.isMatch()
         )
     }

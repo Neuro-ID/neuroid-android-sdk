@@ -22,7 +22,7 @@ import org.junit.Test
 internal class FragmentCallbacksUnitTests {
     //    onFragmentAttached
     @Test
-    fun test_onFragmentAttached_no_list()  {
+    fun test_onFragmentAttached_no_list() {
         val mocks = getFragmentCallbackMocks()
 
         NeuroID.firstScreenName = ""
@@ -80,7 +80,7 @@ internal class FragmentCallbacksUnitTests {
     }
 
     @Test
-    fun test_onFragmentAttached_existing_list()  {
+    fun test_onFragmentAttached_existing_list() {
         val mocks = getFragmentCallbackMocks()
 
         NeuroID.firstScreenName = ""
@@ -151,7 +151,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentCreated
     @Test
-    fun test_onFragmentCreated()  {
+    fun test_onFragmentCreated() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentCreated(
@@ -170,7 +170,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentViewCreated
     @Test
-    fun test_onFragmentViewCreated()  {
+    fun test_onFragmentViewCreated() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentViewCreated(
@@ -190,7 +190,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentResumed
     @Test
-    fun test_onFragmentResumed_force_start_false()  {
+    fun test_onFragmentResumed_force_start_false() {
         val mocks = getFragmentCallbackMocks(false)
 
         mocks.fragmentCallbacks.onFragmentResumed(
@@ -222,7 +222,7 @@ internal class FragmentCallbacksUnitTests {
     }
 
     @Test
-    fun test_onFragmentResumed_force_start_true()  {
+    fun test_onFragmentResumed_force_start_true() {
         val mocks = getFragmentCallbackMocks(true)
 
         mocks.fragmentCallbacks.onFragmentResumed(
@@ -257,7 +257,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentPaused
     @Test
-    fun test_onFragmentPaused()  {
+    fun test_onFragmentPaused() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentPaused(
@@ -275,7 +275,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentStopped
     @Test
-    fun test_onFragmentStopped()  {
+    fun test_onFragmentStopped() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentStopped(
@@ -293,7 +293,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentDestroyed
     @Test
-    fun test_onFragmentDestroyed()  {
+    fun test_onFragmentDestroyed() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentDestroyed(
@@ -311,7 +311,7 @@ internal class FragmentCallbacksUnitTests {
 
     //    onFragmentDetached
     @Test
-    fun test_onFragmentDetached()  {
+    fun test_onFragmentDetached() {
         val mocks = getFragmentCallbackMocks()
 
         mocks.fragmentCallbacks.onFragmentDetached(

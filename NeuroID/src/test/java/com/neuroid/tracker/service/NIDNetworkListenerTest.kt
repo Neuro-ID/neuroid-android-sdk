@@ -8,17 +8,15 @@ import android.net.ConnectivityManager.TYPE_WIFI
 import android.net.NetworkInfo
 import com.neuroid.tracker.events.NETWORK_STATE
 import com.neuroid.tracker.service.NIDNetworkListener
-import com.neuroid.tracker.utils.NIDTime
+import com.neuroid.tracker.service.StateStore
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.junit.Test
-import java.util.Calendar
 
 class NIDNetworkListenerTest {
     @Test
@@ -278,7 +276,7 @@ class NIDNetworkListenerTest {
         every { neuroID.isConnected } returns isConnectedOrConnecting
         every { neuroID.isStopped() } returns isStopped
 
-        every { neuroID.userID } returns userId
+        val stateStore = StateStore().also { it.setIdentityId(userId) }
 
         val networkInfo = mockk<NetworkInfo>()
         every { networkInfo.type } returns connectionType
@@ -295,6 +293,7 @@ class NIDNetworkListenerTest {
                 connectivityManager,
                 neuroID,
                 UnconfinedTestDispatcher(),
+                stateStore,
                 0,
                 0,
             )

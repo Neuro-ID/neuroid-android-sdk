@@ -13,7 +13,6 @@ import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDTime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -21,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -49,7 +47,7 @@ internal class AdvancedDeviceIDManager(
     private val fpjsClient: FingerprintJS? = null,
     private val useAdvancedDeviceProxy: Boolean,
     val nidTime: NIDTime = NIDTime(),
-    private val region: NIDRegion = NIDRegion.usWest
+    private val region: NIDRegion = NIDRegion.usWest,
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -125,7 +123,7 @@ internal class AdvancedDeviceIDManager(
     override fun getRemoteID(
         clientKey: String,
         dispatcher: CoroutineDispatcher,
-        delay: Long
+        delay: Long,
     ): Job? {
         // check if we have a user entered FPJS key,
         // if not, get it from server
@@ -153,7 +151,7 @@ internal class AdvancedDeviceIDManager(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
                             endpointUrl = chooseUrl(useAdvancedDeviceProxy),
-                            fallbackEndpointUrls = arrayListOf(region.fpjsProdDomain)
+                            fallbackEndpointUrls = arrayListOf(region.fpjsProdDomain),
                         ),
                     )
             }
@@ -189,7 +187,7 @@ internal class AdvancedDeviceIDManager(
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
                             scr = requestResponse.third,
-                            m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key"
+                            m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key",
                         )
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
                         // Cache request Id for 24 hours
@@ -252,7 +250,8 @@ internal class AdvancedDeviceIDManager(
                 tags = mapOf(
                     "collectorKey" to neuroID.clientKey,
                     "clientId" to clientID,
-                    "requestStartTime" to nidTime.getCurrentTimeMillis()),
+                    "requestStartTime" to nidTime.getCurrentTimeMillis(),
+                ),
                 listener = { result ->
                     continuation.resume(Triple(true, result.requestId, result.sealedResult))
                 },
@@ -264,7 +263,8 @@ internal class AdvancedDeviceIDManager(
                                 error.description as String
                             } else {
                                 "FPJS Empty Failure"
-                            }, null
+                            },
+                            null,
                         ),
                     )
                 },

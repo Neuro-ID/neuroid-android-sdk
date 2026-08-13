@@ -11,6 +11,7 @@ import com.neuroid.tracker.models.NIDResponseCallBack
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDTime
+import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -36,8 +37,9 @@ interface NIDSendingService {
 class NIDEventSender(
     private var httpService: HttpService,
     private val context: Context,
-    private val nidTime: NIDTime = NIDTime()
-) : NIDSendingService, RetrySender() {
+    private val nidTime: NIDTime = NIDTime(),
+) : RetrySender(),
+    NIDSendingService {
     // a static payload to send if OOM occurs
     private var oomPayload = ""
 
@@ -82,7 +84,7 @@ class NIDEventSender(
         }
 
         val requestBody = data.toRequestBody("application/JSON".toMediaTypeOrNull())
-        NeuroID.testOutboundPayloadObserver?.invoke(data)
+        NeuroID.outboundPayloadObserver?.invoke(data)
         httpService.sendEvents(
             requestBody,
             key,
@@ -93,12 +95,7 @@ class NIDEventSender(
     override fun getRequestPayloadJSON(events: List<NIDEventModel>): String {
         val sharedDefaults = NIDSharedPrefsDefaults(context)
 
-        val userID: String? =
-            if (NeuroID.getInstance()?.getUserID() != null) {
-                NeuroID.getInstance()?.getUserID()
-            } else {
-                null
-            }
+        val userID: String? = NeuroID.getInstance()?.getIdentityId()
         val registeredUserID: String? =
             if (NeuroID.getInstance()?.getRegisteredUserID() != null) {
                 NeuroID.getInstance()?.getRegisteredUserID()
@@ -128,11 +125,11 @@ class NIDEventSender(
                 "responseId" to generateUniqueHexID(),
                 "url" to "$ANDROID_URI${NeuroID.screenActivityName}",
                 "jsVersion" to "5.0.0",
-                "sdkVersion" to NeuroID.getInstance()?.getSDKVersion(),
+                "sdkVersion" to NIDVersion.getSDKVersion(),
                 "environment" to NeuroID.environment,
                 "jsonEvents" to events,
                 "linkedSiteId" to linkedSiteID,
-                "packetNumber" to packetNumber
+                "packetNumber" to packetNumber,
             )
 
         NIDLog.d(

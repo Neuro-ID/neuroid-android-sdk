@@ -45,7 +45,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             lastSelectListener,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onItemSelected
@@ -65,8 +65,8 @@ class AdditionalListenersTest {
                 attrs = any(),
                 tg = match {
                     it["etn"] == simpleClassName &&
-                    it["tgs"] == idName &&
-                    it["sender"] == simpleClassName
+                        it["tgs"] == idName &&
+                        it["sender"] == simpleClassName
                 },
                 tgs = idName,
                 touches = any(),
@@ -90,12 +90,8 @@ class AdditionalListenersTest {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -139,7 +135,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             lastSelectListener,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onNothingSelected
@@ -180,12 +176,8 @@ class AdditionalListenersTest {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -230,7 +222,7 @@ class AdditionalListenersTest {
             neuroID,
             idName,
             null,
-            simpleClassName
+            simpleClassName,
         )
 
         // Trigger onItemSelected (should not crash)
@@ -266,12 +258,8 @@ class AdditionalListenersTest {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -316,7 +304,7 @@ class AdditionalListenersTest {
         val listener = additionalListeners.addSelectOnClickListener(
             neuroID,
             idName,
-            lastClickListener
+            lastClickListener,
         )
 
         // Trigger onItemClick
@@ -336,7 +324,7 @@ class AdditionalListenersTest {
                 attrs = any(),
                 tg = match {
                     it["etn"] == "INPUT" &&
-                    it["et"] == "text"
+                        it["et"] == "text"
                 },
                 tgs = idName,
                 touches = any(),
@@ -360,12 +348,8 @@ class AdditionalListenersTest {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -408,7 +392,7 @@ class AdditionalListenersTest {
         val listener = additionalListeners.addSelectOnClickListener(
             neuroID,
             idName,
-            null
+            null,
         )
 
         // Trigger onItemClick (should not crash)
@@ -444,12 +428,8 @@ class AdditionalListenersTest {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -514,4 +494,3 @@ class AdditionalListenersTest {
         }
     }
 }
-

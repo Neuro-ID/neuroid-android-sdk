@@ -39,11 +39,6 @@ class Splash: LayoutActivity() {
             startActivity(Intent(this, SignUp::class.java))
         }
         val permissionsRequests = mutableListOf<String>()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            permissionsRequests.add(Manifest.permission.ACCESS_FINE_LOCATION)
-            permissionsRequests.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS)
             != PackageManager.PERMISSION_GRANTED) {
             permissionsRequests.add(Manifest.permission.READ_PHONE_STATE)

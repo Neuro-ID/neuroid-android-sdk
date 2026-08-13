@@ -1,7 +1,5 @@
 package com.neuroid.tracker.service
 
-import android.content.Context
-import android.location.LocationManager
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -13,6 +11,7 @@ import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDSingletonIDs
+import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.utils.generateUniqueHexID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -27,6 +26,7 @@ internal class NIDSessionService(
     private val sharedPreferenceDefaults: NIDSharedPrefsDefaults,
     private val identifierService: NIDIdentifierService,
     private val validationService: NIDValidationService,
+    private val stateStore: StateStore,
 ) {
     // Tracks the number of pauseCollection calls to detect stale resumeCollectionCompletion callbacks.
     // When resumeCollection registers an invokeOnCompletion callback, it captures the current
@@ -38,7 +38,6 @@ internal class NIDSessionService(
         neuroID.timestamp = System.currentTimeMillis()
 
         neuroID.application?.let {
-            neuroID.sessionID = sharedPreferenceDefaults.getNewSessionID()
             neuroID.clientID = sharedPreferenceDefaults.getClientID()
 
             configService.updateIsSampledStatus(neuroID, neuroID.linkedSiteID)
@@ -81,7 +80,11 @@ internal class NIDSessionService(
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         neuroID.dataStore.saveAndClearAllQueuedEvents()
-        neuroID.checkThenCaptureAdvancedDevice()
+
+        neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting (setupSession): ${neuroID.isAdvancedDevice}", level = "INFO")
+        if (neuroID.isAdvancedDevice) {
+            neuroID.checkThenCaptureAdvancedDevice()
+        }
 
         completion()
     }
@@ -139,12 +142,12 @@ internal class NIDSessionService(
             return
         }
 
-        if (neuroID.userID != "" || NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId() != null || NeuroID.isSDKStarted) {
             stopSession()
         }
 
         var finalSessionID = sessionID ?: generateUniqueHexID(true)
-        if (!identifierService.setUserID(neuroID, finalSessionID, sessionID != null)) {
+        if (!identifierService.setIdentityId(neuroID, finalSessionID, sessionID != null)) {
             completion(SessionStartResult(false, ""))
             return
         }
@@ -155,10 +158,6 @@ internal class NIDSessionService(
                 resumeCollection()
             },
         ) {
-            // we need to set finalSessionID with the set random user id
-            // if a sessionID was not passed in
-            finalSessionID = neuroID.getUserID()
-
             completion(SessionStartResult(true, finalSessionID))
         }
     }
@@ -178,17 +177,13 @@ internal class NIDSessionService(
                     neuroID.nidJobServiceManager?.stopJob()
                 }
         }
-
-        neuroID.locationService.shutdownLocationCoroutine(
-            neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-        )
     }
 
     @Synchronized
     fun resumeCollection() {
         neuroID.captureEvent(queuedEvent = true, type = RESUME_EVENT_CAPTURE, ct = "SDK_EVENT")
         // Don't allow resume to be called if SDK has not been started
-        if (neuroID.userID.isEmpty() && !NeuroID.isSDKStarted) {
+        if (stateStore.getIdentityId().isNullOrEmpty() && !NeuroID.isSDKStarted) {
             return
         }
 
@@ -206,12 +201,6 @@ internal class NIDSessionService(
             resumeCollectionCompletion(currentGeneration)
         } else {
             neuroID.pauseCollectionJob?.invokeOnCompletion { resumeCollectionCompletion(currentGeneration) }
-        }
-
-        if (configService.configCache.geoLocation) {
-            neuroID.locationService.setupLocationCoroutine(
-                neuroID.getApplicationContext()?.getSystemService(Context.LOCATION_SERVICE) as LocationManager,
-            )
         }
     }
 
@@ -278,7 +267,7 @@ internal class NIDSessionService(
     }
 
     fun clearSessionVariables() {
-        neuroID.userID = ""
+        stateStore.setIdentityId(null)
         neuroID.registeredUserID = ""
         neuroID.linkedSiteID = ""
         configService.clearSiteIDSampleMap(neuroID)
@@ -341,12 +330,15 @@ internal class NIDSessionService(
 
                 createSession()
 
-                neuroID.checkThenCaptureAdvancedDevice()
+                neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting (startAppFlow): ${neuroID.isAdvancedDevice}", level = "INFO")
+                if (neuroID.isAdvancedDevice) {
+                    neuroID.checkThenCaptureAdvancedDevice()
+                }
 
                 completion(
                     SessionStartResult(
                         true,
-                        neuroID.getUserID(),
+                        neuroID.getIdentityId(),
                     ),
                 )
             } else {
@@ -366,7 +358,7 @@ internal class NIDSessionService(
                         completion(
                             SessionStartResult(
                                 it,
-                                neuroID.getUserID(),
+                                neuroID.getIdentityId(),
                             ),
                         )
                     }
@@ -391,20 +383,10 @@ internal class NIDSessionService(
         attrs: List<Map<String, Any>>? = null,
     ) {
         neuroID.application?.let {
-            neuroID.metaData?.getLastKnownLocation(
-                it,
-                configService.configCache.geoLocation,
-                neuroID.locationService,
-            )
-
             neuroID.captureEvent(
                 type = type,
                 f = neuroID.clientKey,
-                sid = neuroID.sessionID,
-                lsid = "null",
                 cid = neuroID.clientID,
-                did = sharedPreferenceDefaults.getDeviceID(),
-                iid = sharedPreferenceDefaults.getIntermediateID(),
                 loc = sharedPreferenceDefaults.getLocale(),
                 ua = sharedPreferenceDefaults.getUserAgent(),
                 tzo = sharedPreferenceDefaults.getTimeZone(),
@@ -417,7 +399,7 @@ internal class NIDSessionService(
                 dnt = false,
                 url = "",
                 ns = "nid",
-                jsv = NeuroID.getInstance()?.getSDKVersion(),
+                jsv = NIDVersion.getSDKVersion(),
                 sw = sharedPreferenceDefaults.getDisplayWidth().toFloat(),
                 sh = sharedPreferenceDefaults.getDisplayHeight().toFloat(),
                 metadata = neuroID.metaData,

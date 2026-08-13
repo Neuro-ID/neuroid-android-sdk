@@ -1,11 +1,12 @@
 package com.neuroid.tracker.models
 
+@Suppress("ktlint:standard:enum-entry-name-case")
 enum class NIDRegion(
     val fpjsProdDomain: String,
     val fpjsPrimaryDomain: String,
     val productionEndpoint: String,
-    val productionScriptsEndpoint: String) {
-
+    val productionScriptsEndpoint: String,
+) {
     usWest(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",

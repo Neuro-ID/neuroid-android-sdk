@@ -35,7 +35,7 @@ class NIDEventSenderTest {
     @Before
     fun setup() {
         val mockedIdentificationService = getMockedIdentifierService()
-        every { mockedIdentificationService.getUserID(any()) } returns ""
+        every { mockedIdentificationService.getIdentityId() } returns ""
         every { mockedIdentificationService.getRegisteredUserID(any()) } returns ""
 
         NeuroID.getInternalInstance()?.identifierService = mockedIdentificationService

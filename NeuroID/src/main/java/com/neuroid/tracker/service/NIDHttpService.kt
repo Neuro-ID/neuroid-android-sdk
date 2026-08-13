@@ -25,7 +25,8 @@ class NIDHttpService(
     logger: NIDLogWrapper,
     collectionTimeout: Long = 10,
     configTimeout: Long = 10,
-) : HttpService, RetrySender() {
+) : RetrySender(),
+    HttpService {
     private var collectorAPIService: NIDApiService
     private var configAPIService: NIDApiService
 

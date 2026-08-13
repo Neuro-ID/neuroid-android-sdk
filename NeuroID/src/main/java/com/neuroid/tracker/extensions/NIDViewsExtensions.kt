@@ -39,9 +39,7 @@ fun View.getRandomId(): String {
     return "${this.javaClass.simpleName}_$viewCoordinates"
 }
 
-fun View.getParents(logger: NIDLogWrapper): String {
-    return getParentsOfView(0, this, logger)
-}
+fun View.getParents(logger: NIDLogWrapper): String = getParentsOfView(0, this, logger)
 
 fun View.getParentsOfView(
     layers: Int,

@@ -16,6 +16,7 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 internal class NIDIdentifierService(
     val logger: NIDLogWrapper,
     val validationService: NIDValidationService,
+    val stateStore: StateStore,
 ) {
     internal fun getOriginResult(
         idValue: String,
@@ -43,7 +44,10 @@ internal class NIDIdentifierService(
         return SessionIDOriginResult(origin, originCode, idValue, idType)
     }
 
-    internal fun sendOriginEvent(neuroID: NeuroID, originResult: SessionIDOriginResult) {
+    internal fun sendOriginEvent(
+        neuroID: NeuroID,
+        originResult: SessionIDOriginResult,
+    ) {
         // sending these as individual items.
         neuroID.captureEvent(
             queuedEvent = !NeuroID.isSDKStarted,
@@ -81,7 +85,7 @@ internal class NIDIdentifierService(
         userGenerated: Boolean = true,
     ): Boolean {
         try {
-            val validID = validationService.validateUserID(genericUserID)
+            val validID = validationService.isValidIdentityId(genericUserID)
             val originRes =
                 getOriginResult(
                     genericUserID,
@@ -117,9 +121,9 @@ internal class NIDIdentifierService(
         }
     }
 
-    fun getUserID(neuroID: NeuroID) = neuroID.userID
+    fun getIdentityId() = stateStore.getIdentityId()
 
-    fun setUserID(
+    fun setIdentityId(
         neuroID: NeuroID,
         userId: String,
         userGenerated: Boolean,
@@ -136,13 +140,16 @@ internal class NIDIdentifierService(
             return false
         }
 
-        neuroID.userID = userId
+        stateStore.setIdentityId(userId)
         return true
     }
 
     fun getRegisteredUserID(neuroID: NeuroID) = neuroID.registeredUserID
 
-    fun setRegisteredUserID(neuroID: NeuroID, registeredUserID: String): Boolean {
+    fun setRegisteredUserID(
+        neuroID: NeuroID,
+        registeredUserID: String,
+    ): Boolean {
         if (neuroID.registeredUserID.isNotEmpty() && registeredUserID != neuroID.registeredUserID) {
             neuroID.captureEvent(
                 type = LOG,

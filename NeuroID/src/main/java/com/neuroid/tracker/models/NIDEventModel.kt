@@ -34,7 +34,6 @@ import com.neuroid.tracker.events.WINDOW_FOCUS
 import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.events.WINDOW_RESIZE
 import com.neuroid.tracker.events.WINDOW_UNLOAD
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDLog
 import com.neuroid.tracker.utils.NIDMetaData
 import org.json.JSONArray
@@ -67,12 +66,8 @@ data class NIDEventModel(
     val sw: Float? = null,
     val sh: Float? = null,
     val f: String? = null,
-    val lsid: String? = null,
-    val sid: String? = null,
     val siteId: String? = null,
     val cid: String? = null,
-    val did: String? = null,
-    val iid: String? = null,
     val loc: String? = null,
     val ua: String? = null,
     val tzo: Int? = null,
@@ -102,9 +97,7 @@ data class NIDEventModel(
     val scr: String? = null,
     val synthetic: Boolean? = null,
 ) : Comparable<NIDEventModel> {
-    fun toJSONString(): String {
-        return toJSON().toString()
-    }
+    fun toJSONString(): String = toJSON().toString()
 
     fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
@@ -140,18 +133,8 @@ data class NIDEventModel(
             sh?.let { jsonObject.put("sh", it) }
             f?.let { jsonObject.put("f", it) }
             rts?.let { jsonObject.put("rts", it) }
-            lsid?.let {
-                if (it == "null") {
-                    jsonObject.put("lsid", null)
-                } else {
-                    jsonObject.put("lsid", it)
-                }
-            }
-            sid?.let { jsonObject.put("sid", it) }
             siteId?.let { jsonObject.put("siteId", it) }
             cid?.let { jsonObject.put("cid", it) }
-            did?.let { jsonObject.put("did", it) }
-            iid?.let { jsonObject.put("iid", it) }
             loc?.let { jsonObject.put("loc", it) }
             ua?.let { jsonObject.put("ua", it) }
             tzo?.let { jsonObject.put("tzo", it) }
@@ -186,19 +169,17 @@ data class NIDEventModel(
             isConnected?.let { jsonObject.put("isconnected", it) }
             cp?.let { jsonObject.put("cp", it) }
             l?.let { jsonObject.put("l", it) }
-            scr?.let {jsonObject.put("scr", it) }
+            scr?.let { jsonObject.put("scr", it) }
             synthetic?.let { jsonObject.put("synthetic", it) }
         }
 
         return jsonObject
     }
 
-    override fun compareTo(other: NIDEventModel): Int {
-        return ts.compareTo(other.ts)
-    }
+    override fun compareTo(other: NIDEventModel): Int = ts.compareTo(other.ts)
 
     internal fun log() {
-        NIDLog.d(Constants.debugEventTag.displayName, "") {
+        NIDLog.d("Event", "") {
             var contextString: String? = ""
             when (this.type) {
                 PAUSE_EVENT_CAPTURE -> contextString = ""
@@ -220,7 +201,9 @@ data class NIDEventModel(
                         "et=${this.et}, rts=${this.rts}, ec=${this.ec} v=${this.v} tg=${this.tg} meta=${this.metadata} attrs=[${this.attrs}]"
                 "DEREGISTER_TARGET" -> contextString = ""
                 TOUCH_START -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
-                TOUCH_END -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic} m=${this.m}"
+                TOUCH_END ->
+                    contextString =
+                        "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic} m=${this.m}"
                 TOUCH_MOVE -> contextString = "xy=${this.touches} tg=${this.tg} tgs=${this.tgs} ec=${this.ec} syn=${this.synthetic}"
                 CLOSE_SESSION -> contextString = ""
                 SET_VARIABLE -> contextString = this.v ?: ""
@@ -234,7 +217,9 @@ data class NIDEventModel(
                 WINDOW_BLUR -> contextString = "meta=${this.metadata}"
                 WINDOW_FOCUS -> contextString = "meta=${this.metadata}"
                 CONTEXT_MENU -> contextString = "meta=${this.metadata}"
-                ADVANCED_DEVICE_REQUEST -> contextString = "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m} scr=${this.scr?.substring(0, 15)}"
+                ADVANCED_DEVICE_REQUEST ->
+                    contextString =
+                        "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m} scr=${this.scr?.substring(0, 15)}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
                 ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
@@ -248,7 +233,11 @@ data class NIDEventModel(
     }
 }
 
-data class NIDSensorModel(val x: Float?, val y: Float?, val z: Float?) {
+data class NIDSensorModel(
+    val x: Float?,
+    val y: Float?,
+    val z: Float?,
+) {
     fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("x", x ?: JSONObject.NULL)
@@ -259,7 +248,11 @@ data class NIDSensorModel(val x: Float?, val y: Float?, val z: Float?) {
     }
 }
 
-data class NIDTouchModel(val tid: Float?, val x: Float?, val y: Float?) {
+data class NIDTouchModel(
+    val tid: Float?,
+    val x: Float?,
+    val y: Float?,
+) {
     fun toJSON(): JSONObject {
         val jsonObject = JSONObject()
         jsonObject.put("tid", tid ?: JSONObject.NULL)

@@ -18,7 +18,7 @@ class FragmentCallbacks(
     val logger: NIDLogWrapper,
     val registrationHelper: RegistrationIdentificationHelper,
 ) : FragmentLifecycleCallbacks() {
-    private var _isChangeOrientation = isChangeOrientation
+    private var changeOrientationState = isChangeOrientation
 
     var listFragment = arrayListOf<String>()
     val blackListFragments = listOf("NavHostFragment", "SupportMapFragment")
@@ -135,12 +135,12 @@ class FragmentCallbacks(
             registrationHelper.registerTargetFromScreen(
                 neuroID,
                 f.requireActivity(),
-                _isChangeOrientation.not(),
+                changeOrientationState.not(),
                 true,
                 activityOrFragment = "fragment",
                 parent = simpleClassName,
             )
-            _isChangeOrientation = false
+            changeOrientationState = false
         } else {
             logger.d(msg = "Fragment - Resumed - blacklisted $simpleClassName")
         }

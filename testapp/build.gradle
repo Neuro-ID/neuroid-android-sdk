@@ -24,8 +24,12 @@ android {
         versionCode 1
         versionName "1.0"
 
+<<<<<<< HEAD
         //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunner "com.neuroid.example.MockWebServerTestRunner"
+=======
+        testInstrumentationRunner "com.neuroid.example.NIDTestInstrumentationRunner"
+>>>>>>> main
     }
 
     buildTypes {
@@ -104,5 +108,4 @@ dependencies {
         exclude group: "com.google.android.gms"
     }
     androidTestImplementation 'io.mockk:mockk-android:1.12.0'
-    androidTestImplementation "org.awaitility:awaitility:4.2.0"
 }

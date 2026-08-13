@@ -12,4 +12,3 @@ open class NIDSdkVersionProvider {
      */
     open fun getSdkInt(): Int = Build.VERSION.SDK_INT
 }
-

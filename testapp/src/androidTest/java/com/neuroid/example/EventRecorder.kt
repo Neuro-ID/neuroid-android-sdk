@@ -21,10 +21,10 @@ class EventRecorder {
     ) {
         fun isMatch(): Boolean {
             return payloadCountExpected == payloadCountActual &&
-                missingEventTypes.isEmpty() &&
-                extraEventTypes.isEmpty() &&
-                missingBySessionAndType.isEmpty() &&
-                extraBySessionAndType.isEmpty()
+                    missingEventTypes.isEmpty() &&
+                    extraEventTypes.isEmpty() &&
+                    missingBySessionAndType.isEmpty() &&
+                    extraBySessionAndType.isEmpty()
         }
     }
 
@@ -60,7 +60,7 @@ class EventRecorder {
         // group all payloads by session (userId), then check across all payloads per session
         val sessionEvents = mutableMapOf<String, MutableSet<String>>()
         eventBuffer.forEach { eventModel ->
-            val key = eventModel.userId.orEmpty().ifBlank { eventModel.clientId }
+            val key = eventModel.identityId.orEmpty().ifBlank { eventModel.clientId }
             val types = sessionEvents.getOrPut(key) { mutableSetOf() }
             eventModel.jsonEvents.forEach { types.add(it.type) }
         }
@@ -111,7 +111,7 @@ class EventRecorder {
     private fun sessionAndTypeCounts(): Map<String, Int> {
         return eventBuffer
             .flatMap { model ->
-                val sessionKey = model.userId.orEmpty().ifBlank { model.clientId }
+                val sessionKey = model.identityId.orEmpty().ifBlank { model.clientId }
                 model.jsonEvents.map { event -> "$sessionKey::${event.type}" }
             }
             .groupingBy { it }

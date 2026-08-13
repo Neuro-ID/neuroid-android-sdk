@@ -5,31 +5,41 @@ import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.os.Handler
+import android.os.Looper
+import androidx.lifecycle.Lifecycle
+import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
-import com.neuroid.tracker.events.APPLICATION_METADATA
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
+import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
+import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
+import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
+import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SET_VARIABLE
+import com.neuroid.tracker.events.TOUCH_START
+import com.neuroid.tracker.events.WINDOW_LOAD
 import com.neuroid.tracker.extensions.captureAdvancedDevice
-import com.neuroid.tracker.models.SessionStartResult
-import com.neuroid.tracker.utils.NIDBuildConfigWrapper
-import com.neuroid.tracker.utils.NIDVersion
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRegion
-import com.neuroid.tracker.service.NIDJobServiceManager
+import com.neuroid.tracker.models.NIDRemoteConfig
+import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.NIDCallActivityListener
+import com.neuroid.tracker.service.NIDJobServiceManager
 import com.neuroid.tracker.service.NIDSessionService
-import com.neuroid.tracker.service.LocationService
 import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.NIDMetaData
-import com.neuroid.tracker.utils.getAppMetaData
-import com.neuroid.tracker.utils.Constants
+import com.neuroid.tracker.utils.NIDBuildConfigWrapper
 import com.neuroid.tracker.utils.NIDLogWrapper
+import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
+import com.neuroid.tracker.utils.getAppMetaData
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -37,6 +47,7 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
@@ -44,8 +55,10 @@ import io.mockk.verify
 import kotlinx.coroutines.Job
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -123,8 +136,8 @@ open class NeuroIDClassUnitTests {
                 false,
                 "",
                 true,
-                ""
-            )
+                "",
+            ),
         ).build()
     }
 
@@ -261,6 +274,15 @@ open class NeuroIDClassUnitTests {
 
     @Before
     fun setUp() {
+        // Mock the process lifecycle so setNeuroIDInstance's registration in
+        // setNeuroIDInstanceBuilderConfig() below doesn't touch the real ProcessLifecycleOwner
+        // (main-thread only, unavailable on plain JVM unit tests). Individual tests may replace
+        // this with their own mocked provider afterwards if they need specific behavior.
+        val defaultMockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val defaultMockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { defaultMockedProcessLifecycleProvider.getProcessLifecycle() } returns defaultMockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(defaultMockedProcessLifecycleProvider)
+
         // setup instance and logging, use new BuilderConfig
         setNeuroIDInstanceBuilderConfig()
         NeuroID.getInternalInstance()?.application = null
@@ -279,9 +301,12 @@ open class NeuroIDClassUnitTests {
         assertEquals("Expected Log Debug Count is Greater than 0", 0, debugCount)
         assertEquals("Expected Log Warning Count is Greater than 0", 0, warningCount)
 
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
         NeuroID.getInternalInstance()?.registeredUserID = ""
         NeuroID.getInternalInstance()?.linkedSiteID = ""
+
+        // reset in case a test substituted a mocked provider
+        NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
 
         safeUnmockkAll()
     }
@@ -293,7 +318,40 @@ open class NeuroIDClassUnitTests {
     //    setNIDActivityCallbackInstance - Used for mocking
     //    setNIDJobServiceManager - Used for mocking
 
-    //   setTestURL
+    @Test
+    fun test_outboundPayloadObserver_assignmentAndInvocation() {
+        var invoked = false
+
+        NeuroID.outboundPayloadObserver = { _ ->
+            invoked = true
+        }
+
+        NeuroID.outboundPayloadObserver?.invoke("{}")
+
+        assertTrue(invoked)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_fpjsClientOverride_assignment() {
+        val mockedClient = mockk<FingerprintJS>()
+
+        NeuroID.fpjsClientOverride = mockedClient
+
+        assertSame(mockedClient, NeuroID.fpjsClientOverride)
+        NeuroID.clearTestObservers()
+    }
+
+    @Test
+    fun test_clearTestObservers_resetsCompanionOverrides() {
+        NeuroID.fpjsClientOverride = mockk()
+        NeuroID.outboundPayloadObserver = { _ -> }
+
+        NeuroID.clearTestObservers()
+
+        assertNull(NeuroID.fpjsClientOverride)
+        assertNull(NeuroID.outboundPayloadObserver)
+    }
 
     @Test
     fun test_ConfigOld() {
@@ -312,58 +370,6 @@ open class NeuroIDClassUnitTests {
     // The init block runs inside the private constructor, exercised via BuilderConfig.build()
 
     @Test
-    fun test_init_serverEnvironment_production_setsProductionEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
-        ).build()
-
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_development_setsDevEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.DEVELOPMENT)
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_test_setsTestEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.TEST)
-        ).build()
-
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(Constants.testScriptEndpoint.displayName, NeuroID.scriptEndpoint)
-    }
-
-    @Test
-    fun test_init_serverEnvironment_prodScriptDevCollection_setsMixedEndpoints() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODSCRIPT_DEVCOLLECTION)
-        ).build()
-
-        assertEquals(Constants.devEndpoint.displayName, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
-    }
-
-    @Test
     fun test_init_builderConfig_explicit_region_setsRegionAndProductionEndpoints() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
@@ -372,15 +378,12 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration(
                 clientKey = "key_test_fake1234",
                 isAdvancedDevice = false,
-                serverEnvironment = NeuroID.PRODUCTION,
                 region = NIDRegion.usWest,
-            )
+            ),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertEquals(NIDRegion.usWest, instance?.region)
-        assertEquals(NIDRegion.usWest.productionEndpoint, NeuroID.endpoint)
-        assertEquals(NIDRegion.usWest.productionScriptsEndpoint, NeuroID.scriptEndpoint)
     }
 
     @Test
@@ -389,7 +392,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("invalid_key", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("invalid_key", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -403,7 +406,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_live_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_live_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertEquals("LIVE", NeuroID.environment)
@@ -415,7 +418,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertEquals("TEST", NeuroID.environment)
@@ -427,7 +430,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -442,7 +445,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val tabID = NeuroID.getInternalInstance()?.tabID
@@ -457,7 +460,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -489,13 +492,11 @@ open class NeuroIDClassUnitTests {
         every { mockedConnectivityManager.getNetworkCapabilities(any()) } returns null
 
         every { mockedContext.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
-        every { mockedContext.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
 
         val mockedApplication = mockk<Application>()
         every { mockedApplication.applicationContext } returns mockedContext
         every { mockedApplication.getSharedPreferences(any(), any()) } returns mockedSharedPreferences
         every { mockedApplication.getSystemService(Context.CONNECTIVITY_SERVICE) } returns mockedConnectivityManager
-        every { mockedApplication.getSystemService(Context.LOCATION_SERVICE) } returns mockk<LocationManager>()
         every { mockedApplication.registerReceiver(any(), any<IntentFilter>()) } returns null
         every { mockedApplication.registerActivityLifecycleCallbacks(any()) } just runs
 
@@ -516,7 +517,6 @@ open class NeuroIDClassUnitTests {
         mockkConstructor(NIDSessionService::class)
         every { anyConstructed<NIDSessionService>().resumeCollection() } just runs
 
-        mockkConstructor(LocationService::class)
         mockkConstructor(NIDCallActivityListener::class)
 
         // RootHelper is called inside NIDMetaData init; mock it to avoid Build.FINGERPRINT NPE on JVM
@@ -528,13 +528,16 @@ open class NeuroIDClassUnitTests {
         mockkStatic(::getAppMetaData)
         every { getAppMetaData(any(), any(), any()) } returns null
 
-        // captureAdvancedDevice is launched on Dispatchers.IO from checkThenCaptureAdvancedDevice when
-        // isAdvancedDevice == true. Left unmocked, that background coroutine instantiates
-        // mocked-constructor classes (e.g. NIDSharedPrefsDefaults) while tearDown's unmockkAll() is
-        // disposing those same constructor mocks, causing a ConcurrentModificationException. Stubbing it
-        // makes the coroutine a no-op so cleanup is deterministic.
+        // captureAdvancedDevice is launched on Dispatchers.IO from checkThenCaptureAdvancedDevice,
+        // which is now only ever invoked from NIDAdvancedDeviceLifecycleObserver (once the app
+        // process reaches the foreground) rather than at construction time. Left unmocked here as a
+        // safety net in case a test's process-lifecycle observer fires: without this stub, that
+        // background coroutine would instantiate mocked-constructor classes (e.g.
+        // NIDSharedPrefsDefaults) while tearDown's unmockkAll() is disposing those same constructor
+        // mocks, causing a ConcurrentModificationException. Stubbing it makes the coroutine a no-op
+        // so cleanup is deterministic.
         mockkStatic("com.neuroid.tracker.extensions.AdvancedDeviceExtensionKt")
-        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any(), any()) } returns Unit
+        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any()) } returns Unit
 
         return mockedApplication
     }
@@ -547,7 +550,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -563,24 +566,10 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sessionService)
-    }
-
-    @Test
-    fun test_init_withApplication_initialisesMetaData() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
-        ).build()
-
-        assertNotNull(NeuroID.getInternalInstance()?.metaData)
     }
 
     @Test
@@ -591,24 +580,10 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sharedPrefsDefaults)
-    }
-
-    @Test
-    fun test_init_withApplication_initialisesLocationService() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
-        ).build()
-
-        assertNotNull(NeuroID.getInternalInstance()?.locationService)
     }
 
     @Test
@@ -619,7 +594,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.nidCallActivityListener)
@@ -633,7 +608,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         val networkType = NeuroID.getInternalInstance()?.networkConnectionType
@@ -649,7 +624,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertEquals(false, NeuroID.getInternalInstance()?.isConnected)
@@ -668,7 +643,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
         assertEquals(true, NeuroID.getInternalInstance()?.isConnected)
@@ -682,28 +657,83 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
-        verify(exactly = 0) {
+        verify(exactly = 1) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
         }
     }
 
+    // setupListeners Tests
+
     @Test
-    fun test_init_withApplication_isAdvancedDevice_callsResetClientId() {
+    fun test_setupListeners_noApplicationContext_doesNothing() {
+        // application is null by default from setUp(), so getApplicationContext() returns null
+        // and setupListeners() should return early without touching lateinit dependencies.
+        NeuroID.getInternalInstance()?.setupListeners()
+    }
+
+    @Test
+    fun test_setupListeners_callInProgress_registersCallActivityListener() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", true, "", true, NeuroID.PRODUCTION)
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
         ).build()
 
-        verify(atLeast = 1) {
-            anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
-        }
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = true)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
+    @Test
+    fun test_setupListeners_noCallInProgress_unregistersCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+        ).build()
+
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = false)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
     }
 
     // Class Init Test
@@ -787,10 +817,6 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any()
             )
         } just runs
         every { mockedLogger.e(any(), any()) } just runs
@@ -838,12 +864,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -940,14 +962,6 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
             )
         } just runs
         every { firstLogger.e(any(), any()) } just runs
@@ -1000,12 +1014,8 @@ open class NeuroIDClassUnitTests {
                 sw = any(),
                 sh = any(),
                 f = any(),
-                lsid = any(),
-                sid = any(),
                 siteId = any(),
                 cid = any(),
-                did = any(),
-                iid = any(),
                 loc = any(),
                 ua = any(),
                 tzo = any(),
@@ -1045,6 +1055,104 @@ open class NeuroIDClassUnitTests {
         }
     }
 
+    // setNeuroIDInstance Looper/main-thread registration Tests
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenNoMainLooper() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Plain JVM unit tests have no real Android main looper - Looper.getMainLooper()
+        // returns null - so registration should happen synchronously, not via Handler.post.
+        mockkStatic(Looper::class)
+        every { Looper.getMainLooper() } returns null
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenAlreadyOnMainThread() {
+        NeuroID.setSingletonNull()
+
+        // When the calling thread's looper is the same as the main looper, registration should
+        // happen synchronously rather than being posted to the message queue.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns mainLooper
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverViaHandlerPost_whenOnBackgroundThread() {
+        NeuroID.setSingletonNull()
+
+        // When called from a background thread (different looper than main), registration must
+        // be deferred to the main thread via Handler.post rather than happening synchronously.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        val backgroundLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns backgroundLooper
+
+        mockkConstructor(Handler::class)
+        val runnableSlot = slot<Runnable>()
+        every { anyConstructed<Handler>().post(capture(runnableSlot)) } returns true
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Registration is posted to the main thread, not executed inline.
+        assertTrue(runnableSlot.isCaptured)
+        verify(exactly = 0) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 0) { mockedLifecycle.addObserver(any()) }
+
+        // Simulate the main thread draining its message queue and running the posted runnable.
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkConstructor(Handler::class)
+        unmockkStatic(Looper::class)
+    }
+
     @Test
     fun test_setNeuroIDInstance_withAdvancedDevice() {
         // Set singleton to null to simulate first-time initialization
@@ -1054,10 +1162,15 @@ open class NeuroIDClassUnitTests {
         val mockedNeuroID = mockk<NeuroID>(relaxed = true)
         val mockedLogger = mockk<NIDLogWrapper>()
 
+        // Mock the process lifecycle so no real ProcessLifecycleOwner (main-thread only) is touched
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
+
         every { mockedNeuroID.isAdvancedDevice } returns true
         every { mockedNeuroID.logger } returns mockedLogger
         every { mockedNeuroID.setupCallbacks() } just runs
-        every { mockedNeuroID.checkThenCaptureAdvancedDevice(any()) } just runs
         every {
             mockedNeuroID.captureEvent(
                 any(),
@@ -1114,10 +1227,6 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any(),
-                any(),
-                any(),
-                any()
             )
         } just runs
         every { mockedLogger.e(any(), any()) } just runs
@@ -1125,9 +1234,11 @@ open class NeuroIDClassUnitTests {
         // Call setNeuroIDInstance
         NeuroID.setNeuroIDInstance(mockedNeuroID)
 
-        // Verify checkThenCaptureAdvancedDevice was called with true
+        // Verify a process-lifecycle observer was registered (fires checkThenCaptureAdvancedDevice
+        // once the app process reaches the foreground - see NIDAdvancedDeviceLifecycleObserver),
+        // rather than capturing synchronously at build time.
         verify(exactly = 1) {
-            mockedNeuroID.checkThenCaptureAdvancedDevice(true)
+            mockedLifecycle.addObserver(any())
         }
 
         // Verify setupCallbacks was called
@@ -1155,7 +1266,7 @@ open class NeuroIDClassUnitTests {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } returns validID
         NeuroID.getInternalInstance()?.identifierService = mockIdentificationService
@@ -1179,7 +1290,7 @@ open class NeuroIDClassUnitTests {
                 any(),
                 "ATTEMPTED_LOGIN",
                 userId ?: "scrubbed-id-failed-validation",
-                userId != null
+                userId != null,
             )
         }
 
@@ -1188,8 +1299,8 @@ open class NeuroIDClassUnitTests {
                 NIDEventModel(
                     ts = 1,
                     type = "ATTEMPTED_LOGIN",
-                    uid = expectedUserId
-                )
+                    uid = expectedUserId,
+                ),
             )
         }
 
@@ -1209,12 +1320,12 @@ open class NeuroIDClassUnitTests {
         testAttemptedLogin(
             "¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂ",
             "scrubbed-id-failed-validation",
-            true
+            true,
         )
         testAttemptedLogin(
             "ÃÄÅÆÇÈÉ ÊË Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö",
             "scrubbed-id-failed-validation",
-            true
+            true,
         )
         testAttemptedLogin("almost good", "scrubbed-id-failed-validation", true)
     }
@@ -1334,7 +1445,7 @@ open class NeuroIDClassUnitTests {
 
         // Call resetClientId
         val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
-        every{mockNIDSharedPrefsDefaults.resetClientID()} returns "new-client-id-12345"
+        every { mockNIDSharedPrefsDefaults.resetClientID() } returns "new-client-id-12345"
         NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.resetClientId()
 
@@ -1367,19 +1478,19 @@ open class NeuroIDClassUnitTests {
 
     // getUserID() Tests
     @Test
-    fun test_getUserID_returnsUserID() {
+    fun test_getIdentityId_returnsUserID() {
         val testUserID = "test-user-456"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock getUserID to return test user ID
-        every { mockedIdentifierService.getUserID(any()) } returns testUserID
+        // Mock getIdentityId to return test user ID
+        every { mockedIdentifierService.getIdentityId() } returns testUserID
 
         val result = NeuroID.getInstance()?.getUserID()
 
-        // Verify identifierService.getUserID was called
+        // Verify identifierService.getIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.getUserID(any())
+            mockedIdentifierService.getIdentityId()
         }
 
         // Verify result matches
@@ -1387,12 +1498,12 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_getUserID_returnsEmptyString() {
+    fun test_getIdentityId_returnsEmptyString() {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock getUserID to return empty string
-        every { mockedIdentifierService.getUserID(any()) } returns ""
+        // Mock getIdentityId to return empty string
+        every { mockedIdentifierService.getIdentityId() } returns ""
 
         val result = NeuroID.getInstance()?.getUserID()
 
@@ -1400,21 +1511,21 @@ open class NeuroIDClassUnitTests {
         assertEquals("", result)
     }
 
-    // setUserID() Tests
+    // setIdentityId() Tests
     @Test
     fun test_identify_success() {
         val testUserID = "valid-user-id-789"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return true
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+        // Mock setIdentityId to return true
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns true
 
         val result = NeuroID.getInstance()?.identify(testUserID)
 
-        // Verify identifierService.setUserID was called with correct parameters
+        // Verify identifierService.setIdentityId was called with correct parameters
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), testUserID, true)
+            mockedIdentifierService.setIdentityId(any(), testUserID, true)
         }
 
         // Verify result is true
@@ -1427,14 +1538,14 @@ open class NeuroIDClassUnitTests {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false (validation failed)
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false (validation failed)
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.identify(invalidUserID)
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+            mockedIdentifierService.setIdentityId(any(), invalidUserID, true)
         }
 
         // Verify result is false
@@ -1446,35 +1557,35 @@ open class NeuroIDClassUnitTests {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false for empty string
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false for empty string
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.identify("")
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), "", true)
+            mockedIdentifierService.setIdentityId(any(), "", true)
         }
 
         // Verify result is false
         assertEquals(false, result)
     }
 
-    // setUserID() Tests
+    // setIdentityId() Tests
     @Test
-    fun test_setUserID_success() {
+    fun test_setIdentityId_success() {
         val testUserID = "valid-user-id-789"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return true
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns true
+        // Mock setIdentityId to return true
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns true
 
         val result = NeuroID.getInstance()?.setUserID(testUserID)
 
-        // Verify identifierService.setUserID was called with correct parameters
+        // Verify identifierService.setIdentityId was called with correct parameters
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), testUserID, true)
+            mockedIdentifierService.setIdentityId(any(), testUserID, true)
         }
 
         // Verify result is true
@@ -1482,19 +1593,19 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_setUserID_failure() {
+    fun test_setIdentityId_failure() {
         val invalidUserID = "invalid id"
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false (validation failed)
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false (validation failed)
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.setUserID(invalidUserID)
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), invalidUserID, true)
+            mockedIdentifierService.setIdentityId(any(), invalidUserID, true)
         }
 
         // Verify result is false
@@ -1502,18 +1613,18 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_setUserID_emptyString() {
+    fun test_setIdentityId_emptyString() {
         val mockedIdentifierService = getMockedIdentifierService()
         NeuroID.getInternalInstance()?.identifierService = mockedIdentifierService
 
-        // Mock setUserID to return false for empty string
-        every { mockedIdentifierService.setUserID(any(), any(), any()) } returns false
+        // Mock setIdentityId to return false for empty string
+        every { mockedIdentifierService.setIdentityId(any(), any(), any()) } returns false
 
         val result = NeuroID.getInstance()?.setUserID("")
 
-        // Verify identifierService.setUserID was called
+        // Verify identifierService.setIdentityId was called
         verify(exactly = 1) {
-            mockedIdentifierService.setUserID(any(), "", true)
+            mockedIdentifierService.setIdentityId(any(), "", true)
         }
 
         // Verify result is false
@@ -1641,75 +1752,6 @@ open class NeuroIDClassUnitTests {
         assertEquals(true, secondResult)
     }
 
-    @Test
-    fun testSetTestURL() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked application with SharedPreferences
-        val mockedApplication = getMockedApplication()
-        NeuroID.getInternalInstance()?.application = mockedApplication
-
-        // Setup mocked job service manager with setTestEventSender
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was called on the job service manager
-        verify(exactly = 1) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
-    }
-
-    @Test
-    fun testSetTestURL_withoutApplication() {
-        val testUrl = "https://test.example.com"
-
-        // Setup mocked job service manager
-        val mockedJobServiceManager = mockk<NIDJobServiceManager>()
-        every { mockedJobServiceManager.setTestEventSender(any()) } just runs
-        every { mockedJobServiceManager.startJob(any(), any()) } just runs
-        every { mockedJobServiceManager.isStopped() } returns true
-        every { mockedJobServiceManager.stopJob() } just runs
-        coEvery { mockedJobServiceManager.sendEvents(any()) } just runs
-
-        NeuroID.getInternalInstance()?.setNIDJobServiceManager(mockedJobServiceManager)
-
-        // Ensure application is null
-        NeuroID.getInternalInstance()?.application = null
-
-        // Call setTestURL
-        NeuroID.getInstance()?.setTestURL(testUrl)
-
-        // Verify endpoint was set
-        assertEquals(testUrl, NeuroID.endpoint)
-        assertEquals(Constants.devScriptsEndpoint.displayName, NeuroID.scriptEndpoint)
-
-        // Verify setTestEventSender was NOT called since application is null
-        verify(exactly = 0) {
-            mockedJobServiceManager.setTestEventSender(any())
-        }
-    }
-
-    //   setTestingNeuroIDDevURL
-    @Test
-    fun testSetTestingNeuroIDDevURL() {
-        NeuroID.getInstance()?.setTestingNeuroIDDevURL()
-
-        assertEquals(true, NeuroID.endpoint == Constants.devEndpoint.displayName)
-    }
-
     //    setScreenName
     @Test
     fun testSetScreenName_success() {
@@ -1781,7 +1823,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun testGetSessionID() {
         val expectedValue = "testSessionID"
-        NeuroID.getInternalInstance()?.userID = expectedValue
+        NeuroID.getInternalInstance()?.state?.setIdentityId(expectedValue)
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
@@ -1790,26 +1832,11 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun test_getSessionID_returnsEmptyString() {
-        NeuroID.getInternalInstance()?.userID = ""
+        NeuroID.getInternalInstance()?.state?.setIdentityId("")
 
         val value = NeuroID.getInternalInstance()?.getSessionID()
 
         assertEquals("", value)
-    }
-
-    @Test
-    fun test_getSessionID_returnsUserID_notSessionID() {
-        // Explicitly verify that getSessionID() returns userID and NOT sessionID
-        // This covers the behavioral change where getSessionID() was updated to return userID
-        val testUserID = "user-id-value"
-        val testSessionID = "session-id-value"
-        NeuroID.getInternalInstance()?.userID = testUserID
-        NeuroID.getInternalInstance()?.sessionID = testSessionID
-
-        val value = NeuroID.getInternalInstance()?.getSessionID()
-
-        assertEquals(testUserID, value)
-        assertNotEquals(testSessionID, value)
     }
 
     //    getClientID
@@ -2249,6 +2276,105 @@ open class NeuroIDClassUnitTests {
         assertEquals(0, storedEvents.count())
     }
 
+    /**
+     * Regression test for the "fingerprint-only session" bug.
+     *
+     * Reproduces the state observed in production when app-switching drives
+     * overlapping pause/resume cycles (see android-issue.md / issue-followup.md):
+     * the SDK reports started (`_isSDKStarted == true`) but the job manager's
+     * send/cadence loop is dead (`nidJobServiceManager.isStopped() == true`).
+     *
+     * In that state every behavioral event is a NON-queued capture and is dropped
+     * by the guard in captureEvent(), while the advanced-device (fingerprint)
+     * request is captured as a queuedEvent and bypasses the guard. The net result
+     * is a session whose only surviving event is the fingerprint - exactly the
+     * symptom the customer reported.
+     */
+    @Test
+    fun testCaptureEvent_startedButJobStopped_sessionContainsOnlyFingerprint() {
+        // Arrange: the "dead but started" state.
+        NeuroID._isSDKStarted = true
+        setMockedNIDJobServiceManager(isStopped = true)
+        setMockedApplication()
+
+        // Use a REAL datastore so we can inspect the exact payload the sender would
+        // flush: getAllEvents() merges queued + stored events, just like a real send.
+        val configForStore = mockk<ConfigService>()
+        every { configForStore.configCache } returns NIDRemoteConfig()
+        val dataStore = NIDDataStoreManagerImp(NIDLogWrapper(), configForStore)
+        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStore)
+
+        val nid = NeuroID.getInternalInstance()!!
+
+        // Act: capture the events a normal workflow emits at session start.
+        // 1) Session + behavioral events - all NON-queued (like createSession(),
+        //    the activity callbacks, and touch handling emit them).
+        nid.captureEvent(true, type = RESUME_EVENT_CAPTURE)
+        nid.captureEvent(true, type = MOBILE_METADATA_ANDROID)
+        nid.captureEvent(type = WINDOW_LOAD)
+        nid.captureEvent(type = TOUCH_START)
+        // 2) The advanced-device / fingerprint request - captured as a QUEUED event,
+        //    exactly like AdvancedDeviceIDManager does (cached-ID path).
+        nid.captureEvent(
+            queuedEvent = true,
+            type = ADVANCED_DEVICE_REQUEST,
+            rid = "test-request-id",
+            c = true,
+            l = 0,
+        )
+        // Assert: the payload the collector would receive contains ONLY the
+        // fingerprint. Every behavioral event (including CREATE_SESSION) was
+        // silently dropped by the stopped guard.
+        val payload = dataStore.getAllEvents()
+        assertEquals(3, payload.count())
+        assertEquals(true, payload.any { it.type == ADVANCED_DEVICE_REQUEST })
+        assertEquals(true, payload.any { it.type == RESUME_EVENT_CAPTURE })
+
+        // And the fingerprint is the only event that even reached the send path -
+        // the behavioral events return before the send-trigger switch, so the sole
+        // forced flush comes from ADVANCED_DEVICE_REQUEST.
+        verify(exactly = 1) { nid.nidJobServiceManager.sendEvents(true) }
+    }
+
+    /**
+     * Control case: with the job manager actually running, the same batch of events
+     * produces a healthy session (fingerprint + all behavioral events). This shows
+     * the difference is the dead send/cadence job, not the events themselves.
+     */
+    @Test
+    fun testCaptureEvent_startedAndJobRunning_sessionContainsAllEvents() {
+        NeuroID._isSDKStarted = true
+        setMockedNIDJobServiceManager(isStopped = false)
+        setMockedApplication()
+
+        val configForStore = mockk<ConfigService>()
+        every { configForStore.configCache } returns NIDRemoteConfig()
+        val dataStore = NIDDataStoreManagerImp(NIDLogWrapper(), configForStore)
+        NeuroID.getInternalInstance()?.setDataStoreInstance(dataStore)
+
+        val nid = NeuroID.getInternalInstance()!!
+
+        nid.captureEvent(type = CREATE_SESSION)
+        nid.captureEvent(type = MOBILE_METADATA_ANDROID)
+        nid.captureEvent(type = WINDOW_LOAD)
+        nid.captureEvent(type = TOUCH_START)
+        nid.captureEvent(
+            queuedEvent = true,
+            type = ADVANCED_DEVICE_REQUEST,
+            rid = "test-request-id",
+            c = true,
+            l = 0,
+        )
+
+        val payload = dataStore.getAllEvents()
+        assertEquals(5, payload.count())
+        assertEquals(true, payload.any { it.type == CREATE_SESSION })
+        assertEquals(true, payload.any { it.type == ADVANCED_DEVICE_REQUEST })
+        assertEquals(true, payload.any { it.type == WINDOW_LOAD })
+        assertEquals(true, payload.any { it.type == TOUCH_START })
+        assertEquals(true, payload.any { it.type == MOBILE_METADATA_ANDROID })
+    }
+
     @Test
     fun testCaptureEvent_failure_excludedID_tgs() {
         NeuroID._isSDKStarted = true
@@ -2364,34 +2490,12 @@ open class NeuroIDClassUnitTests {
 
         // Call captureApplicationMetaData
         val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
-        every{mockNIDSharedPrefsDefaults.getPlatform()}  returns "Android"
+        every { mockNIDSharedPrefsDefaults.getPlatform() } returns "Android"
         NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
-        // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters
-        val attrs = event?.attrs
-        assert(attrs != null)
-        assert(attrs!!.isNotEmpty())
-
-        // Check for rnVersion
-        val hostRNVersionAttr = attrs.find { it["n"] == "rnVersion" }
-        assertEquals("0.72.0", hostRNVersionAttr?.get("v"))
-
-        // Check for minOSVersion
-        val hostMinSDKLevelAttr = attrs.find { it["n"] == "minOSVersion" }
-        assertEquals(24, hostMinSDKLevelAttr?.get("v"))
-
-        // Check for original parameters
-        val versionNameAttr = attrs.find { it["n"] == "versionName" }
-        assertEquals("1.2.3", versionNameAttr?.get("v"))
-
-        val versionNumberAttr = attrs.find { it["n"] == "versionNumber" }
-        assertEquals(123, versionNumberAttr?.get("v"))
+        // Verify no event was captured
+        assertEquals(0, storedEvents.count())
     }
 
     @Test
@@ -2423,24 +2527,21 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.application = mockApplication
         // Don't set rnVersion - should use default empty string
 
+        // Mock the process lifecycle so setNeuroIDInstance's registration doesn't touch the real
+        // ProcessLifecycleOwner (main-thread only, unavailable on plain JVM unit tests).
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProcessLifecycleProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProcessLifecycleProvider)
+
         // Call captureApplicationMetaData
         val mockNIDSharedPrefsDefaults = mockk<NIDSharedPrefsDefaults>()
-        every{mockNIDSharedPrefsDefaults.getPlatform()}  returns "Android"
+        every { mockNIDSharedPrefsDefaults.getPlatform() } returns "Android"
         NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
         // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters with defaults
-        val attrs = event?.attrs
-        assert(attrs != null)
-
-        // Check for hostRNVersion (should be empty string by default)
-        val hostRNVersionAttr = attrs?.find { it["n"] == "rnVersion" }
-        assertEquals("", hostRNVersionAttr?.get("v"))
+        assertEquals(0, storedEvents.count())
     }
 
     //    captureEvent
@@ -2553,7 +2654,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_withSessionID_completionInvokedWithSuccess() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "session-abc")
+        val expectedResult = SessionStartResult(started = true, identityId = "session-abc")
         every { mockedSessionService.startSession(null, "session-abc", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2572,7 +2673,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_withNullSessionID_completionInvoked() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "generated-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "generated-id")
         every { mockedSessionService.startSession(null, null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2591,7 +2692,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startSession_failure_completionInvokedWithFalse() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        val expectedResult = SessionStartResult(started = false, identityId = "")
         every { mockedSessionService.startSession(null, any(), any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2611,7 +2712,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_withUserID_completionInvokedWithSuccess() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-1")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-session-1")
         every { mockedSessionService.startAppFlow("site-123", "user-abc", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2630,7 +2731,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_withNullUserID_completionInvoked() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-session-2")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-session-2")
         every { mockedSessionService.startAppFlow("site-xyz", null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2649,7 +2750,7 @@ open class NeuroIDClassUnitTests {
     @Test
     fun test_startAppFlow_failure_completionInvokedWithFalse() {
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = false, sessionID = "")
+        val expectedResult = SessionStartResult(started = false, identityId = "")
         every { mockedSessionService.startAppFlow(any(), any(), any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2687,7 +2788,7 @@ open class NeuroIDClassUnitTests {
     fun test_startSession_noArgs_defaultCompletion() {
         // Exercises: startSession() — both sessionID and completion use defaults
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "auto-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "auto-id")
         every { mockedSessionService.startSession(null, null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2704,7 +2805,7 @@ open class NeuroIDClassUnitTests {
     fun test_startSession_withSessionID_defaultCompletion() {
         // Exercises: startSession(sessionID = "id") — completion uses default {}
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "given-id")
+        val expectedResult = SessionStartResult(started = true, identityId = "given-id")
         every { mockedSessionService.startSession(null, "given-id", any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)
@@ -2731,7 +2832,7 @@ open class NeuroIDClassUnitTests {
                 any(),
                 "ATTEMPTED_LOGIN",
                 "scrubbed-id-failed-validation",
-                false
+                false,
             )
         }
         assertEquals(true, result)
@@ -2741,7 +2842,7 @@ open class NeuroIDClassUnitTests {
     fun test_startAppFlow_withSiteIDOnly_defaultCompletion() {
         // Exercises: startAppFlow(siteID = "site") — userID and completion use defaults
         val mockedSessionService = getMockedSessionService()
-        val expectedResult = SessionStartResult(started = true, sessionID = "flow-default")
+        val expectedResult = SessionStartResult(started = true, identityId = "flow-default")
         every { mockedSessionService.startAppFlow("site-default", null, any()) } answers {
             val completion = thirdArg<(SessionStartResult) -> Unit>()
             completion(expectedResult)

@@ -21,32 +21,15 @@ interface NeuroIDPublic {
      * set to the mock collection endpoint. The remote config endpoint will be updated to point to
      * the dev remote config endpoint.
      */
+    @Deprecated("setTestURL is deprecated")
     fun setTestURL(newEndpoint: String)
 
     /**
      * Set a dev testing URL for testing.
      */
     @VisibleForTesting
+    @Deprecated("setTestingNeuroIDDevURL is deprecated")
     fun setTestingNeuroIDDevURL()
-
-    /**
-     * Set a user id.
-     */
-    @Deprecated("setUserID is deprecated, please use `identify` instead.",
-        ReplaceWith("identify(userID)"))
-    fun setUserID(userID: String): Boolean
-
-    /**
-     * Set a user id.
-     */
-    fun identify(userID: String): Boolean
-
-    /**
-     * Return the currently set user id.
-     */
-    @Deprecated("getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-        ReplaceWith("getSessionID()"))
-    fun getUserID(): String
 
     /**
      * Return the currently set registered user id.
@@ -87,9 +70,41 @@ interface NeuroIDPublic {
     fun getEnvironment(): String
 
     /**
+     * Gets the currently set Identity ID
+     */
+    fun getIdentityId(): String
+
+    /**
      * get the currently set session id
      */
+    @Deprecated(
+        "getSessionID is deprecated",
+        ReplaceWith("getIdentityId()"),
+    )
     fun getSessionID(): String
+
+    /**
+     * Return the currently set user id.
+     */
+    @Deprecated(
+        "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
+        ReplaceWith("getIdentityId()"),
+    )
+    fun getUserID(): String
+
+    /**
+     * Set a user id.
+     */
+    fun identify(userID: String): Boolean
+
+    /**
+     * Set a user id.
+     */
+    @Deprecated(
+        "setUserID is deprecated, please use `identify` instead.",
+        ReplaceWith("identify(userID)"),
+    )
+    fun setUserID(userID: String): Boolean
 
     /**
      * Start the SDK, start a new session and use the userID as the sessionID. Return true if

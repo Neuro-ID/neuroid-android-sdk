@@ -4,7 +4,9 @@ import com.neuroid.tracker.utils.NIDLogWrapper
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class LoggerIntercepter(val logger: NIDLogWrapper) : Interceptor {
+class LoggerIntercepter(
+    val logger: NIDLogWrapper,
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)

@@ -21,7 +21,6 @@ class EventDispatcher(private val eventRecorder: EventRecorder): Dispatcher() {
             "  \"call_in_progress\": true,\n" +
             "  \"event_queue_flush_interval\": 1,\n" +
             "  \"event_queue_flush_size\": 2000,\n" +
-            "  \"geo_location\": false,\n" +
             "  \"gyro_accel_cadence\": false,\n" +
             "  \"gyro_accel_cadence_time\": 200,\n" +
             "  \"is_mobile_active\": true,\n" +

@@ -27,18 +27,20 @@ class ApplicationMain : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // register the push notification channel for the app, so
+        // that the simulated push can be received and displayed
+        NotificationHelper.createChannel(this)
+
         NeuroID.BuilderConfig(
             this,
             NIDConfiguration(
                 "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-                true,
-                null,
-                false,
-                NeuroID.TEST,
-                NIDRegion.TEST)
-//            "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-//            isAdvancedDevice = true,
-//            serverEnvironment = NeuroID.TEST
+                isAdvancedDevice = true,
+                advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
+                useAdvancedDeviceProxy = true,
+                region = NIDRegion.TEST
+            )
         ).build()
     }
 

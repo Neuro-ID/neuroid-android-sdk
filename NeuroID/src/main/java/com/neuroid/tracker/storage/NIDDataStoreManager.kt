@@ -32,9 +32,7 @@ interface NIDDataStoreManager {
 }
 
 @VisibleForTesting // Should we make the private?
-fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? {
-    return NeuroID.getInternalInstance()?.dataStore
-}
+fun NeuroIDPublic.getTestingDataStoreInstance(): NIDDataStoreManager? = NeuroID.getInternalInstance()?.dataStore
 
 internal class NIDDataStoreManagerImp(
     val logger: NIDLogWrapper,
@@ -158,7 +156,6 @@ internal class NIDDataStoreManagerImp(
         return previousEventsList
     }
 
-
     /**
      * Synchronize to ensure that eventList is not updated when we check for last item being
      * BUFFER_FULL and to get proper event list size since the queue flush job is running in the
@@ -174,7 +171,7 @@ internal class NIDDataStoreManagerImp(
             }
         } catch (e: Exception) {
             logger.d(
-                msg = "possible emptying before calling eventsList.last() after empty check occurred ${e.message}"
+                msg = "possible emptying before calling eventsList.last() after empty check occurred ${e.message}",
             )
         }
 

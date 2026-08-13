@@ -1,15 +1,5 @@
 package com.neuroid.tracker.models
 
-import com.google.common.base.Verify.verify
-import com.neuroid.tracker.events.*
-import com.neuroid.tracker.utils.Constants
-import com.neuroid.tracker.utils.Constants.*
-import com.neuroid.tracker.utils.NIDLogWrapper
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -49,7 +39,7 @@ class NIDEventModelUnitTest {
                 v = "v-a",
                 hv = "hv-a",
                 en = "en-a",
-                etn =  "etn-a",
+                etn = "etn-a",
                 ec = "ec-a",
                 et = "et-a",
                 eid = "eid-a",
@@ -64,12 +54,8 @@ class NIDEventModelUnitTest {
                 sh = 2f,
                 f = "f-a",
                 rts = "rts-a",
-                lsid = null,
-                sid = "sid-a",
                 siteId = "siteId-a",
                 cid = "cid-a",
-                did = "did-a",
-                iid =  "iid-a",
                 loc = "loc-a",
                 ua = "ua-a",
                 tzo = 420,
@@ -130,11 +116,8 @@ class NIDEventModelUnitTest {
         assertEquals(2.0, json.getDouble("sh"), 0.001)
         assertEquals("f-a", json.getString("f"))
         assertEquals("rts-a", json.getString("rts"))
-        assertEquals("sid-a", json.getString("sid"))
         assertEquals("siteId-a", json.getString("siteId"))
         assertEquals("cid-a", json.getString("cid"))
-        assertEquals("did-a", json.getString("did"))
-        assertEquals("iid-a", json.getString("iid"))
         assertEquals("loc-a", json.getString("loc"))
         assertEquals("ua-a", json.getString("ua"))
         assertEquals(420, json.getInt("tzo"))

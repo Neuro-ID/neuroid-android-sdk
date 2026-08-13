@@ -28,7 +28,6 @@ import java.lang.reflect.Field
 import java.util.concurrent.Executor
 
 class NIDCallActivityListenerTests {
-
     // NIDCallActivityListener.registerCustomTelephonyCallback now branches on
     // Build.VERSION.SDK_INT directly. On the JVM that field defaults to 0, so the
     // API >= 31 (TelephonyCallback) path is unreachable unless we override it.
@@ -38,9 +37,11 @@ class NIDCallActivityListenerTests {
 
     private fun setSdkInt(value: Int) {
         val unsafeClass = Class.forName("sun.misc.Unsafe")
-        val theUnsafe = unsafeClass.getDeclaredField("theUnsafe").apply {
-            isAccessible = true
-        }.get(null)
+        val theUnsafe = unsafeClass
+            .getDeclaredField("theUnsafe")
+            .apply {
+                isAccessible = true
+            }.get(null)
         val field = Build.VERSION::class.java.getDeclaredField("SDK_INT")
         val base = unsafeClass
             .getMethod("staticFieldBase", Field::class.java)

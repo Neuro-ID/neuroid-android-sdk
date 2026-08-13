@@ -23,7 +23,7 @@ import org.junit.Test
 internal class ActivityCallbacksUnitTests {
     //    forceStart
     @Test
-    fun test_forceStart()  {
+    fun test_forceStart() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.forceStart(mocks.mockedActivity)
@@ -44,7 +44,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityCreated
     @Test
-    fun test_onActivityCreated()  {
+    fun test_onActivityCreated() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivityCreated(mocks.mockedActivity, null)
@@ -58,7 +58,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityStarted
     @Test
-    fun test_onActivityStarted_same_orientation()  {
+    fun test_onActivityStarted_same_orientation() {
         val mocks = getActivityCallbackMocks()
         NeuroID.firstScreenName = ""
         NeuroID.screenActivityName = ""
@@ -118,7 +118,7 @@ internal class ActivityCallbacksUnitTests {
     }
 
     @Test
-    fun test_onActivityStarted_changed_orientation()  {
+    fun test_onActivityStarted_changed_orientation() {
         val mocks = getActivityCallbackMocks()
         NeuroID.firstScreenName = ""
         NeuroID.screenActivityName = ""
@@ -185,7 +185,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityPaused
     @Test
-    fun test_onActivityPaused()  {
+    fun test_onActivityPaused() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivityPaused(mocks.mockedActivity)
@@ -214,7 +214,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityResumed
     @Test
-    fun test_onActivityResumed()  {
+    fun test_onActivityResumed() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivityResumed(mocks.mockedActivity)
@@ -234,8 +234,10 @@ internal class ActivityCallbacksUnitTests {
                     "activity",
                     parent = expectedActivityName,
                 )
-                mocks.mockedRegistration.registerWindowListeners(mocks.mockedNeuroID,
-                    mocks.mockedActivity)
+                mocks.mockedRegistration.registerWindowListeners(
+                    mocks.mockedNeuroID,
+                    mocks.mockedActivity,
+                )
             }
         }
 
@@ -256,7 +258,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityStopped
     @Test
-    fun test_onActivityStopped()  {
+    fun test_onActivityStopped() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivityStopped(mocks.mockedActivity)
@@ -270,7 +272,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivitySaveInstanceState
     @Test
-    fun test_onActivitySaveInstanceState()  {
+    fun test_onActivitySaveInstanceState() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivitySaveInstanceState(mocks.mockedActivity, outState = mockk<Bundle>())
@@ -284,7 +286,7 @@ internal class ActivityCallbacksUnitTests {
 
     //    onActivityDestroyed
     @Test
-    fun test_onActivityDestroyed()  {
+    fun test_onActivityDestroyed() {
         val mocks = getActivityCallbackMocks()
 
         mocks.activityCallback.onActivityDestroyed(mocks.mockedActivity)
@@ -326,7 +328,7 @@ internal class ActivityCallbacksUnitTests {
         val activityCallback: ActivityCallbacks,
     )
 
-    fun getActivityCallbackMocks(): MockedActivityCallBackSetup  {
+    fun getActivityCallbackMocks(): MockedActivityCallBackSetup {
         val mockedNeuroID = getMockedNeuroID()
         val mockedLogger = getMockedLogger()
         val mockedRegistration = getMockedRegistrationIdentificationHelper()
