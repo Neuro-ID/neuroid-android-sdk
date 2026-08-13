@@ -15,7 +15,7 @@ import com.neuroid.tracker.utils.NIDMetaData
  * cold start) where no `Activity` is ever created.
  */
 internal class ProcessDeviceLifecycleObserver(
-    private val neuroID: NeuroID,
+    private val neuroID: NeuroID
 ) : DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
         if (neuroID.isAdvancedDevice) {
@@ -23,13 +23,6 @@ internal class ProcessDeviceLifecycleObserver(
         }
 
         neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting: ${neuroID.isAdvancedDevice}", level = "INFO")
-
-        neuroID.application?.let { app ->
-            neuroID.metaData =
-                NIDMetaData(
-                    app.applicationContext,
-                )
-        }
         neuroID.captureApplicationMetaData()
         neuroID.configService.retrieveOrRefreshCache(neuroID)
     }

@@ -8,6 +8,8 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
@@ -69,7 +71,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.handleCoroutineException
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
 import kotlin.ReplaceWith
@@ -215,6 +219,10 @@ class NeuroID
                         state,
                     )
 
+                metaData =
+                    NIDMetaData(
+                        it.applicationContext,
+                    )
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
                 // get connectivity info on startup
@@ -408,13 +416,21 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    // to fix another issue with the lifecycle observer not being called on the main thread in ReactNative usage
-                    CoroutineScope(Dispatchers.Main).launch {
+
+                    val registerObserver = {
                         singleton?.setupCallbacks()
                         processLifecycleProvider.getProcessLifecycle().addObserver(
                             ProcessDeviceLifecycleObserver(neuroID),
                         )
                     }
+
+                    // to fix another issue with the lifecycle observer not being called on the main thread in ReactNative usage
+                    val mainLooper = Looper.getMainLooper()
+                    if (mainLooper == null || Looper.myLooper() == mainLooper) {
+                        registerObserver()
+                        return
+                    }
+                    Handler(mainLooper).post { registerObserver() }
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(

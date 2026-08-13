@@ -7,9 +7,12 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
@@ -44,6 +47,7 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
@@ -1049,6 +1053,104 @@ open class NeuroIDClassUnitTests {
         verify(exactly = 0) {
             secondNeuroID.setupCallbacks()
         }
+    }
+
+    // setNeuroIDInstance Looper/main-thread registration Tests
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenNoMainLooper() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Plain JVM unit tests have no real Android main looper - Looper.getMainLooper()
+        // returns null - so registration should happen synchronously, not via Handler.post.
+        mockkStatic(Looper::class)
+        every { Looper.getMainLooper() } returns null
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenAlreadyOnMainThread() {
+        NeuroID.setSingletonNull()
+
+        // When the calling thread's looper is the same as the main looper, registration should
+        // happen synchronously rather than being posted to the message queue.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns mainLooper
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverViaHandlerPost_whenOnBackgroundThread() {
+        NeuroID.setSingletonNull()
+
+        // When called from a background thread (different looper than main), registration must
+        // be deferred to the main thread via Handler.post rather than happening synchronously.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        val backgroundLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns backgroundLooper
+
+        mockkConstructor(Handler::class)
+        val runnableSlot = slot<Runnable>()
+        every { anyConstructed<Handler>().post(capture(runnableSlot)) } returns true
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Registration is posted to the main thread, not executed inline.
+        assertTrue(runnableSlot.isCaptured)
+        verify(exactly = 0) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 0) { mockedLifecycle.addObserver(any()) }
+
+        // Simulate the main thread draining its message queue and running the posted runnable.
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkConstructor(Handler::class)
+        unmockkStatic(Looper::class)
     }
 
     @Test
