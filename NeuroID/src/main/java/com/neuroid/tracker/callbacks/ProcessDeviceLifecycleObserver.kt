@@ -17,11 +17,10 @@ internal class ProcessDeviceLifecycleObserver(
     private val neuroID: NeuroID,
 ) : DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
+        neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting: ${neuroID.isAdvancedDevice}", level = "INFO")
         if (neuroID.isAdvancedDevice) {
             neuroID.checkThenCaptureAdvancedDevice()
         }
-
-        neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting: ${neuroID.isAdvancedDevice}", level = "INFO")
         neuroID.captureApplicationMetaData()
         neuroID.configService.retrieveOrRefreshCache(neuroID)
     }

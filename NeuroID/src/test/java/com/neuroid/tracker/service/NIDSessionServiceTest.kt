@@ -78,6 +78,7 @@ class NIDSessionServiceTest {
 
         // Mock configService on mockedNeuroID BEFORE using it
         every { mockedNeuroID.configService } returns mockedConfigService
+        every { mockedNeuroID.isAdvancedDevice } returns true
 
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
@@ -411,7 +412,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_startSession_existing_UID_success() {
         val mockedServices = buildMockClasses()
-        val mockConfigService = mockedServices.mockedConfigService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
         val mockedValidationService = mockedServices.mockedValidationService
         val mockedIdentifierService = mockedServices.mockedIdentifierService

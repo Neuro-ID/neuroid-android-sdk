@@ -549,7 +549,6 @@ class NeuroID
         }
 
         internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
-            captureEvent(queuedEvent = true, type = LOG, m = "call to checkThenCaptureAdvancedDevice: $isAdvancedDevice", level = "INFO")
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
                     advancedDeviceKey,
