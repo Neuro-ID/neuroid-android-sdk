@@ -74,7 +74,12 @@ internal class NIDSessionService(
         NIDSingletonIDs.retrieveOrCreateLocalSalt()
 
         neuroID.dataStore.saveAndClearAllQueuedEvents()
-        neuroID.checkThenCaptureAdvancedDevice()
+
+        neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting (setupSession): ${neuroID.isAdvancedDevice}", level = "INFO")
+        if (neuroID.isAdvancedDevice) {
+            neuroID.checkThenCaptureAdvancedDevice()
+        }
+
         completion()
     }
 
@@ -318,7 +323,12 @@ internal class NIDSessionService(
                 )
 
                 createSession()
-                neuroID.checkThenCaptureAdvancedDevice()
+
+                neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting (startAppFlow): ${neuroID.isAdvancedDevice}", level = "INFO")
+                if (neuroID.isAdvancedDevice) {
+                    neuroID.checkThenCaptureAdvancedDevice()
+                }
+
                 completion(
                     SessionStartResult(
                         true,

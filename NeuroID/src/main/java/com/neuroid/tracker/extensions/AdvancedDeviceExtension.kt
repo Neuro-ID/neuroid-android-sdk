@@ -3,7 +3,6 @@ package com.neuroid.tracker.extensions
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.fpjsClientOverride
 import com.neuroid.tracker.NeuroIDPublic
-import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
@@ -65,7 +64,6 @@ fun NeuroID.captureAdvancedDevice(
     useAdvancedDeviceProxy: Boolean,
     region: NIDRegion = NIDRegion.usWest,
 ) = runBlocking {
-    captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
     NeuroID.getInternalInstance()?.apply {
         getApplicationContext()?.let { context ->
             val advancedDeviceIDManagerService =

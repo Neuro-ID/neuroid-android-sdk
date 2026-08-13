@@ -8,6 +8,8 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
@@ -143,7 +145,6 @@ class NeuroID
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
-                captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
                 tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
@@ -174,6 +175,7 @@ class NeuroID
                 )
 
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
+
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
@@ -219,11 +221,6 @@ class NeuroID
                     NIDMetaData(
                         it.applicationContext,
                     )
-
-                captureApplicationMetaData()
-
-                captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
-
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
                 // get connectivity info on startup
@@ -248,11 +245,12 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
-                configService.retrieveOrRefreshCache(this)
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
         }
 
@@ -416,11 +414,21 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    singleton?.setupCallbacks()
 
-                    processLifecycleProvider.getProcessLifecycle().addObserver(
-                        ProcessDeviceLifecycleObserver(neuroID),
-                    )
+                    val registerObserver = {
+                        singleton?.setupCallbacks()
+                        processLifecycleProvider.getProcessLifecycle().addObserver(
+                            ProcessDeviceLifecycleObserver(neuroID),
+                        )
+                    }
+
+                    // to fix another issue with the lifecycle observer not being called on the main thread in ReactNative usage
+                    val mainLooper = Looper.getMainLooper()
+                    if (mainLooper == null || Looper.myLooper() == mainLooper) {
+                        registerObserver()
+                        return
+                    }
+                    Handler(mainLooper).post { registerObserver() }
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -727,7 +735,7 @@ class NeuroID
                     rnVersion,
                 )
                 captureEvent(
-                    queuedEvent = !isSDKStarted,
+                    queuedEvent = true,
                     p = sharedPrefsDefaults.getPlatform(),
                     type = APPLICATION_METADATA,
                     attrs =

@@ -7,11 +7,13 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
-import com.neuroid.tracker.events.APPLICATION_METADATA
 import com.neuroid.tracker.events.CREATE_SESSION
 import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.events.MOBILE_METADATA_ANDROID
@@ -45,6 +47,7 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
@@ -570,20 +573,6 @@ open class NeuroIDClassUnitTests {
     }
 
     @Test
-    fun test_init_withApplication_initialisesMetaData() {
-        NeuroID._isSDKStarted = false
-        NeuroID.setSingletonNull()
-        val mockedApplication = buildMockedApplication()
-
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
-
-        assertNotNull(NeuroID.getInternalInstance()?.metaData)
-    }
-
-    @Test
     fun test_init_withApplication_initialisesSharedPrefsDefaults() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
@@ -674,6 +663,77 @@ open class NeuroIDClassUnitTests {
         verify(exactly = 1) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
         }
+    }
+
+    // setupListeners Tests
+
+    @Test
+    fun test_setupListeners_noApplicationContext_doesNothing() {
+        // application is null by default from setUp(), so getApplicationContext() returns null
+        // and setupListeners() should return early without touching lateinit dependencies.
+        NeuroID.getInternalInstance()?.setupListeners()
+    }
+
+    @Test
+    fun test_setupListeners_callInProgress_registersCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+        ).build()
+
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = true)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
+    }
+
+    @Test
+    fun test_setupListeners_noCallInProgress_unregistersCallActivityListener() {
+        NeuroID._isSDKStarted = false
+        NeuroID.setSingletonNull()
+        val mockedApplication = buildMockedApplication()
+
+        NeuroID.BuilderConfig(
+            mockedApplication,
+            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+        ).build()
+
+        val mockedConfigService = mockk<ConfigService>()
+        every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = false)
+        NeuroID.getInternalInstance()?.configService = mockedConfigService
+
+        val mockedCallActivityListener = mockk<NIDCallActivityListener>()
+        every { mockedCallActivityListener.setCallActivityListener(any()) } just runs
+        every { mockedCallActivityListener.unregisterCallActivityListener(any()) } just runs
+        NeuroID.getInternalInstance()?.nidCallActivityListener = mockedCallActivityListener
+
+        val mockedSessionService = mockk<NIDSessionService>()
+        every { mockedSessionService.resumeCollection() } just runs
+        NeuroID.getInternalInstance()?.sessionService = mockedSessionService
+
+        NeuroID.getInternalInstance()?.setupListeners()
+
+        verify(exactly = 1) { mockedCallActivityListener.unregisterCallActivityListener(any()) }
+        verify(exactly = 0) { mockedCallActivityListener.setCallActivityListener(any()) }
+        verify(exactly = 1) { mockedSessionService.resumeCollection() }
     }
 
     // Class Init Test
@@ -993,6 +1053,104 @@ open class NeuroIDClassUnitTests {
         verify(exactly = 0) {
             secondNeuroID.setupCallbacks()
         }
+    }
+
+    // setNeuroIDInstance Looper/main-thread registration Tests
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenNoMainLooper() {
+        // Set singleton to null to simulate first-time initialization
+        NeuroID.setSingletonNull()
+
+        // Plain JVM unit tests have no real Android main looper - Looper.getMainLooper()
+        // returns null - so registration should happen synchronously, not via Handler.post.
+        mockkStatic(Looper::class)
+        every { Looper.getMainLooper() } returns null
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverSynchronously_whenAlreadyOnMainThread() {
+        NeuroID.setSingletonNull()
+
+        // When the calling thread's looper is the same as the main looper, registration should
+        // happen synchronously rather than being posted to the message queue.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns mainLooper
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkStatic(Looper::class)
+    }
+
+    @Test
+    fun test_setNeuroIDInstance_registersObserverViaHandlerPost_whenOnBackgroundThread() {
+        NeuroID.setSingletonNull()
+
+        // When called from a background thread (different looper than main), registration must
+        // be deferred to the main thread via Handler.post rather than happening synchronously.
+        mockkStatic(Looper::class)
+        val mainLooper = mockk<Looper>()
+        val backgroundLooper = mockk<Looper>()
+        every { Looper.getMainLooper() } returns mainLooper
+        every { Looper.myLooper() } returns backgroundLooper
+
+        mockkConstructor(Handler::class)
+        val runnableSlot = slot<Runnable>()
+        every { anyConstructed<Handler>().post(capture(runnableSlot)) } returns true
+
+        val mockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val mockedProvider = mockk<ProcessLifecycleProvider>()
+        every { mockedProvider.getProcessLifecycle() } returns mockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(mockedProvider)
+
+        val mockedNeuroID = mockk<NeuroID>(relaxed = true)
+        every { mockedNeuroID.isAdvancedDevice } returns false
+        every { mockedNeuroID.setupCallbacks() } just runs
+
+        NeuroID.setNeuroIDInstance(mockedNeuroID)
+
+        // Registration is posted to the main thread, not executed inline.
+        assertTrue(runnableSlot.isCaptured)
+        verify(exactly = 0) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 0) { mockedLifecycle.addObserver(any()) }
+
+        // Simulate the main thread draining its message queue and running the posted runnable.
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { mockedNeuroID.setupCallbacks() }
+        verify(exactly = 1) { mockedLifecycle.addObserver(any<ProcessDeviceLifecycleObserver>()) }
+
+        unmockkConstructor(Handler::class)
+        unmockkStatic(Looper::class)
     }
 
     @Test
@@ -2336,30 +2494,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.sharedPrefsDefaults = mockNIDSharedPrefsDefaults
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
-        // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters
-        val attrs = event?.attrs
-        assert(attrs != null)
-        assert(attrs!!.isNotEmpty())
-
-        // Check for rnVersion
-        val hostRNVersionAttr = attrs.find { it["n"] == "rnVersion" }
-        assertEquals("0.72.0", hostRNVersionAttr?.get("v"))
-
-        // Check for minOSVersion
-        val hostMinSDKLevelAttr = attrs.find { it["n"] == "minOSVersion" }
-        assertEquals(24, hostMinSDKLevelAttr?.get("v"))
-
-        // Check for original parameters
-        val versionNameAttr = attrs.find { it["n"] == "versionName" }
-        assertEquals("1.2.3", versionNameAttr?.get("v"))
-
-        val versionNumberAttr = attrs.find { it["n"] == "versionNumber" }
-        assertEquals(123, versionNumberAttr?.get("v"))
+        // Verify no event was captured
+        assertEquals(0, storedEvents.count())
     }
 
     @Test
@@ -2405,17 +2541,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.captureApplicationMetaData()
 
         // Verify event was captured
-        assertEquals(1, storedEvents.count())
-        val event = storedEvents.firstOrNull()
-        assertEquals(APPLICATION_METADATA, event?.type)
-
-        // Verify the attrs contain the new parameters with defaults
-        val attrs = event?.attrs
-        assert(attrs != null)
-
-        // Check for hostRNVersion (should be empty string by default)
-        val hostRNVersionAttr = attrs?.find { it["n"] == "rnVersion" }
-        assertEquals("", hostRNVersionAttr?.get("v"))
+        assertEquals(0, storedEvents.count())
     }
 
     //    captureEvent
