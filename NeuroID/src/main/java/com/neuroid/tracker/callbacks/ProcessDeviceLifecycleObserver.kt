@@ -16,12 +16,28 @@ import com.neuroid.tracker.events.LOG
 internal class ProcessDeviceLifecycleObserver(
     private val neuroID: NeuroID,
 ) : DefaultLifecycleObserver {
+    var started: Boolean = false
+
     override fun onStart(owner: LifecycleOwner) {
-        neuroID.captureEvent(type = LOG, m = "isAdvancedDevice setting (onStart): ${neuroID.isAdvancedDevice}", level = "INFO")
+        // Restrict the following to only run the first time the app enters the foreground
+        if (started) {
+            return
+        }
+
+        neuroID.captureEvent(
+            queuedEvent = true,
+            type = LOG,
+            m = "isAdvancedDevice setting (onStart): ${neuroID.isAdvancedDevice}",
+            level = "INFO",
+        )
+
         if (neuroID.isAdvancedDevice) {
             neuroID.checkThenCaptureAdvancedDevice()
         }
+
         neuroID.captureApplicationMetaData()
         neuroID.configService.retrieveOrRefreshCache(neuroID)
+
+        started = true
     }
 }
