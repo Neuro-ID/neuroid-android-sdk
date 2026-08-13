@@ -48,7 +48,7 @@ class ProcessDeviceLifecycleObserverTests {
         verifyCaptureEvent(
             neuroID,
             eventType = LOG,
-            m = "isAdvancedDevice setting: true",
+            m = "isAdvancedDevice setting (onStart): true",
             level = "INFO",
         )
     }
