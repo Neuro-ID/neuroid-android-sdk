@@ -19,6 +19,7 @@ internal class ProcessDeviceLifecycleObserver(
     var started: Boolean = false
 
     override fun onStart(owner: LifecycleOwner) {
+        // Restrict the following to only run the first time the app enters the foreground
         if (started) {
             return
         }
