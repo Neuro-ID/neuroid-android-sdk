@@ -3,7 +3,6 @@ package com.neuroid.tracker.extensions
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.fpjsClientOverride
 import com.neuroid.tracker.NeuroIDPublic
-import com.neuroid.tracker.events.LOG
 import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
@@ -32,13 +31,7 @@ fun NeuroIDPublic.start(
     completion: (Boolean) -> Unit = {},
 ) {
     start {
-        if (!it) {
-            completion(it)
-        } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(shouldCapture = advancedDeviceSignals)
-
-            completion(it)
-        }
+        completion(it)
     }
 }
 
@@ -61,53 +54,42 @@ fun NeuroIDPublic.startSession(
     startSession(
         sessionID,
     ) {
-        if (!it.started) {
-            completion(it)
-        } else {
-            NeuroID.getInternalInstance()?.checkThenCaptureAdvancedDevice(
-                shouldCapture = advancedDeviceSignals,
-            )
-
-            completion(it)
-        }
+        completion(it)
     }
 }
 
 @Synchronized
 fun NeuroID.captureAdvancedDevice(
-    shouldCapture: Boolean,
     advancedDeviceKey: String?,
     useAdvancedDeviceProxy: Boolean,
     region: NIDRegion = NIDRegion.usWest,
 ) = runBlocking {
-    captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $shouldCapture", level = "INFO")
-    if (shouldCapture) {
-        NeuroID.getInternalInstance()?.apply {
-            getApplicationContext()?.let { context ->
-                val advancedDeviceIDManagerService =
-                    AdvancedDeviceIDManager(
-                        context,
+    NeuroID.getInternalInstance()?.apply {
+        getApplicationContext()?.let { context ->
+            val advancedDeviceIDManagerService =
+                AdvancedDeviceIDManager(
+                    context,
+                    logger,
+                    NIDSharedPrefsDefaults(context),
+                    this,
+                    getADVNetworkService(
+                        region.productionEndpoint,
                         logger,
-                        NIDSharedPrefsDefaults(context),
-                        this,
-                        getADVNetworkService(
-                            NeuroID.endpoint,
-                            logger,
-                        ),
-                        this.clientID,
-                        this.linkedSiteID ?: "",
-                        configService,
-                        advancedDeviceKey,
-                        fpjsClientOverride,
-                        useAdvancedDeviceProxy = useAdvancedDeviceProxy,
-                        region = region,
-                    )
-                getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
-            }
+                    ),
+                    this.clientID,
+                    this.linkedSiteID ?: "",
+                    configService,
+                    advancedDeviceKey,
+                    fpjsClientOverride,
+                    useAdvancedDeviceProxy = useAdvancedDeviceProxy,
+                    region = region,
+                )
+            getADVSignal(advancedDeviceIDManagerService, clientKey, this)?.join()
         }
-    } else {
-        logger.d(msg = "in captureAdvancedDevice(), advanced device not active.")
     }
+
+    // runBlocking returns the value of its last expression, adding an explicit Unit at the end of the runBlocking block anchors the return type to Unit unconditionally
+    Unit
 }
 
 internal fun getADVSignal(

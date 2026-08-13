@@ -79,6 +79,7 @@ class LoginSignupTestRunner {
 
     @Before
     fun setup() {
+        NIDTestInstrumentation.clearRecorders()
         eventRecorder = NIDTestInstrumentation.recorder
         attemptedRecorder = NIDTestInstrumentation.attemptedRecorder
     }
@@ -162,7 +163,7 @@ class LoginSignupTestRunner {
     fun runLogin() = runTest(UnconfinedTestDispatcher()) {
         eventRecorder?.clear()
         attemptedRecorder?.clear()
-        //Thread.sleep(10000)
+
         val job = launch {
             //setup session and registered user id
             ApplicationMain.registeredSessionId = RepeatedTestRunner.currentId
@@ -309,8 +310,8 @@ class LoginSignupTestRunner {
 
     @Test
     fun runSignup() = runTest(UnconfinedTestDispatcher()) {
-//        eventRecorder?.clear()
-//        attemptedRecorder?.clear()
+        eventRecorder?.clear()
+        attemptedRecorder?.clear()
 
         val job = launch {
             //setup session and registered user id

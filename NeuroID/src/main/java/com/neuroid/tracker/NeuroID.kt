@@ -8,11 +8,14 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
+import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
@@ -52,13 +55,13 @@ import com.neuroid.tracker.service.getSendingService
 import com.neuroid.tracker.storage.NIDDataStoreManager
 import com.neuroid.tracker.storage.NIDDataStoreManagerImp
 import com.neuroid.tracker.storage.NIDSharedPrefsDefaults
-import com.neuroid.tracker.utils.Constants
 import com.neuroid.tracker.utils.NIDComposeTextWatcherUtils
 import com.neuroid.tracker.utils.NIDLogWrapper
 import com.neuroid.tracker.utils.NIDMetaData
 import com.neuroid.tracker.utils.NIDTime
 import com.neuroid.tracker.utils.NIDTimerActive
 import com.neuroid.tracker.utils.NIDVersion
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.utils.RandomGenerator
 import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
@@ -80,7 +83,6 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        serverEnvironment: String = PRODUCTION,
         internal var region: NIDRegion = NIDRegion.usWest,
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
@@ -140,28 +142,9 @@ class NeuroID
 
         init {
             nidTime = NIDTime()
-            when (serverEnvironment) {
-                PRODSCRIPT_DEVCOLLECTION -> {
-                    endpoint = Constants.devEndpoint.displayName
-                    scriptEndpoint = region.productionScriptsEndpoint
-                }
-                DEVELOPMENT -> {
-                    endpoint = Constants.devEndpoint.displayName
-                    scriptEndpoint = Constants.devScriptsEndpoint.displayName
-                }
-                TEST -> {
-                    endpoint = Constants.testScriptEndpoint.displayName
-                    scriptEndpoint = Constants.testScriptEndpoint.displayName
-                }
-                else -> {
-                    endpoint = region.productionEndpoint
-                    scriptEndpoint = region.productionScriptsEndpoint
-                }
-            }
 
             // TO-DO - If invalid key passed we should be exiting
             if (!validationService.validateClientKey(clientKey)) {
-                captureEvent(type = LOG, m = "Invalid Client Key $clientKey", level = "ERROR")
                 logger.e(msg = "Invalid Client Key")
                 clientKey = ""
                 tabID = "$rndmId-${generateUniqueHexID()}-invalid-client-key"
@@ -182,8 +165,8 @@ class NeuroID
             // different
             httpService =
                 NIDHttpService(
-                    collectionEndpoint = endpoint,
-                    configEndpoint = scriptEndpoint,
+                    collectionEndpoint = region.productionEndpoint,
+                    configEndpoint = region.productionScriptsEndpoint,
                     logger = logger,
                     // We can't use the config value because it hasn't been called.
                     // Might have to recreate once config is retrieved
@@ -192,6 +175,7 @@ class NeuroID
                 )
 
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
+
             dataStore = NIDDataStoreManagerImp(logger, configService)
 
             identifierService =
@@ -219,10 +203,8 @@ class NeuroID
                 )
 
                 sharedPrefsDefaults = NIDSharedPrefsDefaults(it)
-                if (isAdvancedDevice) {
-                    resetClientId()
-                    checkThenCaptureAdvancedDevice(isAdvancedDevice)
-                }
+
+                resetClientId()
 
                 sessionService =
                     NIDSessionService(
@@ -239,11 +221,6 @@ class NeuroID
                     NIDMetaData(
                         it.applicationContext,
                     )
-
-                captureApplicationMetaData()
-
-                captureEvent(type = LOG, m = "isAdvancedDevice setting: $isAdvancedDevice", level = "INFO")
-
                 nidCallActivityListener = NIDCallActivityListener(this, VersionChecker())
 
                 // get connectivity info on startup
@@ -268,11 +245,12 @@ class NeuroID
                     ),
                     IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION),
                 )
-                configService.retrieveOrRefreshCache(this)
             }
 
             registrationIdentificationHelper = RegistrationIdentificationHelper(logger)
+
             nidActivityCallbacks = ActivityCallbacks(this, logger, registrationIdentificationHelper)
+
             nidComposeTextWatcher = NIDComposeTextWatcherUtils(this)
         }
 
@@ -339,7 +317,6 @@ class NeuroID
                         nidConfiguration.isAdvancedDevice,
                         nidConfiguration.advancedDeviceKey,
                         nidConfiguration.useAdvancedDeviceProxy,
-                        nidConfiguration.serverEnvironment,
                         nidConfiguration.region,
                     )
                 setNeuroIDInstance(neuroID)
@@ -363,7 +340,6 @@ class NeuroID
                         isAdvancedDevice,
                         advancedDeviceKey,
                         useAdvancedDeviceProxy = true,
-                        serverEnvironment,
                         region,
                     )
                 setNeuroIDInstance(neuroID)
@@ -405,9 +381,18 @@ class NeuroID
             internal var isConnected = false
 
             internal var registeredViews: MutableSet<String> = mutableSetOf()
-            internal var endpoint = NIDRegion.usWest.productionEndpoint
-            internal var scriptEndpoint = NIDRegion.usWest.productionScriptsEndpoint
+
             private var singleton: NeuroID? = null
+
+            // Swappable so JVM unit tests (no Robolectric) can substitute a fake Lifecycle instead
+            // of hitting ProcessLifecycleOwner's real main-thread requirement.
+            @Volatile
+            internal var processLifecycleProvider: ProcessLifecycleProvider = ProcessLifecycleProvider()
+
+            @TestOnly
+            internal fun setTestProcessLifecycleProvider(provider: ProcessLifecycleProvider) {
+                processLifecycleProvider = provider
+            }
 
             @TestOnly
             internal fun setSingletonNull() {
@@ -429,10 +414,21 @@ class NeuroID
             internal fun setNeuroIDInstance(neuroID: NeuroID) {
                 if (singleton == null) {
                     singleton = neuroID
-                    if (neuroID.isAdvancedDevice) {
-                        neuroID.checkThenCaptureAdvancedDevice(true)
+
+                    val registerObserver = {
+                        singleton?.setupCallbacks()
+                        processLifecycleProvider.getProcessLifecycle().addObserver(
+                            ProcessDeviceLifecycleObserver(neuroID),
+                        )
                     }
-                    singleton?.setupCallbacks()
+
+                    // to fix another issue with the lifecycle observer not being called on the main thread in ReactNative usage
+                    val mainLooper = Looper.getMainLooper()
+                    if (mainLooper == null || Looper.myLooper() == mainLooper) {
+                        registerObserver()
+                        return
+                    }
+                    Handler(mainLooper).post { registerObserver() }
                 } else {
                     singleton?.logger?.e("NeuroID", "NeuroID SDK should only be built once.")
                     singleton?.captureEvent(
@@ -494,56 +490,12 @@ class NeuroID
 
         @VisibleForTesting
         override fun setTestURL(newEndpoint: String) {
-            endpoint = newEndpoint
-            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-
-            application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        NIDHttpService(
-                            collectionEndpoint = endpoint,
-                            configEndpoint = scriptEndpoint,
-                            logger = logger,
-                            // We can't use the config value because it hasn't been called.
-                            // Might have to recreate once config is retrieved
-                            collectionTimeout = 10,
-                            configTimeout = 10,
-                        ),
-                        it,
-                    ),
-                )
-            }
+            // Deprecated
         }
 
         @VisibleForTesting
-        /**
-         * testing will always uses usWest testing endpoints regardless of the region
-         * specified in the config since we don't
-         * want to have multiple testing endpoints in our tests.
-         * If we want to add more testing endpoints in the future we can
-         * add a parameter to specify which testing endpoint to use.
-         */
         override fun setTestingNeuroIDDevURL() {
-            endpoint = Constants.devEndpoint.displayName
-            scriptEndpoint = Constants.devScriptsEndpoint.displayName
-
-            application?.let {
-                nidJobServiceManager?.setTestEventSender(
-                    getSendingService(
-                        httpService =
-                            NIDHttpService(
-                                collectionEndpoint = endpoint,
-                                configEndpoint = scriptEndpoint,
-                                logger = logger,
-                                // We can't use the config value because it hasn't been called.
-                                // Might have to recreate once config is retrieved
-                                collectionTimeout = 10,
-                                configTimeout = 10,
-                            ),
-                        it,
-                    ),
-                )
-            }
+            // Deprecated
         }
 
         internal fun setupListeners() {
@@ -596,21 +548,9 @@ class NeuroID
             return true
         }
 
-        /**
-         * Execute the captureAdvancedDevice() method, removed the reflection code since this is
-         * no longer needed. Just call the captureAdvancedDevice() extension method directly
-         * since we moved the FPJS library permanently into the SDK.
-         *
-         * Keeping this wrapper around just in case we have to do something similar in the
-         * future.
-         */
-        internal fun checkThenCaptureAdvancedDevice(
-            shouldCapture: Boolean = isAdvancedDevice,
-            dispatcher: CoroutineDispatcher = Dispatchers.IO,
-        ) {
+        internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
             CoroutineScope(dispatcher).launch {
                 captureAdvancedDevice(
-                    shouldCapture,
                     advancedDeviceKey,
                     useAdvancedDeviceProxy,
                     region,
@@ -795,7 +735,7 @@ class NeuroID
                     rnVersion,
                 )
                 captureEvent(
-                    queuedEvent = !isSDKStarted,
+                    queuedEvent = true,
                     p = sharedPrefsDefaults.getPlatform(),
                     type = APPLICATION_METADATA,
                     attrs =

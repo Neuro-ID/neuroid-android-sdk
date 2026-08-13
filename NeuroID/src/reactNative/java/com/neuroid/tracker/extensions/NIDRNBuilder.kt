@@ -23,7 +23,6 @@ class NIDRNBuilder(
                 isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
                 advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
                 useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
-                serverEnvironment = options[RNConfigOptions.environment] as String,
                 region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
             ),
         ).build()
@@ -71,19 +70,6 @@ class NIDRNBuilder(
                     rnVersion = it
                 }
             }
-            // set the environment params from the environment option, default PRODUCTION
-            if (rnOptionsMap.hasKey(RNConfigOptions.environment.name)) {
-                rnOptionsMap.getString(RNConfigOptions.environment.name)?.let {
-                    when (it) {
-                        NeuroID.PRODSCRIPT_DEVCOLLECTION ->
-                            environment =
-                                NeuroID.PRODSCRIPT_DEVCOLLECTION
-
-                        NeuroID.DEVELOPMENT -> environment = NeuroID.DEVELOPMENT
-                        else -> environment = NeuroID.PRODUCTION
-                    }
-                }
-            }
             // add more regions here, default to usWest for now since that's the only region we have
             if (rnOptionsMap.hasKey(RNConfigOptions.region.name)) {
                 rnOptionsMap.getString(RNConfigOptions.region.name)?.let {
@@ -94,7 +80,6 @@ class NIDRNBuilder(
                 }
             }
         }
-        options[RNConfigOptions.environment] = environment
         options[RNConfigOptions.isAdvancedDevice] = isAdvancedDevice
         options[RNConfigOptions.advancedDeviceKey] = advancedDeviceKey
         options[RNConfigOptions.useAdvancedDeviceProxy] = useAdvancedDeviceProxy

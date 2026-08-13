@@ -1,5 +1,6 @@
 package com.neuroid.tracker.service
 
+import androidx.lifecycle.Lifecycle
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -21,6 +22,7 @@ import com.neuroid.tracker.getMockedValidationService
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
+import com.neuroid.tracker.utils.ProcessLifecycleProvider
 import com.neuroid.tracker.verifyCaptureEvent
 import io.mockk.every
 import io.mockk.just
@@ -53,7 +55,6 @@ class NIDSessionServiceTest {
             null,
             "key_test_fake1234",
             false,
-            NeuroID.DEVELOPMENT,
         ).build()
     }
 
@@ -77,6 +78,7 @@ class NIDSessionServiceTest {
 
         // Mock configService on mockedNeuroID BEFORE using it
         every { mockedNeuroID.configService } returns mockedConfigService
+        every { mockedNeuroID.isAdvancedDevice } returns true
 
         // we need to mock these two to create listeners in the test,
         // these are set to false by default
@@ -125,6 +127,14 @@ class NIDSessionServiceTest {
         // fail test when NeuroID is built.
         NeuroID.setSingletonNull()
 
+        // Mock the process lifecycle so setNeuroIDInstance's registration in setNeuroIDInstance()
+        // below doesn't touch the real ProcessLifecycleOwner (main-thread only, unavailable on
+        // plain JVM unit tests).
+        val defaultMockedLifecycle = mockk<Lifecycle>(relaxed = true)
+        val defaultMockedProcessLifecycleProvider = mockk<ProcessLifecycleProvider>()
+        every { defaultMockedProcessLifecycleProvider.getProcessLifecycle() } returns defaultMockedLifecycle
+        NeuroID.setTestProcessLifecycleProvider(defaultMockedProcessLifecycleProvider)
+
         // setup instance and logging
         setNeuroIDInstance()
 
@@ -133,6 +143,8 @@ class NIDSessionServiceTest {
 
     @After
     fun tearDown() {
+        // reset in case a test substituted a mocked provider
+        NeuroID.setTestProcessLifecycleProvider(ProcessLifecycleProvider())
         unmockkAll()
     }
 
@@ -245,7 +257,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedDataStore.saveAndClearAllQueuedEvents()
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
         }
     }
 
@@ -400,7 +412,6 @@ class NIDSessionServiceTest {
     @Test
     fun test_startSession_existing_UID_success() {
         val mockedServices = buildMockClasses()
-        val mockConfigService = mockedServices.mockedConfigService
         val mockedJobServiceManager = mockedServices.mockedJobServiceManager
         val mockedValidationService = mockedServices.mockedValidationService
         val mockedIdentifierService = mockedServices.mockedIdentifierService
@@ -1153,7 +1164,7 @@ class NIDSessionServiceTest {
         assert(completionFuncResult?.sessionID == "GoodUID")
 
         verify(exactly = 1) {
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
         }
 
@@ -1207,7 +1218,7 @@ class NIDSessionServiceTest {
         verify(exactly = 1) {
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
             mockedNeuroID.addLinkedSiteID(testSiteID)
 
             mockedJobServiceManager.startJob(any(), any())
@@ -1273,7 +1284,7 @@ class NIDSessionServiceTest {
 
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
 
-            mockedNeuroID.checkThenCaptureAdvancedDevice(any(), any())
+            mockedNeuroID.checkThenCaptureAdvancedDevice(any())
         }
 
         verifyCaptureEvent(
