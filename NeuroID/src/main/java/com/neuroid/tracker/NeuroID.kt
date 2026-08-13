@@ -30,15 +30,18 @@ import com.neuroid.tracker.events.SET_LINKED_SITE
 import com.neuroid.tracker.events.SET_REGISTERED_USER_ID
 import com.neuroid.tracker.events.SET_USER_ID
 import com.neuroid.tracker.events.SET_VARIABLE
-import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRegion
 import com.neuroid.tracker.models.NIDSensorModel
 import com.neuroid.tracker.models.NIDTouchModel
 import com.neuroid.tracker.models.SessionStartResult
+import com.neuroid.tracker.service.AdvancedDeviceIDManager
+import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.ConfigService
 import com.neuroid.tracker.service.HttpService
+import com.neuroid.tracker.service.NIDAdvancedDeviceApiService
+import com.neuroid.tracker.service.NIDAdvancedDeviceNetworkService
 import com.neuroid.tracker.service.NIDCallActivityListener
 import com.neuroid.tracker.service.NIDConfigService
 import com.neuroid.tracker.service.NIDHttpService
@@ -65,11 +68,10 @@ import com.neuroid.tracker.utils.VersionChecker
 import com.neuroid.tracker.utils.generateUniqueHexID
 import com.neuroid.tracker.utils.getAppMetaData
 import com.neuroid.tracker.utils.getGUID
+import com.neuroid.tracker.utils.getRetroFitInstance
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
 import kotlin.ReplaceWith
@@ -85,6 +87,7 @@ class NeuroID
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
+        private val appContext = application?.applicationContext
         private var firstTime = true
         internal var clientID = ""
 
@@ -109,6 +112,7 @@ class NeuroID
         internal var randomGenerator = RandomGenerator()
         internal var logger: NIDLogWrapper = NIDLogWrapper()
         internal var configService: ConfigService
+        internal var deviceNetworkService: AdvancedDeviceIDManagerService? = null
         internal var dataStore: NIDDataStoreManager
         internal var registrationIdentificationHelper: RegistrationIdentificationHelper
         internal var nidActivityCallbacks: ActivityCallbacks
@@ -175,6 +179,34 @@ class NeuroID
 
             configService = NIDConfigService(dispatcher, logger, httpService, validationService)
             dataStore = NIDDataStoreManagerImp(logger, configService)
+
+            val advNetworkService = NIDAdvancedDeviceNetworkService(
+                getRetroFitInstance(
+                    region.productionEndpoint,
+                    logger,
+                    NIDAdvancedDeviceApiService::class.java,
+                    NIDAdvancedDeviceNetworkService.TIMEOUT,
+                ),
+                logger,
+            )
+
+            appContext?.let { context ->
+                deviceNetworkService =
+                    AdvancedDeviceIDManager(
+                        context,
+                        logger,
+                        NIDSharedPrefsDefaults(context),
+                        this,
+                        advNetworkService,
+                        this.clientID,
+                        this.linkedSiteID ?: "",
+                        configService,
+                        advancedDeviceKey,
+                        fpjsClientOverride,
+                        useAdvancedDeviceProxy = useAdvancedDeviceProxy,
+                        region = region,
+                    )
+            }
 
             identifierService =
                 NIDIdentifierService(
@@ -540,13 +572,11 @@ class NeuroID
             return true
         }
 
-        internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
-            CoroutineScope(dispatcher).launch {
-                captureAdvancedDevice(
-                    advancedDeviceKey,
-                    useAdvancedDeviceProxy,
-                    region,
-                )
+        internal fun checkThenCaptureAdvancedDevice() {
+            captureEvent(queuedEvent = true, type = LOG, m = "shouldCapture setting: $isAdvancedDevice", level = "INFO")
+            // If we are not sampling this session, we should not capture the adv device signals
+            if (configService.isSessionFlowSampled()) {
+                deviceNetworkService?.captureAdvancedDevice(clientKey)
             }
         }
 

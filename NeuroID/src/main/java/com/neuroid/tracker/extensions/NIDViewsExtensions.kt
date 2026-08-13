@@ -7,7 +7,6 @@ import android.content.res.Resources
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.neuroid.tracker.utils.NIDLogWrapper
 
 fun View?.getIdOrTag(): String {
     return if (this == null) {
@@ -37,26 +36,6 @@ fun View.getRandomId(): String {
     val viewCoordinates = "${this.x}_${this.y}".replace(".", "")
 
     return "${this.javaClass.simpleName}_$viewCoordinates"
-}
-
-fun View.getParents(logger: NIDLogWrapper): String = getParentsOfView(0, this, logger)
-
-fun View.getParentsOfView(
-    layers: Int,
-    view: View,
-    log: NIDLogWrapper,
-): String {
-    return if (view.parent is View) {
-        val childView = view.parent as View
-        if (layers == 3 || childView.id == android.R.id.content) {
-            ""
-        } else {
-            "${childView.javaClass.simpleName}/${getParentsOfView(layers + 1, childView, log)}"
-        }
-    } else {
-        log.e(msg = "instance ${view.parent?.javaClass?.name} is not a view!")
-        "not_a_view"
-    }
 }
 
 fun View.getParentActivity(): String? {

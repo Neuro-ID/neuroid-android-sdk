@@ -19,7 +19,6 @@ import com.neuroid.tracker.events.RESUME_EVENT_CAPTURE
 import com.neuroid.tracker.events.SET_VARIABLE
 import com.neuroid.tracker.events.TOUCH_START
 import com.neuroid.tracker.events.WINDOW_LOAD
-import com.neuroid.tracker.extensions.captureAdvancedDevice
 import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.NIDRegion
@@ -534,8 +533,6 @@ open class NeuroIDClassUnitTests {
         // mocks, causing a ConcurrentModificationException. Stubbing it makes the coroutine a no-op
         // so cleanup is deterministic.
         mockkStatic("com.neuroid.tracker.extensions.AdvancedDeviceExtensionKt")
-        every { any<NeuroID>().captureAdvancedDevice(any(), any(), any()) } returns Unit
-
         return mockedApplication
     }
 

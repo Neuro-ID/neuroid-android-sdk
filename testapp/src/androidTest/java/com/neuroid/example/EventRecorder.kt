@@ -1,5 +1,6 @@
 package com.neuroid.example
 
+import com.neuroid.tracker.models.EventBundle
 import junit.framework.TestCase.assertTrue
 
 /**
@@ -7,7 +8,7 @@ import junit.framework.TestCase.assertTrue
  * verify them for event integrity.
  */
 class EventRecorder {
-    private val eventBuffer = mutableListOf<EventModel>()
+    private val eventBuffer = mutableListOf<EventBundle>()
 
     data class RecorderComparison(
         val payloadCountExpected: Int,
@@ -28,7 +29,7 @@ class EventRecorder {
         }
     }
 
-    fun addEvent(eventModel: EventModel) {
+    fun addEvent(eventModel: EventBundle) {
         eventBuffer.add(eventModel)
     }
 
@@ -61,7 +62,7 @@ class EventRecorder {
         val sessionEvents = mutableMapOf<String, MutableSet<String>>()
         eventBuffer.forEach { eventModel ->
             val key = eventModel.identityId.orEmpty().ifBlank { eventModel.clientId }
-            val types = sessionEvents.getOrPut(key) { mutableSetOf() }
+            val types = sessionEvents.getOrPut(key ?: "") { mutableSetOf() }
             eventModel.jsonEvents.forEach { types.add(it.type) }
         }
         return sessionEvents

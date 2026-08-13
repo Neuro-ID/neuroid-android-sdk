@@ -4,7 +4,6 @@ import com.neuroid.tracker.models.ADVKeyFunctionResponse
 import com.neuroid.tracker.models.ADVKeyNetworkResponse
 import com.neuroid.tracker.utils.Base64Decoder
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.getRetroFitInstance
 import retrofit2.Call
 
 interface ADVNetworkService {
@@ -120,17 +119,3 @@ class NIDAdvancedDeviceNetworkService(
         }
     }
 }
-
-fun getADVNetworkService(
-    endpoint: String,
-    logger: NIDLogWrapper,
-): ADVNetworkService =
-    NIDAdvancedDeviceNetworkService(
-        getRetroFitInstance(
-            endpoint,
-            logger,
-            NIDAdvancedDeviceApiService::class.java,
-            NIDAdvancedDeviceNetworkService.TIMEOUT,
-        ),
-        logger,
-    )
