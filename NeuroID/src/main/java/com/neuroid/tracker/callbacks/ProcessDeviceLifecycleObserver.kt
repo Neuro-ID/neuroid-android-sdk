@@ -4,7 +4,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.utils.NIDLog
 
 /**
  *
@@ -17,7 +16,6 @@ import com.neuroid.tracker.utils.NIDLog
 internal class ProcessDeviceLifecycleObserver(
     private val neuroID: NeuroID,
 ) : DefaultLifecycleObserver {
-
     var started: Boolean = false
 
     override fun onStart(owner: LifecycleOwner) {
@@ -25,7 +23,12 @@ internal class ProcessDeviceLifecycleObserver(
             return
         }
 
-        neuroID.captureEvent(queuedEvent = true, type = LOG, m = "isAdvancedDevice setting (onStart): ${neuroID.isAdvancedDevice}", level = "INFO")
+        neuroID.captureEvent(
+            queuedEvent = true,
+            type = LOG,
+            m = "isAdvancedDevice setting (onStart): ${neuroID.isAdvancedDevice}",
+            level = "INFO",
+        )
 
         if (neuroID.isAdvancedDevice) {
             neuroID.checkThenCaptureAdvancedDevice()
