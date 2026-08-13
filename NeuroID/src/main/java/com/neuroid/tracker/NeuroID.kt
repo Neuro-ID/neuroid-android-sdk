@@ -71,9 +71,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.handleCoroutineException
 import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
 import kotlin.ReplaceWith

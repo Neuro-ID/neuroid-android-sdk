@@ -4,7 +4,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.LOG
-import com.neuroid.tracker.utils.NIDMetaData
 
 /**
  *
@@ -15,7 +14,7 @@ import com.neuroid.tracker.utils.NIDMetaData
  * cold start) where no `Activity` is ever created.
  */
 internal class ProcessDeviceLifecycleObserver(
-    private val neuroID: NeuroID
+    private val neuroID: NeuroID,
 ) : DefaultLifecycleObserver {
     override fun onStart(owner: LifecycleOwner) {
         if (neuroID.isAdvancedDevice) {
