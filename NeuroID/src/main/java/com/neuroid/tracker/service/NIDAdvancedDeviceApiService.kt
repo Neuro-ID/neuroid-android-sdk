@@ -7,7 +7,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface NIDAdvancedDeviceApiService {
-    @GET("/a/{key}")
+    @GET("a/{key}")
     fun getNIDAdvancedDeviceAccessKey(
         @Path("key") key: String,
         @Query("clientId") clientID: String,
