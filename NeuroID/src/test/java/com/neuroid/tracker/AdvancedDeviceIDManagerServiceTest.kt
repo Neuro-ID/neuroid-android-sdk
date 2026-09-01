@@ -387,7 +387,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedNeuroID,
                 mockedNetworkService,
                 "",
-                "",
                 getMockedConfigService(),
                 advancedDeviceKey,
                 mockedFPJSClient,
@@ -438,7 +437,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedSharedPreferences,
                 mockedNeuroID,
                 mockedNetworkService,
-                "",
                 "",
                 getMockedConfigService(),
                 advancedDeviceKey,
@@ -580,7 +578,7 @@ class AdvancedDeviceIDManagerServiceTest {
     ): ADVNetworkService {
         val mockedADVNetworkService = mockk<ADVNetworkService>()
 
-        every { mockedADVNetworkService.getNIDAdvancedDeviceAccessKey(any(), any(), any()) } returns
+        every { mockedADVNetworkService.getNIDAdvancedDeviceAccessKey(any()) } returns
             ADVKeyFunctionResponse(
                 key,
                 success,
