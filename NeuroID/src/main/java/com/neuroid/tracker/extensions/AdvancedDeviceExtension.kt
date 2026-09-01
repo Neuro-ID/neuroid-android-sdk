@@ -77,7 +77,6 @@ fun NeuroID.captureAdvancedDevice(
                         logger,
                     ),
                     this.clientID,
-                    this.linkedSiteID ?: "",
                     configService,
                     advancedDeviceKey,
                     fpjsClientOverride,
