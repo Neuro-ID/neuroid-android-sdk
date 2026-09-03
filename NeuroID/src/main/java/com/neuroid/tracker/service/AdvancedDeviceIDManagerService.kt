@@ -83,8 +83,8 @@ internal class AdvancedDeviceIDManager(
             ct = neuroID.networkConnectionType,
         )
 
-        // if Expired ID - return false (refresh adv device id) else return true (id is still valid)
-        return !(System.currentTimeMillis() > storedValue["exp"] as Double)
+        val mustRefreshAdvDevice = !(System.currentTimeMillis() > storedValue["exp"] as Double)
+        return mustRefreshAdvDevice
     }
 
     fun getAdvancedDeviceKey(clientKey: String): ADVKeyFunctionResponse? {
