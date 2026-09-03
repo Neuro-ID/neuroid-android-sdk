@@ -83,7 +83,7 @@ internal class AdvancedDeviceIDManager(
             ct = neuroID.networkConnectionType,
         )
 
-        val isAdvDeviceValid = !(System.currentTimeMillis() > storedValue["exp"] as Double)
+        val isAdvDeviceValid = System.currentTimeMillis() <= storedValue["exp"] as Double
         return isAdvDeviceValid
     }
 
