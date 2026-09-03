@@ -26,7 +26,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(response.message == "Error") { "Expected response.message should be Errors, found ${response.message}" }
@@ -46,7 +46,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(
@@ -72,7 +72,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedLogger(),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
 
         assert(!response.success) { "Expected response.success should be false" }
         assert(response.message == errorMessage) { "Expected response.message should be \"$errorMessage\", found \"${response.message}\"" }
@@ -97,7 +97,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
                 getMockedBase64Decoder(key),
             )
 
-        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey", "", "")
+        val response = advancedDeviceNetworkService.getNIDAdvancedDeviceAccessKey("testKey")
 
         assert(response.success) { "Expected response.success should be true" }
         assert(response.message == null) { "Expected response.message should be \"\", found \"${response.message}\"" }
@@ -215,7 +215,7 @@ class NIDAdvancedDeviceNetworkServiceUnitTests {
 
     private fun getMockedAPIService(call: Call<ADVKeyNetworkResponse>): NIDAdvancedDeviceApiService {
         val apiService = mockk<NIDAdvancedDeviceApiService>()
-        every { apiService.getNIDAdvancedDeviceAccessKey(any(), any(), any()) } returns call
+        every { apiService.getNIDAdvancedDeviceAccessKey(any()) } returns call
 
         return apiService
     }
