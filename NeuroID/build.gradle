@@ -108,6 +108,12 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+        // Pin metadata/language compatibility to the pre-upgrade baseline (Kotlin 1.9.x) so that
+        // consumer apps building with an older Kotlin Gradle plugin than the one used here can
+        // still resolve this library. Without this, apps on Kotlin < 2.3.20 can fail with
+        // "Module was compiled with an incompatible version of Kotlin" errors.
+        languageVersion = "1.9"
+        apiVersion = "1.9"
     }
 
     buildFeatures {
