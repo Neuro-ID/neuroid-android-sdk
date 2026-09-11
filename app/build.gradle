@@ -103,6 +103,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+        // Cap metadata/language version to what the current Dagger/Hilt compiler's bundled
+        // kotlin-metadata-jvm can parse (max supported metadata version 2.2.0 as of Dagger 2.56.2).
+        languageVersion = "2.2"
+        apiVersion = "2.2"
     }
 }
 
@@ -132,8 +136,8 @@ dependencies {
     implementation project(':NeuroID')
     debugImplementation 'com.github.erosb:everit-json-schema:1.14.1'
 
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-android-compiler:2.48")
+    implementation("com.google.dagger:hilt-android:2.58")
+    kapt("com.google.dagger:hilt-android-compiler:2.58")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 
