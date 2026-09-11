@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.3.20'
     id 'maven-publish'
     id 'jacoco'
     id 'org.sonarqube' version '6.3.1.5724'
@@ -52,11 +53,11 @@ version = versionName
 
 android {
     namespace = "com.neuroid.tracker"
-    compileSdkVersion = 35
+    compileSdkVersion = 36
 
     defaultConfig {
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         multiDexEnabled true
         android.buildFeatures.buildConfig true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -107,15 +108,18 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+        // Pin metadata/language compatibility to the pre-upgrade baseline (Kotlin 1.9.x) so that
+        // consumer apps building with an older Kotlin Gradle plugin than the one used here can
+        // still resolve this library. Without this, apps on Kotlin < 2.3.20 can fail with
+        // "Module was compiled with an incompatible version of Kotlin" errors.
+        languageVersion = "1.9"
+        apiVersion = "1.9"
     }
 
     buildFeatures {
         compose true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
-    }
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -149,14 +153,14 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.24"
 
     // compose stuff
     implementation "androidx.compose.ui:ui:1.7.3"
 
     reactNativeImplementation("com.facebook.react:react-android:0.76.9")
 
-    implementation("com.fingerprint.android:pro:2.16.0") {
+    implementation("com.fingerprint.android:sdk:4.0.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
@@ -164,6 +168,18 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+}
+
+// The Kotlin Gradle plugin (2.3.20) auto-adds a kotlin-stdlib dependency matching its own
+// version. Left unchecked, that gets published in this library's POM as a "compile" scoped
+// dependency, which forces every consumer app's Gradle build to resolve kotlin-stdlib up to
+// 2.3.20 (highest-version-wins), regardless of what Kotlin version the consumer actually uses.
+// coreLibrariesVersion controls the version string the plugin uses for that auto-added
+// dependency, keeping it aligned with the same 1.9 baseline our compiled metadata targets
+// (see kotlinOptions languageVersion/apiVersion above), so integrating this SDK doesn't
+// silently require a newer Kotlin stdlib in consumer apps than before this upgrade.
+kotlin {
+    coreLibrariesVersion = "1.9.24"
 }
 
 afterEvaluate {

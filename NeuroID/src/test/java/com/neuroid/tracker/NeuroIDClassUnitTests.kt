@@ -10,7 +10,7 @@ import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
+import com.fingerprint.android.Fingerprint
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
@@ -334,7 +334,7 @@ open class NeuroIDClassUnitTests {
 
     @Test
     fun test_fpjsClientOverride_assignment() {
-        val mockedClient = mockk<FingerprintJS>()
+        val mockedClient = mockk<Fingerprint>()
 
         NeuroID.fpjsClientOverride = mockedClient
 
