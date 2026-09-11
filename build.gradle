@@ -6,11 +6,11 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
     }
-    ext.kotlin_version = "1.9.24"
+    ext.kotlin_version = "2.3.20"
     dependencies {
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.48'
-        classpath 'com.android.tools.build:gradle:8.1.4'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.8.2"
         classpath('com.google.dagger:hilt-android-gradle-plugin:2.48')
         classpath "org.jacoco:org.jacoco.core:0.8.12"

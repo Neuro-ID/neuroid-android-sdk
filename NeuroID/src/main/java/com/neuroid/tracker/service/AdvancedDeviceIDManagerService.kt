@@ -1,9 +1,9 @@
 package com.neuroid.tracker.service
 
 import android.content.Context
-import com.fingerprintjs.android.fpjs_pro.Configuration
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
-import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
+import com.fingerprint.android.Configuration
+import com.fingerprint.android.Fingerprint
+import com.fingerprint.android.FingerprintFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.neuroid.tracker.NeuroID
@@ -44,7 +44,7 @@ internal class AdvancedDeviceIDManager(
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
-    private val fpjsClient: FingerprintJS? = null,
+    private val fpjsClient: Fingerprint? = null,
     private val useAdvancedDeviceProxy: Boolean,
     val nidTime: NIDTime = NIDTime(),
     private val region: NIDRegion = NIDRegion.usWest,
@@ -141,7 +141,7 @@ internal class AdvancedDeviceIDManager(
             if (fpjsClient != null) {
                 fpjsClient
             } else {
-                FingerprintJSFactory(applicationContext = context)
+                FingerprintFactory(applicationContext = context)
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
@@ -238,7 +238,7 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Triple<Boolean, String, String?> =
+    private suspend fun getVisitorId(fpjsClient: Fingerprint): Triple<Boolean, String, String?> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 tags = mapOf(
@@ -247,7 +247,7 @@ internal class AdvancedDeviceIDManager(
                     "requestStartTime" to nidTime.getCurrentTimeMillis(),
                 ),
                 listener = { result ->
-                    continuation.resume(Triple(true, result.requestId, result.sealedResult))
+                    continuation.resume(Triple(true, result.eventId, result.sealedResult))
                 },
                 errorListener = { error ->
                     continuation.resume(
