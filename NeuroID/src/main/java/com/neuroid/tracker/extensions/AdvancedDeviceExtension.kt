@@ -62,7 +62,7 @@ fun NeuroIDPublic.startSession(
 fun NeuroID.captureAdvancedDevice(
     advancedDeviceKey: String?,
     useAdvancedDeviceProxy: Boolean,
-    region: NIDRegion = NIDRegion.usWest,
+    region: NIDRegion = NIDRegion.DEFAULT,
 ) = runBlocking {
     NeuroID.getInternalInstance()?.apply {
         getApplicationContext()?.let { context ->
