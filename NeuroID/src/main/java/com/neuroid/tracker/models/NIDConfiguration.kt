@@ -9,5 +9,5 @@ data class NIDConfiguration(
         "serverEnvironment is deprecated",
     )
     val serverEnvironment: String = "production",
-    val region: NIDRegion = NIDRegion.usWest,
+    val region: NIDRegion = NIDRegion.DEFAULT,
 )
