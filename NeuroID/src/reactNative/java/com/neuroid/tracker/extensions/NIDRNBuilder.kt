@@ -38,7 +38,6 @@ class NIDRNBuilder(
     internal fun parseOptions(rnOptions: ReadableMap?): Map<RNConfigOptions, Any> {
         // defaults
         var isAdvancedDevice = false
-        var environment = NeuroID.PRODUCTION
         var advancedDeviceKey = ""
         var useAdvancedDeviceProxy = true
         var rnVersion = ""
