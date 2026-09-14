@@ -10,13 +10,13 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface NIDApiService {
-    @POST("/c/{key}")
+    @POST("c/{key}")
     fun sendEvents(
         @Body requestBody: RequestBody,
         @Path("key") key: String,
     ): Call<ResponseBody>
 
-    @GET("/mobile/{key}.json")
+    @GET("mobile/{key}.json")
     fun getConfig(
         @Path("key") key: String,
     ): Call<NIDRemoteConfig>

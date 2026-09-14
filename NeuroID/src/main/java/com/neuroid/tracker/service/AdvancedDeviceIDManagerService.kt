@@ -61,18 +61,13 @@ internal class AdvancedDeviceIDManager(
         val type = object : TypeToken<Map<String, Any>>() {}.type
         val storedValue = gson.fromJson<Map<String, Any>>(existingString, type)
 
-        // No Value Exists - return false
+        // No Value Exists - return false (get new advanced device id)
         if (storedValue == null || storedValue["key"] == "NO_KEY") {
             return false
         }
 
-        // Expired ID - return false
-        val currentTimestamp = System.currentTimeMillis()
-        if (currentTimestamp > storedValue["exp"] as Double) {
-            return false
-        }
-
-        // Capture valid cached ID
+        // always capture cached ID even if expired, if expired we will return false which
+        // will force a refresh (done below the event sending)
         logger.d(
             msg =
                 "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}",
@@ -88,7 +83,8 @@ internal class AdvancedDeviceIDManager(
             ct = neuroID.networkConnectionType,
         )
 
-        return true
+        val isAdvDeviceValid = System.currentTimeMillis() <= storedValue["exp"] as Double
+        return isAdvDeviceValid
     }
 
     fun getAdvancedDeviceKey(clientKey: String): ADVKeyFunctionResponse? {

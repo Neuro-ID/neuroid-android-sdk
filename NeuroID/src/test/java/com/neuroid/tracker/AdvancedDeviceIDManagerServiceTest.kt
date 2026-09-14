@@ -99,13 +99,27 @@ class AdvancedDeviceIDManagerServiceTest {
 
     @Test
     fun testGetCachedID_expired_id() {
-        val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey("{\"key\":\"testingExp\", \"exp\":0}")
+        val keyValue = "testingExp"
+        val mocks =
+            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
+                "{\"key\":\"$keyValue\", \"exp\":0}",
+            ) { e: NIDEventModel ->
+                assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
+                assert(e.rid == keyValue) { "Expected event requestID to be $keyValue, found ${e.rid}" }
+                assert(e.c == true) { "Expected event c value to be true, found false" }
+                assert(e.l == 0L) { "Expected event l value to be 0, found ${e.l}" }
+                assert(e.ct == "wifi") { "Expected event ct value to be wifi, found ${e.ct}" }
+            }
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
 
+        // even though the cached ID is expired, we still capture the cached event
+        // before determining it is expired and returning false to force a re-capture.
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
         assert(!cachedID)
+        verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST, 1)
         verify(exactly = 1) {
             mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
         }
