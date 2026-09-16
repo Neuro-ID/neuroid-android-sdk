@@ -70,10 +70,11 @@ class NIDRNBuilder(
                 }
             }
             // add more regions here, default to US_WEST_DEFAULT if we don't get a matching region from the options
+            // usWest will default to US_WEST_DEFAULT, but we will log a warning to the console that it is deprecated
+            // and will be removed in the future
             if (rnOptionsMap.hasKey(RNConfigOptions.region.name)) {
                 rnOptionsMap.getString(RNConfigOptions.region.name)?.let {
                     when (it) {
-                        NIDRegion.usWest.name -> region = NIDRegion.usWest.name
                         NIDRegion.US_WEST.name -> region = NIDRegion.US_WEST.name
                         NIDRegion.US_EAST.name -> region = NIDRegion.US_EAST.name
                         else -> region = NIDRegion.US_WEST_DEFAULT.name
