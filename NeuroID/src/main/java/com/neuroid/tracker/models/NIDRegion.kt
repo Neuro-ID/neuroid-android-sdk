@@ -7,19 +7,19 @@ enum class NIDRegion(
     val productionEndpoint: String,
     val productionScriptsEndpoint: String,
 ) {
-    DEFAULT(
+    US_WEST_LEGACY(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
         productionEndpoint = "https://receiver.neuroid.cloud/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
-    usEast(
+    US_EAST(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
-        productionEndpoint = "https://edge.neurid.cloud/use2/",
+        productionEndpoint = "https://edge.neuroid.cloud/use2/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
-    usWest(
+    US_WEST(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
         productionEndpoint = "https://edge.neuroid.cloud/usw2/",

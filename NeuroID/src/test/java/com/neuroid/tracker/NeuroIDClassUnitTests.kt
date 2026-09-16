@@ -378,12 +378,12 @@ open class NeuroIDClassUnitTests {
             NIDConfiguration(
                 clientKey = "key_test_fake1234",
                 isAdvancedDevice = false,
-                region = NIDRegion.DEFAULT,
+                region = NIDRegion.US_WEST_LEGACY,
             ),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
-        assertEquals(NIDRegion.DEFAULT, instance?.region)
+        assertEquals(NIDRegion.US_WEST_LEGACY, instance?.region)
     }
 
     @Test

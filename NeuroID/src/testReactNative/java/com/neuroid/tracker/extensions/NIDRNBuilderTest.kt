@@ -22,7 +22,7 @@ class NIDRNBuilderTest {
         assertEquals("", mapOptions[RNConfigOptions.advancedDeviceKey] as String)
         assertTrue(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("", mapOptions[RNConfigOptions.rnVersion] as String)
-        assertEquals(NIDRegion.DEFAULT.name, mapOptions[RNConfigOptions.region] as String)
+        assertEquals(NIDRegion.US_WEST_LEGACY.name, mapOptions[RNConfigOptions.region] as String)
     }
 
     @Test
@@ -39,14 +39,14 @@ class NIDRNBuilderTest {
         every { options.getString(RNConfigOptions.advancedDeviceKey.name) } returns "testkey"
         every { options.getBoolean(RNConfigOptions.useAdvancedDeviceProxy.name) } returns false
         every { options.getString(RNConfigOptions.rnVersion.name) } returns "0.71.0"
-        every { options.getString(RNConfigOptions.region.name) } returns NIDRegion.DEFAULT.name
+        every { options.getString(RNConfigOptions.region.name) } returns NIDRegion.US_WEST_LEGACY.name
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
         assertTrue(mapOptions[RNConfigOptions.isAdvancedDevice] as Boolean)
         assertEquals("testkey", mapOptions[RNConfigOptions.advancedDeviceKey] as String)
         assertFalse(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("0.71.0", mapOptions[RNConfigOptions.rnVersion] as String)
-        assertEquals(NIDRegion.DEFAULT.name, mapOptions[RNConfigOptions.region] as String)
+        assertEquals(NIDRegion.US_WEST_LEGACY.name, mapOptions[RNConfigOptions.region] as String)
     }
 
     @Test
@@ -58,7 +58,7 @@ class NIDRNBuilderTest {
         assertEquals("", mapOptions[RNConfigOptions.advancedDeviceKey] as String)
         assertTrue(mapOptions[RNConfigOptions.useAdvancedDeviceProxy] as Boolean)
         assertEquals("", mapOptions[RNConfigOptions.rnVersion] as String)
-        assertEquals(NIDRegion.DEFAULT.name, mapOptions[RNConfigOptions.region] as String)
+        assertEquals(NIDRegion.US_WEST_LEGACY.name, mapOptions[RNConfigOptions.region] as String)
     }
 
     @Test
@@ -72,6 +72,6 @@ class NIDRNBuilderTest {
         val t = NIDRNBuilder(mockApp, "dummy_key", options)
         val mapOptions = t.parseOptions(options)
 
-        assertEquals(NIDRegion.DEFAULT.name, mapOptions[RNConfigOptions.region] as String)
+        assertEquals(NIDRegion.US_WEST_LEGACY.name, mapOptions[RNConfigOptions.region] as String)
     }
 }
