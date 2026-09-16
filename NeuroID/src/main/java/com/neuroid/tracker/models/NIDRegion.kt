@@ -13,6 +13,7 @@ enum class NIDRegion(
         productionEndpoint = "https://receiver.neuroid.cloud/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
+
     @Deprecated("Use US_WEST_DEFAULT instead", ReplaceWith("NIDRegion.US_WEST_DEFAULT"))
     usWest(
         fpjsProdDomain = "https://advanced.neuro-id.com",
