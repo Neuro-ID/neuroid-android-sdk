@@ -13,6 +13,13 @@ enum class NIDRegion(
         productionEndpoint = "https://receiver.neuroid.cloud/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
+    @Deprecated("Use US_WEST_LEGACY instead", ReplaceWith("NIDRegion.US_WEST_LEGACY"))
+    usWest(
+        fpjsProdDomain = "https://advanced.neuro-id.com",
+        fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
+        productionEndpoint = "https://receiver.neuroid.cloud/",
+        productionScriptsEndpoint = "https://scripts.neuro-id.com/",
+    ),
     US_EAST(
         fpjsProdDomain = "https://advanced.neuro-id.com",
         fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t",
