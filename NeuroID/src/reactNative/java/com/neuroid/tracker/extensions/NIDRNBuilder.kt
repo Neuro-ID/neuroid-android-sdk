@@ -41,7 +41,7 @@ class NIDRNBuilder(
         var advancedDeviceKey = ""
         var useAdvancedDeviceProxy = true
         var rnVersion = ""
-        var region = NIDRegion.US_WEST_LEGACY.name
+        var region = NIDRegion.US_WEST_DEFAULT.name
 
         val options = mutableMapOf<RNConfigOptions, Any>()
         rnOptions?.let { rnOptionsMap ->
@@ -69,13 +69,14 @@ class NIDRNBuilder(
                     rnVersion = it
                 }
             }
-            // add more regions here, default to DEFAULT for now since that's the only region we have
+            // add more regions here, default to US_WEST_DEFAULT if we don't get a matching region from the options
             if (rnOptionsMap.hasKey(RNConfigOptions.region.name)) {
                 rnOptionsMap.getString(RNConfigOptions.region.name)?.let {
                     when (it) {
+                        NIDRegion.usWest.name -> region = NIDRegion.usWest.name
                         NIDRegion.US_WEST.name -> region = NIDRegion.US_WEST.name
                         NIDRegion.US_EAST.name -> region = NIDRegion.US_EAST.name
-                        else -> region = NIDRegion.US_WEST_LEGACY.name
+                        else -> region = NIDRegion.US_WEST_DEFAULT.name
                     }
                 }
             }

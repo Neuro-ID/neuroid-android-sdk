@@ -83,7 +83,7 @@ class NeuroID
         internal var isAdvancedDevice: Boolean,
         internal var advancedDeviceKey: String? = null,
         internal var useAdvancedDeviceProxy: Boolean = false,
-        internal var region: NIDRegion = NIDRegion.US_WEST_LEGACY,
+        internal var region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
     ) : NeuroIDPublic {
         @Volatile internal var pauseCollectionJob: Job? = null // internal only for testing purposes
 
@@ -330,7 +330,7 @@ class NeuroID
             val isAdvancedDevice: Boolean = false,
             val advancedDeviceKey: String? = null,
             val serverEnvironment: String = PRODUCTION,
-            val region: NIDRegion = NIDRegion.US_WEST_LEGACY,
+            val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
         ) {
             fun build() {
                 val neuroID =

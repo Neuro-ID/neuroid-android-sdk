@@ -47,7 +47,7 @@ internal class AdvancedDeviceIDManager(
     private val fpjsClient: FingerprintJS? = null,
     private val useAdvancedDeviceProxy: Boolean,
     val nidTime: NIDTime = NIDTime(),
-    private val region: NIDRegion = NIDRegion.US_WEST_LEGACY,
+    private val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
