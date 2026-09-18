@@ -303,8 +303,12 @@ class AdvancedDeviceIDManagerServiceTest {
                         networkServiceResult = Triple("", true, ""),
                         useNullFpjsClient = true,
                     ) { e: NIDEventModel ->
-                        assert(e.type == ADVANCED_DEVICE_REQUEST) { "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}" }
-                        assert(e.rid == validRID) { "Expected event requestID to be $validRID, found ${e.rid}" }
+                        assert(e.type == ADVANCED_DEVICE_REQUEST) {
+                            "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}"
+                        }
+                        assert(e.rid == validRID) {
+                            "Expected event requestID to be $validRID, found ${e.rid}"
+                        }
                     }
                 val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
 
