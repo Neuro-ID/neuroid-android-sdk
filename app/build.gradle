@@ -103,10 +103,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        // Cap metadata/language version to what the current Dagger/Hilt compiler's bundled
-        // kotlin-metadata-jvm can parse (max supported metadata version 2.2.0 as of Dagger 2.56.2).
-        languageVersion = "2.2"
-        apiVersion = "2.2"
     }
 }
 

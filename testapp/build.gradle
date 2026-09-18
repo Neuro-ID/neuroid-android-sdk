@@ -1,22 +1,28 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    // https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler
     id 'org.jetbrains.kotlin.plugin.compose' version '2.3.20'
 }
 
 android {
     namespace 'com.neuroid.example'
-    compileSdk 36
+    compileSdk 35
 
     buildFeatures {
         viewBinding true
         compose true
     }
+    composeOptions {
+        // developer.android.com/jetpack/androidx/releases/compose-kotlin (extension map)
+        // requires kotlin version 1.9.24, see root build.gradle for this change.
+        kotlinCompilerExtensionVersion '1.5.14'
+    }
 
     defaultConfig {
         applicationId "com.neuroid.example"
         minSdk 24
-        targetSdk 36
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
