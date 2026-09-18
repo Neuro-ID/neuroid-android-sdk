@@ -1,0 +1,14 @@
+name: Verify the PR title includes a Jira ticket reference
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-pr-title:
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: Neuro-ID/actions/pr-title-jira@v6
