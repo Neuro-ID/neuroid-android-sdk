@@ -18,6 +18,57 @@ buildscript {
     }
 }
 
+plugins {
+    // Manages creating/closing/releasing the staging repository on Maven Central's
+    // Central Publisher Portal. Secrets (sonatypeUsername/sonatypePassword) are
+    // supplied later via gradle.properties or SONATYPE_USERNAME/SONATYPE_PASSWORD env vars.
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username.set(providers.gradleProperty("sonatypeUsername").orElse(providers.environmentVariable("SONATYPE_USERNAME")))
+            password.set(providers.gradleProperty("sonatypePassword").orElse(providers.environmentVariable("SONATYPE_PASSWORD")))
+        }
+    }
+}
+
+// The classic Nexus Staging API used above (create/close/release) has no concept of
+// "publishing type" -- closing a repo always uploads it to the Central Publisher Portal
+// in USER_MANAGED state, requiring a manual "Publish" click at
+// https://central.sonatype.com/publishing. Sonatype's OSSRH-compatibility service exposes
+// a manual endpoint to override this: POST /manual/upload/defaultRepository/<namespace>
+// with publishing_type=automatic, which must run from the same IP/build as the upload.
+// See: https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/
+tasks.register("triggerAutomaticMavenCentralRelease") {
+    group = "publishing"
+    description = "Marks the just-closed Maven Central staging deployment for automatic release (publishing_type=automatic)."
+    dependsOn "closeAndReleaseStagingRepositories"
+    doLast {
+        def username = providers.gradleProperty("sonatypeUsername").orElse(providers.environmentVariable("SONATYPE_USERNAME")).getOrNull()
+        def password = providers.gradleProperty("sonatypePassword").orElse(providers.environmentVariable("SONATYPE_PASSWORD")).getOrNull()
+        if (!username || !password) {
+            throw new GradleException("sonatypeUsername/sonatypePassword (or SONATYPE_USERNAME/SONATYPE_PASSWORD) must be set to release to Maven Central.")
+        }
+        def token = Base64.encoder.encodeToString("${username}:${password}".getBytes("UTF-8"))
+        def namespace = "com.neuroid"
+        def uri = new URI("https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/${namespace}?publishing_type=automatic")
+        def client = java.net.http.HttpClient.newHttpClient()
+        def request = java.net.http.HttpRequest.newBuilder(uri)
+                .header("Authorization", "Bearer ${token}")
+                .POST(java.net.http.HttpRequest.BodyPublishers.noBody())
+                .build()
+        def response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() >= 300) {
+            throw new GradleException("Failed to mark Maven Central deployment as automatic: HTTP ${response.statusCode()} ${response.body()}")
+        }
+        logger.lifecycle("Marked Maven Central deployment for namespace '${namespace}' as AUTOMATIC release (HTTP ${response.statusCode()}).")
+    }
+}
+
 task clean(type: Delete) {
-    delete rootProject.buildDir 
+    delete rootProject.buildDir
 }
