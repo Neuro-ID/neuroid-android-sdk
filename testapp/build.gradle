@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    // https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.3.20'
 }
 
 android {
@@ -98,7 +100,7 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.7.0'
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.7.0"
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.9.3'
-    androidTestImplementation("com.fingerprint.android:pro:2.16.0") {
+    androidTestImplementation("com.fingerprint.android:sdk:4.0.0") {
         exclude group: "com.google.android.gms"
     }
     androidTestImplementation 'io.mockk:mockk-android:1.12.0'
