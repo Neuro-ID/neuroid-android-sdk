@@ -23,13 +23,13 @@ enum class NIDRegion(
     ),
     US_EAST(
         fpjsProdDomain = "https://advanced.neuro-id.com",
-        fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t/use2",
+        fpjsPrimaryDomain = "https://dn.neuroid.cloud/use2/iynlfqcb0t",
         productionEndpoint = "https://edge.neuroid.cloud/use2/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
     US_WEST(
         fpjsProdDomain = "https://advanced.neuro-id.com",
-        fpjsPrimaryDomain = "https://dn.neuroid.cloud/iynlfqcb0t/usw2",
+        fpjsPrimaryDomain = "https://dn.neuroid.cloud/usw2/iynlfqcb0t",
         productionEndpoint = "https://edge.neuroid.cloud/usw2/",
         productionScriptsEndpoint = "https://scripts.neuro-id.com/",
     ),
