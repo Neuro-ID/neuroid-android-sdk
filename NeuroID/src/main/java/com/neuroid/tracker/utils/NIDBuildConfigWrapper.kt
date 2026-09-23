@@ -1,6 +1,6 @@
 package com.neuroid.tracker.utils
 
-import com.neuroid.tracker.BuildConfig
+import us.ttyl.neuroid.tracker.BuildConfig
 
 /**
  *  required for testing, cannot mockkStatic BuildConfig.

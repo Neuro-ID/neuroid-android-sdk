@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'maven-publish'
+    id 'signing'
     id 'jacoco'
     id 'org.sonarqube' version '6.3.1.5724'
     id 'org.jlleitschuh.gradle.ktlint'
@@ -38,20 +39,26 @@ def getGitHash = { ->
     }
     return stdout.toString().trim()
 }
-def nameSpace = "com.neuroid"
+def nameSpace = "us.ttyl.neuroid.tracker"
 
-def androidSDKVariant = "android-sdk"
+def androidSDKVariant = "neuroid-tracker-android-sdk"
 def debugVariant = "-debug"
 def reactNativeVariant = "react"
+
+def pomUrl = "https://github.com/Neuro-ID/neuroid-android-sdk"
 
 ext {
     versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
 }
+// versionName above intentionally contains literal double quotes since it's also injected
+// as a raw Java/Kotlin string literal via buildConfigField. Maven/project versions must NOT
+// contain quote characters (Maven Central rejects them), so use a separate, clean value.
+def mavenVersion = "${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}"
 group = nameSpace
-version = versionName
+version = mavenVersion
 
 android {
-    namespace = "com.neuroid.tracker"
+    namespace = "us.ttyl.neuroid.tracker"
     compileSdkVersion = 35
 
     defaultConfig {
@@ -166,6 +173,32 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
+// Maven Central requires a sources and a javadoc artifact for every published component.
+// We intentionally do not ship real sources, so these jars are published empty just to
+// satisfy Central's validation rules. Each publication needs its own distinct jar files
+// (different archiveBaseName) -- reusing the same task/output across both the android and
+// reactNative publications causes their independent signing tasks to write conflicting
+// .asc files to the same path.
+task emptyAndroidLibSourcesJar(type: Jar) {
+    archiveBaseName.set(androidSDKVariant)
+    archiveClassifier.set('sources')
+}
+
+task emptyAndroidLibJavadocJar(type: Jar) {
+    archiveBaseName.set(androidSDKVariant)
+    archiveClassifier.set('javadoc')
+}
+
+task emptyReactNativeLibSourcesJar(type: Jar) {
+    archiveBaseName.set("$reactNativeVariant-$androidSDKVariant")
+    archiveClassifier.set('sources')
+}
+
+task emptyReactNativeLibJavadocJar(type: Jar) {
+    archiveBaseName.set("$reactNativeVariant-$androidSDKVariant")
+    archiveClassifier.set('javadoc')
+}
+
 afterEvaluate {
     // remove the sources jar from the release version of the library
     tasks.matching { t ->
@@ -182,11 +215,37 @@ afterEvaluate {
             androidLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
                 from components.androidLibRelease
+                artifact emptyAndroidLibSourcesJar
+                artifact emptyAndroidLibJavadocJar
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant"
-                version = versionName
+                version = mavenVersion
+
+                pom {
+                    name.set("NeuroID Android SDK")
+                    description.set("NeuroID's Android Mobile SDK for embedding behavioral analytics inside mobile applications.")
+                    url.set(pomUrl)
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("${pomUrl}/blob/master/LICENSE")
+                        }
+                    }
+                    developers {
+                        developer {
+                            name.set("Neuro-ID")
+                            organization.set("Neuro-ID, Inc.")
+                            organizationUrl.set("https://neuroid.com")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:git://github.com/Neuro-ID/neuroid-android-sdk.git")
+                        developerConnection.set("scm:git:ssh://github.com/Neuro-ID/neuroid-android-sdk.git")
+                        url.set(pomUrl)
+                    }
+                }
             }
             // Creates a Maven publication called “debug”.
             androidLibDebug(MavenPublication) {
@@ -195,16 +254,42 @@ afterEvaluate {
 
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant$debugVariant"
-                version = versionName
+                version = mavenVersion
             }
             reactNativeLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
                 from components.reactNativeLibRelease
+                artifact emptyReactNativeLibSourcesJar
+                artifact emptyReactNativeLibJavadocJar
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant"
-                version = versionName
+                version = mavenVersion
+
+                pom {
+                    name.set("NeuroID Android SDK (React Native)")
+                    description.set("NeuroID's Android Mobile SDK for embedding behavioral analytics inside React Native applications.")
+                    url.set(pomUrl)
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("${pomUrl}/blob/master/LICENSE")
+                        }
+                    }
+                    developers {
+                        developer {
+                            name.set("Neuro-ID")
+                            organization.set("Neuro-ID, Inc.")
+                            organizationUrl.set("https://neuroid.com")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:git://github.com/Neuro-ID/neuroid-android-sdk.git")
+                        developerConnection.set("scm:git:ssh://github.com/Neuro-ID/neuroid-android-sdk.git")
+                        url.set(pomUrl)
+                    }
+                }
             }
             // Creates a Maven publication called “debug”.
             reactNativeLibDebug(MavenPublication) {
@@ -213,8 +298,31 @@ afterEvaluate {
 
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant$debugVariant"
-                version = versionName
+                version = mavenVersion
             }
+        }
+    }
+
+    // Only the release publications are meant for Maven Central; debug builds should
+    // never leave mavenLocal/JitPack.
+    tasks.matching { t ->
+        t.name == "publishAndroidLibDebugPublicationToSonatypeRepository"
+                || t.name == "publishReactNativeLibDebugPublicationToSonatypeRepository"
+    }.configureEach { t ->
+        t.enabled = false
+    }
+
+    // GPG signing for Maven Central. Secrets are supplied later via gradle.properties
+    // (signingInMemoryKey / signingInMemoryKeyPassword) or SIGNING_KEY / SIGNING_PASSWORD
+    // env vars, ASCII-armored in-memory key. Signing is skipped when absent so local/JitPack
+    // publishing keeps working without secrets.
+    def signingKey = findProperty("signingInMemoryKey") ?: System.getenv("SIGNING_KEY")
+    def signingPassword = findProperty("signingInMemoryKeyPassword") ?: System.getenv("SIGNING_PASSWORD")
+    if (signingKey && signingPassword) {
+        signing {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.androidLibRelease
+            sign publishing.publications.reactNativeLibRelease
         }
     }
 }
@@ -248,3 +356,4 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testAndroidLibDebugUnitTe
             fileTree(dir: "${buildDir}", include: ["outputs/unit_test_code_coverage/androidLibDebugUnitTest/testAndroidLibDebugUnitTest.exec"])
     )
 }
+
