@@ -2,7 +2,7 @@ package com.neuroid.tracker.callbacks
 
 import android.app.Activity
 import android.os.Bundle
-import com.neuroid.tracker.BuildConfig
+import us.ttyl.neuroid.tracker.BuildConfig
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.RegistrationIdentificationHelper
 import com.neuroid.tracker.events.WINDOW_BLUR

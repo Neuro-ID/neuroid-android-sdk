@@ -34,10 +34,9 @@ class ApplicationMain : Application() {
             this,
             NIDConfiguration(
                 "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
-                isAdvancedDevice = true,
-                advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
-                useAdvancedDeviceProxy = true,
-                region = NIDRegion.TEST
+                isAdvancedDevice = false,
+                // advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
+                // useAdvancedDeviceProxy = true,
             )
         ).build()
     }

@@ -32,41 +32,40 @@ nexusPublishing {
             snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
             username.set(providers.gradleProperty("sonatypeUsername").orElse(providers.environmentVariable("SONATYPE_USERNAME")))
             password.set(providers.gradleProperty("sonatypePassword").orElse(providers.environmentVariable("SONATYPE_PASSWORD")))
+            // The plugin looks up the Sonatype staging profile by "packageGroup", which
+            // defaults to rootProject.group -- but the root project never sets a group
+            // (only :NeuroID does), so it defaults to "" and the lookup fails with
+            // "Failed to find staging profile for package group: ". Read it lazily from
+            // :NeuroID so it always matches the actual published artifacts' groupId.
+            packageGroup.set(providers.provider { project(":NeuroID").group.toString() })
         }
     }
 }
 
-// The classic Nexus Staging API used above (create/close/release) has no concept of
-// "publishing type" -- closing a repo always uploads it to the Central Publisher Portal
-// in USER_MANAGED state, requiring a manual "Publish" click at
-// https://central.sonatype.com/publishing. Sonatype's OSSRH-compatibility service exposes
-// a manual endpoint to override this: POST /manual/upload/defaultRepository/<namespace>
-// with publishing_type=automatic, which must run from the same IP/build as the upload.
-// See: https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/
-tasks.register("triggerAutomaticMavenCentralRelease") {
+// closeAndReleaseStagingRepositories (via the classic OSSRH-compatible staging API) already
+// fully closes AND releases the staging repository, which promotes it straight through to
+// Maven Central and publishes it -- confirmed live on repo1.maven.org after a real run.
+// There is no separate "manual publish" step needed for this flow, so a prior attempt at
+// calling Sonatype's manual-upload "publishing_type=automatic" endpoint afterward always
+// failed with "No repository found ...--default-repository", since the repository was
+// already gone (fully promoted) by the time that call ran. That extra call has been removed.
+//
+// NOTE: closeAndReleaseStagingRepositories is a ROOT project task (registered by the
+// nexus-publish-plugin at the root only). Invoke it without a module path, e.g.:
+//   ./gradlew publishToMavenCentral
+// NOT ./gradlew :NeuroID:closeAndReleaseStagingRepositories (that task doesn't exist).
+//
+// The nexus-publish-plugin only *orders* closeAndReleaseStagingRepositories to run after
+// publishToSonatype when both are in the same task graph -- it does not add a hard
+// dependency. So publishToSonatype must be included here too, otherwise no staging
+// repository exists yet and closeSonatypeStagingRepository fails with
+// "No staging repository with name sonatype created". publishToSonatype itself is only
+// registered per-subproject (Gradle's CLI task-name matching resolves it across
+// subprojects when typed on the command line, but dependsOn requires an exact task path).
+tasks.register("publishToMavenCentral") {
     group = "publishing"
-    description = "Marks the just-closed Maven Central staging deployment for automatic release (publishing_type=automatic)."
-    dependsOn "closeAndReleaseStagingRepositories"
-    doLast {
-        def username = providers.gradleProperty("sonatypeUsername").orElse(providers.environmentVariable("SONATYPE_USERNAME")).getOrNull()
-        def password = providers.gradleProperty("sonatypePassword").orElse(providers.environmentVariable("SONATYPE_PASSWORD")).getOrNull()
-        if (!username || !password) {
-            throw new GradleException("sonatypeUsername/sonatypePassword (or SONATYPE_USERNAME/SONATYPE_PASSWORD) must be set to release to Maven Central.")
-        }
-        def token = Base64.encoder.encodeToString("${username}:${password}".getBytes("UTF-8"))
-        def namespace = "com.neuroid"
-        def uri = new URI("https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/${namespace}?publishing_type=automatic")
-        def client = java.net.http.HttpClient.newHttpClient()
-        def request = java.net.http.HttpRequest.newBuilder(uri)
-                .header("Authorization", "Bearer ${token}")
-                .POST(java.net.http.HttpRequest.BodyPublishers.noBody())
-                .build()
-        def response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString())
-        if (response.statusCode() >= 300) {
-            throw new GradleException("Failed to mark Maven Central deployment as automatic: HTTP ${response.statusCode()} ${response.body()}")
-        }
-        logger.lifecycle("Marked Maven Central deployment for namespace '${namespace}' as AUTOMATIC release (HTTP ${response.statusCode()}).")
-    }
+    description = "Publishes, closes, and releases the Maven Central staging deployment."
+    dependsOn ":NeuroID:publishToSonatype", "closeAndReleaseStagingRepositories"
 }
 
 task clean(type: Delete) {

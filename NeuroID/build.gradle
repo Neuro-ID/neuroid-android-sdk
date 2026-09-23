@@ -39,9 +39,9 @@ def getGitHash = { ->
     }
     return stdout.toString().trim()
 }
-def nameSpace = "com.neuroid"
+def nameSpace = "us.ttyl.neuroid.tracker"
 
-def androidSDKVariant = "android-sdk"
+def androidSDKVariant = "neuroid-tracker-android-sdk"
 def debugVariant = "-debug"
 def reactNativeVariant = "react"
 
@@ -50,11 +50,15 @@ def pomUrl = "https://github.com/Neuro-ID/neuroid-android-sdk"
 ext {
     versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
 }
+// versionName above intentionally contains literal double quotes since it's also injected
+// as a raw Java/Kotlin string literal via buildConfigField. Maven/project versions must NOT
+// contain quote characters (Maven Central rejects them), so use a separate, clean value.
+def mavenVersion = "${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}"
 group = nameSpace
-version = versionName
+version = mavenVersion
 
 android {
-    namespace = "com.neuroid.tracker"
+    namespace = "us.ttyl.neuroid.tracker"
     compileSdkVersion = 35
 
     defaultConfig {
@@ -171,12 +175,27 @@ dependencies {
 
 // Maven Central requires a sources and a javadoc artifact for every published component.
 // We intentionally do not ship real sources, so these jars are published empty just to
-// satisfy Central's validation rules.
-task emptySourcesJar(type: Jar) {
+// satisfy Central's validation rules. Each publication needs its own distinct jar files
+// (different archiveBaseName) -- reusing the same task/output across both the android and
+// reactNative publications causes their independent signing tasks to write conflicting
+// .asc files to the same path.
+task emptyAndroidLibSourcesJar(type: Jar) {
+    archiveBaseName.set(androidSDKVariant)
     archiveClassifier.set('sources')
 }
 
-task emptyJavadocJar(type: Jar) {
+task emptyAndroidLibJavadocJar(type: Jar) {
+    archiveBaseName.set(androidSDKVariant)
+    archiveClassifier.set('javadoc')
+}
+
+task emptyReactNativeLibSourcesJar(type: Jar) {
+    archiveBaseName.set("$reactNativeVariant-$androidSDKVariant")
+    archiveClassifier.set('sources')
+}
+
+task emptyReactNativeLibJavadocJar(type: Jar) {
+    archiveBaseName.set("$reactNativeVariant-$androidSDKVariant")
     archiveClassifier.set('javadoc')
 }
 
@@ -196,13 +215,13 @@ afterEvaluate {
             androidLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
                 from components.androidLibRelease
-                artifact emptySourcesJar
-                artifact emptyJavadocJar
+                artifact emptyAndroidLibSourcesJar
+                artifact emptyAndroidLibJavadocJar
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant"
-                version = versionName
+                version = mavenVersion
 
                 pom {
                     name.set("NeuroID Android SDK")
@@ -235,18 +254,18 @@ afterEvaluate {
 
                 groupId = nameSpace
                 artifactId = "$androidSDKVariant$debugVariant"
-                version = versionName
+                version = mavenVersion
             }
             reactNativeLibRelease(MavenPublication) {
                 // Applies the component for the release build variant.
                 from components.reactNativeLibRelease
-                artifact emptySourcesJar
-                artifact emptyJavadocJar
+                artifact emptyReactNativeLibSourcesJar
+                artifact emptyReactNativeLibJavadocJar
 
                 // You can then customize attributes of the publication as shown below.
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant"
-                version = versionName
+                version = mavenVersion
 
                 pom {
                     name.set("NeuroID Android SDK (React Native)")
@@ -279,7 +298,7 @@ afterEvaluate {
 
                 groupId = nameSpace
                 artifactId = "$reactNativeVariant-$androidSDKVariant$debugVariant"
-                version = versionName
+                version = mavenVersion
             }
         }
     }
