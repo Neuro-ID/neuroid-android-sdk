@@ -40,7 +40,6 @@ internal class AdvancedDeviceIDManager(
     private val neuroID: NeuroID,
     private val advNetworkService: ADVNetworkService,
     private val clientID: String,
-    private val linkedSiteID: String,
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
@@ -88,8 +87,7 @@ internal class AdvancedDeviceIDManager(
     }
 
     fun getAdvancedDeviceKey(clientKey: String): ADVKeyFunctionResponse? {
-        val nidKeyResponse =
-            advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
+        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey)
 
         // if no key exit early
         if (!nidKeyResponse.success) {
