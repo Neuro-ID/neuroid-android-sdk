@@ -7,9 +7,10 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.fingerprintjs.android.fpjs_pro.Error
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
-import com.fingerprintjs.android.fpjs_pro.FingerprintJSProResponse
+import com.fingerprint.android.Error
+import com.fingerprint.android.Fingerprint
+import com.fingerprint.android.FingerprintFactory
+import com.fingerprint.android.FingerprintResponse
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.LOG
@@ -28,9 +29,11 @@ import com.neuroid.tracker.utils.NIDTime
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
+import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -284,6 +287,46 @@ class AdvancedDeviceIDManagerServiceTest {
         }
 
     @Test
+    fun testGetRemoteID_creates_FingerprintFactory_when_no_fpjsClient_provided() =
+        runTest(timeout = Duration.parse("120s")) {
+            val validRID = "Valid RID Key"
+
+            mockkConstructor(FingerprintFactory::class)
+            val mockedFPJSClientFromFactory = getMockedFPJSClient(validRID, null, "sealedResult")
+            every {
+                anyConstructed<FingerprintFactory>().createInstance(any())
+            } returns mockedFPJSClientFromFactory
+
+            try {
+                val mocks =
+                    buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
+                        networkServiceResult = Triple("", true, ""),
+                        useNullFpjsClient = true,
+                    ) { e: NIDEventModel ->
+                        assert(e.type == ADVANCED_DEVICE_REQUEST) {
+                            "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}"
+                        }
+                        assert(e.rid == validRID) {
+                            "Expected event requestID to be $validRID, found ${e.rid}"
+                        }
+                    }
+                val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
+
+                // need to let the job complete so the verification step can commence.
+                // we do this with an unconfined dispatcher.
+                val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
+
+                job?.invokeOnCompletion {
+                    verify(exactly = 1) {
+                        anyConstructed<FingerprintFactory>().createInstance(any())
+                    }
+                }
+            } finally {
+                unmockkConstructor(FingerprintFactory::class)
+            }
+        }
+
+    @Test
     fun chooseUrl() {
         val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey()
         val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
@@ -362,6 +405,8 @@ class AdvancedDeviceIDManagerServiceTest {
         fpjsResponse: Triple<String?, String?, String?> = Triple(null, null, null),
         advancedDeviceKey: String? = null,
         useAdvancedDeviceProxy: Boolean = false,
+        // when true, fpjsClient constructor arg will be null, forcing use of FingerprintFactory
+        useNullFpjsClient: Boolean = false,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNidTime = mockk<NIDTime>()
@@ -390,7 +435,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 "",
                 getMockedConfigService(),
                 advancedDeviceKey,
-                mockedFPJSClient,
+                if (useNullFpjsClient) null else mockedFPJSClient,
                 useAdvancedDeviceProxy = useAdvancedDeviceProxy,
                 mockedNidTime,
             )
@@ -593,14 +638,14 @@ class AdvancedDeviceIDManagerServiceTest {
         successResponse: String?,
         errorResponse: String?,
         sealedResult: String?,
-    ): FingerprintJS {
-        val mockedFPJSClient = mockk<FingerprintJS>()
+    ): Fingerprint {
+        val mockedFPJSClient = mockk<Fingerprint>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
-                val successListener = args[1] as (FingerprintJSProResponse) -> Unit
-                val mockSuccessResponse = mockk<FingerprintJSProResponse>()
+                val successListener = args[1] as (FingerprintResponse) -> Unit
+                val mockSuccessResponse = mockk<FingerprintResponse>()
                 every { mockSuccessResponse.sealedResult } returns sealedResult
-                every { mockSuccessResponse.requestId } returns successResponse
+                every { mockSuccessResponse.eventId } returns successResponse
                 successListener(mockSuccessResponse)
             }
             if (errorResponse != null) {
