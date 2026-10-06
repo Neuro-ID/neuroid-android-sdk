@@ -13,6 +13,7 @@ class Login: LayoutActivity() {
 
     fun login(userId: String) {
         ApplicationMain.isLoggedIn = true
+        NeuroID.getInstance()?.identify(userId)
         startActivity(Intent(this, Instructions::class.java))
     }
 

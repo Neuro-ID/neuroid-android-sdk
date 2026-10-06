@@ -14,11 +14,9 @@ class ApplicationMain : Application() {
         var registeredSessionId = 1
         var registeredUserID = 1
         var registeredUserName = "regUser-"
-        var sessionName = "sessionName-"
     }
 
     fun resetAll() {
-        // userEnteredId = ""
         isApplicationSubmitted = false
         isLoggedIn = false
     }
