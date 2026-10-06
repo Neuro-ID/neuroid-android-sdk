@@ -31,7 +31,6 @@ class Instructions : AppCompatActivity() {
             binding.startApplicationButton.alpha = 0.5f
         }
         binding.startApplicationButton.setOnClickListener {
-            NeuroID.getInstance()?.startAppFlow(siteID="form_hares612", userID="${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
             startActivity(Intent(this, PersonalInformation::class.java))
         }
         binding.sendMoneyButton.setOnClickListener {
@@ -65,8 +64,6 @@ class Instructions : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         ApplicationMain.dataManager.clearData()
-        NeuroID.getInstance()?.getUserID()?.let {userId ->
-            NeuroID.getInstance()?.startAppFlow("form_bench881", "${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
-        }
+        NeuroID.getInstance()?.startSession { println("startSession onResume() ${it.started} ${it.identityId}") }
     }
 }

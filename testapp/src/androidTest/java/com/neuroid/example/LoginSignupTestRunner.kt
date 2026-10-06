@@ -328,7 +328,7 @@ class LoginSignupTestRunner {
 
             // signup page
             // personal information
-            setClipboardText("${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
+            setClipboardText("${ApplicationMain.registeredSessionId}")
             Espresso.onView(ViewMatchers.withId(R.id.email)).perform(ViewActions.click())
             Espresso.onView(ViewMatchers.withId(R.id.email))
                 .perform(CustomViewActions().pasteText())
