@@ -31,11 +31,15 @@ class Splash: LayoutActivity() {
             binding.login.alpha = 0.5f
         }
         binding.login.setOnClickListener {
-            NeuroID.getInstance()?.startAppFlow("form_parks912", "${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
+            NeuroID.getInstance()?.startSession{
+                println("NeuroID started from login button click ${it.identityId} ${it.started}")
+            }
             startActivity(Intent(this, Login::class.java))
         }
         binding.signup.setOnClickListener {
-            NeuroID.getInstance()?.startAppFlow("form_skein469", "${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
+            NeuroID.getInstance()?.startSession{
+                println("NeuroID started from signup button click ${it.identityId} ${it.started}")
+            }
             startActivity(Intent(this, SignUp::class.java))
         }
         val permissionsRequests = mutableListOf<String>()

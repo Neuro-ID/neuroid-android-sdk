@@ -51,8 +51,8 @@ class LoginSignupTestRunner {
     companion object {
         val eventCountVariance = 20
         var endSleep = 10000L
-        var signupEventCount = 488
-        var loginEventCount = 438
+        var signupEventCount = 542
+        var loginEventCount = 465
 
         @BeforeClass
         @JvmStatic
@@ -328,7 +328,7 @@ class LoginSignupTestRunner {
 
             // signup page
             // personal information
-            setClipboardText("${ApplicationMain.sessionName}${ApplicationMain.registeredSessionId}")
+            setClipboardText("${ApplicationMain.registeredSessionId}")
             Espresso.onView(ViewMatchers.withId(R.id.email)).perform(ViewActions.click())
             Espresso.onView(ViewMatchers.withId(R.id.email))
                 .perform(CustomViewActions().pasteText())
