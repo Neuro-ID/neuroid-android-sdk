@@ -8,8 +8,8 @@ data class ApplicationMetaData(
     val rnVersion: String = "",
     val minOSVersion: Int = -1,
 ) {
-    fun toList(): List<Map<String, Any>> {
-        return listOf(
+    fun toList(): List<Map<String, Any>> =
+        listOf(
             mapOf(
                 "n" to "rnVersion",
                 "v" to rnVersion,
@@ -35,5 +35,4 @@ data class ApplicationMetaData(
                 "v" to applicationName,
             ),
         )
-    }
 }

@@ -11,7 +11,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
-import androidx.annotation.RequiresApi
 import androidx.core.view.forEach
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
@@ -482,8 +481,8 @@ class AdditionalListeners(
         idName: String,
         lastSelectListener: AdapterView.OnItemSelectedListener?,
         simpleClassName: String,
-    ): AdapterView.OnItemSelectedListener {
-        return object : AdapterView.OnItemSelectedListener {
+    ): AdapterView.OnItemSelectedListener =
+        object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 adapter: AdapterView<*>?,
                 viewList: View?,
@@ -508,14 +507,13 @@ class AdditionalListeners(
                 lastSelectListener?.onNothingSelected(p0)
             }
         }
-    }
 
     internal fun addSelectOnClickListener(
         neuroID: NeuroID,
         idName: String,
         lastClickListener: AdapterView.OnItemClickListener?,
-    ): AdapterView.OnItemClickListener {
-        return AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
+    ): AdapterView.OnItemClickListener =
+        AdapterView.OnItemClickListener { adapter, viewList, position, p3 ->
             lastClickListener?.onItemClick(adapter, viewList, position, p3)
 
             neuroID.captureEvent(
@@ -529,9 +527,7 @@ class AdditionalListeners(
                 v = "$position",
             )
         }
-    }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     internal fun addExtraActionMenuListener(
         neuroID: NeuroID,
         view: EditText,
@@ -547,8 +543,8 @@ class AdditionalListeners(
         }
     }
 
-    internal fun addOnHierarchyChangeListener(): ViewGroup.OnHierarchyChangeListener {
-        return object : ViewGroup.OnHierarchyChangeListener {
+    internal fun addOnHierarchyChangeListener(): ViewGroup.OnHierarchyChangeListener =
+        object : ViewGroup.OnHierarchyChangeListener {
             override fun onChildViewAdded(
                 parent: View?,
                 child: View?,
@@ -574,5 +570,4 @@ class AdditionalListeners(
                 )
             }
         }
-    }
 }

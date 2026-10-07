@@ -730,10 +730,11 @@ class NeuroID
 
         internal fun captureApplicationMetaData() {
             getApplicationContext()?.let {
-                val appInfo = getAppMetaData(
-                    it,
-                    rnVersion,
-                )
+                val appInfo =
+                    getAppMetaData(
+                        it,
+                        rnVersion,
+                    )
                 captureEvent(
                     queuedEvent = true,
                     p = sharedPrefsDefaults.getPlatform(),

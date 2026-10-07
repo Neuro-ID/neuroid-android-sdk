@@ -78,15 +78,14 @@ class NIDMetaData(
             0
         }
 
-    private fun getWifiStatus(context: Context): Boolean? {
-        return try {
+    private fun getWifiStatus(context: Context): Boolean? =
+        try {
             val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
             wifiManager.isWifiEnabled
         } catch (ex: Exception) {
             // No Wifi Permissions
             null
         }
-    }
 
     fun toJson(): JSONObject {
         val jsonObject = JSONObject()

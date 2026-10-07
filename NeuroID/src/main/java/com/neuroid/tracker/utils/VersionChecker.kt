@@ -1,5 +1,6 @@
 package com.neuroid.tracker.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,12 +15,13 @@ class VersionChecker(
     fun isBuildVersionGreaterThanOrEqualTo31(): Boolean = sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.S
 }
 
+@SuppressLint("NewApi")
 fun getAppMetaData(
     context: Context,
     rnVersion: String,
     sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
-): ApplicationMetaData? {
-    return try {
+): ApplicationMetaData? =
+    try {
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
         val versionCode =
@@ -41,4 +43,3 @@ fun getAppMetaData(
         e.printStackTrace()
         null
     }
-}

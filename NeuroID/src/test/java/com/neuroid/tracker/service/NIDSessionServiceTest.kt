@@ -51,11 +51,12 @@ class NIDSessionServiceTest {
     )
 
     private fun setNeuroIDInstance() {
-        NeuroID.Builder(
-            null,
-            "key_test_fake1234",
-            false,
-        ).build()
+        NeuroID
+            .Builder(
+                null,
+                "key_test_fake1234",
+                false,
+            ).build()
     }
 
     private fun buildMockClasses(): MockedServices {
@@ -102,14 +103,15 @@ class NIDSessionServiceTest {
 
     private fun createSessionServiceInstance(
         mockedNeuroID: NeuroID,
-        configService: ConfigService = getMockedConfigService(
-            isSessionFlowSampled = true,
-        ),
+        configService: ConfigService =
+            getMockedConfigService(
+                isSessionFlowSampled = true,
+            ),
         identifierService: NIDIdentifierService = getMockedIdentifierService(),
         validationService: NIDValidationService = getMockedValidationService(),
         stateStore: StateStore = StateStore(),
-    ): NIDSessionService {
-        return NIDSessionService(
+    ): NIDSessionService =
+        NIDSessionService(
             getMockedLogger(),
             mockedNeuroID,
             configService,
@@ -118,7 +120,6 @@ class NIDSessionServiceTest {
             validationService,
             stateStore,
         )
-    }
 
     // SETUP/TAKEDOWN
     @Before
@@ -1022,11 +1023,12 @@ class NIDSessionServiceTest {
         every { mockedConfigService.clearSiteIDSampleMap(any()) } just runs
 
         val stateStore = StateStore().also { it.setIdentityId("someID") }
-        val sessionService = createSessionServiceInstance(
-            mockedNeuroID,
-            configService = mockedConfigService,
-            stateStore = stateStore,
-        )
+        val sessionService =
+            createSessionServiceInstance(
+                mockedNeuroID,
+                configService = mockedConfigService,
+                stateStore = stateStore,
+            )
 
         sessionService.clearSessionVariables()
 

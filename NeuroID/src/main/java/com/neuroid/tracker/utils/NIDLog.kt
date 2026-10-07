@@ -74,13 +74,12 @@ object NIDLog {
     private fun appendTag(
         tag: String? = null,
         levelTag: String,
-    ): String {
-        return if (tag != null) {
+    ): String =
+        if (tag != null) {
             "$levelTag $tag"
         } else {
             levelTag
         }
-    }
 
     const val CHECK_BOX_CHANGE_TAG = "CheckBoxChange"
     const val CHECK_BOX_ID = "CheckBoxID:"
