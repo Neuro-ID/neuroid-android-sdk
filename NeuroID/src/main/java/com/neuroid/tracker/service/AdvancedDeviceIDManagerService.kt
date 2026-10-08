@@ -48,6 +48,9 @@ internal class AdvancedDeviceIDManager(
     private val useAdvancedDeviceProxy: Boolean,
     val nidTime: NIDTime = NIDTime(),
     private val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
+    // only for testing purposes, lets tests substitute a mocked FingerprintFactory without
+    // invoking its real constructor (which has side effects incompatible with JVM unit tests)
+    private val fingerprintFactoryProvider: (Context) -> FingerprintFactory = { ctx -> FingerprintFactory(applicationContext = ctx) },
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
@@ -141,7 +144,7 @@ internal class AdvancedDeviceIDManager(
             if (fpjsClient != null) {
                 fpjsClient
             } else {
-                FingerprintFactory(applicationContext = context)
+                fingerprintFactoryProvider(context)
                     .createInstance(
                         Configuration(
                             apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,

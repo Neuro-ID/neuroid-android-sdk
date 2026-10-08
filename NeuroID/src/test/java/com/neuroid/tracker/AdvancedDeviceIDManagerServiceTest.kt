@@ -29,11 +29,9 @@ import com.neuroid.tracker.utils.NIDTime
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
-import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -291,38 +289,39 @@ class AdvancedDeviceIDManagerServiceTest {
         runTest(timeout = Duration.parse("120s")) {
             val validRID = "Valid RID Key"
 
-            mockkConstructor(FingerprintFactory::class)
+            // mockk() allocates this instance via Objenesis, bypassing the real
+            // FingerprintFactory constructor (which has side effects incompatible with
+            // JVM unit tests). mockkConstructor() can't help here since it only intercepts
+            // method calls on an instance, not the constructor body itself.
+            val mockedFingerprintFactory = mockk<FingerprintFactory>()
             val mockedFPJSClientFromFactory = getMockedFPJSClient(validRID, null, "sealedResult")
             every {
-                anyConstructed<FingerprintFactory>().createInstance(any())
+                mockedFingerprintFactory.createInstance(any())
             } returns mockedFPJSClientFromFactory
 
-            try {
-                val mocks =
-                    buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
-                        networkServiceResult = Triple("", true, ""),
-                        useNullFpjsClient = true,
-                    ) { e: NIDEventModel ->
-                        assert(e.type == ADVANCED_DEVICE_REQUEST) {
-                            "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}"
-                        }
-                        assert(e.rid == validRID) {
-                            "Expected event requestID to be $validRID, found ${e.rid}"
-                        }
+            val mocks =
+                buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
+                    networkServiceResult = Triple("", true, ""),
+                    useNullFpjsClient = true,
+                    fingerprintFactoryProvider = { mockedFingerprintFactory },
+                ) { e: NIDEventModel ->
+                    assert(e.type == ADVANCED_DEVICE_REQUEST) {
+                        "Expected event type to be ${ADVANCED_DEVICE_REQUEST}, found ${e.type}"
                     }
-                val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
-
-                // need to let the job complete so the verification step can commence.
-                // we do this with an unconfined dispatcher.
-                val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
-
-                job?.invokeOnCompletion {
-                    verify(exactly = 1) {
-                        anyConstructed<FingerprintFactory>().createInstance(any())
+                    assert(e.rid == validRID) {
+                        "Expected event requestID to be $validRID, found ${e.rid}"
                     }
                 }
-            } finally {
-                unmockkConstructor(FingerprintFactory::class)
+            val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
+
+            // need to let the job complete so the verification step can commence.
+            // we do this with an unconfined dispatcher.
+            val job = advancedDeviceIDManagerService.getRemoteID("testKey", Dispatchers.Unconfined, 10)
+
+            job?.invokeOnCompletion {
+                verify(exactly = 1) {
+                    mockedFingerprintFactory.createInstance(any())
+                }
             }
         }
 
@@ -407,6 +406,7 @@ class AdvancedDeviceIDManagerServiceTest {
         useAdvancedDeviceProxy: Boolean = false,
         // when true, fpjsClient constructor arg will be null, forcing use of FingerprintFactory
         useNullFpjsClient: Boolean = false,
+        fingerprintFactoryProvider: ((Context) -> FingerprintFactory)? = null,
         saveEventTest: (e: NIDEventModel) -> Unit = {},
     ): Map<String, Any> {
         val mockedNidTime = mockk<NIDTime>()
@@ -437,7 +437,8 @@ class AdvancedDeviceIDManagerServiceTest {
                 advancedDeviceKey,
                 if (useNullFpjsClient) null else mockedFPJSClient,
                 useAdvancedDeviceProxy = useAdvancedDeviceProxy,
-                mockedNidTime,
+                nidTime = mockedNidTime,
+                fingerprintFactoryProvider = fingerprintFactoryProvider ?: { ctx -> FingerprintFactory(applicationContext = ctx) },
             )
 
         return mapOf(
