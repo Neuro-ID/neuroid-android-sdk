@@ -375,9 +375,10 @@ class RootHelperTest {
     @Test
     fun isEmulatorFilesPresent() {
         setupProbablyEmulatorTest()
-        every { mockedFileUtil.getFileNoPath(any()) } returns mockk {
-            every { exists() } returns true
-        }
+        every { mockedFileUtil.getFileNoPath(any()) } returns
+            mockk {
+                every { exists() } returns true
+            }
         assert(rootHelper.isProbablyEmulator())
     }
 

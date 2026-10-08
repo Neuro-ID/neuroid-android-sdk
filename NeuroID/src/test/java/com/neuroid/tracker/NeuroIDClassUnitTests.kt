@@ -129,16 +129,17 @@ open class NeuroIDClassUnitTests {
         // set NeuroID singleton to null, else the NeuroID already initialized error will occur and
         // fail test when NeuroID is built.
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration(
-                "key_test_fake1234",
-                false,
-                "",
-                true,
-                "",
-            ),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration(
+                    "key_test_fake1234",
+                    false,
+                    "",
+                    true,
+                    "",
+                ),
+            ).build()
     }
 
     private fun setNeuroIDMockedLogger(
@@ -240,9 +241,7 @@ open class NeuroIDClassUnitTests {
         warningCount = 0
     }
 
-    private fun getDeprecatedMessage(fnName: String): String {
-        return "**** NOTE: $fnName METHOD IS DEPRECATED"
-    }
+    private fun getDeprecatedMessage(fnName: String): String = "**** NOTE: $fnName METHOD IS DEPRECATED"
 
     // testing helper functions
     private fun assertErrorCount(count: Int) {
@@ -373,14 +372,15 @@ open class NeuroIDClassUnitTests {
     fun test_init_builderConfig_explicit_region_setsRegionAndProductionEndpoints() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration(
-                clientKey = "key_test_fake1234",
-                isAdvancedDevice = false,
-                region = NIDRegion.US_WEST_DEFAULT,
-            ),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration(
+                    clientKey = "key_test_fake1234",
+                    isAdvancedDevice = false,
+                    region = NIDRegion.US_WEST_DEFAULT,
+                ),
+            ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertEquals(NIDRegion.US_WEST_DEFAULT, instance?.region)
@@ -390,10 +390,11 @@ open class NeuroIDClassUnitTests {
     fun test_init_invalidClientKey_clearsKeyAndSetsInvalidTabID() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("invalid_key", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("invalid_key", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertEquals("", instance?.clientKey)
@@ -404,10 +405,11 @@ open class NeuroIDClassUnitTests {
     fun test_init_liveClientKey_setsEnvironmentLive() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_live_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("key_live_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertEquals("LIVE", NeuroID.environment)
     }
@@ -416,10 +418,11 @@ open class NeuroIDClassUnitTests {
     fun test_init_testClientKey_setsEnvironmentTest() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertEquals("TEST", NeuroID.environment)
     }
@@ -428,10 +431,11 @@ open class NeuroIDClassUnitTests {
     fun test_init_nullApplication_doesNotInitialiseApplicationDependentServices() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val instance = NeuroID.getInternalInstance()
         // metaData and nidCallActivityListener are only set inside application?.let block
@@ -443,10 +447,11 @@ open class NeuroIDClassUnitTests {
     fun test_init_validKey_tabIDDoesNotContainInvalidSuffix() {
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val tabID = NeuroID.getInternalInstance()?.tabID
         assert(tabID?.contains("-invalid-client-key") == false)
@@ -458,10 +463,11 @@ open class NeuroIDClassUnitTests {
         // configService, dataStore, identifierService are always initialised regardless of application
         NeuroID._isSDKStarted = false
         NeuroID.setSingletonNull()
-        NeuroID.BuilderConfig(
-            null,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                null,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertNotNull(instance?.configService)
@@ -548,10 +554,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val instance = NeuroID.getInternalInstance()
         assertNotNull(instance)
@@ -564,10 +571,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sessionService)
     }
@@ -578,10 +586,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sharedPrefsDefaults)
     }
@@ -592,10 +601,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.nidCallActivityListener)
     }
@@ -606,10 +616,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val networkType = NeuroID.getInternalInstance()?.networkConnectionType
         assertNotNull(networkType)
@@ -622,10 +633,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertEquals(false, NeuroID.getInternalInstance()?.isConnected)
     }
@@ -641,10 +653,11 @@ open class NeuroIDClassUnitTests {
         every { mockedNetworkInfo.isConnectedOrConnecting } returns true
         every { mockedConnectivityManager.activeNetworkInfo } returns mockedNetworkInfo
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         assertEquals(true, NeuroID.getInternalInstance()?.isConnected)
     }
@@ -655,10 +668,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         verify(exactly = 1) {
             anyConstructed<NIDSharedPrefsDefaults>().resetClientID()
@@ -680,10 +694,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val mockedConfigService = mockk<ConfigService>()
         every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = true)
@@ -711,10 +726,11 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         val mockedApplication = buildMockedApplication()
 
-        NeuroID.BuilderConfig(
-            mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
-        ).build()
+        NeuroID
+            .BuilderConfig(
+                mockedApplication,
+                NIDConfiguration("key_test_fake1234", false, "", true, NeuroID.PRODUCTION),
+            ).build()
 
         val mockedConfigService = mockk<ConfigService>()
         every { mockedConfigService.configCache } returns NIDRemoteConfig(callInProgress = false)

@@ -7,7 +7,11 @@ class NIDRuntimeProviderTest {
     fun testExecuteCommand() {
         val runtimeProvider = NIDSystemRuntimeProvider()
         val process = runtimeProvider.executeCommand("echo Hello, World!")
-        val result = process.inputStream.bufferedReader().readText().trim()
+        val result =
+            process.inputStream
+                .bufferedReader()
+                .readText()
+                .trim()
         assert(result == "Hello, World!")
     }
 
@@ -16,7 +20,11 @@ class NIDRuntimeProviderTest {
         val runtimeProvider = NIDSystemRuntimeProvider()
         val command = arrayOf("echo", "Hello, World!")
         val process = runtimeProvider.executeCommand(command)
-        val result = process.inputStream.bufferedReader().readText().trim()
+        val result =
+            process.inputStream
+                .bufferedReader()
+                .readText()
+                .trim()
         assert(result == "Hello, World!")
     }
 

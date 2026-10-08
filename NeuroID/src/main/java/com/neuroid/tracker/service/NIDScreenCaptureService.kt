@@ -43,21 +43,24 @@ class NIDScreenCaptureService(
         // setup screen recording callback for API 35+
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             logger.d(TAG, "Setting up native ScreenCapture (API ${sdkVersionProvider.getSdkInt()})")
-            val hasPermission = ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.DETECT_SCREEN_RECORDING,
-            ) == PackageManager.PERMISSION_GRANTED
+            val hasPermission =
+                ActivityCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.DETECT_SCREEN_RECORDING,
+                ) == PackageManager.PERMISSION_GRANTED
             if (hasPermission) {
-                val recordingConsumer = Consumer<Int> { state ->
-                    val isRecording = state == android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE
-                    logger.d(TAG, "Screen recording state changed: isRecording=$isRecording")
-                    listenerRecording.onScreenRecorded(isRecording)
-                }
+                val recordingConsumer =
+                    Consumer<Int> { state ->
+                        val isRecording = state == android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE
+                        logger.d(TAG, "Screen recording state changed: isRecording=$isRecording")
+                        listenerRecording.onScreenRecorded(isRecording)
+                    }
                 screenRecordingCallback = recordingConsumer
-                val currentState = activity.windowManager.addScreenRecordingCallback(
-                    activity.mainExecutor,
-                    recordingConsumer,
-                )
+                val currentState =
+                    activity.windowManager.addScreenRecordingCallback(
+                        activity.mainExecutor,
+                        recordingConsumer,
+                    )
                 // Notify listener immediately if recording is already in progress at registration time
                 if (currentState == android.view.WindowManager.SCREEN_RECORDING_STATE_VISIBLE) {
                     logger.d(TAG, "Screen recording already in progress at registration time")
@@ -70,10 +73,11 @@ class NIDScreenCaptureService(
         // setup screen capture callback for API 34+
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // API 34+ — native screenshot detection
-            val hasPermission = ActivityCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.DETECT_SCREEN_CAPTURE,
-            ) == PackageManager.PERMISSION_GRANTED
+            val hasPermission =
+                ActivityCompat.checkSelfPermission(
+                    activity,
+                    Manifest.permission.DETECT_SCREEN_CAPTURE,
+                ) == PackageManager.PERMISSION_GRANTED
 
             if (hasPermission) {
                 setupNativeScreenCaptureCallback(activity, listener)
@@ -109,16 +113,18 @@ class NIDScreenCaptureService(
         registeredActivity = null
     }
 
+    @SuppressLint("MissingPermission", "NewApi", "InlinedApi")
     private fun teardownScreenCaptureCallback() {
         val activity = registeredActivity
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             try {
                 val callback = screenCaptureCallback
                 if (callback != null && activity != null) {
-                    val hasPermission = ActivityCompat.checkSelfPermission(
-                        activity,
-                        Manifest.permission.DETECT_SCREEN_CAPTURE,
-                    ) == PackageManager.PERMISSION_GRANTED
+                    val hasPermission =
+                        ActivityCompat.checkSelfPermission(
+                            activity,
+                            Manifest.permission.DETECT_SCREEN_CAPTURE,
+                        ) == PackageManager.PERMISSION_GRANTED
 
                     if (hasPermission) {
                         activity.unregisterScreenCaptureCallback(
@@ -135,6 +141,7 @@ class NIDScreenCaptureService(
         }
     }
 
+    @SuppressLint("MissingPermission", "NewApi")
     private fun tearDownRecordingCallback() {
         val activity = registeredActivity
         if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -173,10 +180,11 @@ class NIDScreenCaptureService(
         activity: Activity,
         listenerScreen: ScreenCaptureListener,
     ) {
-        val callback = Activity.ScreenCaptureCallback {
-            logger.d(TAG, "Screenshot detected via native ScreenCaptureCallback")
-            listenerScreen.onScreenCaptured()
-        }
+        val callback =
+            Activity.ScreenCaptureCallback {
+                logger.d(TAG, "Screenshot detected via native ScreenCaptureCallback")
+                listenerScreen.onScreenCaptured()
+            }
 
         screenCaptureCallback = callback
         activity.registerScreenCaptureCallback(

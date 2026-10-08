@@ -44,14 +44,15 @@ class NIDGlobalEventCallbackTest {
         singleTargetListenerRegister = mockk(relaxed = true)
         // Clear registeredViews before each test
         NeuroID.registeredViews.clear()
-        callback = NIDGlobalEventCallback(
-            windowCallback,
-            eventManager,
-            viewMainContainer,
-            neuroID,
-            logger,
-            singleTargetListenerRegister,
-        )
+        callback =
+            NIDGlobalEventCallback(
+                windowCallback,
+                eventManager,
+                viewMainContainer,
+                neuroID,
+                logger,
+                singleTargetListenerRegister,
+            )
     }
 
     @After
