@@ -686,7 +686,7 @@ class NeuroID
         /**
          * ported from the iOS implementation
          */
-        @Deprecated("startAppFlow is deprecated and will be removed in a future release.")
+        @Deprecated(" startAppFlow is deprecated and will be removed in a future release.")
         override fun startAppFlow(
             siteID: String,
             userID: String?,
