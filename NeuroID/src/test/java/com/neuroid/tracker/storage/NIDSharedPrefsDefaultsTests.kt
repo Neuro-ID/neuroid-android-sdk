@@ -115,31 +115,6 @@ class NIDSharedPrefsDefaultsTests {
     }
 
     @Test
-    fun getSessionID() {
-        val (context, _, _) = createMockContext(sharedPrefsStringValue = "test")
-        val t = NIDSharedPrefsDefaults(context, dispatcher = Dispatchers.Unconfined)
-        assert(t.getSessionID() == "test")
-    }
-
-    @Test
-    fun getNewSessionID() {
-        val (context, mockSharedPreferences, editor) = createMockContext(withEditor = true)
-        val uuidProvider = createMockUuidProvider()
-        val t = NIDSharedPrefsDefaults(
-            context,
-            uuidProvider = uuidProvider,
-            dispatcher = Dispatchers.Unconfined,
-        )
-        t.getNewSessionID()
-        verify {
-            uuidProvider.randomUUID()
-            mockSharedPreferences.edit()
-            editor?.putString("NID_SID_KEY", "new-uuid")
-            editor?.apply()
-        }
-    }
-
-    @Test
     fun getClientID_no_stored_cid() {
         val uuidProvider = createMockUuidProvider()
         val (context, mockSharedPreferences, editor) = createMockContext(

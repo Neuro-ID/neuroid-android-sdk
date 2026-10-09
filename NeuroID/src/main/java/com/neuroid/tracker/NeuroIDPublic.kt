@@ -17,21 +17,6 @@ interface NeuroIDPublic {
     fun getClientID(): String
 
     /**
-     * Update the test event sender endpoint to a new collection endpoint. This will generally be
-     * set to the mock collection endpoint. The remote config endpoint will be updated to point to
-     * the dev remote config endpoint.
-     */
-    @Deprecated("setTestURL is deprecated")
-    fun setTestURL(newEndpoint: String)
-
-    /**
-     * Set a dev testing URL for testing.
-     */
-    @VisibleForTesting
-    @Deprecated("setTestingNeuroIDDevURL is deprecated")
-    fun setTestingNeuroIDDevURL()
-
-    /**
      * Return the currently set registered user id.
      */
     fun getRegisteredUserID(): String
@@ -75,36 +60,9 @@ interface NeuroIDPublic {
     fun getIdentityId(): String
 
     /**
-     * get the currently set session id
-     */
-    @Deprecated(
-        "getSessionID is deprecated",
-        ReplaceWith("getIdentityId()"),
-    )
-    fun getSessionID(): String
-
-    /**
-     * Return the currently set user id.
-     */
-    @Deprecated(
-        "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-        ReplaceWith("getIdentityId()"),
-    )
-    fun getUserID(): String
-
-    /**
      * Set a user id.
      */
     fun identify(userID: String): Boolean
-
-    /**
-     * Set a user id.
-     */
-    @Deprecated(
-        "setUserID is deprecated, please use `identify` instead.",
-        ReplaceWith("identify(userID)"),
-    )
-    fun setUserID(userID: String): Boolean
 
     /**
      * Start the SDK, start a new session and use the userID as the sessionID. Return true if
@@ -163,13 +121,6 @@ interface NeuroIDPublic {
         sessionID: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     )
-
-    /**
-     * This should be called when the user attempts to login. Returns true always. Returns false if
-     * exception is thrown during the process.
-     */
-    @Deprecated("attemptedLogin is deprecated and will be removed in a future release.")
-    fun attemptedLogin(attemptedRegisteredUserId: String? = null): Boolean
 
     /**
      * Start a new app flow session with the specified site id argument for the flow
