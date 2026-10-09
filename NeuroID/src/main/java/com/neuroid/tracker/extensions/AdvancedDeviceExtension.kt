@@ -2,9 +2,7 @@ package com.neuroid.tracker.extensions
 
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.NeuroID.Companion.fpjsClientOverride
-import com.neuroid.tracker.NeuroIDPublic
 import com.neuroid.tracker.models.NIDRegion
-import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.service.AdvancedDeviceIDManager
 import com.neuroid.tracker.service.AdvancedDeviceIDManagerService
 import com.neuroid.tracker.service.getADVNetworkService

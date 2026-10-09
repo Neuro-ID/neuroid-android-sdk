@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -73,7 +72,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
-import kotlin.ReplaceWith
 
 class NeuroID
     private constructor(

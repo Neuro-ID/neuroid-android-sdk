@@ -55,9 +55,9 @@ class NIDSessionServiceTest {
         NeuroID.BuilderConfig(
             null,
             NIDConfiguration(
-            "key_test_fake1234",
-            false,
-            )
+                "key_test_fake1234",
+                false,
+            ),
         ).build()
     }
 

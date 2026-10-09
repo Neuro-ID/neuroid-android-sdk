@@ -124,7 +124,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false)
+            NIDConfiguration("key_test_fake1234", false),
         ).build()
     }
 
