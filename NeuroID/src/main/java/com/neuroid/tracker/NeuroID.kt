@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import androidx.annotation.VisibleForTesting
 import com.fingerprintjs.android.fpjs_pro.FingerprintJS
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
@@ -19,7 +18,6 @@ import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
 import com.neuroid.tracker.compose.JetpackComposeImpl
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CLOSE_SESSION
 import com.neuroid.tracker.events.CREATE_SESSION
@@ -74,7 +72,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 import kotlin.Deprecated
-import kotlin.ReplaceWith
 
 class NeuroID
     private constructor(
@@ -323,35 +320,7 @@ class NeuroID
             }
         }
 
-        @Deprecated("Do not use. Please use BuilderConfig instead.")
-        data class Builder(
-            val application: Application? = null,
-            val clientKey: String = "",
-            val isAdvancedDevice: Boolean = false,
-            val advancedDeviceKey: String? = null,
-            val serverEnvironment: String = PRODUCTION,
-            val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
-        ) {
-            fun build() {
-                val neuroID =
-                    NeuroID(
-                        application,
-                        clientKey,
-                        isAdvancedDevice,
-                        advancedDeviceKey,
-                        useAdvancedDeviceProxy = true,
-                        region,
-                    )
-                setNeuroIDInstance(neuroID)
-            }
-        }
-
         companion object {
-            const val PRODUCTION = "production"
-            const val DEVELOPMENT = "development"
-            const val TEST = "test"
-            const val PRODSCRIPT_DEVCOLLECTION = "prodscriptdevcollection"
-
             // public exposed variable to determine if logs should show see
             //  `enableLogging`
             var showLogs: Boolean = true
@@ -464,7 +433,6 @@ class NeuroID
                     application,
                     clientKey,
                     isAdvancedDevice,
-                    PRODUCTION,
                 )
         }
 
@@ -488,16 +456,6 @@ class NeuroID
             nidJobServiceManager = serviceManager
         }
 
-        @VisibleForTesting
-        override fun setTestURL(newEndpoint: String) {
-            // Deprecated
-        }
-
-        @VisibleForTesting
-        override fun setTestingNeuroIDDevURL() {
-            // Deprecated
-        }
-
         internal fun setupListeners() {
             getApplicationContext()?.let {
                 if (configService.configCache.callInProgress) {
@@ -519,33 +477,6 @@ class NeuroID
             captureEvent(type = LOG, level = "info", m = "Remote Config Retrieval Attempt Completed")
             logger.i(msg = "Remote Config Retrieval Attempt Completed")
             setupListeners()
-        }
-
-        @Deprecated("attemptedLogin is deprecated and will be removed in a future release.")
-        override fun attemptedLogin(attemptedRegisteredUserId: String?): Boolean {
-            captureEvent(
-                type = LOG,
-                level = "info",
-                m = "attemptedLogin attempt with attemptedRegisteredUserId:'${if (attemptedRegisteredUserId != null) {
-                    validationService.scrubIdentifier(attemptedRegisteredUserId)
-                } else {
-                    "null"
-                }}'",
-            )
-
-            val captured =
-                identifierService.setGenericUserID(
-                    this,
-                    ATTEMPTED_LOGIN,
-                    attemptedRegisteredUserId ?: "scrubbed-id-failed-validation",
-                    attemptedRegisteredUserId != null,
-                )
-
-            if (!captured) {
-                captureEvent(type = ATTEMPTED_LOGIN, uid = "scrubbed-id-failed-validation")
-            }
-
-            return true
         }
 
         internal fun checkThenCaptureAdvancedDevice(dispatcher: CoroutineDispatcher = Dispatchers.IO) {
@@ -639,25 +570,7 @@ class NeuroID
 
         override fun getIdentityId(): String = state.getIdentityId() ?: ""
 
-        @Deprecated(
-            "getUserID is deprecated",
-            ReplaceWith("getIdentityId()"),
-        )
-        override fun getSessionID(): String = state.getIdentityId() ?: ""
-
-        @Deprecated(
-            "getUserID is deprecated, Temporarily keeping this function for backwards compatibility, will be removed",
-            ReplaceWith("getIdentityId()"),
-        )
-        override fun getUserID() = identifierService.getIdentityId() ?: ""
-
         override fun identify(userID: String): Boolean = identifierService.setIdentityId(this, userID, true)
-
-        @Deprecated(
-            "setUserID is deprecated, please use `identify` instead.",
-            ReplaceWith("identify(userID)"),
-        )
-        override fun setUserID(userID: String): Boolean = identifierService.setIdentityId(this, userID, true)
 
         override fun getRegisteredUserID() = identifierService.getRegisteredUserID(this)
 
@@ -913,9 +826,6 @@ class NeuroID
                     nidJobServiceManager.sendEvents(true)
                 }
                 SET_REGISTERED_USER_ID -> {
-                    nidJobServiceManager.sendEvents(true)
-                }
-                ATTEMPTED_LOGIN -> {
                     nidJobServiceManager.sendEvents(true)
                 }
                 APPLICATION_METADATA -> {

@@ -282,7 +282,6 @@ internal fun getMockedConfigService(isSessionFlowSampled: Boolean = true): Confi
 internal fun getMockedSharedPreferenceDefaults(): NIDSharedPrefsDefaults {
     val mockedSharedPreferencesDefaults = mockk<NIDSharedPrefsDefaults>()
 
-    every { mockedSharedPreferencesDefaults.getNewSessionID() } returns ""
     every { mockedSharedPreferencesDefaults.getClientID() } returns ""
 
     every { mockedSharedPreferencesDefaults.getDeviceID() } returns ""

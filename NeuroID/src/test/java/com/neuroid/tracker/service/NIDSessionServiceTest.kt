@@ -19,6 +19,7 @@ import com.neuroid.tracker.getMockedNIDJobServiceManager
 import com.neuroid.tracker.getMockedNeuroID
 import com.neuroid.tracker.getMockedSharedPreferenceDefaults
 import com.neuroid.tracker.getMockedValidationService
+import com.neuroid.tracker.models.NIDConfiguration
 import com.neuroid.tracker.models.NIDEventModel
 import com.neuroid.tracker.models.SessionStartResult
 import com.neuroid.tracker.storage.NIDDataStoreManager
@@ -51,10 +52,12 @@ class NIDSessionServiceTest {
     )
 
     private fun setNeuroIDInstance() {
-        NeuroID.Builder(
+        NeuroID.BuilderConfig(
             null,
-            "key_test_fake1234",
-            false,
+            NIDConfiguration(
+                "key_test_fake1234",
+                false,
+            ),
         ).build()
     }
 
@@ -390,7 +393,7 @@ class NIDSessionServiceTest {
             sessionID = "BAD_ID",
         ) {
             isStarted = it.started
-            newID = it.sessionID
+            newID = it.identityId
         }
 
         assert(isStarted == false)
@@ -444,7 +447,7 @@ class NIDSessionServiceTest {
             sessionID = "updatedID",
         ) {
             isStarted = it.started
-            newID = it.sessionID
+            newID = it.identityId
         }
 
         assert(isStarted == true)
@@ -1064,7 +1067,7 @@ class NIDSessionServiceTest {
             testSiteID,
         ) {
             completionFuncSuccess = it.started
-            completionFuncID = it.sessionID
+            completionFuncID = it.identityId
         }
 
         assert(completionFuncSuccess == false)
@@ -1106,7 +1109,7 @@ class NIDSessionServiceTest {
             testSiteID,
         ) {
             completionFuncSuccess = it.started
-            completionFuncID = it.sessionID
+            completionFuncID = it.identityId
         }
 
         assert(completionFuncSuccess == false)
@@ -1161,7 +1164,7 @@ class NIDSessionServiceTest {
         }
 
         assert(completionFuncResult?.started == true)
-        assert(completionFuncResult?.sessionID == "GoodUID")
+        assert(completionFuncResult?.identityId == "GoodUID")
 
         verify(exactly = 1) {
             mockedNeuroID.checkThenCaptureAdvancedDevice(any())
@@ -1213,7 +1216,7 @@ class NIDSessionServiceTest {
         }
 
         assert(completionFuncResult?.started == true)
-        assert(completionFuncResult?.sessionID == "GoodUID")
+        assert(completionFuncResult?.identityId == "GoodUID")
 
         verify(exactly = 1) {
             mockedConfigService.updateIsSampledStatus(any(), testSiteID)
@@ -1231,7 +1234,7 @@ class NIDSessionServiceTest {
     }
 
     /**
-     * Test start app flow when the sdk is NOT already started AND a sessionID is passed
+     * Test start app flow when the sdk is NOT already started AND a identityId is passed
      *
      * NOTE: This method relies on `clearSendOldFlowEvents` & `startSession` which are tested in their own test.
      *       Immediate calling of the callback is assumed for this test
@@ -1275,7 +1278,7 @@ class NIDSessionServiceTest {
         }
 
         assert(completionFuncResult?.started == true)
-        assert(completionFuncResult?.sessionID == userID)
+        assert(completionFuncResult?.identityId == userID)
 
         verify(exactly = 1) {
             mockedNeuroID.addLinkedSiteID(testSiteID)
@@ -1400,7 +1403,7 @@ class NIDSessionServiceTest {
         throttleTest: Boolean = false,
     ) {
         Assert.assertEquals(startedExpectation, flowResult.started)
-        Assert.assertEquals(userID, flowResult.sessionID)
+        Assert.assertEquals(userID, flowResult.identityId)
         Assert.assertEquals(!startedExpectation, NeuroID.getInstance()?.isStopped())
 
         if (startedExpectation || throttleTest) {

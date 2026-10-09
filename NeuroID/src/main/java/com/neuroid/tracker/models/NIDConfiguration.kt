@@ -5,9 +5,5 @@ data class NIDConfiguration(
     val isAdvancedDevice: Boolean,
     val advancedDeviceKey: String? = null,
     val useAdvancedDeviceProxy: Boolean = true,
-    @Deprecated(
-        "serverEnvironment is deprecated",
-    )
-    val serverEnvironment: String = "production",
     val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
 )
