@@ -22,8 +22,7 @@ open class LayoutActivity: AppCompatActivity() {
                     val builder = AlertDialog.Builder(this@LayoutActivity)
                     builder.apply {
                         setMessage("NID client id:\n${NeuroID.getInstance()?.getClientID()}\n\n" +
-                                "NID session id:\n${NeuroID.getInstance()?.getSessionID()}\n\n" +
-                                "NID user id:\n${NeuroID.getInstance()?.getUserID()}\n\n" +
+                                "NID Identity ID:\n${NeuroID.getInstance()?.getIdentityId()}\n\n" +
                                 "NID screen:\n${screenName}\n\n" +
                                 "NID SDK:\n${NeuroID?.getInstance()?.getSDKVersion()}\n\n")
                         setNegativeButton(R.string.cancel,
@@ -53,7 +52,7 @@ open class LayoutActivity: AppCompatActivity() {
         val userId = dialog.findViewById<EditText>(R.id.user_id_text)
         val saveUserId = dialog.findViewById<Button>(R.id.save_user_id)
         saveUserId.setOnClickListener {
-            (application as ApplicationMain).setUserID(userId.text.toString())
+            (application as ApplicationMain).identify(userId.text.toString())
             dialog.dismiss()
         }
         dialog.show()

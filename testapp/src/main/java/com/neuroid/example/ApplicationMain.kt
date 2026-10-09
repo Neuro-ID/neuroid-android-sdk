@@ -40,8 +40,8 @@ class ApplicationMain : Application() {
         ).build()
     }
 
-    fun setUserID(userId: String) {
-        NeuroID.getInstance()?.setUserID(userId)
+    fun identify(userId: String) {
+        NeuroID.getInstance()?.identify(userId)
     }
 
     fun stopTracking() {

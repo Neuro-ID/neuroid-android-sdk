@@ -20,14 +20,14 @@ class SignUp: LayoutActivity() {
     }
 
     fun onContinueButtonFirst(userId: String) {
-        (application as ApplicationMain).setUserID(userId)
+        (application as ApplicationMain).identify(userId)
         val t = supportFragmentManager.beginTransaction()
         t.replace(R.id.signup_fragment, personalInformationTwoFragment)
         t.addToBackStack(null)
         t.commit()
     }
     fun onContinueButtonSecond(userId: String) {
-        (application as ApplicationMain).setUserID(userId)
+        (application as ApplicationMain).identify(userId)
         val t = supportFragmentManager.beginTransaction()
         t.replace(R.id.signup_fragment, personalInformationThreeFragment)
         t.addToBackStack(null)
