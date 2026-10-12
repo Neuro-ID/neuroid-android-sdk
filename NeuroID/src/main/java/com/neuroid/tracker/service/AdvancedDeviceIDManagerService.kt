@@ -201,12 +201,7 @@ internal class AdvancedDeviceIDManager(
                         val cachedValueString =
                             gson.toJson(
                                 mapOf(
-                                    "scr" to requestResponse.third,
                                     "key" to requestResponse.second,
-                                    "exp" to
-                                        (configService.configCache.advancedCookieExpiration * 1000) +
-                                        nidTime.getCurrentTimeMillis(), // 12
-                                    // hours from now
                                 ),
                             )
                         sharedPrefs.putString(NID_RID, cachedValueString)
@@ -249,7 +244,7 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Triple<Boolean, String, String?> =
+    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Pair<Boolean, String> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 tags = mapOf(
@@ -258,18 +253,17 @@ internal class AdvancedDeviceIDManager(
                     "requestStartTime" to nidTime.getCurrentTimeMillis(),
                 ),
                 listener = { result ->
-                    continuation.resume(Triple(true, result.requestId, result.sealedResult))
+                    continuation.resume(Pair(true, result.requestId))
                 },
                 errorListener = { error ->
                     continuation.resume(
-                        Triple(
+                        Pair(
                             false,
                             if (error.description != null) {
                                 error.description as String
                             } else {
                                 "FPJS Empty Failure"
                             },
-                            null,
                         ),
                     )
                 },

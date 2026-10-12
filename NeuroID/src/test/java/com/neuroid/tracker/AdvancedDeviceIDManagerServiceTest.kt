@@ -398,7 +398,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 networkServiceResult.second,
                 networkServiceResult.third,
             )
-        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second, fpjsResponse.third)
+        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second)
 
         val advancedDeviceIDManagerService =
             AdvancedDeviceIDManager(
@@ -449,7 +449,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 networkServiceResult.second,
                 networkServiceResult.third,
             )
-        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second, fpjsResponse.third)
+        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second)
 
         val advancedDeviceIDManagerService =
             AdvancedDeviceIDManager(
@@ -611,14 +611,12 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun getMockedFPJSClient(
         successResponse: String?,
         errorResponse: String?,
-        sealedResult: String?,
     ): FingerprintJS {
         val mockedFPJSClient = mockk<FingerprintJS>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
                 val successListener = args[1] as (FingerprintJSProResponse) -> Unit
                 val mockSuccessResponse = mockk<FingerprintJSProResponse>()
-                every { mockSuccessResponse.sealedResult } returns sealedResult
                 every { mockSuccessResponse.requestId } returns successResponse
                 successListener(mockSuccessResponse)
             }
