@@ -2545,7 +2545,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.sessionService = mockedSessionService
 
         var completionResult: SessionStartResult? = null
-        NeuroID.getInstance()?.startSession(sessionID = "session-abc") { result ->
+        NeuroID.getInstance()?.startSession(identityId = "session-abc") { result ->
             completionResult = result
         }
 
@@ -2564,7 +2564,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.sessionService = mockedSessionService
 
         var completionResult: SessionStartResult? = null
-        NeuroID.getInstance()?.startSession(sessionID = null) { result ->
+        NeuroID.getInstance()?.startSession(identityId = null) { result ->
             completionResult = result
         }
 
@@ -2696,7 +2696,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.getInternalInstance()?.sessionService = mockedSessionService
 
         // Provide sessionID but omit completion
-        NeuroID.getInstance()?.startSession(sessionID = "given-id")
+        NeuroID.getInstance()?.startSession(identityId = "given-id")
 
         verify(exactly = 1) { mockedSessionService.startSession(null, "given-id", any()) }
     }

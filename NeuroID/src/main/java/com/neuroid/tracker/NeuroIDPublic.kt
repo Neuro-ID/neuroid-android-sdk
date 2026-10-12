@@ -62,7 +62,7 @@ interface NeuroIDPublic {
     /**
      * Set a user id.
      */
-    fun identify(userID: String): Boolean
+    fun identify(identityId: String): Boolean
 
     /**
      * Start the SDK, start a new session and use the userID as the sessionID. Return true if
@@ -118,7 +118,7 @@ interface NeuroIDPublic {
      * indicating the started state of the SDK.
      */
     fun startSession(
-        sessionID: String? = null,
+        identityId: String? = null,
         completion: (SessionStartResult) -> Unit = {},
     )
 
