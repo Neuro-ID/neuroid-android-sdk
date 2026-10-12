@@ -124,7 +124,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
     }
 
@@ -135,10 +135,8 @@ open class NeuroIDClassUnitTests {
         NeuroID.BuilderConfig(
             null,
             NIDConfiguration(
-                "key_test_fake1234",
-                false,
-                "",
-                false,
+                clientKey = "key_test_fake1234",
+                useAdvancedDeviceProxy = false,
             ),
         ).build()
     }
@@ -379,7 +377,6 @@ open class NeuroIDClassUnitTests {
             null,
             NIDConfiguration(
                 clientKey = "key_test_fake1234",
-                isAdvancedDevice = false,
                 region = NIDRegion.US_WEST_DEFAULT,
             ),
         ).build()
@@ -394,7 +391,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("invalid_key", false, "", true),
+            NIDConfiguration(clientKey = "invalid_key"),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -408,7 +405,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_live_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_live_fake1234"),
         ).build()
 
         assertEquals("LIVE", NeuroID.environment)
@@ -420,7 +417,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertEquals("TEST", NeuroID.environment)
@@ -432,7 +429,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -447,7 +444,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val tabID = NeuroID.getInternalInstance()?.tabID
@@ -462,7 +459,7 @@ open class NeuroIDClassUnitTests {
         NeuroID.setSingletonNull()
         NeuroID.BuilderConfig(
             null,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -551,7 +548,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val instance = NeuroID.getInternalInstance()
@@ -567,7 +564,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sessionService)
@@ -581,7 +578,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.sharedPrefsDefaults)
@@ -595,7 +592,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertNotNull(NeuroID.getInternalInstance()?.nidCallActivityListener)
@@ -609,7 +606,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val networkType = NeuroID.getInternalInstance()?.networkConnectionType
@@ -625,7 +622,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertEquals(false, NeuroID.getInternalInstance()?.isConnected)
@@ -644,7 +641,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         assertEquals(true, NeuroID.getInternalInstance()?.isConnected)
@@ -658,7 +655,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         verify(exactly = 1) {
@@ -683,7 +680,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val mockedConfigService = mockk<ConfigService>()
@@ -714,7 +711,7 @@ open class NeuroIDClassUnitTests {
 
         NeuroID.BuilderConfig(
             mockedApplication,
-            NIDConfiguration("key_test_fake1234", false, "", true),
+            NIDConfiguration(clientKey = "key_test_fake1234"),
         ).build()
 
         val mockedConfigService = mockk<ConfigService>()
