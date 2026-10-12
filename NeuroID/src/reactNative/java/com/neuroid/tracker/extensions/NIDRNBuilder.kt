@@ -20,10 +20,10 @@ class NIDRNBuilder(
             application,
             NIDConfiguration(
                 clientKey = clientKey,
+                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
                 isAdvancedDevice = options[RNConfigOptions.isAdvancedDevice] as Boolean,
                 advancedDeviceKey = options[RNConfigOptions.advancedDeviceKey] as String,
                 useAdvancedDeviceProxy = options[RNConfigOptions.useAdvancedDeviceProxy] as Boolean,
-                region = NIDRegion.valueOf(options[RNConfigOptions.region] as String),
             ),
         ).build()
 

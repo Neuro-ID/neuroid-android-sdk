@@ -31,17 +31,16 @@ class ApplicationMain : Application() {
         NeuroID.BuilderConfig(
             this,
             NIDConfiguration(
-                "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+                clientKey = "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
+                region = NIDRegion.TEST,
                 isAdvancedDevice = true,
                 advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
-                useAdvancedDeviceProxy = true,
-                region = NIDRegion.TEST
             )
         ).build()
     }
 
-    fun setUserID(userId: String) {
-        NeuroID.getInstance()?.setUserID(userId)
+    fun identify(userId: String) {
+        NeuroID.getInstance()?.identify(userId)
     }
 
     fun stopTracking() {

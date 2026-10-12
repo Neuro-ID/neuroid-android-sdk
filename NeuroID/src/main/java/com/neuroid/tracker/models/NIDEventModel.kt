@@ -3,7 +3,6 @@ package com.neuroid.tracker.models
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.APPLICATION_METADATA
-import com.neuroid.tracker.events.ATTEMPTED_LOGIN
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.CALL_IN_PROGRESS
 import com.neuroid.tracker.events.CLOSE_SESSION
@@ -222,7 +221,6 @@ data class NIDEventModel(
                         "rid=${this.rid}, c=${this.c}, l=${this.l}, ct=${this.ct}, m=${this.m} scr=${this.scr?.substring(0, 15)}"
                 LOG -> contextString = "m=${this.m}, ts=${this.ts}, level=${this.level}"
                 NETWORK_STATE -> contextString = "iswifi=${this.isWifi}, isconnected=${this.isConnected}"
-                ATTEMPTED_LOGIN -> contextString = "uid=${this.uid}"
                 CALL_IN_PROGRESS -> contextString = "cp=${this.cp}, metadata=${this.attrs}"
                 APPLICATION_METADATA -> contextString = "attrs=${this.attrs}"
                 else -> {}
