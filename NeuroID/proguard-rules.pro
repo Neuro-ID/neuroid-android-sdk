@@ -66,6 +66,7 @@
 
 # required for API 34+.
 -keep class com.neuroid.tracker.NeuroIDPublic$DefaultImpls { *; }
+-keep class com.neuroid.tracker.compose.JetpackComposeImpl { *; }
 
 
 

@@ -15,7 +15,6 @@ android {
     }
     composeOptions {
         // developer.android.com/jetpack/androidx/releases/compose-kotlin (extension map)
-        // requires kotlin version 1.9.24, see root build.gradle for this change.
         kotlinCompilerExtensionVersion '1.5.14'
     }
 

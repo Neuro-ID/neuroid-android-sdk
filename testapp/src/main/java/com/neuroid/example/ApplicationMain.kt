@@ -35,7 +35,7 @@ class ApplicationMain : Application() {
                 isAdvancedDevice = true,
                 advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
                 useAdvancedDeviceProxy = true,
-                region = NIDRegion.TEST
+                region = NIDRegion.US_WEST_DEFAULT
             )
         ).build()
     }

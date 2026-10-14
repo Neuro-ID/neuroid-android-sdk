@@ -47,6 +47,12 @@ class Splash: LayoutActivity() {
             != PackageManager.PERMISSION_GRANTED) {
             permissionsRequests.add(Manifest.permission.READ_PHONE_STATE)
         }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.DETECT_SCREEN_RECORDING)
+            != PackageManager.PERMISSION_GRANTED) {
+            permissionsRequests.add(Manifest.permission.READ_PHONE_STATE)
+        }
+
         if (permissionsRequests.isNotEmpty()) {
             if (VERSION.SDK_INT > 22) {
                 requestPermissions(permissionsRequests.toTypedArray(), REQUEST_CODE)
