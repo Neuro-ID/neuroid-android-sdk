@@ -80,7 +80,7 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(!cachedID)
         verify(exactly = 1) {
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID)
         }
     }
 
@@ -94,13 +94,38 @@ class AdvancedDeviceIDManagerServiceTest {
 
         assert(!cachedID)
         verify(exactly = 1) {
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID)
         }
     }
 
     @Test
-    fun testGetCachedID_expired_id() {
-        val keyValue = "testingExp"
+    fun testGetCachedID_too_old_id() {
+        // request id timestamp older than the 90 day max age - should not send, should refresh
+        val timestamp = System.currentTimeMillis() - (91L * 24 * 60 * 60 * 1000)
+        val keyValue = "$timestamp.suffix"
+        val mocks =
+            buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
+                "{\"key\":\"$keyValue\", \"exp\":0}",
+            )
+        val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
+        val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
+        val mockedNID = mocks["mockedNeuroID"] as NeuroID
+
+        val cachedID = advancedDeviceIDManagerService.getCachedID()
+
+        assert(!cachedID)
+        verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST, 0)
+        verify(exactly = 1) {
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID)
+        }
+    }
+
+    @Test
+    fun testGetCachedID_expired_cache_window_but_within_max_age() {
+        // request id timestamp older than the 12 hour cache window but within the 90 day max age
+        // - should send the cached id and force a refresh
+        val timestamp = System.currentTimeMillis() - (24L * 60 * 60 * 1000)
+        val keyValue = "$timestamp.suffix"
         val mocks =
             buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                 "{\"key\":\"$keyValue\", \"exp\":0}",
@@ -115,20 +140,20 @@ class AdvancedDeviceIDManagerServiceTest {
         val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
         val mockedNID = mocks["mockedNeuroID"] as NeuroID
 
-        // even though the cached ID is expired, we still capture the cached event
-        // before determining it is expired and returning false to force a re-capture.
         val cachedID = advancedDeviceIDManagerService.getCachedID()
 
         assert(!cachedID)
         verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST, 1)
         verify(exactly = 1) {
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID)
         }
     }
 
     @Test
     fun testGetCachedID_valid_cache() {
-        val keyValue = "ValidKey"
+        // request id timestamp within the 12 hour cache window - should send and not refresh
+        val timestamp = System.currentTimeMillis() - (60 * 1000)
+        val keyValue = "$timestamp.suffix"
         val mocks =
             buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey(
                 "{\"key\":\"$keyValue\", \"exp\":${System.currentTimeMillis() + (1 * 60 * 60 * 1000)}}",
@@ -150,7 +175,7 @@ class AdvancedDeviceIDManagerServiceTest {
         assert(cachedID)
         verifyCaptureEvent(mockedNID, ADVANCED_DEVICE_REQUEST, 1)
         verify(exactly = 1) {
-            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID, AdvancedDeviceIDManager.defaultCacheValue)
+            mockedSharedPreferences.getString(AdvancedDeviceIDManager.NID_RID)
             mockedLogger.d(msg = "Retrieving Request ID for Advanced Device Signals from cache: $keyValue")
         }
     }
@@ -251,7 +276,6 @@ class AdvancedDeviceIDManagerServiceTest {
                     assert(e.c == false) { "Expected event c value to be false, found true" }
                     assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
                     assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-                    assert(e.scr == "sealedResult") { "Expected event scr value to be sealedResult, found ${e.scr}" }
                 }
             val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
             val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -274,7 +298,6 @@ class AdvancedDeviceIDManagerServiceTest {
                         ts = any(),
                         c = false,
                         l = 0,
-                        scr = any(),
                         ct = any(),
                         m = "server retrieved FPJS key",
                     )
@@ -294,7 +317,7 @@ class AdvancedDeviceIDManagerServiceTest {
             // JVM unit tests). mockkConstructor() can't help here since it only intercepts
             // method calls on an instance, not the constructor body itself.
             val mockedFingerprintFactory = mockk<FingerprintFactory>()
-            val mockedFPJSClientFromFactory = getMockedFPJSClient(validRID, null, "sealedResult")
+            val mockedFPJSClientFromFactory = getMockedFPJSClient(validRID, null)
             every {
                 mockedFingerprintFactory.createInstance(any())
             } returns mockedFPJSClientFromFactory
@@ -362,7 +385,6 @@ class AdvancedDeviceIDManagerServiceTest {
                     assert(e.c == false) { "Expected event c value to be false, found true" }
                     assert(e.l != 0L) { "Expected event l value to be !=0, found ${e.l}" }
                     assert(e.ct == "wifi") { "Expected event c value to be wifi, found ${e.ct}" }
-                    assert(e.scr == "sealedResult") { "Expected event scr value to be sealedResult, found ${e.scr}" }
                 }
             val advancedDeviceIDManagerService = mocks["advancedDeviceIDManagerService"] as AdvancedDeviceIDManagerService
             val mockedSharedPreferences = mocks["mockedSharedPreferences"] as NIDSharedPrefsDefaults
@@ -385,7 +407,6 @@ class AdvancedDeviceIDManagerServiceTest {
                         ts = any(),
                         c = false,
                         l = any(),
-                        scr = "sealedResult",
                         ct = any(),
                         m = "user entered FPJS key",
                     )
@@ -422,7 +443,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 networkServiceResult.second,
                 networkServiceResult.third,
             )
-        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second, fpjsResponse.third)
+        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second)
 
         val advancedDeviceIDManagerService =
             AdvancedDeviceIDManager(
@@ -431,7 +452,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedSharedPreferences,
                 mockedNeuroID,
                 mockedNetworkService,
-                "",
                 "",
                 getMockedConfigService(),
                 advancedDeviceKey,
@@ -475,7 +495,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 networkServiceResult.second,
                 networkServiceResult.third,
             )
-        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second, fpjsResponse.third)
+        val mockedFPJSClient = getMockedFPJSClient(fpjsResponse.first, fpjsResponse.second)
 
         val advancedDeviceIDManagerService =
             AdvancedDeviceIDManager(
@@ -484,7 +504,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 mockedSharedPreferences,
                 mockedNeuroID,
                 mockedNetworkService,
-                "",
                 "",
                 getMockedConfigService(),
                 advancedDeviceKey,
@@ -565,7 +584,6 @@ class AdvancedDeviceIDManagerServiceTest {
                 any(),
                 any(),
                 any(),
-                any(),
             )
         } just runs
         return nidMock
@@ -578,6 +596,7 @@ class AdvancedDeviceIDManagerServiceTest {
         val sharedPrefs = mockk<NIDSharedPrefsDefaults>()
         every { sharedPrefs.putString(key, any()) } just runs
         every { sharedPrefs.getString(key, any()) } returns getValue
+        every { sharedPrefs.getString(key) } returns getValue
 
         return sharedPrefs
     }
@@ -626,7 +645,7 @@ class AdvancedDeviceIDManagerServiceTest {
     ): ADVNetworkService {
         val mockedADVNetworkService = mockk<ADVNetworkService>()
 
-        every { mockedADVNetworkService.getNIDAdvancedDeviceAccessKey(any(), any(), any()) } returns
+        every { mockedADVNetworkService.getNIDAdvancedDeviceAccessKey(any()) } returns
             ADVKeyFunctionResponse(
                 key,
                 success,
@@ -638,14 +657,13 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun getMockedFPJSClient(
         successResponse: String?,
         errorResponse: String?,
-        sealedResult: String?,
+
     ): Fingerprint {
         val mockedFPJSClient = mockk<Fingerprint>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
                 val successListener = args[1] as (FingerprintResponse) -> Unit
                 val mockSuccessResponse = mockk<FingerprintResponse>()
-                every { mockSuccessResponse.sealedResult } returns sealedResult
                 every { mockSuccessResponse.eventId } returns successResponse
                 successListener(mockSuccessResponse)
             }

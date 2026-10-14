@@ -40,7 +40,6 @@ internal class AdvancedDeviceIDManager(
     private val neuroID: NeuroID,
     private val advNetworkService: ADVNetworkService,
     private val clientID: String,
-    private val linkedSiteID: String,
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
@@ -54,45 +53,58 @@ internal class AdvancedDeviceIDManager(
 ) : AdvancedDeviceIDManagerService {
     companion object {
         internal val NID_RID = "NID_RID_KEY"
-        internal val defaultCacheValue = "{\"key\":\"NO_KEY\", \"exp\":0}"
+
+        // Absolute upper bound on cached request ID age
+        internal const val MAX_DEVICE_NETWORK_AGE_MILLIS = 90L * 24 * 60 * 60 * 1000 // 90 days
     }
 
     override fun getCachedID(): Boolean {
-        val existingString = sharedPrefs.getString(NID_RID, defaultCacheValue)
+        val existingString = sharedPrefs.getString(NID_RID)
 
         val gson = Gson()
         val type = object : TypeToken<Map<String, Any>>() {}.type
         val storedValue = gson.fromJson<Map<String, Any>>(existingString, type)
 
         // No Value Exists - return false (get new advanced device id)
-        if (storedValue == null || storedValue["key"] == "NO_KEY") {
-            return false
+        val eventId = storedValue?.get("key") as? String ?: return false
+
+        val requestTimestamp = getTimestampFromEventId(eventId) ?: return false
+        val age = System.currentTimeMillis() - requestTimestamp
+        val cacheValidity = configService.configCache.advancedCookieExpiration * 1000L
+        val isValid = age < cacheValidity
+        val shouldSend = age < MAX_DEVICE_NETWORK_AGE_MILLIS
+
+        // If the request is still within the cache window or recent enough to be meaningful, send it
+        if (shouldSend) {
+            logger.d(
+                msg =
+                    "Retrieving Request ID for Advanced Device Signals from cache: $eventId",
+            )
+            neuroID.captureEvent(
+                queuedEvent = true,
+                type = ADVANCED_DEVICE_REQUEST,
+                rid = eventId,
+                c = true,
+                l = 0,
+                // wifi/cell
+                ct = neuroID.networkConnectionType,
+            )
         }
 
-        // always capture cached ID even if expired, if expired we will return false which
-        // will force a refresh (done below the event sending)
-        logger.d(
-            msg =
-                "Retrieving Request ID for Advanced Device Signals from cache: ${storedValue["key"]}",
-        )
-        neuroID.captureEvent(
-            queuedEvent = true,
-            type = ADVANCED_DEVICE_REQUEST,
-            rid = storedValue["key"] as String,
-            scr = storedValue["scr"] as String?,
-            c = true,
-            l = 0,
-            // wifi/cell
-            ct = neuroID.networkConnectionType,
-        )
+        return isValid
+    }
 
-        val isAdvDeviceValid = System.currentTimeMillis() <= storedValue["exp"] as Double
-        return isAdvDeviceValid
+    /**
+     * Event IDs are formatted as "<millisecondsSinceEpoch>.<suffix>".
+     * Returns the embedded timestamp in milliseconds, or null if it cannot be parsed.
+     */
+    fun getTimestampFromEventId(requestId: String): Long? {
+        val millisecondsString = requestId.split(".").firstOrNull() ?: return null
+        return millisecondsString.toLongOrNull()
     }
 
     fun getAdvancedDeviceKey(clientKey: String): ADVKeyFunctionResponse? {
-        val nidKeyResponse =
-            advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey, clientID, linkedSiteID)
+        val nidKeyResponse = advNetworkService.getNIDAdvancedDeviceAccessKey(clientKey)
 
         // if no key exit early
         if (!nidKeyResponse.success) {
@@ -183,7 +195,6 @@ internal class AdvancedDeviceIDManager(
                             l = stopTime - startTime,
                             // wifi/cell
                             ct = neuroID.networkConnectionType,
-                            scr = requestResponse.third,
                             m = if (advancedDeviceKey.isNullOrEmpty()) "server retrieved FPJS key" else "user entered FPJS key",
                         )
                         logger.d(msg = "Caching Request ID: ${requestResponse.second}")
@@ -193,12 +204,7 @@ internal class AdvancedDeviceIDManager(
                         val cachedValueString =
                             gson.toJson(
                                 mapOf(
-                                    "scr" to requestResponse.third,
                                     "key" to requestResponse.second,
-                                    "exp" to
-                                        (configService.configCache.advancedCookieExpiration * 1000) +
-                                        nidTime.getCurrentTimeMillis(), // 12
-                                    // hours from now
                                 ),
                             )
                         sharedPrefs.putString(NID_RID, cachedValueString)
@@ -241,7 +247,7 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: Fingerprint): Triple<Boolean, String, String?> =
+    private suspend fun getVisitorId(fpjsClient: Fingerprint): Pair<Boolean, String> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 tags = mapOf(
@@ -250,18 +256,17 @@ internal class AdvancedDeviceIDManager(
                     "requestStartTime" to nidTime.getCurrentTimeMillis(),
                 ),
                 listener = { result ->
-                    continuation.resume(Triple(true, result.eventId, result.sealedResult))
+                    continuation.resume(Pair(true, result.eventId))
                 },
                 errorListener = { error ->
                     continuation.resume(
-                        Triple(
+                        Pair(
                             false,
                             if (error.description != null) {
                                 error.description as String
                             } else {
                                 "FPJS Empty Failure"
                             },
-                            null,
                         ),
                     )
                 },
