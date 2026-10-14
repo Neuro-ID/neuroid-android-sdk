@@ -657,7 +657,6 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun getMockedFPJSClient(
         successResponse: String?,
         errorResponse: String?,
-
     ): Fingerprint {
         val mockedFPJSClient = mockk<Fingerprint>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
