@@ -725,7 +725,6 @@ class NeuroID
             isConnected: Boolean? = null,
             cp: String? = null,
             l: Long? = null,
-            scr: String? = null,
             synthetic: Boolean? = null,
         ) {
             if (!queuedEvent && (!isSDKStarted || (::nidJobServiceManager.isInitialized && nidJobServiceManager.isStopped()))) {
@@ -802,7 +801,6 @@ class NeuroID
                     isConnected,
                     cp,
                     l,
-                    scr,
                     synthetic,
                 )
 
