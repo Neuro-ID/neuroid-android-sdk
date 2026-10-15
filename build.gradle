@@ -16,6 +16,10 @@ buildscript {
     }
 }
 
+// Single source of truth for the Java language/bytecode level targeted by all modules.
+// Referenced from NeuroID/build.gradle and testapp/build.gradle's compileOptions blocks.
+ext.javaVersionCompat = JavaVersion.VERSION_11
+
 task clean(type: Delete) {
     delete rootProject.buildDir 
 }

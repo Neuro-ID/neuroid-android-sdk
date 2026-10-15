@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -7,15 +9,11 @@ plugins {
 
 android {
     namespace 'com.neuroid.example'
-    compileSdk 35
+    compileSdkVersion 35
 
     buildFeatures {
         viewBinding true
         compose true
-    }
-    composeOptions {
-        // developer.android.com/jetpack/androidx/releases/compose-kotlin (extension map)
-        kotlinCompilerExtensionVersion '1.5.14'
     }
 
     defaultConfig {
@@ -40,12 +38,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility rootProject.ext.javaVersionCompat
+        targetCompatibility rootProject.ext.javaVersionCompat
     }
 
     flavorDimensions = ["native", "adv"]
@@ -64,6 +58,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.javaVersionCompat.toString()))
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':NeuroID')
@@ -73,7 +73,6 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.test.espresso:espresso-contrib:3.6.1'
     implementation 'androidx.compose.ui:ui-android:1.7.4'

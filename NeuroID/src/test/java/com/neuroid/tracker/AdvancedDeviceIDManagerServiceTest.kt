@@ -306,7 +306,6 @@ class AdvancedDeviceIDManagerServiceTest {
             }
         }
 
-
     @Test
     fun chooseUrl() {
         val mocks = buildAdvancedDeviceIDManagerService_noUserSetAdvancedKey()

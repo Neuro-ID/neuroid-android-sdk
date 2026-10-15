@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -59,7 +61,6 @@ android {
         minSdk 24
         targetSdk 36
         multiDexEnabled true
-        android.buildFeatures.buildConfig true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
@@ -102,22 +103,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
-        // Matches the Kotlin Gradle plugin version used to build this library (see
-        // ext.kotlin_version in the root build.gradle). Consumer apps must build with a
-        // Kotlin plugin of at least this version, otherwise they will hit
-        // "Module was compiled with an incompatible version of Kotlin" errors.
-        languageVersion = "2.3"
-        apiVersion = "2.3"
+        sourceCompatibility rootProject.ext.javaVersionCompat
+        targetCompatibility rootProject.ext.javaVersionCompat
     }
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 
 
@@ -133,6 +125,16 @@ android {
 
     lint {
         baseline = file("lint-baseline.xml")
+    }
+}
+
+// Required because this module applies kotlin-kapt: without an explicit jvmTarget,
+// AGP's auto-inference of Kotlin's jvmTarget from compileOptions does not reliably
+// propagate to kapt's generated stub-compile tasks (e.g. kaptGenerateStubs*UnitTestKotlin),
+// which fall back to the Gradle daemon's own JDK and fail with a JVM-target mismatch.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.javaVersionCompat.toString()))
     }
 }
 
