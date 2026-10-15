@@ -64,9 +64,9 @@
 -keep class com.neuroid.tracker.NeuroID$BuilderConfig { *; }
 -keep class com.neuroid.tracker.extensions.** { *; }
 
-# required for API 34+.
+# Kotlin generates NeuroIDPublic$DefaultImpls to dispatch calls to interface methods that
+# have default parameter values (e.g. start(), startSession(), startAppFlow()). Consumers
+# calling through the NeuroIDPublic interface type with an omitted default argument resolve
+# to this synthetic class at their own compile/runtime; it is not reachable from this
+# module's own call graph, so R8 strips it unless explicitly kept.
 -keep class com.neuroid.tracker.NeuroIDPublic$DefaultImpls { *; }
--keep class com.neuroid.tracker.compose.JetpackComposeImpl { *; }
-
-
-
