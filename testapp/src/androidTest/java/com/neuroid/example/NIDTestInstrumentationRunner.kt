@@ -2,12 +2,12 @@ package com.neuroid.example
 import android.os.Bundle
 import androidx.test.runner.AndroidJUnitRunner
 import com.google.gson.Gson
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
-import com.fingerprintjs.android.fpjs_pro.FingerprintJSProResponse
+import com.fingerprint.android.Fingerprint
+import com.fingerprint.android.FingerprintResponse
 import com.neuroid.tracker.NeuroID
 import io.mockk.every
 import io.mockk.mockk
-import com.fingerprintjs.android.fpjs_pro.Error
+import com.fingerprint.android.Error
 
 class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
     private val gson = Gson()
@@ -16,14 +16,14 @@ class NIDTestInstrumentationRunner  : AndroidJUnitRunner() {
         successResponse: String?,
         errorResponse: String?,
         sealedResult: String?
-    ): FingerprintJS {
-        val mockedFPJSClient = mockk<FingerprintJS>()
+    ): Fingerprint {
+        val mockedFPJSClient = mockk<Fingerprint>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
-                val successListener = args[1] as (FingerprintJSProResponse) -> Unit
-                val mockSuccessResponse = mockk<FingerprintJSProResponse>()
+                val successListener = args[1] as (FingerprintResponse) -> Unit
+                val mockSuccessResponse = mockk<FingerprintResponse>()
                 every {mockSuccessResponse.sealedResult} returns sealedResult
-                every {mockSuccessResponse.requestId} returns successResponse
+                every {mockSuccessResponse.eventId} returns successResponse
                 successListener(mockSuccessResponse)
             }
             if (errorResponse != null) {

@@ -1,26 +1,23 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    // https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
     namespace 'com.neuroid.example'
-    compileSdk 35
+    compileSdkVersion 36
 
     buildFeatures {
         viewBinding true
         compose true
     }
-    composeOptions {
-        // developer.android.com/jetpack/androidx/releases/compose-kotlin (extension map)
-        // requires kotlin version 1.9.24, see root build.gradle for this change.
-        kotlinCompilerExtensionVersion '1.5.14'
-    }
 
     defaultConfig {
         applicationId "com.neuroid.example"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName "1.0"
 
@@ -29,8 +26,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // use debug signing config for release builds to avoid having to
+            // create a separate keystore for testing purposes =
+            signingConfig signingConfigs.debug
         }
         debug {
             applicationIdSuffix ".debug"
@@ -39,12 +39,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility rootProject.ext.javaVersionCompat
+        targetCompatibility rootProject.ext.javaVersionCompat
     }
 
     flavorDimensions = ["native", "adv"]
@@ -63,6 +59,13 @@ android {
     }
 }
 
+kotlin {
+    jvmToolchain(rootProject.ext.jdkVersion)
+    compilerOptions {
+        jvmTarget.set(rootProject.ext.kotlinJvmTarget)
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':NeuroID')
@@ -72,7 +75,6 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.test.espresso:espresso-contrib:3.6.1'
     implementation 'androidx.compose.ui:ui-android:1.7.4'
@@ -98,7 +100,8 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.7.0'
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.7.0"
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.9.3'
-    androidTestImplementation("com.fingerprint.android:pro:2.16.0") {
+    // only for testing purposes, regular apps do not need this dependency, it is already included in the SDK
+    androidTestImplementation("com.fingerprint.android:sdk:4.1.0") {
         exclude group: "com.google.android.gms"
     }
     androidTestImplementation 'io.mockk:mockk-android:1.12.0'

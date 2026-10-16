@@ -43,7 +43,7 @@ class Splash: LayoutActivity() {
             startActivity(Intent(this, SignUp::class.java))
         }
         val permissionsRequests = mutableListOf<String>()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
             != PackageManager.PERMISSION_GRANTED) {
             permissionsRequests.add(Manifest.permission.READ_PHONE_STATE)
         }

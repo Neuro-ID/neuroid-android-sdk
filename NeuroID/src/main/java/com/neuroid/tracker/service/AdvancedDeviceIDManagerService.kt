@@ -1,9 +1,9 @@
 package com.neuroid.tracker.service
 
 import android.content.Context
-import com.fingerprintjs.android.fpjs_pro.Configuration
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
-import com.fingerprintjs.android.fpjs_pro.FingerprintJSFactory
+import com.fingerprint.android.Configuration
+import com.fingerprint.android.Fingerprint
+import com.fingerprint.android.FingerprintFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.neuroid.tracker.NeuroID
@@ -43,7 +43,7 @@ internal class AdvancedDeviceIDManager(
     private val configService: ConfigService,
     private val advancedDeviceKey: String? = null,
     // only for testing purposes, need to create in real time to pass NID Key
-    private val fpjsClient: FingerprintJS? = null,
+    private val fpjsClient: Fingerprint? = null,
     private val useAdvancedDeviceProxy: Boolean,
     val nidTime: NIDTime = NIDTime(),
     private val region: NIDRegion = NIDRegion.US_WEST_DEFAULT,
@@ -150,18 +150,14 @@ internal class AdvancedDeviceIDManager(
 
         // Call FPJS with our key (user entered or server retrieved)
         val fpjsClient =
-            if (fpjsClient != null) {
-                fpjsClient
-            } else {
-                FingerprintJSFactory(applicationContext = context)
-                    .createInstance(
-                        Configuration(
-                            apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
-                            endpointUrl = chooseUrl(useAdvancedDeviceProxy),
-                            fallbackEndpointUrls = arrayListOf(region.fpjsProdDomain),
-                        ),
-                    )
-            }
+            fpjsClient ?: FingerprintFactory(applicationContext = context)
+                .createInstance(
+                    Configuration(
+                        apiKey = if (!advancedDeviceKey.isNullOrEmpty()) advancedDeviceKey else fpjsRetrievedKey,
+                        endpointUrl = chooseUrl(useAdvancedDeviceProxy),
+                        fallbackEndpointUrls = arrayListOf(region.fpjsProdDomain),
+                    ),
+                )
 
         val remoteIDJob =
             CoroutineScope(dispatcher).launch {
@@ -244,7 +240,7 @@ internal class AdvancedDeviceIDManager(
         return remoteIDJob
     }
 
-    private suspend fun getVisitorId(fpjsClient: FingerprintJS): Pair<Boolean, String> =
+    private suspend fun getVisitorId(fpjsClient: Fingerprint): Pair<Boolean, String> =
         suspendCoroutine { continuation ->
             fpjsClient.getVisitorId(
                 tags = mapOf(
@@ -253,7 +249,7 @@ internal class AdvancedDeviceIDManager(
                     "requestStartTime" to nidTime.getCurrentTimeMillis(),
                 ),
                 listener = { result ->
-                    continuation.resume(Pair(true, result.requestId))
+                    continuation.resume(Pair(true, result.eventId))
                 },
                 errorListener = { error ->
                     continuation.resume(

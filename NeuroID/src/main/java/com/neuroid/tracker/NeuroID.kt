@@ -11,7 +11,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
+import com.fingerprint.android.Fingerprint
 import com.neuroid.tracker.callbacks.ActivityCallbacks
 import com.neuroid.tracker.callbacks.NIDSensorHelper
 import com.neuroid.tracker.callbacks.ProcessDeviceLifecycleObserver
@@ -369,7 +369,7 @@ class NeuroID
             }
 
             @TestOnly
-            var fpjsClientOverride: FingerprintJS? = null
+            var fpjsClientOverride: Fingerprint? = null
 
             @TestOnly
             var outboundPayloadObserver: ((String) -> Unit)? = null

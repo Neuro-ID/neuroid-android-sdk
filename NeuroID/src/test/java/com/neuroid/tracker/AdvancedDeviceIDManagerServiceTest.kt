@@ -7,9 +7,9 @@ import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import com.fingerprintjs.android.fpjs_pro.Error
-import com.fingerprintjs.android.fpjs_pro.FingerprintJS
-import com.fingerprintjs.android.fpjs_pro.FingerprintJSProResponse
+import com.fingerprint.android.Error
+import com.fingerprint.android.Fingerprint
+import com.fingerprint.android.FingerprintResponse
 import com.neuroid.tracker.callbacks.NIDSensorGenListener
 import com.neuroid.tracker.events.ADVANCED_DEVICE_REQUEST
 import com.neuroid.tracker.events.LOG
@@ -412,7 +412,7 @@ class AdvancedDeviceIDManagerServiceTest {
                 advancedDeviceKey,
                 mockedFPJSClient,
                 useAdvancedDeviceProxy = useAdvancedDeviceProxy,
-                mockedNidTime,
+                nidTime = mockedNidTime,
             )
 
         return mapOf(
@@ -611,13 +611,13 @@ class AdvancedDeviceIDManagerServiceTest {
     private fun getMockedFPJSClient(
         successResponse: String?,
         errorResponse: String?,
-    ): FingerprintJS {
-        val mockedFPJSClient = mockk<FingerprintJS>()
+    ): Fingerprint {
+        val mockedFPJSClient = mockk<Fingerprint>()
         every { mockedFPJSClient.getVisitorId(tags = ofType<Map<String, Any>>(), listener = any(), errorListener = any()) }.answers {
             if (successResponse != null) {
-                val successListener = args[1] as (FingerprintJSProResponse) -> Unit
-                val mockSuccessResponse = mockk<FingerprintJSProResponse>()
-                every { mockSuccessResponse.requestId } returns successResponse
+                val successListener = args[1] as (FingerprintResponse) -> Unit
+                val mockSuccessResponse = mockk<FingerprintResponse>()
+                every { mockSuccessResponse.eventId } returns successResponse
                 successListener(mockSuccessResponse)
             }
             if (errorResponse != null) {

@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'maven-publish'
     id 'jacoco'
     id 'org.sonarqube' version '6.3.1.5724'
@@ -52,13 +53,10 @@ version = versionName
 
 android {
     namespace = "com.neuroid.tracker"
-    compileSdkVersion = 35
+    compileSdkVersion = 36
 
     defaultConfig {
         minSdk 24
-        targetSdk 35
-        multiDexEnabled true
-        android.buildFeatures.buildConfig true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
         versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
@@ -101,21 +99,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility rootProject.ext.javaVersionCompat
+        targetCompatibility rootProject.ext.javaVersionCompat
     }
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
-    }
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -129,6 +121,26 @@ android {
 
     lint {
         baseline = file("lint-baseline.xml")
+    }
+
+    // Registers each build-variant/flavor combination as a publishable software component.
+    // Required by AGP so that `components.<variantName>` (consumed below in the `publishing`
+    // block) resolves without the "Android Publication ... Misconfigured" warning.
+    publishing {
+        singleVariant("androidLibDebug") {}
+        singleVariant("androidLibRelease") {}
+        singleVariant("reactNativeLibDebug") {}
+        singleVariant("reactNativeLibRelease") {}
+    }
+}
+
+// Required because this module applies kotlin-kapt: without an explicit jvmTarget,
+// AGP's auto-inference of Kotlin's jvmTarget from compileOptions does not reliably
+// propagate to kapt's generated stub-compile tasks (e.g. kaptGenerateStubs*UnitTestKotlin),
+// which fall back to the Gradle daemon's own JDK and fail with a JVM-target mismatch.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(rootProject.ext.kotlinJvmTarget)
     }
 }
 
@@ -149,14 +161,17 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.4.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+    // kotlin-reflect must track the same version as the Kotlin stdlib/compiler. The Kotlin
+    // Gradle plugin auto-adds kotlin-stdlib at $kotlin_version, so pinning reflect to anything
+    // else produces a split-version classpath.
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     // compose stuff
     implementation "androidx.compose.ui:ui:1.7.3"
 
     reactNativeImplementation("com.facebook.react:react-android:0.76.9")
 
-    implementation("com.fingerprint.android:pro:2.17.1") {
+    implementation("com.fingerprint.android:sdk:4.1.0") {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
