@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     // https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler
-    id 'org.jetbrains.kotlin.plugin.compose' version "${kotlin_version}"
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
