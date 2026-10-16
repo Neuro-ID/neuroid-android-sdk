@@ -33,9 +33,7 @@ class ApplicationMain : Application() {
             NIDConfiguration(
                 clientKey = "key_live_MwC5DQNYzRsRhnnYjvz1fJtp",
                 region = NIDRegion.TEST,
-                isAdvancedDevice = true,
-                advancedDeviceKey = "KnJvMIBAqxp7PRJiOmil",
-                useAdvancedDeviceProxy = true,
+                isAdvancedDevice = true
             )
         ).build()
     }

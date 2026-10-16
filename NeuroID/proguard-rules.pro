@@ -70,3 +70,12 @@
 # to this synthetic class at their own compile/runtime; it is not reachable from this
 # module's own call graph, so R8 strips it unless explicitly kept.
 -keep class com.neuroid.tracker.NeuroIDPublic$DefaultImpls { *; }
+
+# Need to keep this class because of the following runtime crash (keeps the jetpack compose
+# implementation class from being stripped out by R8):
+# FATAL EXCEPTION: main
+# Process: com.neuroid.example, PID: 4689
+# java.lang.NoSuchMethodError: No virtual method getCompose()Lcom/neuroid/tracker/compose/JetpackComposeImpl;
+# in class Lcom/neuroid/tracker/NeuroID$Companion; or its super classes (declaration of 'com.neuroid.tracker.NeuroID$Companion'
+# appears in /data/app/~~BPV0XrGplx9HViq5naGv_Q==/com.neuroid.example-tmNUkE82nBr5AtjRPsYs0g==/base.apk!classes3.dex)
+-keep class com.neuroid.tracker.compose.JetpackComposeImpl { *; }

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -28,8 +26,11 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // use debug signing config for release builds to avoid having to
+            // create a separate keystore for testing purposes =
+            signingConfig signingConfigs.debug
         }
         debug {
             applicationIdSuffix ".debug"
@@ -59,8 +60,9 @@ android {
 }
 
 kotlin {
+    jvmToolchain(rootProject.ext.jdkVersion)
     compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.javaVersionCompat.toString()))
+        jvmTarget.set(rootProject.ext.kotlinJvmTarget)
     }
 }
 

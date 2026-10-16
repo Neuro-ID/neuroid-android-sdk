@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -125,6 +123,16 @@ android {
     lint {
         baseline = file("lint-baseline.xml")
     }
+
+    // Registers each build-variant/flavor combination as a publishable software component.
+    // Required by AGP so that `components.<variantName>` (consumed below in the `publishing`
+    // block) resolves without the "Android Publication ... Misconfigured" warning.
+    publishing {
+        singleVariant("androidLibDebug") {}
+        singleVariant("androidLibRelease") {}
+        singleVariant("reactNativeLibDebug") {}
+        singleVariant("reactNativeLibRelease") {}
+    }
 }
 
 // Required because this module applies kotlin-kapt: without an explicit jvmTarget,
@@ -133,7 +141,7 @@ android {
 // which fall back to the Gradle daemon's own JDK and fail with a JVM-target mismatch.
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(rootProject.ext.javaVersionCompat.toString()))
+        jvmTarget.set(rootProject.ext.kotlinJvmTarget)
     }
 }
 

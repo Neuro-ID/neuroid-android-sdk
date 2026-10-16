@@ -1,12 +1,16 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+    // kotlin_version must be set here, inside buildscript{}: a plain top-level ext property
+    // isn't visible to buildscript's own dependencies{} closure, which resolves eagerly in
+    // an isolated context before the rest of the script runs.
+    ext.kotlin_version = "2.3.20"
+
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
     }
-    ext.kotlin_version = "2.3.20"
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -16,9 +20,18 @@ buildscript {
     }
 }
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+ext {
 // Single source of truth for the Java language/bytecode level targeted by all modules.
 // Referenced from NeuroID/build.gradle and testapp/build.gradle's compileOptions blocks.
-ext.javaVersionCompat = JavaVersion.VERSION_11
+    javaVersionCompat = JavaVersion.VERSION_11
+// JDK used to run the Kotlin compiler's toolchain (see kotlin { jvmToolchain(...) } in each module).
+    jdkVersion = 17
+// Kotlin compiler's jvmTarget, kept consistent with javaVersionCompat. Referenced from
+// NeuroID/build.gradle and testapp/build.gradle's kotlin { compilerOptions {} } blocks.
+    kotlinJvmTarget = JvmTarget.JVM_11
+}
 
 task clean(type: Delete) {
     delete rootProject.buildDir 
