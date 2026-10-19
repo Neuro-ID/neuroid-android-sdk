@@ -14,9 +14,9 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.13.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.8.2"
-        classpath "org.jacoco:org.jacoco.core:0.8.12"
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:12.1.1"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.10.2"
+        classpath "org.jacoco:org.jacoco.core:0.8.15"
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:14.2.0"
     }
 }
 
@@ -26,6 +26,6 @@ ext {
     kotlinJvmTarget = JvmTarget.JVM_11
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir 
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
 }

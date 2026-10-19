@@ -531,7 +531,6 @@ class AdditionalListeners(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     internal fun addExtraActionMenuListener(
         neuroID: NeuroID,
         view: EditText,

@@ -200,7 +200,6 @@ class NIDGlobalEventCallback(
         return windowCallback.onSearchRequested()
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun onSearchRequested(searchEvent: SearchEvent?): Boolean {
         return windowCallback.onSearchRequested(searchEvent)
     }
@@ -209,7 +208,6 @@ class NIDGlobalEventCallback(
         return windowCallback.onWindowStartingActionMode(actionMode)
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun onWindowStartingActionMode(
         p0: ActionMode.Callback?,
         p1: Int,
