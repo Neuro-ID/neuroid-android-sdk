@@ -284,8 +284,6 @@ internal fun getMockedSharedPreferenceDefaults(): NIDSharedPrefsDefaults {
 
     every { mockedSharedPreferencesDefaults.getClientID() } returns ""
 
-    every { mockedSharedPreferencesDefaults.getDeviceID() } returns ""
-    every { mockedSharedPreferencesDefaults.getIntermediateID() } returns ""
     every { mockedSharedPreferencesDefaults.getLocale() } returns ""
     every { mockedSharedPreferencesDefaults.getUserAgent() } returns ""
     every { mockedSharedPreferencesDefaults.getTimeZone() } returns 0

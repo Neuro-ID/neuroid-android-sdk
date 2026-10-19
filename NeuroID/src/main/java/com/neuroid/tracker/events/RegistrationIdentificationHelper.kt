@@ -1,7 +1,6 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
-import android.os.Build
 import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +20,6 @@ import com.neuroid.tracker.extensions.getParentActivity
 import com.neuroid.tracker.extensions.getParentFragment
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.NIDSdkVersionProvider
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.handleIdentifyAllViews
 import com.neuroid.tracker.utils.verifyComponentType
@@ -224,7 +222,6 @@ class RegistrationIdentificationHelper(
 class SingleTargetListenerRegister(
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
-    private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
     fun registerListeners(
         neuroID: NeuroID,
@@ -262,10 +259,7 @@ class SingleTargetListenerRegister(
                     )
             }
 
-            // if later api version, add additional action menu watcher
-            if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.M) {
-                additionalListeners.addExtraActionMenuListener(neuroID, view)
-            }
+            additionalListeners.addExtraActionMenuListener(neuroID, view)
         }
 
         // additional subclasses to be captured

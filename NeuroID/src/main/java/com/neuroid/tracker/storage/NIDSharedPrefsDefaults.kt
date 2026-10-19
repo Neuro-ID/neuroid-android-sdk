@@ -1,10 +1,10 @@
 package com.neuroid.tracker.storage
 
 import android.content.Context
+import androidx.core.content.edit
 import com.neuroid.tracker.utils.NIDResourcesUtils
 import com.neuroid.tracker.utils.NIDSystemUuidProvider
 import com.neuroid.tracker.utils.NIDTime
-import com.neuroid.tracker.utils.RandomGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,12 +14,10 @@ class NIDSharedPrefsDefaults(
     context: Context,
     val nidTime: NIDTime = NIDTime(),
     val uuidProvider: NIDSystemUuidProvider = NIDSystemUuidProvider(),
-    val randomGenerator: RandomGenerator = RandomGenerator(),
     val resourcesProvider: NIDResourcesUtils = NIDResourcesUtils(),
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
-    private var sharedPref =
-        context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
+    private var sharedPref = context.getSharedPreferences(NID_SHARED_PREF_FILE, Context.MODE_PRIVATE)
 
     fun getClientID(): String {
         var cid = getString(NID_CID)
@@ -44,31 +42,6 @@ class NIDSharedPrefsDefaults(
         return salt
     }
 
-    fun getDeviceID(): String {
-        var deviceId = getString(NID_DID)
-
-        return if (deviceId == "") {
-            deviceId = getID()
-            putString(NID_DID, deviceId)
-
-            deviceId
-        } else {
-            deviceId
-        }
-    }
-
-    fun getIntermediateID(): String {
-        var iid = getString(NID_IID, "")
-
-        return if (iid == "") {
-            iid = getID()
-            putString(NID_IID, iid)
-            iid
-        } else {
-            iid
-        }
-    }
-
     fun getLocale() = resourcesProvider.getDefaultLocale()
 
     fun getLanguage() = resourcesProvider.getDefaultLanguage()
@@ -79,22 +52,13 @@ class NIDSharedPrefsDefaults(
 
     fun getPlatform() = "Android"
 
-    private fun getID(): String {
-        val timeNow = nidTime.getCurrentTimeMillis()
-        val numRnd = randomGenerator.getRandom(Int.MAX_VALUE)
-        return "$timeNow.$numRnd"
-    }
-
     internal fun putString(
         key: String,
         value: String,
     ) {
         CoroutineScope(dispatcher).launch {
             sharedPref?.let {
-                with(it.edit()) {
-                    putString(key, value)
-                    apply()
-                }
+                it.edit { putString(key, value) }
             }
         }
     }
@@ -111,8 +75,6 @@ class NIDSharedPrefsDefaults(
     companion object {
         private const val NID_SHARED_PREF_FILE = "NID_SHARED_PREF_FILE"
         private const val NID_CID = "NID_CID_GUID_KEY"
-        private const val NID_DID = "NID_DID_KEY"
-        private const val NID_IID = "NID_IID_KEY"
         private const val NID_DEVICE_SALT = "NID_DEVICE_SALT"
     }
 }
