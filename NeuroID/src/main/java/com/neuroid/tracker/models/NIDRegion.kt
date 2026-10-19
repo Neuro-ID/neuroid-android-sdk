@@ -1,6 +1,5 @@
 package com.neuroid.tracker.models
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class NIDRegion(
     val fpjsProdDomain: String,
     val fpjsPrimaryDomain: String,

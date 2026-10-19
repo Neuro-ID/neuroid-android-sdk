@@ -1,6 +1,5 @@
 package com.neuroid.tracker.callbacks
 
-import android.os.Build
 import android.view.ActionMode
 import android.view.KeyEvent
 import android.view.Menu
@@ -13,7 +12,6 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.widget.EditText
-import androidx.annotation.RequiresApi
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.events.BLUR
 import com.neuroid.tracker.events.FOCUS

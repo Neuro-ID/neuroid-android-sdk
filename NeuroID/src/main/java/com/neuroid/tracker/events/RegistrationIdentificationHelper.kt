@@ -11,7 +11,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
-import androidx.annotation.RequiresApi
 import androidx.core.view.forEach
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
