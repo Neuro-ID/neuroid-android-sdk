@@ -5,7 +5,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.core.content.getSystemService
 import com.neuroid.tracker.utils.NIDLogWrapper
 import io.mockk.every
 import io.mockk.just
@@ -64,7 +63,7 @@ class SensorHelperTests {
 
     fun setupMockContext(sensorManager: SensorManager): Context {
         val context = mockk<Context>()
-        every { context.getSystemService<SensorManager>() } returns sensorManager
+        every { context.getSystemService(Context.SENSOR_SERVICE) } returns sensorManager
 
         return context
     }

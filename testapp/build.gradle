@@ -6,8 +6,8 @@ plugins {
 }
 
 android {
-    namespace 'com.neuroid.example'
-    compileSdkVersion 36
+    namespace = 'com.neuroid.example'
+    compileSdkVersion = 36
 
     buildFeatures {
         viewBinding true
@@ -29,7 +29,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // use debug signing config for release builds to avoid having to
-            // create a separate keystore for testing purposes =
+            // create a separate keystore for testing purposes
             signingConfig signingConfigs.debug
         }
         debug {
@@ -67,42 +67,33 @@ kotlin {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':NeuroID')
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.18.0' // newer versions require compileSdk 37
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
+    implementation 'com.google.android.material:material:1.14.0'
 
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.test.espresso:espresso-contrib:3.6.1'
-    implementation 'androidx.compose.ui:ui-android:1.7.4'
-
-    implementation "androidx.compose.ui:ui:1.4.3"
-    implementation "androidx.compose.ui:ui-tooling-preview:1.4.3"
-    implementation "androidx.activity:activity-compose:1.8.0"
-    implementation "androidx.compose.runtime:runtime:1.4.3"
-    implementation 'androidx.compose.material:material:1.4.3'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation platform('androidx.compose:compose-bom:2026.06.01')
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.runtime:runtime"
+    implementation 'androidx.compose.material:material'
 
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test:rules:1.5.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation "androidx.test:core-ktx:1.5.0"
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    androidTestImplementation 'com.google.truth:truth:0.43'
-    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
-    androidTestImplementation 'androidx.arch.core:core-testing:2.1.0'
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1") {
-        exclude group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-debug"
-    }
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.7.0'
-    debugImplementation "androidx.compose.ui:ui-test-manifest:1.7.0"
-    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.9.3'
+
+    androidTestImplementation 'androidx.test:rules:1.7.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation "androidx.test:core-ktx:1.7.0"
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
+    androidTestImplementation 'com.google.code.gson:gson:2.14.0'
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+    androidTestImplementation 'io.mockk:mockk-android:1.14.11'
+    implementation platform('androidx.compose:compose-bom:2026.06.01')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.11.4'
+    debugImplementation "androidx.compose.ui:ui-test-manifest:1.11.4"
+
     // only for testing purposes, regular apps do not need this dependency, it is already included in the SDK
     androidTestImplementation("com.fingerprint.android:sdk:4.1.0") {
         exclude group: "com.google.android.gms"
     }
-    androidTestImplementation 'io.mockk:mockk-android:1.12.0'
 }

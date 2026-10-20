@@ -35,6 +35,8 @@ class NIDIdentityAllViewsTest {
         every { editText.addTextChangedListener(any()) } just runs
         every { editText.getCustomSelectionActionModeCallback() } returns null
         every { editText.setCustomSelectionActionModeCallback(any()) } just runs
+        every { editText.getCustomInsertionActionModeCallback() } returns null
+        every { editText.setCustomInsertionActionModeCallback(any()) } just runs
         val logger = mockk<NIDLogWrapper>()
         every { logger.d(any(), any()) } just runs
         every { logger.e(any(), any()) } just runs

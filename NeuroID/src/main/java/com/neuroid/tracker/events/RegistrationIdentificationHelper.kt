@@ -1,7 +1,6 @@
 package com.neuroid.tracker.events
 
 import android.app.Activity
-import android.os.Build
 import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
-import androidx.annotation.RequiresApi
 import androidx.core.view.forEach
 import com.neuroid.tracker.NeuroID
 import com.neuroid.tracker.callbacks.NIDGlobalEventCallback
@@ -22,7 +20,6 @@ import com.neuroid.tracker.extensions.getParentActivity
 import com.neuroid.tracker.extensions.getParentFragment
 import com.neuroid.tracker.extensions.getSHA256withSalt
 import com.neuroid.tracker.utils.NIDLogWrapper
-import com.neuroid.tracker.utils.NIDSdkVersionProvider
 import com.neuroid.tracker.utils.NIDTextWatcher
 import com.neuroid.tracker.utils.handleIdentifyAllViews
 import com.neuroid.tracker.utils.verifyComponentType
@@ -225,7 +222,6 @@ class RegistrationIdentificationHelper(
 class SingleTargetListenerRegister(
     val logger: NIDLogWrapper,
     val additionalListeners: AdditionalListeners,
-    private val sdkVersionProvider: NIDSdkVersionProvider = NIDSdkVersionProvider(),
 ) {
     fun registerListeners(
         neuroID: NeuroID,
@@ -263,10 +259,7 @@ class SingleTargetListenerRegister(
                     )
             }
 
-            // if later api version, add additional action menu watcher
-            if (sdkVersionProvider.getSdkInt() >= Build.VERSION_CODES.M) {
-                additionalListeners.addExtraActionMenuListener(neuroID, view)
-            }
+            additionalListeners.addExtraActionMenuListener(neuroID, view)
         }
 
         // additional subclasses to be captured
@@ -531,7 +524,6 @@ class AdditionalListeners(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     internal fun addExtraActionMenuListener(
         neuroID: NeuroID,
         view: EditText,
