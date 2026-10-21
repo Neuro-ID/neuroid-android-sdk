@@ -46,8 +46,10 @@ def debugVariant = "-debug"
 def reactNativeVariant = "react"
 
 ext {
-    versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
+    versionName = "${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}"
 }
+def sdkVersionName = versionName
+def sdkVersionLiteral = "\"${sdkVersionName}\""
 group = nameSpace
 version = versionName
 
@@ -59,21 +61,21 @@ android {
         minSdk 24
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
-        versionName = "\"${versionProps['VERSION_MAJOR']}.${versionProps['VERSION_MINOR']}.${versionProps['VERSION_PATCH']}\""
+        versionName = sdkVersionName
     }
 
     buildTypes {
         debug {
             minifyEnabled false
             jniDebuggable true
-            buildConfigField "String", "VERSION_NAME", "${defaultConfig.versionName}"
+            buildConfigField "String", "VERSION_NAME", sdkVersionLiteral
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
             enableUnitTestCoverage = true    // For unit tests
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "VERSION_NAME", "${defaultConfig.versionName}"
+            buildConfigField "String", "VERSION_NAME", sdkVersionLiteral
             buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
         }
     }
@@ -145,6 +147,9 @@ kotlin {
 }
 
 dependencies {
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
+    kapt "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:2.2.20"
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test.ext:junit:1.3.0'
     testImplementation "androidx.test:core-ktx:1.7.0"
